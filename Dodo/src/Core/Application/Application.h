@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Core/Common/Common.h"
+#include "Core/System/ThreadManager.h"
 
-#include <vector>
-
+#include "Window.h"
 #include "Layer.h"
+
 
 namespace Dodo {
 
@@ -30,19 +31,25 @@ namespace Dodo {
 		Application(const ApplicationProperties&);
 		virtual ~Application();
 
-		void Run(); // Main loop is contained in here
 		void CoreInit();
+		void Run(); // Main loop is contained in here
 		void Shutdown();
 
 		void PushLayer(Layer* layer);
 		void PopLayer(Layer* layer);
 
-		virtual void Init() = 0; // Called after the window is created
+		virtual void Init();
 		virtual void Update(float elapsed);
+	public:
+		float m_FrameTimeMs;
+		uint m_FramesPerSecond;
 	private:
-		std::vector<Layer*> m_Layers;
+		float m_FrameTime;
 
+		std::vector<Layer*> m_Layers;
 		bool m_Closed;
 		ApplicationProperties m_ApplicationProps;
+		ThreadManager* m_ThreadManager;
+		uint m_NumThreads;
 	};
 }

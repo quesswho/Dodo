@@ -31,7 +31,7 @@ public:
 		: Application(PreInit())
 	{}
 
-	ApplicationProperties& PreInit()
+	ApplicationProperties PreInit()
 	{
 		ApplicationProperties props;
 		props.m_Title = "SandBox";

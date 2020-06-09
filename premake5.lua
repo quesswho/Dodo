@@ -36,14 +36,20 @@ workspace "Dodo"
 		}
 		
 		sysincludedirs {
+			"%{prj.name}/lib/spdlog/include"
 		}
 
 		defines
 		{
 			"_CRT_SECURE_NO_WARNINGS"
 		}
+		
+		libdirs { 
+			"%{prj.name}/lib/spdlog/bin" 
+		}
 
 		links {
+			"spdlog"
 		}
 	
 		filter "system:windows"
@@ -89,10 +95,15 @@ workspace "Dodo"
 		}
 		
 		sysincludedirs {
+			"Dodo/lib/spdlog/include"
 		}
 
-		links { 
-			"Dodo"
+		libdirs { 
+			"Dodo/lib/spdlog/bin" 
+		}
+
+		links {
+			"spdlog"
 		}
 
 		filter "system:windows"

@@ -925,3 +925,11 @@ _deps
 
 # Codelite
 .codelite/
+
+# Premake
+!Premake/
+
+# More Visual studio
+*.sln
+*.vcxproj
+*.vcxproj.filters

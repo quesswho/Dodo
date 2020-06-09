@@ -2,11 +2,6 @@ workspace "Dodo"
 	architecture "x64"
 	startproject "Sandbox"
 	
-	makesettings [[
-		CC = gcc
-	]]
-	--toolset "gcc" -- Use gnu compiler collection
-	
 	outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 	
 	configurations
@@ -20,7 +15,7 @@ workspace "Dodo"
 		kind "StaticLib"
 		location "Dodo"
 		language "C++"
-		cppdialect "gnu++17"
+		cppdialect "C++17"
 		staticruntime "on"
 
 		configuration "Debug"
@@ -54,7 +49,8 @@ workspace "Dodo"
 		filter "system:windows"
 			systemversion "latest"
 			defines {
-				"DD_x64"
+				"DD_x64",
+				"DD_API_WIN32"
 			}
 
 		filter "configurations:Debug"
@@ -70,10 +66,9 @@ workspace "Dodo"
 			optimize "On"
 
 	project "Sandbox"
-		kind "ConsoleApp"
 		location "Sandbox"
 		language "C++"
-		cppdialect "gnu++17"
+		cppdialect "C++17"
 		staticruntime "On"
 		
 		configuration "Debug"
@@ -103,15 +98,20 @@ workspace "Dodo"
 		filter "system:windows"
 			systemversion "latest"
 			defines {
-				"DD_x64"
+				"DD_x64",
+				"DD_API_WIN32"
 			}
 		filter "configurations:Debug"
+			kind "ConsoleApp"
 			defines {
 				"DD_DEBUG"
 			}
 			symbols "On"
 	
 		filter "configurations:Release"
+			-- entrypoint "mainCRTStartup"
+			-- kind "WindowedApp"
+			kind "ConsoleApp"
 			defines {
 				"DD_RELEASE"
 			}

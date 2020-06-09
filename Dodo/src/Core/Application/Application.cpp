@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "Core/System/Timer.h"
 
 namespace Dodo {
 
@@ -7,26 +8,51 @@ namespace Dodo {
 	Application::Application(const ApplicationProperties& prop)
 		: m_ApplicationProps(prop), m_Closed(false)
 	{
+		CoreInit();
 		s_Application = this;
 	}
 
 	Application::~Application()
-	{}
+	{
+		delete m_ThreadManager;
+	}
 
 	void Application::Run()
 	{
-		CoreInit();
 		Init();
+
+		Timer timer;
+		m_FrameTime = 0.0f;
+		float elapsed = 0.0f;
+		uint frames = 0;
+
 		while (!m_Closed)
 		{
-			Update(0.0f);
+			timer.Start();
+			//
+			Update(m_FrameTime);
+			//
+			m_FrameTime = timer.End();
+			elapsed += m_FrameTime;
+			frames++;
+
+			if (elapsed > 1.0f)
+			{
+				m_FramesPerSecond = frames;
+				m_FrameTimeMs = m_FrameTime / 1000.0f;
+				frames = 0;
+				elapsed = 0.0f;
+			}
 		}
 	}
 
 	void Application::CoreInit()
 	{
-
+		m_NumThreads = std::thread::hardware_concurrency();
+		m_ThreadManager = new ThreadManager(m_NumThreads-1 == 0 ? 1 : m_NumThreads - 1);
 	}
+
+	void Application::Init() {}
 
 	void Application::Update(float elapsed)
 	{

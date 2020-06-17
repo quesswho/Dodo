@@ -1,1 +1,4 @@
 Dodo/lib/* linguist-vendored
+
+*.h linguist-language=C++
+*.cpp linguist-language=C++

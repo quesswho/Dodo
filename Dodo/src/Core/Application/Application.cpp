@@ -1,12 +1,14 @@
 #include "Application.h"
 #include "Core/System/Timer.h"
 
+#include "Core/System/Memory.h"
+
 namespace Dodo {
 
 	Application* Application::s_Application;
 
-	Application::Application(const ApplicationProperties& prop)
-		: m_ApplicationProps(prop), m_Closed(false)
+	Application::Application(const WindowProperties& prop)
+		: m_WindowProperties(prop), m_Closed(false)
 	{
 		CoreInit();
 		s_Application = this;
@@ -14,7 +16,9 @@ namespace Dodo {
 
 	Application::~Application()
 	{
-		delete m_ThreadManager;
+		dddelete m_ThreadManager;
+		dddelete m_Window;
+		dddelete m_Logger;
 	}
 
 	void Application::Run()
@@ -40,6 +44,8 @@ namespace Dodo {
 			{
 				m_FramesPerSecond = frames;
 				m_FrameTimeMs = m_FrameTime / 1000.0f;
+				DD_INFO("FPS: {0}, FT: {1}", m_FramesPerSecond, m_FrameTimeMs);
+
 				frames = 0;
 				elapsed = 0.0f;
 			}
@@ -48,8 +54,18 @@ namespace Dodo {
 
 	void Application::CoreInit()
 	{
-		m_NumThreads = std::thread::hardware_concurrency();
-		m_ThreadManager = new ThreadManager(m_NumThreads-1 == 0 ? 1 : m_NumThreads - 1);
+
+		m_Logger = ddnew Logger();
+		
+		m_Window = ddnew Window(m_WindowProperties);
+		m_TotalPhysMemGbs = (round(m_Window->m_Pcspecs.m_TotalPhysicalMemory / 1073741824.0 * 100)) / 100; // 1024^3
+		m_CpuBrand = m_Window->m_Pcspecs.m_CpuBrand;
+		m_NumLogicalProcessors = std::thread::hardware_concurrency();
+		m_ThreadManager = ddnew ThreadManager(m_NumLogicalProcessors-1 == 0 ? 1 : m_NumLogicalProcessors - 1);
+
+		DD_INFO("CPU: {0} {1} Logical Processors", m_CpuBrand, m_NumLogicalProcessors);
+		DD_INFO("RAM: {} GBs", m_TotalPhysMemGbs);
+		DD_INFO("");
 	}
 
 	void Application::Init() {}
@@ -61,6 +77,8 @@ namespace Dodo {
 			layer->Update(elapsed);
 			layer->Render();
 		}
+
+		m_Window->Update();
 	}
 
 	void Application::Shutdown()

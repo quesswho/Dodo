@@ -43,13 +43,8 @@ workspace "Dodo"
 		{
 			"_CRT_SECURE_NO_WARNINGS"
 		}
-		
-		libdirs { 
-			"%{prj.name}/lib/spdlog/bin" 
-		}
 
 		links {
-			"spdlog"
 		}
 	
 		filter "system:windows"
@@ -98,12 +93,8 @@ workspace "Dodo"
 			"Dodo/lib/spdlog/include"
 		}
 
-		libdirs { 
-			"Dodo/lib/spdlog/bin" 
-		}
-
 		links {
-			"spdlog"
+			"Dodo"
 		}
 
 		filter "system:windows"

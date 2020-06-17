@@ -5,30 +5,15 @@
 
 #include "Window.h"
 #include "Layer.h"
-
+#include "Core/Utilities/Logger.h"
 
 namespace Dodo {
-
-	struct ApplicationProperties
-	{
-		const char* m_Title;
-		uint m_Width;
-		uint m_Height;
-		
-		// Terrible default constructor so people are forced to change it through PreInit()
-		ApplicationProperties()
-		{
-			m_Title = "dOdO eNgIn3";
-			m_Width = 400;
-			m_Height = 400;
-		}
-	};
 
 	class Application {
 	public:
 		static Application* s_Application;
 
-		Application(const ApplicationProperties&);
+		Application(const WindowProperties&);
 		virtual ~Application();
 
 		void CoreInit();
@@ -43,13 +28,21 @@ namespace Dodo {
 	public:
 		float m_FrameTimeMs;
 		uint m_FramesPerSecond;
-	private:
-		float m_FrameTime;
 
+		Logger* m_Logger;
+	private:
+		double m_TotalPhysMemGbs;
+		std::string m_CpuBrand;
+
+		Window* m_Window;
 		std::vector<Layer*> m_Layers;
-		bool m_Closed;
-		ApplicationProperties m_ApplicationProps;
 		ThreadManager* m_ThreadManager;
-		uint m_NumThreads;
+
+
+		WindowProperties m_WindowProperties;
+
+		float m_FrameTime;
+		bool m_Closed;
+		uint m_NumLogicalProcessors;
 	};
 }

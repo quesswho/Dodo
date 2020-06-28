@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 namespace Dodo {
 
 
@@ -35,4 +34,5 @@ void operator delete(void* block, size_t size);
 #pragma pop_macro("delete")
 #else
 #define dddelete delete
+#define ddnew new
 #endif

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Event.h"
+
 namespace Dodo {
 
 	class Layer
@@ -10,6 +12,7 @@ namespace Dodo {
 
 		virtual void Update(float elapsed) = 0;
 		virtual void Render() = 0;
+		virtual void OnEvent(const Event& event) = 0;
 	};
 
 }

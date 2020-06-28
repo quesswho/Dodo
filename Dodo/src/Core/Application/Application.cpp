@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Application.h"
 #include "Core/System/Timer.h"
 
@@ -8,10 +9,10 @@ namespace Dodo {
 	Application* Application::s_Application;
 
 	Application::Application(const WindowProperties& prop)
-		: m_WindowProperties(prop), m_Closed(false)
+		: m_WindowProperties(prop), m_Closed(false), m_Initializing(true)
 	{
-		CoreInit();
 		s_Application = this;
+		CoreInit();
 	}
 
 	Application::~Application()
@@ -66,19 +67,31 @@ namespace Dodo {
 		DD_INFO("CPU: {0} {1} Logical Processors", m_CpuBrand, m_NumLogicalProcessors);
 		DD_INFO("RAM: {} GBs", m_TotalPhysMemGbs);
 		DD_INFO("");
+		m_Initializing = false;
 	}
 
 	void Application::Init() {}
 
 	void Application::Update(float elapsed)
 	{
-		for (Layer* layer : m_Layers)
+		for (auto it = m_Layers.begin(); it != m_Layers.end(); it++)
 		{
-			layer->Update(elapsed);
-			layer->Render();
+			(*it)->Update(elapsed);
+			(*it)->Render();
 		}
 
 		m_Window->Update();
+	}
+
+	void Application::OnEvent(const Event& event)
+	{
+		for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
+		{
+			if (event.m_Handled)
+				break;
+
+			(*it)->OnEvent(event);
+		}
 	}
 
 	void Application::Shutdown()
@@ -100,5 +113,6 @@ namespace Dodo {
 			m_Layers.erase(it);
 		}
 	}
+
 
 }

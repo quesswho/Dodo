@@ -13,4 +13,5 @@ public:
 
 	void Update(float elapsed);
 	void Render();
+	void OnEvent(const Event& event);
 };

@@ -1,3 +1,6 @@
+#include "pch.h"
+
+#if !defined(DODO_NO_LOGGER)
 #include "Logger.h"
 
 namespace Dodo {
@@ -10,3 +13,4 @@ namespace Dodo {
 		m_Logger->set_pattern("%^[%T %l]: %^%v%$");
 	}
 }
+#endif

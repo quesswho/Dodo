@@ -1,5 +1,12 @@
 #pragma once
 
+#if defined(DODO_NO_LOGGER)
+#define DD_INFO(...)
+#define DD_WARN(...)
+#define DD_ERR(...)
+#define DD_FATAL(...)
+#else
+
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 
@@ -21,3 +28,5 @@ namespace Dodo {
 #define DD_WARN(...) Dodo::Logger::GetLogger()->warn(__VA_ARGS__)
 #define DD_ERR(...) Dodo::Logger::GetLogger()->error(__VA_ARGS__)
 #define DD_FATAL(...) Dodo::Logger::GetLogger()->error(__VA_ARGS__); __debugbreak()
+
+#endif

@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Core/Common/Common.h"
+#include "pch.h"
 #include "Core/System/ThreadManager.h"
 
 #include "Window.h"
 #include "Layer.h"
-#include "Core/Utilities/Logger.h"
+
+#include "Event.h"
 
 namespace Dodo {
 
@@ -23,6 +24,8 @@ namespace Dodo {
 		void PushLayer(Layer* layer);
 		void PopLayer(Layer* layer);
 
+		void OnEvent(const Event& event);
+
 		virtual void Init();
 		virtual void Update(float elapsed);
 	public:
@@ -30,11 +33,13 @@ namespace Dodo {
 		uint m_FramesPerSecond;
 
 		Logger* m_Logger;
+		Window* m_Window;
+
+		bool m_Initializing;
 	private:
 		double m_TotalPhysMemGbs;
 		std::string m_CpuBrand;
 
-		Window* m_Window;
 		std::vector<Layer*> m_Layers;
 		ThreadManager* m_ThreadManager;
 

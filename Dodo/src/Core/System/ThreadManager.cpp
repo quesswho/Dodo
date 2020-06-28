@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "ThreadManager.h"
 
 namespace Dodo {

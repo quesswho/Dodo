@@ -21,6 +21,21 @@ void GameLayer::Render()
 
 }
 
+void GameLayer::OnEvent(const Event& event)
+{
+	switch (event.GetType())
+	{
+		case EventType::KEY_PRESSED:
+			if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_ESCAPE)
+				Application::s_Application->Shutdown();
+			break;
+		case EventType::MOUSE_PRESSED:
+			break;
+		case EventType::MOUSE_POSITION:
+			const Math::TVec2<double> mousepos = static_cast<const MouseMoveEvent&>(event).m_MousePos;
+	}
+}
+
 
 
 class Sandbox : public Application

@@ -26,6 +26,9 @@ workspace "Dodo"
 			objdir ("bin/Release-%{cfg.architecture}/%{prj.name}/intermediates/")
 		configuration "*"
 
+		pchheader "pch.h"
+		pchsource "%{prj.name}/src/pch.cpp"
+
 		files { 
 			"%{prj.name}/src/**.h", 
 			"%{prj.name}/src/**.cpp"

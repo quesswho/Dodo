@@ -32,7 +32,7 @@ void GameLayer::OnEvent(const Event& event)
 		case EventType::MOUSE_PRESSED:
 			break;
 		case EventType::MOUSE_POSITION:
-			const Math::TVec2<double> mousepos = static_cast<const MouseMoveEvent&>(event).m_MousePos;
+			const Math::TVec2<long> mousepos = static_cast<const MouseMoveEvent&>(event).m_MousePos;
 	}
 }
 

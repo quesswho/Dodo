@@ -113,6 +113,4 @@ namespace Dodo {
 			m_Layers.erase(it);
 		}
 	}
-
-
 }

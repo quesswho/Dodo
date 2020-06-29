@@ -43,13 +43,14 @@ namespace Dodo {
 				DD_FATAL("Could not register Window class!");
 			}
 
-			m_WindowProperties.m_Width = m_WindowProperties.m_Width == 0 ? GetSystemMetrics(SM_CXSCREEN) : m_WindowProperties.m_Width;
-			m_WindowProperties.m_Height = m_WindowProperties.m_Height == 0 ? GetSystemMetrics(SM_CXSCREEN) : m_WindowProperties.m_Height;
 
 			if (GetSystemMetrics(SM_CXSCREEN) < (int) m_WindowProperties.m_Width || GetSystemMetrics(SM_CYSCREEN) < (int) m_WindowProperties.m_Height)
 			{
 				DD_WARN("Application resolution is more than the resolution of the screen!");
 			}
+
+			m_WindowProperties.m_Width = m_WindowProperties.m_Width == 0 ? GetSystemMetrics(SM_CXSCREEN) : m_WindowProperties.m_Width;
+			m_WindowProperties.m_Height = m_WindowProperties.m_Height == 0 ? GetSystemMetrics(SM_CYSCREEN) : m_WindowProperties.m_Height;
 
 			int posX, posY;
 
@@ -133,7 +134,7 @@ namespace Dodo {
 
 			POINT p;
 			GetCursorPos(&p);
-			m_MousePos = Math::TVec2<double>(p.x, p.y);
+			m_MousePos = Math::TVec2<long>(p.x, p.y);
 		}
 
 		void Win32Window::Update() const
@@ -200,11 +201,11 @@ namespace Dodo {
 					break;
 				case WM_SYSKEYDOWN:
 				case WM_KEYDOWN:
-					Application::s_Application->m_Window->KeyPressCallback(wParam);
+					Application::s_Application->m_Window->KeyPressCallback((uint)wParam);
 					break;
 				case WM_SYSKEYUP:
 				case WM_KEYUP:
-					Application::s_Application->m_Window->KeyReleaseCallback(wParam);
+					Application::s_Application->m_Window->KeyReleaseCallback((uint)wParam);
 					break;
 				case WM_MOUSEMOVE:
 					break;
@@ -226,7 +227,7 @@ namespace Dodo {
 
 					if (raw->header.dwType == RIM_TYPEMOUSE)
 					{
-						Application::s_Application->m_Window->MouseMoveCallback(Math::TVec2<double>(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
+						Application::s_Application->m_Window->MouseMoveCallback(Math::TVec2<long>(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
 					}
 					delete raw;
 					break;
@@ -234,12 +235,12 @@ namespace Dodo {
 				case WM_LBUTTONDOWN:
 				case WM_RBUTTONDOWN:
 				case WM_MBUTTONDOWN:
-					Application::s_Application->m_Window->MousePressCallback(wParam);
+					Application::s_Application->m_Window->MousePressCallback((uint)wParam);
 					break;
 				case WM_LBUTTONUP:
 				case WM_RBUTTONUP:
 				case WM_MBUTTONUP:
-					Application::s_Application->m_Window->MouseReleaseCallback(wParam);
+					Application::s_Application->m_Window->MouseReleaseCallback((uint)wParam);
 					break;
 				case WM_SIZE:
 					Application::s_Application->m_Window->WindowResizeCallback(Math::TVec2<int>(LOWORD(lParam), HIWORD(lParam)));
@@ -261,7 +262,7 @@ namespace Dodo {
 			ShowCursor(vis);
 		}
 
-		void Win32Window::SetCursorPosition(Math::TVec2<double> pos)
+		void Win32Window::SetCursorPosition(Math::TVec2<long> pos)
 		{
 			POINT pt;
 			pt.x = pos.x;
@@ -270,31 +271,31 @@ namespace Dodo {
 			SetCursorPos(pt.x, pt.y);
 		}
 
-		void Win32Window::KeyPressCallback(int keycode)
+		void Win32Window::KeyPressCallback(uint keycode)
 		{
 			m_Keys[keycode] = true;
 			Application::s_Application->OnEvent(KeyPressEvent(keycode));
 		}
 
-		void Win32Window::KeyReleaseCallback(int keycode)
+		void Win32Window::KeyReleaseCallback(uint keycode)
 		{
 			m_Keys[keycode] = false;
 			Application::s_Application->OnEvent(KeyReleaseEvent(keycode));
 		}
 	
-		void Win32Window::MousePressCallback(int keycode)
+		void Win32Window::MousePressCallback(uint keycode)
 		{
 			m_Keys[keycode] = true;
 			Application::s_Application->OnEvent(MousePressEvent(keycode));
 		}
-	
-		void Win32Window::MouseReleaseCallback(int keycode)
+		
+		void Win32Window::MouseReleaseCallback(uint keycode)
 		{
 			m_Keys[keycode] = false;
 			Application::s_Application->OnEvent(MouseReleaseEvent(keycode));
 		}
 	
-		void Win32Window::MouseMoveCallback(Math::TVec2<double> pos)
+		void Win32Window::MouseMoveCallback(Math::TVec2<long> pos)
 		{
 			m_MousePos += pos;
 			Application::s_Application->OnEvent(MouseMoveEvent(m_MousePos));

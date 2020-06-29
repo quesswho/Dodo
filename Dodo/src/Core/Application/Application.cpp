@@ -2,7 +2,6 @@
 #include "Application.h"
 #include "Core/System/Timer.h"
 
-#include "Core/System/Memory.h"
 
 namespace Dodo {
 
@@ -45,8 +44,8 @@ namespace Dodo {
 			if (elapsed > 1.0f)
 			{
 				m_FramesPerSecond = frames;
-				m_FrameTimeMs = m_FrameTime / 1000.0f;
-				DD_INFO("FPS: {0}, FT: {1}", m_FramesPerSecond, m_FrameTimeMs);
+				m_FrameTimeMs = m_FrameTime * 1000.0f;
+				DD_INFO("FPS: {0}, FT: {1:.4f}", m_FramesPerSecond, m_FrameTimeMs);
 
 				frames = 0;
 				elapsed = 0.0f;
@@ -71,7 +70,7 @@ namespace Dodo {
 		{
 			DD_INFO("CPU: {0} {1} Logical Processors", m_CpuBrand, m_NumLogicalProcessors);
 			DD_INFO("GPU: {}", Application::m_RenderAPI->m_GPUInfo);
-			DD_INFO("RAM: {} GBs", m_TotalPhysMemGbs);
+			DD_INFO("RAM: {}", StringUtils::GigaByte(m_TotalPhysMemGbs));
 		}
 		else
 		{

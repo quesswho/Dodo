@@ -37,6 +37,7 @@ namespace Dodo {
 		Logger* m_Logger;
 		Window* m_Window;
 		RenderAPI* m_RenderAPI;
+		ThreadManager* m_ThreadManager;
 
 		bool m_Initializing;
 	private:
@@ -44,7 +45,6 @@ namespace Dodo {
 		std::string m_CpuBrand;
 
 		std::vector<Layer*> m_Layers;
-		ThreadManager* m_ThreadManager;
 
 		WindowProperties m_WindowProperties;
 

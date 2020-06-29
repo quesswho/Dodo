@@ -1,4 +1,4 @@
-#include "SandBox.h"
+#include "Dodeditor.h"
 
 #include <imgui_impl_win32.h>
 #include <imgui_impl_opengl3.h>
@@ -7,6 +7,25 @@ using namespace Dodo;
 GameLayer::GameLayer()
 {
 	Application::s_Application->m_RenderAPI->ClearColor(0.2f, 0.2f, 0.9f);
+	Application::s_Application->m_RenderAPI->DepthTest(true);
+
+	BufferProperties bufferprop = {
+		{ "POSITION", 2 } //vertices
+	};
+
+
+	float verts[] = {
+		0.5f, 0.0f,
+		1.0f, 1.0f,
+		0.0f, 1.0f
+	};
+
+	uint indices[] = {
+		2,0,1
+	};
+
+	m_VBuffer = new VertexBuffer(verts, sizeof(verts), bufferprop);
+	m_IBuffer = new IndexBuffer(indices, _countof(indices));
 }
 GameLayer::~GameLayer()
 {
@@ -23,9 +42,7 @@ void GameLayer::Render()
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-
 	ImGui::ShowDemoWindow();
-
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

@@ -1,42 +1,71 @@
 #include "pch.h"
 #include "ThreadManager.h"
+#include <mutex>
 
 namespace Dodo {
 
 	ThreadManager::ThreadManager(int amount)
-		: m_Amount(amount), m_Index(0)
+		: m_Terminate(false)
 	{
-		m_WorkThreads.resize(m_Amount);
+		m_WorkThreads.resize(amount);
+		for (int i = 0; i < amount; i++)
+			m_WorkThreads[i] = std::thread(&ThreadManager::Loop, this);
+	}
+
+	ThreadManager::~ThreadManager()
+	{
+		Terminate();
 	}
 
 
-	// To get a return use CLASS** instance in the arguments and execute it as Task(&Dodo::func, &instance, ...)
-	template<typename F, typename... Args>
-	void ThreadManager::Task(F& func, Args&&... args)
+	void ThreadManager::WaitMain()
 	{
-		while (m_WorkThreads[m_Index % m_Amount].joinable())
-		{
-			index++;
-		}
-		m_WorkThreads[m_Index % m_Amount] = std::thread(func,args);
-
-		/*	TODO: Find out if this is faster
-
-		while (m_WorkThreads[m_Index].joinable())
-		{
-			m_Index = m_Index == m_Amount ? 0 : m_Index + 1;
-		}
-		m_WorkThreads[m_Index] = std::thread(func, args);
-
-		*/
+		std::unique_lock<std::mutex> lock(m_Mutex);
+		m_MainConditional.wait(lock, [&]() {		// Make Main thread wait until workthreads are done
+			return m_Queue.empty();
+			});
 	}
 
-	void ThreadManager::Finish()
+	void ThreadManager::Task(std::function<void()> task)
 	{
-		for (int i = 0; i < m_Amount; i++)
 		{
-			if (m_WorkThreads[i].joinable()) m_WorkThreads[i].join();
+			std::unique_lock<std::mutex> lock(m_Mutex);
+			m_Queue.push_back(task);
 		}
+		m_WorkConditional.notify_one(); // Tell one thread to check the queue
+	}
+	
+
+	void ThreadManager::Terminate()
+	{
+		{
+			std::unique_lock<std::mutex> lock(m_Mutex);
+			m_Terminate = true; // Flag to tell threads to wake up and exit
+		}
+
+		m_WorkConditional.notify_all();
+
+		for (std::thread& thread : m_WorkThreads)
+			thread.join();
+
+		m_WorkThreads.clear();
 	}
 
+	void ThreadManager::Loop()
+	{
+		std::function<void()> job;
+		while (true)
+		{
+			{
+				std::unique_lock<std::mutex> lock(m_Mutex);
+				m_WorkConditional.wait(lock, [&]() { 
+					return !m_Queue.empty() || m_Terminate;
+					});
+				if (m_Terminate) return;
+				job = m_Queue.back();
+				m_Queue.pop_back();
+			}
+			job();
+		}
+	}
 }

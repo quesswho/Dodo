@@ -150,6 +150,7 @@ namespace Dodo {
 			ImGui::CreateContext();
 			ImGui_ImplWin32_Init(m_Hwnd);
 			ImGuiIO& io = ImGui::GetIO(); (void)io;
+			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		}
 
 		void Win32Window::Update() const
@@ -246,7 +247,8 @@ namespace Dodo {
 						Application::s_Application->m_Window->WindowFocusCallback(true);
 					break;
 				case WM_KILLFOCUS:
-					Application::s_Application->m_Window->WindowFocusCallback(false);
+					if (!Application::s_Application->m_Initializing)
+						Application::s_Application->m_Window->WindowFocusCallback(false);
 					break;
 				case WM_CLOSE:
 				case WM_DESTROY:

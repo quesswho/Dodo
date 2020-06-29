@@ -1,10 +1,13 @@
 #include "SandBox.h"
 
+#include <imgui_impl_win32.h>
+#include <imgui_impl_opengl3.h>
 using namespace Dodo;
 
 GameLayer::GameLayer()
 {
 	Application::s_Application->m_RenderAPI->ClearColor(0.2f, 0.2f, 0.9f);
+	//ImGui::ShowDemoWindow();
 }
 GameLayer::~GameLayer()
 {
@@ -18,7 +21,12 @@ void GameLayer::Update(float elapsed)
 
 void GameLayer::Render()
 {
-
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+	ImGui::ShowDemoWindow();
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void GameLayer::OnEvent(const Event& event)

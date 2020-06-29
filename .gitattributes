@@ -1,4 +1,4 @@
-Dodo/lib/* linguist-vendored
+Dodo/lib/* linguist-vendored=true
 
 *.h linguist-language=C++
 *.cpp linguist-language=C++

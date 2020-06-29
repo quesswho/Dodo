@@ -67,7 +67,6 @@ namespace Dodo {
 			short int CreateDeviceContext();
 			
 		};
-
 		static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 		static Win32Window* s_WindowClass;
 	}

@@ -12,6 +12,7 @@ workspace "Dodo"
 	
 	group "Dependencies"
 		include "Dodo/lib/glad"
+		include "Dodo/lib/imgui"
 	
 	group "" -- Go to root level
 	project "Dodo"
@@ -43,7 +44,8 @@ workspace "Dodo"
 		
 		sysincludedirs {
 			"%{prj.name}/lib/spdlog/include",
-			"%{prj.name}/lib/glad/include"
+			"%{prj.name}/lib/glad/include",
+			"%{prj.name}/lib/imgui/include"
 		}
 
 		defines
@@ -53,7 +55,8 @@ workspace "Dodo"
 
 		links {
 			"glad",
-			"opengl32.lib"
+			"opengl32.lib",
+			"imgui"
 		}
 	
 		filter "system:windows"
@@ -100,7 +103,8 @@ workspace "Dodo"
 		
 		sysincludedirs {
 			"Dodo/lib/spdlog/include",
-			"Dodo/lib/glad/include"
+			"Dodo/lib/glad/include",
+			"Dodo/lib/imgui/include"
 		}
 
 		links {

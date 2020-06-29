@@ -4,6 +4,10 @@
 #include "Core/Application/Application.h"
 #include <glad/wgl.h>
 
+#include <imgui_impl_win32.h>
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 namespace Dodo {
 
 	namespace Platform {
@@ -16,6 +20,8 @@ namespace Dodo {
 
 		Win32Window::~Win32Window()
 		{
+			ImGui_ImplWin32_Shutdown();
+			ImGui::DestroyContext();
 			ShowCursor(true);
 			DestroyWindow(m_Hwnd);
 		}
@@ -139,6 +145,11 @@ namespace Dodo {
 			POINT p;
 			GetCursorPos(&p);
 			m_MousePos = Math::TVec2<long>(p.x, p.y);
+
+			IMGUI_CHECKVERSION();
+			ImGui::CreateContext();
+			ImGui_ImplWin32_Init(m_Hwnd);
+			ImGuiIO& io = ImGui::GetIO(); (void)io;
 		}
 
 		void Win32Window::Update() const
@@ -207,6 +218,9 @@ namespace Dodo {
 			LRESULT result = NULL;
 			if (s_WindowClass == nullptr)
 				return DefWindowProc(hwnd, msg, wParam, lParam);
+
+			if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+				return true;
 
 			switch (msg)
 			{
@@ -282,7 +296,8 @@ namespace Dodo {
 					Application::s_Application->m_Window->MouseReleaseCallback((uint)wParam);
 					break;
 				case WM_SIZE:
-					Application::s_Application->m_Window->WindowResizeCallback(Math::TVec2<int>(LOWORD(lParam), HIWORD(lParam)));
+					if (!Application::s_Application->m_Initializing)
+						Application::s_Application->m_Window->WindowResizeCallback(Math::TVec2<int>(LOWORD(lParam), HIWORD(lParam)));
 					break;
 				default:
 					result = DefWindowProc(hwnd, msg, wParam, lParam);
@@ -347,7 +362,7 @@ namespace Dodo {
 	
 		void Win32Window::WindowResizeCallback(Math::TVec2<int> size)
 		{
-			// set viewport
+			Application::s_Application->m_RenderAPI->Viewport(size.x, size.y);
 			Application::s_Application->OnEvent(WindowResizeEvent(size));
 		}
 	

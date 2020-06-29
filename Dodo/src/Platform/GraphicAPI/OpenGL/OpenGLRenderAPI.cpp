@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "OpenGLRenderAPI.h"
 #include <glad/gl.h>
+#include <imgui_impl_opengl3.h>
 
 namespace Dodo {
 	namespace Platform {
@@ -28,7 +29,8 @@ namespace Dodo {
 					m_GPUInfo = ((const char*)glGetString(GL_RENDERER));
 					m_GPUInfo.append(" VRAM: ").append(StringUtils::KiloByte((size_t)m_VramKbs))
 						.append(" : Opengl Version: ").append(std::to_string(GLAD_VERSION_MAJOR(res))).append(".").append(std::to_string(GLAD_VERSION_MINOR(res)));
-					
+
+					ImGui_ImplOpenGL3_Init();
 					return 1;
 				}
 				return -2;

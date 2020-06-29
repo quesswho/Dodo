@@ -19,10 +19,11 @@ namespace Dodo {
 			void Viewport(uint width, uint height) const;
 			const char* GetAPIName() const;
 
+			int CurrentVRamUsage() const;
+
 			std::string m_GPUInfo;
 			int m_VramKbs;
 		private:
-			bool WGLExtensionCheck(const char* ext) const;
 		};
 	}
 }

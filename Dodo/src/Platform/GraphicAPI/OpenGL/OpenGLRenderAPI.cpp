@@ -26,7 +26,7 @@ namespace Dodo {
 					glGetIntegerv(0x9048, &m_VramKbs);
 					m_GPUInfo = "";
 					m_GPUInfo = ((const char*)glGetString(GL_RENDERER));
-					m_GPUInfo.append(" VRAM: ").append(std::to_string(m_VramKbs / (1024 * 1024))).append(" GBs")
+					m_GPUInfo.append(" VRAM: ").append(StringUtils::KiloByte((size_t)m_VramKbs))
 						.append(" : Opengl Version: ").append(std::to_string(GLAD_VERSION_MAJOR(res))).append(".").append(std::to_string(GLAD_VERSION_MINOR(res)));
 					
 					return 1;
@@ -54,6 +54,14 @@ namespace Dodo {
 		const char* OpenGLRenderAPI::GetAPIName() const
 		{
 			return "OpenGL";
+		}
+
+		int OpenGLRenderAPI::CurrentVRamUsage() const
+		{
+			int availKb;
+			glGetIntegerv(0x9049, &availKb); // Current available
+
+			return m_VramKbs - availKb;
 		}
 	}
 }

@@ -8,6 +8,8 @@
 
 #include "Event.h"
 
+#include "Core/Graphics/RenderAPI.h"
+
 namespace Dodo {
 
 	class Application {
@@ -34,6 +36,7 @@ namespace Dodo {
 
 		Logger* m_Logger;
 		Window* m_Window;
+		RenderAPI* m_RenderAPI;
 
 		bool m_Initializing;
 	private:
@@ -42,7 +45,6 @@ namespace Dodo {
 
 		std::vector<Layer*> m_Layers;
 		ThreadManager* m_ThreadManager;
-
 
 		WindowProperties m_WindowProperties;
 

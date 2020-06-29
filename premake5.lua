@@ -52,7 +52,8 @@ workspace "Dodo"
 		}
 
 		links {
-			"glad"
+			"glad",
+			"opengl32.lib"
 		}
 	
 		filter "system:windows"

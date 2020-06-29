@@ -43,23 +43,21 @@ namespace Dodo {
 
 			void Update() const;
 			void SetTitle(const char* title);
-			void SetCursorPosition(Math::TVec2<double> pos);
+			void SetCursorPosition(Math::TVec2<long> pos);
 			void SetCursorVisibility(bool vis);
 
 			bool m_Keys[1024];
-			Math::TVec2<double> m_MousePos;
+			Math::TVec2<long> m_MousePos;
 			bool m_Focused;
 
-		/**/	     /* I wanted this to be private */          /**/
-		/**/void KeyPressCallback(int keycode);					/**/
-		/**/void KeyReleaseCallback(int keycode);				/**/
-		/**/void MousePressCallback(int keycode);				/**/
-		/**/void MouseReleaseCallback(int keycode);				/**/
-		/**/void MouseMoveCallback(Math::TVec2<double> pos);	/**/
-		/**/void WindowResizeCallback(Math::TVec2<int> size);	/**/
-		/**/void WindowFocusCallback(bool focused);				/**/
-		/**/void WindowCloseCallback();                         /**/
-		/**/		/* I am not making this static */	        /**/
+			void KeyPressCallback(uint keycode);
+			void KeyReleaseCallback(uint keycode);
+			void MousePressCallback(uint keycode);
+			void MouseReleaseCallback(uint keycode);
+			void MouseMoveCallback(Math::TVec2<long> pos);
+			void WindowResizeCallback(Math::TVec2<int> size);
+			void WindowFocusCallback(bool focused);
+			void WindowCloseCallback();      
 		private:
 			void Init();
 			void RegisterRawMouse() const;
@@ -125,7 +123,7 @@ namespace Dodo {
 #define DODO_KEY_KP_DIVIDE          0x6F
 #define DODO_KEY_SEMICOLON          0xBA  /* ; */
 #define DODO_KEY_EQUAL              0xBB  /* = */
-#define DODO_KEY_KP_EQUAL           CROW_KEY_EQUAL
+#define DODO_KEY_KP_EQUAL           DODO_KEY_EQUAL
 #define DODO_KEY_COMMA              0xBC  /* , */
 #define DODO_KEY_MINUS              0xBD  /* - */
 #define DODO_KEY_PERIOD             0xBE  /* . */
@@ -156,11 +154,11 @@ namespace Dodo {
 #define DODO_KEY_INSERT             0x2D
 #define DODO_KEY_DELETE             0x2E
 #define DODO_KEY_LEFT_SUPER         0x5B
-#define DODO_KEY_LEFT_WINDOWS       CROW_KEY_LEFT_SUPER
+#define DODO_KEY_LEFT_WINDOWS       DODO_KEY_LEFT_SUPER
 #define DODO_KEY_RIGHT_SUPER        0x5C
-#define DODO_KEY_RIGHT_WINDOWS      CROW_KEY_RIGHT_SUPER
+#define DODO_KEY_RIGHT_WINDOWS      DODO_KEY_RIGHT_SUPER
 #define DODO_KEY_MENU               0x5D
-#define DODO_KEY_LAST               CROW_KEY_MENU
+#define DODO_KEY_LAST               DODO_KEY_MENU
 #define DODO_KEY_F1                 0x70
 #define DODO_KEY_F2                 0x71
 #define DODO_KEY_F3                 0x72

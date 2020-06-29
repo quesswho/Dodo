@@ -73,9 +73,9 @@ namespace Dodo {
 	};
 
 	struct MouseMoveEvent : public Event {
-		Math::TVec2<double> m_MousePos;
+		Math::TVec2<long> m_MousePos;
 
-		MouseMoveEvent(const Math::TVec2<double>& mousePos)
+		MouseMoveEvent(const Math::TVec2<long>& mousePos)
 			: Event(EventType::MOUSE_POSITION), m_MousePos(mousePos)
 		{}
 	};

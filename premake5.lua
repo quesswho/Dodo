@@ -9,7 +9,10 @@ workspace "Dodo"
 		"Debug",
 		"Release"
 	}
-
+	
+	group "Dependencies"
+		include "Dodo/lib/glad"
+	
 	group "" -- Go to root level
 	project "Dodo"
 		kind "StaticLib"
@@ -39,7 +42,8 @@ workspace "Dodo"
 		}
 		
 		sysincludedirs {
-			"%{prj.name}/lib/spdlog/include"
+			"%{prj.name}/lib/spdlog/include",
+			"%{prj.name}/lib/glad/include"
 		}
 
 		defines
@@ -48,6 +52,7 @@ workspace "Dodo"
 		}
 
 		links {
+			"glad"
 		}
 	
 		filter "system:windows"
@@ -93,7 +98,8 @@ workspace "Dodo"
 		}
 		
 		sysincludedirs {
-			"Dodo/lib/spdlog/include"
+			"Dodo/lib/spdlog/include",
+			"Dodo/lib/glad/include"
 		}
 
 		links {

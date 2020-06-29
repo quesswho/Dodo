@@ -2,6 +2,7 @@
 #include "Application.h"
 #include "Core/System/Timer.h"
 
+#include <imgui.h>
 
 namespace Dodo {
 
@@ -76,6 +77,7 @@ namespace Dodo {
 		{
 			DD_FATAL("Could not initialize RenderAPI. Error: {}", res);
 		}
+
 		m_Initializing = false;
 	}
 

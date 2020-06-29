@@ -33,7 +33,7 @@ namespace Dodo {
 		uint frames = 0;
 
 		m_ThreadManager->WaitMain();
-
+		m_Initializing = false;
 		while (!m_Closed)
 		{
 			timer.Start();
@@ -79,8 +79,6 @@ namespace Dodo {
 		{
 			DD_FATAL("Could not initialize RenderAPI. Error: {}", res);
 		}
-
-		m_Initializing = false;
 	}
 
 	void Application::Init() {}

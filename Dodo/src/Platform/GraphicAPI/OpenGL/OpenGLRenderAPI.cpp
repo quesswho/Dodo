@@ -23,7 +23,7 @@ namespace Dodo {
 				if (GLAD_VERSION_MAJOR(res) > 3)
 				{
 					Viewport(winprop.m_Width, winprop.m_Height);
-
+					glFrontFace(GL_CCW);
 					glGetIntegerv(0x9048, &m_VramKbs);
 					m_GPUInfo = "";
 					m_GPUInfo = ((const char*)glGetString(GL_RENDERER));
@@ -51,6 +51,34 @@ namespace Dodo {
 		void OpenGLRenderAPI::Viewport(uint width, uint height) const
 		{
 			glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+		}
+
+		void OpenGLRenderAPI::DrawIndices(uint count) const
+		{
+			glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0);
+		}
+
+		void OpenGLRenderAPI::DepthTest(bool depthtest) const
+		{
+			depthtest ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+		}
+
+		void OpenGLRenderAPI::Blending(bool blending) const
+		{
+			if (blending)
+			{
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glEnable(GL_BLEND);
+			}
+			else
+			{
+				glDisable(GL_BLEND);
+			}
+		}
+
+		void OpenGLRenderAPI::StencilTest(bool stenciltest) const
+		{
+			stenciltest ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
 		}
 
 		const char* OpenGLRenderAPI::GetAPIName() const

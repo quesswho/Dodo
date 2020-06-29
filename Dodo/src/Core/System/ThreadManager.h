@@ -7,15 +7,24 @@ namespace Dodo {
 
 	class ThreadManager {
 	private:
-		std::vector<std::thread> m_WorkThreads;
 		int m_Amount;
-		int m_Index;
+
+		std::mutex m_Mutex;
+		std::condition_variable m_WorkConditional;
+		std::condition_variable m_MainConditional;
+		std::vector<std::function<void()>> m_Queue;
+
+		bool m_Terminate;
 	public:
+		std::vector<std::thread> m_WorkThreads;
 		ThreadManager(int amount);
-		
-		template<typename F, typename... Args>
-		void Task(F& ret, Args&&... args);
-		
-		void Finish();
+		~ThreadManager();
+
+		void WaitMain();
+		void Task(std::function<void()> task);
+		void Terminate();
+
+
+		void Loop();
 	};
 }

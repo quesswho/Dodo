@@ -14,7 +14,7 @@
 		//#include "Core/Common/Macros.h"	// ^
 
 	/* Graphics */
-
+		#include "Core/Graphics/Buffer.h"
 	/* Math */
 
 	/* System */

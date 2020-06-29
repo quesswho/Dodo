@@ -32,6 +32,8 @@ namespace Dodo {
 		float elapsed = 0.0f;
 		uint frames = 0;
 
+		m_ThreadManager->WaitMain();
+
 		while (!m_Closed)
 		{
 			timer.Start();

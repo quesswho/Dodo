@@ -18,6 +18,7 @@ namespace Dodo {
 		const char* m_Title;
 
 		bool m_Fullscreen;
+		bool m_Vsync;
 	};
 
 	struct PCSpecifications {
@@ -45,6 +46,7 @@ namespace Dodo {
 			void SetTitle(const char* title);
 			void SetCursorPosition(Math::TVec2<long> pos);
 			void SetCursorVisibility(bool vis);
+			void VSync(bool vsync);
 
 			bool m_Keys[1024];
 			Math::TVec2<long> m_MousePos;
@@ -61,6 +63,9 @@ namespace Dodo {
 		private:
 			void Init();
 			void RegisterRawMouse() const;
+			PIXELFORMATDESCRIPTOR GetPixelFormat() const;
+			short int CreateDeviceContext();
+			
 		};
 
 		static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

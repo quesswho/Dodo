@@ -2,6 +2,7 @@
 #include "Win32Window.h"
 
 #include "Core/Application/Application.h"
+#include <glad/wgl.h>
 
 namespace Dodo {
 
@@ -125,6 +126,9 @@ namespace Dodo {
 			memset(m_Keys, 0, sizeof(m_Keys));
 
 			RegisterRawMouse();
+			CreateDeviceContext();
+			
+			wglSwapIntervalEXT(m_WindowProperties.m_Vsync);
 
 			SetWindowTextA(m_Hwnd, m_WindowProperties.m_Title);
 
@@ -144,12 +148,13 @@ namespace Dodo {
 			{
 				if (message.message == WM_QUIT)
 				{
-					
+					Application::s_Application->m_Window->WindowCloseCallback(); // Keep update function const
 					return;
 				}
 				TranslateMessage(&message);
 				DispatchMessage(&message);
 			}
+			SwapBuffers(m_Hdc);
 		}
 
 		void Win32Window::RegisterRawMouse() const
@@ -160,6 +165,40 @@ namespace Dodo {
 			rid[0].dwFlags = RIDEV_INPUTSINK;
 			rid[0].hwndTarget = m_Hwnd;
 			RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
+		}
+
+		PIXELFORMATDESCRIPTOR Win32Window::GetPixelFormat() const
+		{
+			PIXELFORMATDESCRIPTOR result = {};
+			result.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+			result.nVersion = 1;
+			result.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+			result.iPixelType = PFD_TYPE_RGBA;
+			result.cColorBits = 32;
+			result.cDepthBits = 24;
+			result.cStencilBits = 8;
+			result.cAuxBuffers = 0;
+			result.iLayerType = PFD_MAIN_PLANE;
+			return result;
+		}
+
+		short int Win32Window::CreateDeviceContext()
+		{
+			m_Hdc = GetDC(m_Hwnd);
+
+			PIXELFORMATDESCRIPTOR pfd = GetPixelFormat();
+			int pixelFormat = ChoosePixelFormat(m_Hdc, &pfd);
+			if (pixelFormat)
+				if (!SetPixelFormat(m_Hdc, pixelFormat, &pfd))
+					return -1;
+
+			HGLRC hrc = wglCreateContext(m_Hdc);
+			if (hrc)
+				if (wglMakeCurrent(m_Hdc, hrc))
+					if (!gladLoaderLoadWGL(m_Hdc))
+						DD_ERR("Could not load WGL!");
+					return 1;
+			return -2;
 		}
 
 
@@ -269,6 +308,11 @@ namespace Dodo {
 			pt.y = pos.y;
 			ClientToScreen(m_Hwnd, &pt);
 			SetCursorPos(pt.x, pt.y);
+		}
+
+		void Win32Window::VSync(bool vsync)
+		{
+			wglSwapIntervalEXT(vsync);
 		}
 
 		void Win32Window::KeyPressCallback(uint keycode)

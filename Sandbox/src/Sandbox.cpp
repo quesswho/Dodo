@@ -4,7 +4,7 @@ using namespace Dodo;
 
 GameLayer::GameLayer()
 {
-
+	Application::s_Application->m_RenderAPI->ClearColor(0.2f, 0.2f, 0.9f);
 }
 GameLayer::~GameLayer()
 {
@@ -53,6 +53,7 @@ public:
 		props.m_Width = 1080;
 		props.m_Height = 720;
 		props.m_Fullscreen = false;
+		props.m_Vsync = false;
 		return props;
 	}
 

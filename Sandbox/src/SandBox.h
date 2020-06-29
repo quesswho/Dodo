@@ -1,5 +1,4 @@
 #pragma once
-
 #include <Dodo.h>
 
 using namespace Dodo;

@@ -5,8 +5,8 @@
 namespace Dodo {
 	namespace Math {
 
-		template<typename T>
-		struct Mat4x4;
+		//template<typename T>
+		//struct Mat4x4;
 
 		template<typename T = float>
 		struct TVec4
@@ -150,37 +150,37 @@ namespace Dodo {
 					*this *= (1.0f / mag);
 			}
 
-			// Limit magninute with int
+			// Limit magnitude with int
 			inline constexpr TVec4 Limit(const int limit) const
 			{
 				return this->Normalize() * limit;
 			}
 
-			// Limit this magninute with int
+			// Limit this magnitude with int
 			inline void LimitVector(const int limit)
 			{
 				*this = this->Normalize() * limit;
 			}
 
-			// Limit magninute with double
+			// Limit magnitude with double
 			inline constexpr TVec4 Limit(const double limit) const
 			{
 				return this->Normalize() * limit;
 			}
 
-			// Limit this magninute with double
+			// Limit this magnitude with double
 			inline void LimitVector(const double limit)
 			{
 				*this = this->Normalize() * limit;
 			}
 
-			// Limit magninute with float
+			// Limit magnitude with float
 			inline constexpr TVec4 Limit(const float limit) const
 			{
 				return this->Normalize() * limit;
 			}
 
-			// Limit this magninute with float
+			// Limit this magnitude with float
 			inline void LimitVector(const float limit)
 			{
 				*this = this->Normalize() * limit;
@@ -531,6 +531,6 @@ namespace Dodo {
 				return (this->x >= other.x && this->y >= other.y && this->z >= other.z && this->w >= other.w);
 			}
 		};
-		typedef TVec4<float> Vec4;
+		using Vec4 = TVec4<float>;
 	}
 }

@@ -2,6 +2,8 @@
 
 #include "Core/Common.h"
 
+#include <glad/gl.h>
+
 namespace Dodo {
 
 	struct BufferElement {
@@ -13,19 +15,12 @@ namespace Dodo {
 		inline const uint GetComponentCount() const { return m_ComponentCount; }
 		inline const char* GetName() const { return m_Name; }
 
-		inline void SetOffset(const ushort offset) { m_Offset = offset; }
-		inline const ushort GetOffset() const { return m_Offset; }
-
-
-		inline void SetIndex(const uint index) { m_Index = index; }
-		inline const uint GetIndex() const { return m_Index; }
-
-
+	public:
+		uchar m_Index;
+		uchar m_Offset;
 	private:
 		const char* m_Name;
-		const uint m_ComponentCount;
-		uint m_Index;
-		ushort m_Offset;
+		const uchar m_ComponentCount;
 
 	};
 
@@ -40,8 +35,8 @@ namespace Dodo {
 		{
 			for (int i = 0; i < m_Elements.size(); i++)
 			{
-				m_Elements[i].SetIndex(i);
-				m_Elements[i].SetOffset(m_Stride);
+				m_Elements[i].m_Index = i;
+				m_Elements[i].m_Offset = m_Stride;
 				m_Stride += m_Elements[i].GetComponentCount();
 			}
 		}
@@ -51,25 +46,26 @@ namespace Dodo {
 		std::vector<BufferElement>::const_iterator begin() const { return m_Elements.begin(); }
 		std::vector<BufferElement>::const_iterator end() const { return m_Elements.end(); }
 
-		ushort m_Stride;
+		uchar m_Stride;
 		std::vector<BufferElement> m_Elements;
 	private:
 	};
 
 	namespace Platform {
 
+
 		class OpenGLVertexBuffer {
 		private:
 			uint m_BufferID;
 		public:
-			OpenGLVertexBuffer(float* vertices, const uint size, const BufferProperties& prop);
+			OpenGLVertexBuffer(const float* vertices, const uint& size, const BufferProperties& prop);
 			~OpenGLVertexBuffer();
 
-			void Create(float* vertices, const uint size);
+			void Create(const float* vertices, const uint& size);
 
 			const BufferProperties& GetBufferProperties() const { return m_BufferProperties; }
 
-			void Bind() const;
+			inline void Bind() const { glBindBuffer(GL_ARRAY_BUFFER, m_BufferID); }
 		private:
 			const BufferProperties m_BufferProperties;
 		};
@@ -78,17 +74,33 @@ namespace Dodo {
 		private:
 			uint m_BufferID;
 		public:
-			OpenGLIndexBuffer(uint* indices, const uint count);
+			OpenGLIndexBuffer(const uint* indices, const uint& count);
 			~OpenGLIndexBuffer();
 
-			void Create(uint* indices, const uint count);
+			void Create(const uint* indices, const uint& count);
 
-			void Bind() const;
+			inline void Bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID); }
 
 			inline const uint GetCount() const { return m_Count; }
 		private:
 			const uint m_Count;
+		};
 
+		class OpenGLArrayBuffer {
+		private:
+			uint m_BufferID;
+		public:
+			OpenGLArrayBuffer(const OpenGLVertexBuffer* vBuffer, const OpenGLIndexBuffer* iBuffer);
+			~OpenGLArrayBuffer();
+
+			// No create function because of arraybuffer do not allocate much.
+
+			inline void Bind() const { glBindVertexArray(m_BufferID); }
+
+			inline const uint GetCount() const { return m_IndexBuffer->GetCount(); }
+		private:
+			const OpenGLVertexBuffer* m_VertexBuffer;
+			const OpenGLIndexBuffer* m_IndexBuffer;
 		};
 	}
 

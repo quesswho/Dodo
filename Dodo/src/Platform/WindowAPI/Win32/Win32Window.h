@@ -13,12 +13,16 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 namespace Dodo {
 
 	struct WindowProperties {
+		WindowProperties() : m_Width(0), m_Height(0), m_Title("Dodo Engine"), m_Fullscreen(false), m_Vsync(false), m_ImGUI(false), m_ImGUIDocking(false) {}
 		uint m_Width;
 		uint m_Height;
 		const char* m_Title;
 
 		bool m_Fullscreen;
 		bool m_Vsync;
+
+		bool m_ImGUI;
+		bool m_ImGUIDocking;
 	};
 
 	struct PCSpecifications {
@@ -47,6 +51,10 @@ namespace Dodo {
 			void SetCursorPosition(Math::TVec2<long> pos);
 			void SetCursorVisibility(bool vis);
 			void VSync(bool vsync);
+			void FullScreen(bool fullscreen);
+			void FullScreen() { FullScreen(!m_WindowProperties.m_Fullscreen); }
+			void ImGuiNewFrame() const;
+			void ImGuiEndFrame() const;
 
 			bool m_Keys[1024];
 			Math::TVec2<long> m_MousePos;
@@ -60,6 +68,8 @@ namespace Dodo {
 			void WindowResizeCallback(Math::TVec2<int> size);
 			void WindowFocusCallback(bool focused);
 			void WindowCloseCallback();      
+
+			void SetWindowProperties(const WindowProperties& winprop);
 		private:
 			void Init();
 			void RegisterRawMouse() const;

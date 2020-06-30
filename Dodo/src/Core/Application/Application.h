@@ -28,11 +28,15 @@ namespace Dodo {
 
 		void OnEvent(const Event& event);
 
+		void ImGuiNewFrame();
+		void ImGuiEndFrame();
+
 		virtual void Init();
 		virtual void Update(float elapsed);
 	public:
 		float m_FrameTimeMs;
 		uint m_FramesPerSecond;
+		WindowProperties m_WindowProperties;
 
 		Logger* m_Logger;
 		Window* m_Window;
@@ -46,7 +50,6 @@ namespace Dodo {
 
 		std::vector<Layer*> m_Layers;
 
-		WindowProperties m_WindowProperties;
 
 		float m_FrameTime;
 		bool m_Closed;

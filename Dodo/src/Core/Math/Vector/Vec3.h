@@ -128,37 +128,37 @@ namespace Dodo {
 					*this *= (1.0f / mag);
 			}
 
-			// Limit magninute with int
+			// Limit magnitude with int
 			inline constexpr TVec3 Limit(const int limit) const
 			{
 				return this->Normalize() * limit;
 			}
 
-			// Limit this magninute with int
+			// Limit this magnitude with int
 			inline void LimitVector(const int limit)
 			{
 				*this = this->Normalize() * limit;
 			}
 
-			// Limit magninute with double
+			// Limit magnitude with double
 			inline TVec3 Limit(const double limit) const
 			{
 				return this->Normalize() * limit;
 			}
 
-			// Limit this magninute with double
+			// Limit this magnitude with double
 			inline void LimitVector(const double limit)
 			{
 				*this = this->Normalize() * limit;
 			}
 
-			// Limit magninute with float
+			// Limit magnitude with float
 			inline TVec3 Limit(const float limit) const
 			{
 				return this->Normalize() * limit;
 			}
 
-			// Limit this magninute with float
+			// Limit this magnitude with float
 			inline void LimitVector(const float limit)
 			{
 				*this = this->Normalize() * limit;

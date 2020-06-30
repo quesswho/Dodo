@@ -2,8 +2,6 @@
 #include "Application.h"
 #include "Core/System/Timer.h"
 
-#include <imgui.h>
-
 namespace Dodo {
 
 	Application* Application::s_Application;
@@ -125,5 +123,17 @@ namespace Dodo {
 		{
 			m_Layers.erase(it);
 		}
+	}
+
+	void Application::ImGuiNewFrame()
+	{
+		m_RenderAPI->ImGuiNewFrame();
+		m_Window->ImGuiNewFrame();
+	}
+
+	void Application::ImGuiEndFrame()
+	{
+		m_Window->ImGuiEndFrame();
+		m_RenderAPI->ImGuiEndFrame();
 	}
 }

@@ -2,6 +2,10 @@
 
 #include <vector>
 #include <memory>
+#include <regex>
+#include <functional>
+#include <algorithm>
+#include <sstream>
 
 #include "Core/System/Memory.h"
 #include "Core/Utilities/Logger.h"

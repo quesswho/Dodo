@@ -10,10 +10,12 @@ public:
 	GameLayer();
 	~GameLayer();
 
+	void DrawImGui();
 	void Update(float elapsed);
 	void Render();
 	void OnEvent(const Event& event);
 private:
 	VertexBuffer* m_VBuffer;
 	IndexBuffer* m_IBuffer;
+	ArrayBuffer* m_VAO;
 };

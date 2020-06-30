@@ -20,8 +20,11 @@ namespace Dodo {
 
 		Win32Window::~Win32Window()
 		{
-			ImGui_ImplWin32_Shutdown();
-			ImGui::DestroyContext();
+			if (m_WindowProperties.m_ImGUI)
+			{
+				ImGui_ImplWin32_Shutdown();
+				ImGui::DestroyContext();
+			}
 			ShowCursor(true);
 			DestroyWindow(m_Hwnd);
 		}
@@ -68,9 +71,9 @@ namespace Dodo {
 
 				posX = (GetSystemMetrics(SM_CXSCREEN) - m_WindowProperties.m_Width) / 2;
 				posY = (GetSystemMetrics(SM_CYSCREEN) - m_WindowProperties.m_Height) / 2;
+				
 
-				SetWindowPos(m_Hwnd, HWND_TOP, posX, posY, m_WindowProperties.m_Width, m_WindowProperties.m_Height, 0);
-
+				//
 			}
 			else
 			{
@@ -146,11 +149,19 @@ namespace Dodo {
 			GetCursorPos(&p);
 			m_MousePos = Math::TVec2<long>(p.x, p.y);
 
-			IMGUI_CHECKVERSION();
-			ImGui::CreateContext();
-			ImGui_ImplWin32_Init(m_Hwnd);
-			ImGuiIO& io = ImGui::GetIO(); (void)io;
-			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+			if (m_WindowProperties.m_ImGUI || m_WindowProperties.m_ImGUIDocking)
+			{
+				m_WindowProperties.m_ImGUI = true;
+				IMGUI_CHECKVERSION();
+				ImGui::CreateContext();
+				ImGui_ImplWin32_Init(m_Hwnd);
+				ImGui_ImplWin32_EnableDpiAwareness();
+				if (m_WindowProperties.m_ImGUIDocking)
+				{
+					ImGuiIO& io = ImGui::GetIO(); (void)io;
+					io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+				}
+			}
 		}
 
 		void Win32Window::Update() const
@@ -332,6 +343,51 @@ namespace Dodo {
 			wglSwapIntervalEXT(vsync);
 		}
 
+		void Win32Window::FullScreen(bool fullscreen)
+		{
+			if (fullscreen)
+			{
+				SetWindowLongPtr(m_Hwnd, GWL_STYLE, WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP);
+				HMONITOR hmon = MonitorFromWindow(m_Hwnd,
+					MONITOR_DEFAULTTONEAREST);
+				MONITORINFO mi = { sizeof(mi) };
+				GetMonitorInfo(hmon, &mi);
+				SetWindowPos(m_Hwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, 
+					mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top, 0);
+				
+			}
+			else
+			{
+				SetWindowLongPtr(m_Hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
+
+				HMONITOR hmon = MonitorFromWindow(m_Hwnd,
+					MONITOR_DEFAULTTONEAREST);
+				MONITORINFO mi = { sizeof(mi) };
+				GetMonitorInfo(hmon, &mi);
+				int posX, posY;
+				posX = (GetSystemMetrics(SM_CXSCREEN) - m_WindowProperties.m_Width) / 2 - (GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) - GetSystemMetrics(SM_CXFRAME)) / 2;
+				posY = (GetSystemMetrics(SM_CYSCREEN) - m_WindowProperties.m_Height) / 2 - GetSystemMetrics(SM_CYCAPTION) - (GetSystemMetrics(SM_CYSMSIZE) + GetSystemMetrics(SM_CYEDGE)) / 2 + GetSystemMetrics(SM_CYFRAME);
+
+				SetWindowPos(m_Hwnd, HWND_TOP, posX, posY,
+					m_WindowProperties.m_Width + GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) - GetSystemMetrics(SM_CXFRAME),
+					m_WindowProperties.m_Height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYSMSIZE) - GetSystemMetrics(SM_CYEDGE) - GetSystemMetrics(SM_CYFRAME), 0);
+			}
+
+			ShowWindow(m_Hwnd, SW_SHOW);
+			m_WindowProperties.m_Fullscreen = fullscreen;
+			Application::s_Application->m_WindowProperties.m_Fullscreen = fullscreen;
+		}
+
+		void Win32Window::ImGuiNewFrame() const
+		{
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+		}
+		void Win32Window::ImGuiEndFrame() const
+		{
+			ImGui::Render();
+		}
+
 		void Win32Window::KeyPressCallback(uint keycode)
 		{
 			m_Keys[keycode] = true;
@@ -379,6 +435,11 @@ namespace Dodo {
 			Application::s_Application->Shutdown();
 			PostQuitMessage(0);
 			Application::s_Application->OnEvent(WindowCloseEvent());
+		}
+
+		void Win32Window::SetWindowProperties(const WindowProperties& winprop)
+		{
+			m_WindowProperties = winprop;
 		}
 	}
 }

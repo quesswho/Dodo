@@ -2,6 +2,8 @@
 
 #include "Core/Application/Window.h"
 
+#include <glad/gl.h>
+
 namespace Dodo {
 
 	namespace Platform {
@@ -12,19 +14,36 @@ namespace Dodo {
 			~OpenGLRenderAPI();
 			int Init(const WindowProperties& winprop);
 
-			void Begin() const;
-			void End() const {}
+			inline void Begin() const { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); }
+			inline void End() const {}
+			void ImGuiNewFrame() const;
+			void ImGuiEndFrame() const;
 
-			void ClearColor(float r, float g, float b) const;
-			void Viewport(uint width, uint height) const;
-			void DrawIndices(uint count) const;
+			inline void ClearColor(float r, float g, float b) const { glClearColor(r, g, b, 1.0f); }
+			inline void Viewport(uint width, uint height) const { glViewport(0, 0, (GLsizei)width, (GLsizei)height); }
+			inline void DrawIndices(uint count) const { glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); }
 
-			void DepthTest(bool depthtest) const;
-			void Blending(bool blending) const;
-			void StencilTest(bool stenciltest) const;
+			inline void DepthTest(bool depthtest) const { depthtest ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST); }
+			inline void StencilTest(bool stenciltest) const { stenciltest ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST); }
+			void Blending(bool blending) const 
+			{
+				if (blending)
+				{
+					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					glEnable(GL_BLEND);
+				}
+				else
+					glDisable(GL_BLEND);
+			}
 
-			const char* GetAPIName() const;
-			int CurrentVRamUsage() const;
+			inline const char* GetAPIName() const { return "OpenGL"; }
+			int CurrentVRamUsage() const
+			{
+				int availKb;
+				glGetIntegerv(0x9049, &availKb); // Current available
+
+				return m_VramKbs - availKb;
+			}
 
 			std::string m_GPUInfo;
 			int m_VramKbs;

@@ -99,7 +99,7 @@ namespace Dodo {
 
 			// Addition
 
-			constexpr CRHMat4x4& operator+=(const float scalar)
+			const CRHMat4x4& operator+=(const float scalar)
 			{
 				for (int i = 0; i < 16; i++)
 				{
@@ -110,7 +110,7 @@ namespace Dodo {
 
 			friend CRHMat4x4 operator+(CRHMat4x4 left, const float right) { return left += right; }
 
-			constexpr CRHMat4x4& operator+=(const CRHMat4x4& other)
+			const CRHMat4x4& operator+=(const CRHMat4x4& other)
 			{
 				for (int i = 0; i < 16; i++)
 				{
@@ -123,7 +123,7 @@ namespace Dodo {
 
 			// Subtraction
 
-			constexpr CRHMat4x4& operator-=(const float scalar)
+			const CRHMat4x4& operator-=(const float scalar)
 			{
 				for (int i = 0; i < 16; i++)
 				{
@@ -134,7 +134,7 @@ namespace Dodo {
 
 			friend CRHMat4x4 operator-(CRHMat4x4 left, const float right) { return left -= right; }
 
-			constexpr CRHMat4x4& operator-=(const CRHMat4x4& other)
+			const CRHMat4x4& operator-=(const CRHMat4x4& other)
 			{
 				for (int i = 0; i < 16; i++)
 				{
@@ -147,7 +147,7 @@ namespace Dodo {
 
 			// Multiplication
 
-			constexpr CRHMat4x4& operator*=(const float scalar)
+			const CRHMat4x4& operator*=(const float scalar)
 			{
 				for (int i = 0; i < 16; i++)
 					m_Elements[i] *= scalar;
@@ -158,36 +158,35 @@ namespace Dodo {
 			friend CRHMat4x4 operator*(CRHMat4x4 left, const float right) { return left *= right; }
 
 
-			inline CRHMat4x4 operator*=(const CRHMat4x4& other)
+			inline const CRHMat4x4& operator*=(const CRHMat4x4& other)
 			{
-				CRHMat4x4 result;
 
 				const TVec4 row0 = TVec4(m_Elements[GetIndex(0, 0)], m_Elements[GetIndex(1, 0)], m_Elements[GetIndex(2, 0)], m_Elements[GetIndex(3, 0)]);
 				const TVec4 row1 = TVec4(m_Elements[GetIndex(0, 1)], m_Elements[GetIndex(1, 1)], m_Elements[GetIndex(2, 1)], m_Elements[GetIndex(3, 1)]);
 				const TVec4 row2 = TVec4(m_Elements[GetIndex(0, 2)], m_Elements[GetIndex(1, 2)], m_Elements[GetIndex(2, 2)], m_Elements[GetIndex(3, 2)]);
 				const TVec4 row3 = TVec4(m_Elements[GetIndex(0, 3)], m_Elements[GetIndex(1, 3)], m_Elements[GetIndex(2, 3)], m_Elements[GetIndex(3, 3)]);
 
-				result.m_Elements[0] = other.m_Columns[0].Dot(row0);
-				result.m_Elements[1] = other.m_Columns[0].Dot(row1);
-				result.m_Elements[2] = other.m_Columns[0].Dot(row2);
-				result.m_Elements[3] = other.m_Columns[0].Dot(row3);
+				m_Elements[0] = other.m_Columns[0].Dot(row0);
+				m_Elements[1] = other.m_Columns[0].Dot(row1);
+				m_Elements[2] = other.m_Columns[0].Dot(row2);
+				m_Elements[3] = other.m_Columns[0].Dot(row3);
 
-				result.m_Elements[4] = other.m_Columns[1].Dot(row0);
-				result.m_Elements[5] = other.m_Columns[1].Dot(row1);
-				result.m_Elements[6] = other.m_Columns[1].Dot(row2);
-				result.m_Elements[7] = other.m_Columns[1].Dot(row3);
+				m_Elements[4] = other.m_Columns[1].Dot(row0);
+				m_Elements[5] = other.m_Columns[1].Dot(row1);
+				m_Elements[6] = other.m_Columns[1].Dot(row2);
+				m_Elements[7] = other.m_Columns[1].Dot(row3);
 
-				result.m_Elements[8] = other.m_Columns[2].Dot(row0);
-				result.m_Elements[9] = other.m_Columns[2].Dot(row1);
-				result.m_Elements[10] = other.m_Columns[2].Dot(row2);
-				result.m_Elements[11] = other.m_Columns[2].Dot(row3);
+				m_Elements[8] = other.m_Columns[2].Dot(row0);
+				m_Elements[9] = other.m_Columns[2].Dot(row1);
+				m_Elements[10] = other.m_Columns[2].Dot(row2);
+				m_Elements[11] = other.m_Columns[2].Dot(row3);
 
-				result.m_Elements[12] = other.m_Columns[3].Dot(row0);
-				result.m_Elements[13] = other.m_Columns[3].Dot(row1);
-				result.m_Elements[14] = other.m_Columns[3].Dot(row2);
-				result.m_Elements[15] = other.m_Columns[3].Dot(row3);
+				m_Elements[12] = other.m_Columns[3].Dot(row0);
+				m_Elements[13] = other.m_Columns[3].Dot(row1);
+				m_Elements[14] = other.m_Columns[3].Dot(row2);
+				m_Elements[15] = other.m_Columns[3].Dot(row3);
 
-				return result;
+				return *this;
 			}
 
 			friend CRHMat4x4 operator*(CRHMat4x4 left, const CRHMat4x4& right) { return left *= right; }
@@ -281,7 +280,7 @@ namespace Dodo {
 					mat.m_Elements[GetIndex(0, 3)], mat.m_Elements[GetIndex(1, 3)], mat.m_Elements[GetIndex(2, 3)], mat.m_Elements[GetIndex(3, 3)]);
 			}
 
-			static inline constexpr CRHMat4x4<T> Translate(const Math::TVec3<T>& translation)
+			static inline const CRHMat4x4<T> Translate(const Math::TVec3<T>& translation)
 			{
 				CRHMat4x4 result(1.0f);
 
@@ -292,7 +291,7 @@ namespace Dodo {
 			}
 
 
-			static inline constexpr CRHMat4x4<T> Scale(const Math::TVec3<T>& scale)
+			static inline const CRHMat4x4<T> Scale(const Math::TVec3<T>& scale)
 			{
 				CRHMat4x4 result(1.0f);
 
@@ -304,7 +303,7 @@ namespace Dodo {
 
 
 			// Recommended to normalize axis
-			static inline constexpr CRHMat4x4<T> Rotate(const T& degrees, const Math::TVec3<T>& axis)
+			static inline CRHMat4x4<T> Rotate(const T& degrees, const Math::TVec3<T>& axis)
 			{
 				CRHMat4x4 result(1.0f);
 
@@ -316,6 +315,7 @@ namespace Dodo {
 				const TVec3<T> temp((T(1) - c) * axis);
 
 				result.m_Elements[GetIndex(0, 0)] = c + axis.x * temp.x;
+				float aewqea = c + axis.x * temp.x;
 				result.m_Elements[GetIndex(0, 1)] = s * axis.z + temp.x * axis.y;
 				result.m_Elements[GetIndex(0, 2)] = -s * axis.y + temp.x * axis.z;
 
@@ -331,7 +331,7 @@ namespace Dodo {
 			}
 
 			// Infinite far plane
-			static inline constexpr CRHMat4x4<T> Orthographic(float left, float right, float bottom, float top)
+			static inline const CRHMat4x4<T> Orthographic(float left, float right, float bottom, float top)
 			{
 				return CRHMat4x4(
 					2 / (right - left), 0, 0, 0,
@@ -340,7 +340,7 @@ namespace Dodo {
 					-(right + left) / (right - left), -(top + bottom) / (top - bottom), 0, 1);
 			}
 
-			static inline constexpr CRHMat4x4<T> Orthographic(float left, float right, float bottom, float top, float zNear, float zFar)
+			static inline const CRHMat4x4<T> Orthographic(float left, float right, float bottom, float top, float zNear, float zFar)
 			{
 
 				/*	__												__
@@ -359,7 +359,7 @@ namespace Dodo {
 			}
 
 			// Use degrees
-			static inline constexpr CRHMat4x4<T> Perspective(float fov, float aspectratio, float zNear, float zFar)
+			static inline const CRHMat4x4<T> Perspective(float fov, float aspectratio, float zNear, float zFar)
 			{
 
 				const float tanHalfFov = tan(ToRadians(fov) / 2);

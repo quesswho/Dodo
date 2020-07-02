@@ -11,40 +11,52 @@ GameLayer::GameLayer()
 	Application::s_Application->m_RenderAPI->DepthTest(true);
 
 	BufferProperties bufferprop = {
-		{ "POSITION", 2 } //vertices
+		{ "POSITION", 3 } //vertices
 	};
-
+	
 
 	float verts[] = {
-		0.5f, 0.0f,
-		1.0f, 1.0f,
-		0.0f, 1.0f
+		0.0f, 0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f,
+		-0.5f, -0.5f, 0.0f
 	};
 
 	uint indices[] = {
-		2,0,1
+		0, 2, 1
 	};
 
 	m_VBuffer = new VertexBuffer(verts, sizeof(verts), bufferprop);
 	m_IBuffer = new IndexBuffer(indices, _countof(indices));
 	m_VAO = new ArrayBuffer(m_VBuffer, m_IBuffer);
 
-	Mat4 mat = Mat4::Translate(Vec3(10.0f, -2.0f, 3.0f));
-	Mat4 mat1 = Mat4::Rotate(23.0f, Vec3(1.0f, 0.0f, 0.0f));
-	Mat4 mat2 = Mat4::Scale(Vec3(2.0f, -1.0f, 0.4f));
-	Mat4 mat3 = Mat4::Multiply(mat, mat1, mat2);
+	m_Shader = new Shader("Test", "res/shader/Shader.glsl", bufferprop);
+	m_Rotation = Mat4(1.0f);
 
-	
+	m_Shader->SetUniformValue("u_Model", m_Rotation);
 }
 GameLayer::~GameLayer()
 {
 	delete m_VBuffer;
 	delete m_IBuffer;
+	delete m_VAO;
+	delete m_Shader;
 }
 
 void GameLayer::Update(float elapsed)
 {
+	m_Rotation *= Mat4::Rotate(45.0f * elapsed, Math::Vec3(1.0f, 0.0f, 0.0f));
+}
 
+
+void GameLayer::Render()
+{
+	m_VBuffer->Bind();
+	m_IBuffer->Bind();
+	//DrawImGui();
+	m_VAO->Bind();
+	m_Shader->Bind();
+	m_Shader->SetUniformValue("u_Model", m_Rotation);
+	Application::s_Application->m_RenderAPI->DrawIndices(m_VAO->GetCount());
 }
 
 void GameLayer::DrawImGui()
@@ -124,13 +136,6 @@ void GameLayer::DrawImGui()
 	Application::s_Application->ImGuiEndFrame();
 }
 
-void GameLayer::Render()
-{
-	//DrawImGui();
-	m_VAO->Bind();
-	//Application::s_Application->m_RenderAPI->DrawIndices(m_VAO->GetCount());
-}
-
 void GameLayer::OnEvent(const Event& event)
 {
 	switch (event.GetType())
@@ -166,7 +171,7 @@ public:
 	WindowProperties PreInit()
 	{
 		WindowProperties props;
-		props.m_Title = "SandBox";
+		props.m_Title = "Dodeditor";
 		props.m_Width = 1080;
 		props.m_Height = 720;
 		props.m_Fullscreen = false;

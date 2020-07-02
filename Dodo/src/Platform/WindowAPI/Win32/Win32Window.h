@@ -70,6 +70,8 @@ namespace Dodo {
 			void WindowCloseCallback();      
 
 			void SetWindowProperties(const WindowProperties& winprop);
+
+			void FocusConsole() const;
 		private:
 			void Init();
 			void RegisterRawMouse() const;

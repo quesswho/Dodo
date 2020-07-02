@@ -129,25 +129,23 @@ namespace Dodo {
 
 			constexpr CRHMat3x3& operator*=(const CRHMat3x3& other)
 			{
-				CRHMat3x3 result;
-
 				const TVec3 row0 = TVec3(m_Elements[GetIndex(0, 0)], m_Elements[GetIndex(1, 0)], m_Elements[GetIndex(2, 0)]);
 				const TVec3 row1 = TVec3(m_Elements[GetIndex(0, 1)], m_Elements[GetIndex(1, 1)], m_Elements[GetIndex(2, 1)]);
 				const TVec3 row2 = TVec3(m_Elements[GetIndex(0, 2)], m_Elements[GetIndex(1, 2)], m_Elements[GetIndex(2, 2)]);
 
-				result.m_Elements[0] = other.m_Columns[0].Dot(row0);
-				result.m_Elements[1] = other.m_Columns[0].Dot(row1);
-				result.m_Elements[2] = other.m_Columns[0].Dot(row2);
+				m_Elements[0] = other.m_Columns[0].Dot(row0);
+				m_Elements[1] = other.m_Columns[0].Dot(row1);
+				m_Elements[2] = other.m_Columns[0].Dot(row2);
 
-				result.m_Elements[3] = other.m_Columns[1].Dot(row0);
-				result.m_Elements[4] = other.m_Columns[1].Dot(row1);
-				result.m_Elements[5] = other.m_Columns[1].Dot(row2);
+				m_Elements[3] = other.m_Columns[1].Dot(row0);
+				m_Elements[4] = other.m_Columns[1].Dot(row1);
+				m_Elements[5] = other.m_Columns[1].Dot(row2);
 
-				result.m_Elements[6] = other.m_Columns[2].Dot(row0);
-				result.m_Elements[7] = other.m_Columns[2].Dot(row1);
-				result.m_Elements[8] = other.m_Columns[2].Dot(row2);
+				m_Elements[6] = other.m_Columns[2].Dot(row0);
+				m_Elements[7] = other.m_Columns[2].Dot(row1);
+				m_Elements[8] = other.m_Columns[2].Dot(row2);
 
-				return result;
+				return *this;
 			}
 
 			friend CRHMat3x3 operator*(CRHMat3x3 left, const CRHMat3x3& right) { return left *= right; }

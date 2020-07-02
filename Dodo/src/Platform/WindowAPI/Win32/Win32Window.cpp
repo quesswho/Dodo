@@ -441,5 +441,12 @@ namespace Dodo {
 		{
 			m_WindowProperties = winprop;
 		}
+
+		void Win32Window::FocusConsole() const
+		{
+			const HWND consoleHwnd = GetConsoleWindow();
+			SetWindowPos(consoleHwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_DRAWFRAME | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+			ShowWindow(consoleHwnd, SW_NORMAL);
+		}
 	}
 }

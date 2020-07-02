@@ -15,6 +15,7 @@
 
 	/* Graphics */
 		#include "Core/Graphics/Buffer.h"
+		#include "Core/Graphics/Shader.h"
 	/* Math */
 
 	/* System */

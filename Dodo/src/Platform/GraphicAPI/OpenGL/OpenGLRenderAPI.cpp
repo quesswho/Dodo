@@ -24,6 +24,8 @@ namespace Dodo {
 				if (GLAD_VERSION_MAJOR(res) > 3)
 				{
 					Viewport(winprop.m_Width, winprop.m_Height);
+					//glEnable(GL_CULL_FACE); // TODOD: Enable through winprop
+					glCullFace(GL_BACK);
 					glFrontFace(GL_CCW);
 					glGetIntegerv(0x9048, &m_VramKbs);
 					m_GPUInfo = "";

@@ -4,6 +4,7 @@
 #include <glad/gl.h>
 
 #include "Core/Utilities/FileUtils.h"
+#include "Core/Application/Application.h"
 
 namespace Dodo {
 	namespace Platform {
@@ -19,19 +20,19 @@ namespace Dodo {
 				*newpath = '\0';
 				strcat(newpath, path);
 				newpath[strlen(path) - 1] = 'g';
-				Init(FileUtils::ReadFile(strcat(newpath, "lsl"))); // turning .x into .glsl
-				delete newpath;
+				CompileInit(FileUtils::ReadFile(strcat(newpath, "lsl"))); // turning .x into .glsl
+				delete[] newpath;
 			}
 			else
 			{
-				Init(FileUtils::ReadFile(path));
+				CompileInit(FileUtils::ReadFile(path));
 			}
 		}
 
 		OpenGLShader::OpenGLShader(const char* name, std::string& source, const BufferProperties& shaderInput)
 			: m_Name(name)
 		{
-			Init(source);
+			CompileInit(source);
 		}
 
 		OpenGLShader::~OpenGLShader()
@@ -39,11 +40,12 @@ namespace Dodo {
 			glDeleteProgram(m_ShaderID);
 		}
 
-		void OpenGLShader::CompileShader(const char* vertex, const char* fragment)
+		void OpenGLShader::CompileVFShader(const char* vertex, const char* fragment)
 		{
-			//SHADER
-			uint vertexID = glCreateShader(GL_VERTEX_SHADER);
+			m_ShaderID = glCreateProgram();
 
+			// Vertex Shader
+			uint vertexID = glCreateShader(GL_VERTEX_SHADER);
 			glShaderSource(vertexID, 1, &vertex, NULL);
 			glCompileShader(vertexID);
 
@@ -61,10 +63,9 @@ namespace Dodo {
 				failed = true;
 			}
 
-			//FRAGMENT
+			// Fragment Shader
 
 			uint fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
-
 			glShaderSource(fragmentID, 1, &fragment, NULL);
 			glCompileShader(fragmentID);
 
@@ -80,11 +81,14 @@ namespace Dodo {
 			}
 
 
-			if (failed) return; // Get error from both shaders
+			if (failed)
+			{
+				Application::s_Application->m_Window->FocusConsole(); // Make the error more noticeable
+				return; // Get error from both shaders
+			}
 
 			//LINKING
-
-			m_ShaderID = glCreateProgram();
+			
 			glAttachShader(m_ShaderID, vertexID);
 			glAttachShader(m_ShaderID, fragmentID);
 			glLinkProgram(m_ShaderID);
@@ -103,8 +107,9 @@ namespace Dodo {
 		}
 
 
-		void OpenGLShader::Init(std::string& fileSource)
+		void OpenGLShader::CompileInit(std::string& fileSource)
 		{
+			if (fileSource == "-1") return;
 			ShaderType type = ShaderType::UNKNOWN;
 
 			std::string stringFragmentSource = "";
@@ -139,21 +144,22 @@ namespace Dodo {
 			if (stringFragmentSource == "" || stringVertexSource == "")
 			{
 				DD_ERR("{0}: Source needs to be in a specific format! Add \"#shader fragment\" or \"#shader vertex\" as the first line of the different shaders to differentiate between between the differnt shader types!", m_Name);
+				Application::s_Application->m_Window->FocusConsole();
 				return;
 			}
 
-			CompileShader(stringVertexSource.c_str(), stringFragmentSource.c_str());
+			CompileVFShader(stringVertexSource.c_str(), stringFragmentSource.c_str());
 		}
 
 
 		void OpenGLShader::ReloadFromPath(const char* path)
 		{
-			Init(FileUtils::ReadFile(path));
+			CompileInit(FileUtils::ReadFile(path));
 		}
 
 		void OpenGLShader::ReloadFromSource(std::string& source)
 		{
-			Init(source);
+			CompileInit(source);
 		}
 
 		void OpenGLShader::Bind() const

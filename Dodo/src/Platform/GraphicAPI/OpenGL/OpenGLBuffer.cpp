@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "OpenGLBuffer.h"
 
-#include "Core/Application/Application.h"
-
 namespace Dodo {
 	namespace Platform {
 
@@ -11,7 +9,8 @@ namespace Dodo {
 		OpenGLVertexBuffer::OpenGLVertexBuffer(const float* vertices, const uint& size, const BufferProperties& prop)
 			: m_BufferProperties(prop), m_BufferID(0)
 		{
-			Application::s_Application->m_ThreadManager->Task(std::bind(&OpenGLVertexBuffer::Create, this, vertices, size));
+			glGenBuffers(1, &m_BufferID);
+			Create(vertices, size);
 		}
 
 		OpenGLVertexBuffer::~OpenGLVertexBuffer()
@@ -21,7 +20,6 @@ namespace Dodo {
 
 		inline void OpenGLVertexBuffer::Create(const float* vertices, const uint& size)
 		{
-			glGenBuffers(1, &m_BufferID);
 			glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 			glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 		}
@@ -31,7 +29,8 @@ namespace Dodo {
 		OpenGLIndexBuffer::OpenGLIndexBuffer(const uint* indices, const uint& count)
 			: m_Count(count), m_BufferID(0)
 		{
-			Application::s_Application->m_ThreadManager->Task(std::bind(&OpenGLIndexBuffer::Create, this, indices, count));
+			glGenBuffers(1, &m_BufferID);
+			Create(indices, count);
 		}
 
 		OpenGLIndexBuffer::~OpenGLIndexBuffer()
@@ -41,9 +40,8 @@ namespace Dodo {
 
 		inline void OpenGLIndexBuffer::Create(const uint* indices, const uint& count)
 		{
-			glGenBuffers(1, &m_BufferID);
-			glBindBuffer(GL_INDEX_ARRAY, m_BufferID);
-			glBufferData(GL_INDEX_ARRAY, count * sizeof(uint), indices, GL_STATIC_DRAW);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint), indices, GL_STATIC_DRAW);
 		}
 
 		// Array Buffer //

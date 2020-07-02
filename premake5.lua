@@ -1,6 +1,6 @@
 workspace "Dodo"
 	architecture "x64"
-	startproject "Sandbox"
+	startproject "Dodeditor"
 	
 	outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 	

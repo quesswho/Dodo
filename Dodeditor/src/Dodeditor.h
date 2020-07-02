@@ -18,4 +18,7 @@ private:
 	VertexBuffer* m_VBuffer;
 	IndexBuffer* m_IBuffer;
 	ArrayBuffer* m_VAO;
+	Shader* m_Shader;
+
+	Math::Mat4 m_Rotation;
 };

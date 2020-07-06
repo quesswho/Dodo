@@ -2,6 +2,7 @@
 
 #include <imgui_impl_win32.h>
 #include <imgui_impl_opengl3.h>
+
 using namespace Dodo;
 using namespace Math;
 
@@ -16,13 +17,35 @@ GameLayer::GameLayer()
 	
 
 	float verts[] = {
-		0.0f, 0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f
+		-0.5f, -0.5f, -0.5f,
+		0.5f, -0.5f, -0.5f,
+		0.5f,  0.5f, -0.5f,
+		-0.5f,  0.5f, -0.5f,
+
+		-0.5f, -0.5f,  0.5f,
+		0.5f, -0.5f,  0.5f,
+		0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f
 	};
 
 	uint indices[] = {
-		0, 2, 1
+		1,0,2,
+		2,0,3,
+
+		6,7,4,
+		4,5,6,
+
+		0,1,4,
+		4,1,5,
+
+		6,2,3,
+		6,3,7,
+
+		1,2,5,
+		5,2,6,
+
+		7,3,0,
+		7,0,4
 	};
 
 	m_VBuffer = new VertexBuffer(verts, sizeof(verts), bufferprop);
@@ -33,6 +56,12 @@ GameLayer::GameLayer()
 	m_Rotation = Mat4(1.0f);
 
 	m_Shader->SetUniformValue("u_Model", m_Rotation);
+
+	FrameBufferProperties frameprop;
+	frameprop.m_Width = Application::s_Application->m_WindowProperties.m_Width;
+	frameprop.m_Height = Application::s_Application->m_WindowProperties.m_Height;
+
+	m_FrameBuffer = new FrameBuffer(frameprop);
 }
 GameLayer::~GameLayer()
 {
@@ -40,30 +69,39 @@ GameLayer::~GameLayer()
 	delete m_IBuffer;
 	delete m_VAO;
 	delete m_Shader;
+	delete m_FrameBuffer;
 }
 
 void GameLayer::Update(float elapsed)
 {
-	m_Rotation *= Mat4::Rotate(45.0f * elapsed, Math::Vec3(1.0f, 0.0f, 0.0f));
+	m_Rotation *= Mat4::Rotate(45.0f * elapsed, Math::Vec3(1.0f, 1.0f, 0.0f));
 }
 
 
 void GameLayer::Render()
 {
-	m_VBuffer->Bind();
-	m_IBuffer->Bind();
-	//DrawImGui();
+	DrawImGui();
+}
+
+void GameLayer::DrawScene()
+{
+	m_FrameBuffer->Bind();
+
 	m_VAO->Bind();
 	m_Shader->Bind();
 	m_Shader->SetUniformValue("u_Model", m_Rotation);
 	Application::s_Application->m_RenderAPI->DrawIndices(m_VAO->GetCount());
+
+	Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
 }
 
 void GameLayer::DrawImGui()
 {
 	Application::s_Application->ImGuiNewFrame();
 
-	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+	//static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+	static bool s_ShowViewport = false;
 
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -127,12 +165,24 @@ void GameLayer::DrawImGui()
 
 		if (ImGui::BeginMenu("Window"))
 		{
+			ImGui::MenuItem("Viewport", "", &s_ShowViewport);
 			ImGui::EndMenu();
 		}
 
 		ImGui::EndMenuBar();
 	}
 	ImGui::End();
+
+	if (s_ShowViewport)
+	{
+		ImGui::Begin("Viewport");
+		ImGui::Text("%d fps, %gms", Application::s_Application->m_FramesPerSecond, Application::s_Application->m_FrameTimeMs);
+		const uint width = ImGui::GetWindowWidth();
+		const uint height = ImGui::GetWindowHeight();
+		DrawScene();
+		ImGui::Image((void*)(intptr_t)m_FrameBuffer->GetTextureHandle(), ImVec2(Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height));
+		ImGui::End();
+	}
 	Application::s_Application->ImGuiEndFrame();
 }
 

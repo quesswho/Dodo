@@ -22,6 +22,7 @@ namespace Dodo {
 			inline void ClearColor(float r, float g, float b) const { glClearColor(r, g, b, 1.0f); }
 			inline void Viewport(uint width, uint height) const { glViewport(0, 0, (GLsizei)width, (GLsizei)height); }
 			inline void DrawIndices(uint count) const { glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); }
+			void DefaultFrameBuffer() const;
 
 			inline void DepthTest(bool depthtest) const { depthtest ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST); }
 			inline void StencilTest(bool stenciltest) const { stenciltest ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST); }

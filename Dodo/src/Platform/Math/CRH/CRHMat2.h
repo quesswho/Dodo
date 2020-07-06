@@ -55,7 +55,7 @@ namespace Dodo {
 
 			// Addition
 
-			constexpr CRHMat2x2& operator+=(const float scalar)
+			const CRHMat2x2& operator+=(const float scalar)
 			{
 				for (int i = 0; i < 4; i++)
 				{
@@ -66,7 +66,7 @@ namespace Dodo {
 
 			friend CRHMat2x2 operator+(CRHMat2x2 left, const float right) { return left += right; }
 
-			constexpr CRHMat2x2& operator+=(const CRHMat2x2& other)
+			const CRHMat2x2& operator+=(const CRHMat2x2& other)
 			{
 				for (int i = 0; i < 4; i++)
 				{
@@ -79,7 +79,7 @@ namespace Dodo {
 
 			// Subtraction
 
-			constexpr CRHMat2x2& operator-=(const float scalar)
+			const CRHMat2x2& operator-=(const float scalar)
 			{
 				for (int i = 0; i < 4 i++)
 				{
@@ -90,7 +90,7 @@ namespace Dodo {
 
 			friend CRHMat2x2 operator-(CRHMat2x2 left, const float right) { return left -= right; }
 
-			constexpr CRHMat2x2& operator-=(const CRHMat2x2& other)
+			const CRHMat2x2& operator-=(const CRHMat2x2& other)
 			{
 				for (int i = 0; i < 4; i++)
 				{
@@ -103,7 +103,7 @@ namespace Dodo {
 
 			// Multiplication
 
-			constexpr CRHMat2x2& operator*=(const float scalar)
+			const CRHMat2x2& operator*=(const float scalar)
 			{
 				for (int i = 0; i < 4; i++)
 					m_Elements[i] *= scalar;
@@ -113,7 +113,7 @@ namespace Dodo {
 
 			friend CRHMat2x2 operator*(CRHMat2x2 left, const float right) { return left *= right; }
 
-			constexpr CRHMat2x2& operator*=(const CRHMat2x2& other)
+			const CRHMat2x2& operator*=(const CRHMat2x2& other)
 			{
 				const TVec2 row0 = TVec2(m_Elements[GetIndex(0, 0)], m_Elements[GetIndex(1, 0)]);
 				const TVec2 row1 = TVec2(m_Elements[GetIndex(0, 1)], m_Elements[GetIndex(1, 1)]);

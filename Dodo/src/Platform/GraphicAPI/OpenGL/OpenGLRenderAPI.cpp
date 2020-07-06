@@ -24,7 +24,7 @@ namespace Dodo {
 				if (GLAD_VERSION_MAJOR(res) > 3)
 				{
 					Viewport(winprop.m_Width, winprop.m_Height);
-					//glEnable(GL_CULL_FACE); // TODOD: Enable through winprop
+					glEnable(GL_CULL_FACE); // TODOD: Enable through winprop
 					glCullFace(GL_BACK);
 					glFrontFace(GL_CCW);
 					glGetIntegerv(0x9048, &m_VramKbs);
@@ -40,6 +40,13 @@ namespace Dodo {
 				return -2;
 			}
 			return -1;
+		}
+
+		void OpenGLRenderAPI::DefaultFrameBuffer() const
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glViewport(0, 0, Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
 
 		void OpenGLRenderAPI::ImGuiNewFrame() const

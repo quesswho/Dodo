@@ -69,7 +69,7 @@ namespace Dodo {
 
 			// Addition
 
-			constexpr CRHMat3x3& operator+=(const float scalar)
+			const CRHMat3x3& operator+=(const float scalar)
 			{
 				for (int i = 0; i < 9; i++)
 				{
@@ -80,7 +80,7 @@ namespace Dodo {
 
 			friend CRHMat3x3 operator+(CRHMat3x3 left, const float right) { return left += right; }
 
-			constexpr CRHMat3x3& operator+=(const CRHMat3x3& other)
+			const CRHMat3x3& operator+=(const CRHMat3x3& other)
 			{
 				for (int i = 0; i < 9; i++)
 				{
@@ -93,7 +93,7 @@ namespace Dodo {
 
 			// Subtraction
 
-			constexpr CRHMat3x3& operator-=(const float scalar)
+			const CRHMat3x3& operator-=(const float scalar)
 			{
 				for (int i = 0; i < 9 i++)
 				{
@@ -104,7 +104,7 @@ namespace Dodo {
 
 			friend CRHMat3x3 operator-(CRHMat3x3 left, const float right) { return left -= right; }
 
-			constexpr CRHMat3x3& operator-=(const CRHMat3x3& other)
+			const CRHMat3x3& operator-=(const CRHMat3x3& other)
 			{
 				for (int i = 0; i < 9; i++)
 				{
@@ -117,7 +117,7 @@ namespace Dodo {
 
 			// Multiplication
 
-			constexpr CRHMat3x3& operator*=(const float scalar)
+			const CRHMat3x3& operator*=(const float scalar)
 			{
 				for (int i = 0; i < 9; i++)
 					m_Elements[i] *= scalar;
@@ -127,7 +127,7 @@ namespace Dodo {
 
 			friend CRHMat3x3 operator*(CRHMat3x3 left, const float right) { return left *= right; }
 
-			constexpr CRHMat3x3& operator*=(const CRHMat3x3& other)
+			const CRHMat3x3& operator*=(const CRHMat3x3& other)
 			{
 				const TVec3 row0 = TVec3(m_Elements[GetIndex(0, 0)], m_Elements[GetIndex(1, 0)], m_Elements[GetIndex(2, 0)]);
 				const TVec3 row1 = TVec3(m_Elements[GetIndex(0, 1)], m_Elements[GetIndex(1, 1)], m_Elements[GetIndex(2, 1)]);
@@ -215,7 +215,7 @@ namespace Dodo {
 					mat.m_Elements[GetIndex(0, 2)], mat.m_Elements[GetIndex(1, 2)], mat.m_Elements[GetIndex(2, 2)]);
 			}
 
-			static constexpr CRHMat3x3 Translate(const Math::TVec2<T>& translation)
+			static const CRHMat3x3 Translate(const Math::TVec2<T>& translation)
 			{
 				CRHMat3x3 result;
 				result.m_Elements[GetIndex(0, 0)] = (T)1;
@@ -226,7 +226,7 @@ namespace Dodo {
 				return result;
 			}
 
-			static constexpr CRHMat3x3 Scale(const Math::TVec2<T>& scale)
+			static const CRHMat3x3 Scale(const Math::TVec2<T>& scale)
 			{
 				CRHMat3x3 result;
 
@@ -236,7 +236,7 @@ namespace Dodo {
 				return result;
 			}
 
-			static constexpr CRHMat3x3 Rotate(const float degrees)
+			static const CRHMat3x3 Rotate(const float degrees)
 			{
 				CRHMat3x3 result;
 

@@ -23,4 +23,5 @@ private:
 	FrameBuffer* m_FrameBuffer;
 
 	Math::Mat4 m_Rotation;
+	Math::Mat4 m_Projection;
 };

@@ -14,7 +14,7 @@ GameLayer::GameLayer()
 	BufferProperties bufferprop = {
 		{ "POSITION", 3 } //vertices
 	};
-	
+
 
 	float verts[] = {
 		-0.5f, -0.5f, -0.5f,
@@ -53,8 +53,12 @@ GameLayer::GameLayer()
 	m_VAO = new ArrayBuffer(m_VBuffer, m_IBuffer);
 
 	m_Shader = new Shader("Test", "res/shader/Shader.glsl", bufferprop);
-	m_Rotation = Mat4(1.0f);
+	m_Rotation = Mat4::Translate(Vec3(0.0f, 0.0f, -10.0f));
 
+	m_Projection = Mat4::Perspective(45.0f, Application::s_Application->m_WindowProperties.m_Width / Application::s_Application->m_WindowProperties.m_Height, 0.1f, 100.0f);
+
+	m_Shader->Bind();
+	m_Shader->SetUniformValue("u_Projection", m_Projection);
 	m_Shader->SetUniformValue("u_Model", m_Rotation);
 
 	FrameBufferProperties frameprop;
@@ -62,6 +66,12 @@ GameLayer::GameLayer()
 	frameprop.m_Height = Application::s_Application->m_WindowProperties.m_Height;
 
 	m_FrameBuffer = new FrameBuffer(frameprop);
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
+	style.Colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
+	style.Colors[ImGuiCol_Border] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
+	style.WindowRounding = 0.0f;
 }
 GameLayer::~GameLayer()
 {
@@ -99,9 +109,8 @@ void GameLayer::DrawImGui()
 {
 	Application::s_Application->ImGuiNewFrame();
 
-	//static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-	static bool s_ShowViewport = false;
+	static bool s_ShowViewport = true;
+	static bool s_ShowEntityHierarchy = true;
 
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -112,8 +121,6 @@ void GameLayer::DrawImGui()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-	window_flags |= ImGuiWindowFlags_NoBackground;
 
 	ImGui::Begin("DockSpace Demo", 0, window_flags);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -166,6 +173,7 @@ void GameLayer::DrawImGui()
 		if (ImGui::BeginMenu("Window"))
 		{
 			ImGui::MenuItem("Viewport", "", &s_ShowViewport);
+			ImGui::MenuItem("Entity Hierarchy", "", &s_ShowEntityHierarchy);
 			ImGui::EndMenu();
 		}
 
@@ -173,21 +181,43 @@ void GameLayer::DrawImGui()
 	}
 	ImGui::End();
 
+	static ImGuiWindowFlags s_ViewportWindow = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
+
 	if (s_ShowViewport)
 	{
-		ImGui::Begin("Viewport");
+		ImGui::Begin("Viewport", 0, s_ViewportWindow);
+	
 		ImGui::Text("%d fps, %gms", Application::s_Application->m_FramesPerSecond, Application::s_Application->m_FrameTimeMs);
-		const uint width = ImGui::GetWindowWidth();
-		const uint height = ImGui::GetWindowHeight();
+		static uint width = 0; 
+		static uint height = 0;
+		if (width != ImGui::GetWindowWidth() || height != ImGui::GetWindowHeight())
+		{
+			width = ImGui::GetWindowWidth();
+			height = ImGui::GetWindowHeight();
+			m_Projection = Mat4::Perspective(45.0f, width / height, 0.1f, 100.0f);
+			Application::s_Application->m_RenderAPI->Viewport(width, height);
+		}
 		DrawScene();
-		ImGui::Image((void*)(intptr_t)m_FrameBuffer->GetTextureHandle(), ImVec2(Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height));
+		ImGui::Image((void*)(intptr_t)m_FrameBuffer->GetTextureHandle(), ImVec2(width, height));
 		ImGui::End();
 	}
+
+	if (s_ShowEntityHierarchy)
+	{
+		ImGui::Begin("Entity Hierarchy");
+
+		ImGui::Text("aaa");
+
+		ImGui::End();
+	}
+
+
 	Application::s_Application->ImGuiEndFrame();
 }
 
 void GameLayer::OnEvent(const Event& event)
 {
+	//ImGuiIO& io = ImGui::GetIO();
 	switch (event.GetType())
 	{
 		case EventType::KEY_PRESSED:

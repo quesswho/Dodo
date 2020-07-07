@@ -17,11 +17,12 @@ void main()
 layout (location = 0) in vec3 a_Position;
 
 uniform mat4 u_Model = mat4(1.0f);
+uniform mat4 u_Projection = mat4(1.0f);
 
 out vec3 o_Color;
 
 void main()
 {
     o_Color = vec3(a_Position.x, a_Position.y, a_Position.z);
-    gl_Position = u_Model * vec4(a_Position.x, a_Position.y, a_Position.z, 1.0f);
+    gl_Position = u_Projection * u_Model * vec4(a_Position.x, a_Position.y, a_Position.z, 1.0f);
 }

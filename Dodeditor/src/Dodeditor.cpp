@@ -1,7 +1,7 @@
 #include "Dodeditor.h"
 
-#include <imgui_impl_win32.h>
-#include <imgui_impl_opengl3.h>
+#include <imgui.h>
+#include <imgui_internal.h>
 
 using namespace Dodo;
 using namespace Math;
@@ -55,7 +55,7 @@ GameLayer::GameLayer()
 	m_Shader = new Shader("Test", "res/shader/Shader.glsl", bufferprop);
 	m_Rotation = Mat4::Translate(Vec3(0.0f, 0.0f, -10.0f));
 
-	m_Projection = Mat4::Perspective(45.0f, Application::s_Application->m_WindowProperties.m_Width / Application::s_Application->m_WindowProperties.m_Height, 0.1f, 100.0f);
+	m_Projection = Mat4::Perspective(45.0f, (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.1f, 100.0f);
 
 	m_Shader->Bind();
 	m_Shader->SetUniformValue("u_Projection", m_Projection);
@@ -122,7 +122,7 @@ void GameLayer::DrawImGui()
 	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-	ImGui::Begin("DockSpace Demo", 0, window_flags);
+	ImGui::Begin("DockSpace", 0, window_flags);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 	ImGui::PopStyleVar();
 	ImGui::PopStyleVar(2);
@@ -130,7 +130,21 @@ void GameLayer::DrawImGui()
 	ImGuiIO& io = ImGui::GetIO();
 	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 	{
-		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+		ImGuiID dockspace_id = ImGui::GetID("ADockSpace");
+		if (ImGui::DockBuilderGetNode(dockspace_id) == NULL)
+		{
+			ImGui::DockBuilderRemoveNode(dockspace_id);
+			ImGui::DockBuilderAddNode(dockspace_id, 0);
+			ImGui::DockBuilderSetNodeSize(dockspace_id, ImVec2(0.1f, 0.1f));
+
+			ImGuiID dock_main_id = dockspace_id;
+			ImGuiID dock_id_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, NULL, &dock_main_id);
+			ImGuiID dock_id_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.20f, NULL, &dock_main_id);
+
+			ImGui::DockBuilderDockWindow("Viewport", dock_id_right);
+			ImGui::DockBuilderDockWindow("Entity Hierarchy", dock_id_left);
+			ImGui::DockBuilderFinish(dockspace_id);
+		}
 		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), 0);
 	}
 
@@ -142,7 +156,6 @@ void GameLayer::DrawImGui()
 			{
 				ImGui::MenuItem("Project");
 				ImGui::MenuItem("Scene");
-				ImGui::MenuItem("Entity");
 				ImGui::EndMenu();
 			}
 
@@ -188,14 +201,14 @@ void GameLayer::DrawImGui()
 		ImGui::Begin("Viewport", 0, s_ViewportWindow);
 	
 		ImGui::Text("%d fps, %gms", Application::s_Application->m_FramesPerSecond, Application::s_Application->m_FrameTimeMs);
-		static uint width = 0; 
-		static uint height = 0;
+		static float width = 0.0f; 
+		static float height = 0.0f;
 		if (width != ImGui::GetWindowWidth() || height != ImGui::GetWindowHeight())
 		{
 			width = ImGui::GetWindowWidth();
 			height = ImGui::GetWindowHeight();
 			m_Projection = Mat4::Perspective(45.0f, width / height, 0.1f, 100.0f);
-			Application::s_Application->m_RenderAPI->Viewport(width, height);
+			m_FrameBuffer->Resize((int)width, (int)height);
 		}
 		DrawScene();
 		ImGui::Image((void*)(intptr_t)m_FrameBuffer->GetTextureHandle(), ImVec2(width, height));
@@ -215,9 +228,13 @@ void GameLayer::DrawImGui()
 	Application::s_Application->ImGuiEndFrame();
 }
 
+void GameLayer::ResetDockspace()
+{
+
+}
+
 void GameLayer::OnEvent(const Event& event)
 {
-	//ImGuiIO& io = ImGui::GetIO();
 	switch (event.GetType())
 	{
 		case EventType::KEY_PRESSED:
@@ -229,7 +246,6 @@ void GameLayer::OnEvent(const Event& event)
 				case DODO_KEY_F11:
 					Application::s_Application->m_Window->FullScreen();
 			}
-			
 			break;
 		case EventType::MOUSE_PRESSED:
 			break;
@@ -240,36 +256,33 @@ void GameLayer::OnEvent(const Event& event)
 
 
 
-class Sandbox : public Application
-{
-public:
 
-	Sandbox()
+
+Dodeditor::Dodeditor()
 		: Application(PreInit())
 	{}
 
-	WindowProperties PreInit()
-	{
-		WindowProperties props;
-		props.m_Title = "Dodeditor";
-		props.m_Width = 1080;
-		props.m_Height = 720;
-		props.m_Fullscreen = false;
-		props.m_Vsync = false;
-		props.m_ImGUI = true;
-		props.m_ImGUIDocking = true;
-		return props;
-	}
+WindowProperties Dodeditor::PreInit()
+{
+	WindowProperties props;
+	props.m_Title = "Dodeditor";
+	props.m_Width = 1080;
+	props.m_Height = 720;
+	props.m_Fullscreen = false;
+	props.m_Vsync = false;
+	props.m_ImGUI = true;
+	props.m_ImGUIDocking = true;
+	return props;
+}
 
-	void Init()
-	{
-		PushLayer(new GameLayer());
-	}
+void Dodeditor::Init()
+{
+	PushLayer(new GameLayer());
+}
 
-};
 
 int main() {
-	Sandbox* sandBox = new Sandbox();
+	Dodeditor* sandBox = new Dodeditor();
 	sandBox->Run();
 	delete sandBox;
 }

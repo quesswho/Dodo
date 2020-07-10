@@ -933,3 +933,6 @@ _deps
 *.sln
 *.vcxproj
 *.vcxproj.filters
+
+# ImGui
+imgui.ini

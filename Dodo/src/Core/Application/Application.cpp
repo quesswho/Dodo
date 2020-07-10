@@ -7,7 +7,7 @@ namespace Dodo {
 	Application* Application::s_Application;
 
 	Application::Application(const WindowProperties& prop)
-		: m_WindowProperties(prop), m_Closed(false), m_Initializing(true)
+		: m_WindowProperties(prop), m_Closed(false), m_Initializing(true), m_FramesPerSecond(0), m_FrameTimeMs(0)
 	{
 		s_Application = this;
 		CoreInit();

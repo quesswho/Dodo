@@ -72,6 +72,8 @@ GameLayer::GameLayer()
 	style.Colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
 	style.Colors[ImGuiCol_Border] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
 	style.WindowRounding = 0.0f;
+
+	m_Scene = new Scene();
 }
 GameLayer::~GameLayer()
 {
@@ -133,17 +135,7 @@ void GameLayer::DrawImGui()
 		ImGuiID dockspace_id = ImGui::GetID("ADockSpace");
 		if (ImGui::DockBuilderGetNode(dockspace_id) == NULL)
 		{
-			ImGui::DockBuilderRemoveNode(dockspace_id);
-			ImGui::DockBuilderAddNode(dockspace_id, 0);
-			ImGui::DockBuilderSetNodeSize(dockspace_id, ImVec2(0.1f, 0.1f));
-
-			ImGuiID dock_main_id = dockspace_id;
-			ImGuiID dock_id_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, NULL, &dock_main_id);
-			ImGuiID dock_id_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.20f, NULL, &dock_main_id);
-
-			ImGui::DockBuilderDockWindow("Viewport", dock_id_right);
-			ImGui::DockBuilderDockWindow("Entity Hierarchy", dock_id_left);
-			ImGui::DockBuilderFinish(dockspace_id);
+			ResetDockspace(dockspace_id);
 		}
 		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), 0);
 	}
@@ -217,9 +209,44 @@ void GameLayer::DrawImGui()
 
 	if (s_ShowEntityHierarchy)
 	{
+		static uint s_RenamingId = -1; // 4 294 967 295
 		ImGui::Begin("Entity Hierarchy");
+		if (ImGui::Button("Create New Entity"))
+		{
+			s_RenamingId = m_Scene->CreateEntity();
+			ImGui::SetNextTreeNodeOpen(true);
+		}
 
-		ImGui::Text("aaa");
+		if(ImGui::TreeNode("Entities"))
+		{
+			static char s_Renameable[32] = "Unnamed";
+			for (auto ent : m_Scene->m_Entities)
+			{
+				if (ent.first != s_RenamingId)
+				{
+
+					if (ImGui::TreeNode(ent.second.m_Name.c_str()))
+					{
+						if (ImGui::Button("Add component"))
+						{
+
+						}
+						ImGui::TreePop();
+					}
+				}
+				else
+				{
+					ImGui::SetKeyboardFocusHere(0);
+					if (ImGui::InputText(std::to_string(ent.first).c_str(), s_Renameable, IM_ARRAYSIZE(s_Renameable), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+					{
+						m_Scene->RenameEntity(ent.first, s_Renameable);
+						strcpy_s(s_Renameable, "Unnamed");
+						s_RenamingId = -1;
+					}
+				}
+			}
+			ImGui::TreePop();
+		}
 
 		ImGui::End();
 	}
@@ -228,9 +255,19 @@ void GameLayer::DrawImGui()
 	Application::s_Application->ImGuiEndFrame();
 }
 
-void GameLayer::ResetDockspace()
+void GameLayer::ResetDockspace(uint dockspace_id)
 {
+	ImGui::DockBuilderRemoveNode(dockspace_id);
+	ImGui::DockBuilderAddNode(dockspace_id, 0);
+	ImGui::DockBuilderSetNodeSize(dockspace_id, ImVec2(0.1f, 0.1f));
 
+	ImGuiID dock_main_id = dockspace_id;
+	ImGuiID dock_id_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, NULL, &dock_main_id);
+	ImGuiID dock_id_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.20f, NULL, &dock_main_id);
+
+	ImGui::DockBuilderDockWindow("Viewport", dock_id_right);
+	ImGui::DockBuilderDockWindow("Entity Hierarchy", dock_id_left);
+	ImGui::DockBuilderFinish(dockspace_id);
 }
 
 void GameLayer::OnEvent(const Event& event)

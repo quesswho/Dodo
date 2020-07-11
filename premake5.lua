@@ -45,18 +45,24 @@ workspace "Dodo"
 		sysincludedirs {
 			"%{prj.name}/lib/spdlog/include",
 			"%{prj.name}/lib/glad/include",
-			"%{prj.name}/lib/imgui/include"
+			"%{prj.name}/lib/imgui/include",
+			"%{prj.name}/lib/assimp/include"
 		}
 
 		defines
 		{
 			"_CRT_SECURE_NO_WARNINGS"
 		}
-
+		
+		libdirs { 
+			"%{prj.name}/lib/assimp/bin" 
+		}
+		
 		links {
 			"glad",
 			"opengl32.lib",
-			"imgui"
+			"imgui",
+			"assimp-vc142-mt.lib"
 		}
 	
 		filter "system:windows"
@@ -104,7 +110,8 @@ workspace "Dodo"
 		sysincludedirs {
 			"Dodo/lib/spdlog/include",
 			"Dodo/lib/glad/include",
-			"Dodo/lib/imgui/include"
+			"Dodo/lib/imgui/include",
+			"Dodo/lib/assimp/include"
 		}
 
 		links {
@@ -159,7 +166,8 @@ workspace "Dodo"
 		sysincludedirs {
 			"Dodo/lib/spdlog/include",
 			"Dodo/lib/glad/include",
-			"Dodo/lib/imgui/include"
+			"Dodo/lib/imgui/include",
+			"Dodo/lib/assimp/include"
 		}
 
 		links {

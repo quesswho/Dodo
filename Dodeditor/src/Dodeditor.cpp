@@ -305,10 +305,7 @@ WindowProperties Dodeditor::PreInit()
 	props.m_Title = "Dodeditor";
 	props.m_Width = 1080;
 	props.m_Height = 720;
-	props.m_Fullscreen = false;
-	props.m_Vsync = false;
-	props.m_ImGUI = true;
-	props.m_ImGUIDocking = true;
+	props.m_Flags = DodoWindowFlags_IMGUI | DodoWindowFlags_IMGUIDOCKING;
 	return props;
 }
 

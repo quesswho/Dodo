@@ -33,7 +33,7 @@ namespace Dodo {
 					m_GPUInfo.append(" VRAM: ").append(StringUtils::KiloByte((size_t)m_VramKbs))
 						.append(" : Opengl Version: ").append(std::to_string(GLAD_VERSION_MAJOR(res))).append(".").append(std::to_string(GLAD_VERSION_MINOR(res)));
 
-					if(Application::s_Application->m_WindowProperties.m_ImGUI)
+					if(Application::s_Application->m_WindowProperties.m_Flags & DodoWindowFlags_IMGUI)
 						ImGui_ImplOpenGL3_Init();
 					return 1;
 				}

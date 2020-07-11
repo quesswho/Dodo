@@ -12,17 +12,23 @@ EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
 namespace Dodo {
 
+	enum WindowFlags
+	{
+		DodoWindowFlags_NONE			= 0,
+		DodoWindowFlags_FULLSCREEN		= 1 << 0,
+		DodoWindowFlags_VSYNC			= 1 << 1,
+		DodoWindowFlags_IMGUI			= 1 << 2,
+		DodoWindowFlags_IMGUIDOCKING	= 1 << 3
+	};
+	DEFINE_ENUM_FLAG_OPERATORS(WindowFlags);
+
 	struct WindowProperties {
-		WindowProperties() : m_Width(0), m_Height(0), m_Title("Dodo Engine"), m_Fullscreen(false), m_Vsync(false), m_ImGUI(false), m_ImGUIDocking(false) {}
+		WindowProperties() : m_Width(0), m_Height(0), m_Title("Dodo Engine"), m_Flags(DodoWindowFlags_NONE) {}
 		uint m_Width;
 		uint m_Height;
 		const char* m_Title;
 
-		bool m_Fullscreen;
-		bool m_Vsync;
-
-		bool m_ImGUI;
-		bool m_ImGUIDocking;
+		WindowFlags m_Flags;
 	};
 
 	struct PCSpecifications {
@@ -52,7 +58,7 @@ namespace Dodo {
 			void SetCursorVisibility(bool vis);
 			void VSync(bool vsync);
 			void FullScreen(bool fullscreen);
-			void FullScreen() { FullScreen(!m_WindowProperties.m_Fullscreen); }
+			void FullScreen() { FullScreen(~m_WindowProperties.m_Flags & DodoWindowFlags_FULLSCREEN); }
 			void ImGuiNewFrame() const;
 			void ImGuiEndFrame() const;
 

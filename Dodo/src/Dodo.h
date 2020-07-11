@@ -17,6 +17,10 @@
 		#include "Core/Graphics/Buffer.h"
 		#include "Core/Graphics/Shader.h"
 		#include "Core/Graphics/FrameBuffer.h"
+
+		/* Scene */
+			#include "Core/Graphics/Scene/Scene.h"
+
 	/* Math */
 
 	/* System */

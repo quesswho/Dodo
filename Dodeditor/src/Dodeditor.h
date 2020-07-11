@@ -10,7 +10,7 @@ public:
 	GameLayer();
 	~GameLayer();
 
-	void ResetDockspace();
+	void ResetDockspace(uint dockspace_id);
 	void DrawImGui();
 	void DrawScene();
 	void Update(float elapsed);
@@ -25,6 +25,8 @@ private:
 
 	Math::Mat4 m_Rotation;
 	Math::Mat4 m_Projection;
+	Scene* m_Scene;
+
 };
 
 class Dodeditor : public Application

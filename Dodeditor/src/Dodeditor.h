@@ -19,14 +19,15 @@ public:
 private:
 	VertexBuffer* m_VBuffer;
 	IndexBuffer* m_IBuffer;
-	ArrayBuffer* m_VAO;
 	Shader* m_Shader;
+	Shader* m_Shader2;
 	FrameBuffer* m_FrameBuffer;
 
 	Math::Mat4 m_Rotation;
 	Math::Mat4 m_Projection;
 	Scene* m_Scene;
 
+	Model* m_Model;
 };
 
 class Dodeditor : public Application

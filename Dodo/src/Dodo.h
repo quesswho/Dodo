@@ -23,7 +23,7 @@
 			#include "Core/Graphics/Scene/Model.h"
 
 	/* Math */
-
+		#include "Core/Math/Camera/FreeCamera.h"
 	/* System */
 
 	/* Utilities*/

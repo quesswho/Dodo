@@ -18,7 +18,8 @@ namespace Dodo {
 		DodoWindowFlags_FULLSCREEN		= 1 << 0,
 		DodoWindowFlags_VSYNC			= 1 << 1,
 		DodoWindowFlags_IMGUI			= 1 << 2,
-		DodoWindowFlags_IMGUIDOCKING	= 1 << 3
+		DodoWindowFlags_IMGUIDOCKING	= 1 << 3,
+		DodoWindowFlags_BACKFACECULL	= 1 << 4,
 	};
 	DEFINE_ENUM_FLAG_OPERATORS(WindowFlags);
 
@@ -160,6 +161,7 @@ namespace Dodo {
 #define DODO_KEY_BACKSPACE          0x08
 #define DODO_KEY_TAB                0x09
 #define DODO_KEY_ENTER              0x0D
+#define DODO_KEY_CONTROL			0x11
 #define DODO_KEY_PAUSE              0x13
 #define DODO_KEY_CAPS_LOCK          0x14
 #define DODO_KEY_ESCAPE             0x1B

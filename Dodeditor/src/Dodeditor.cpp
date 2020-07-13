@@ -7,90 +7,25 @@ using namespace Dodo;
 using namespace Math;
 
 GameLayer::GameLayer()
+	: m_ViewportActive(false), m_ViewportHover(false)
 {
 	Application::s_Application->m_RenderAPI->ClearColor(0.2f, 0.2f, 0.9f);
 	Application::s_Application->m_RenderAPI->DepthTest(true);
 
 	BufferProperties bufferprop = {
-		{ "POSITION", 3 } //vertices
-	};
-
-	BufferProperties bufferprop2 = {
 		{ "POSITION", 3 }, 
 		{ "TEXCOORD", 2 }, 
 		{ "NORMAL", 3 }, 
 		{ "TANGENT", 3 }
 	};
 
-	float verts[] = {
-		-0.5f, -0.5f,  0.5f,
-		0.5f, -0.5f,  0.5f,
-		0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f, // 3
-
-
-		-0.5f,  0.5f,  0.5f,
-		0.5f,  0.5f,  0.5f,
-		0.5f,  0.5f, -0.5f,
-		-0.5f,  0.5f, -0.5f, // 7
-							
-		-0.5f,  0.5f, -0.5f,
-		0.5f,  0.5f, -0.5f,
-		0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f, // 11
-
-		-0.5f, -0.5f, -0.5f,
-		0.5f, -0.5f, -0.5f,
-		0.5f, -0.5f,  0.5f,
-		-0.5f, -0.5f,  0.5f, // 15
-
-		0.5f, -0.5f,  0.5f,
-		0.5f, -0.5f, -0.5f,
-		0.5f,  0.5f, -0.5f,
-		0.5f,  0.5f,  0.5f, // 19
-
-		-0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f, -0.5f, // 23
-	};
-
-	uint indices[] = {
-		0,1,2,
-		0,2,3, // 5
-
-		4,5,6, // 8
-		4,6,7, // 11
-
-		8,9,10, // 14
-		8,10,11, // 17
-
-		12,13,14, // 20
-		12,14,15, // 23
-
-		16,17,18, // 26
-		16,18,19, // 29
-
-		20,21,22, // 32
-		20,22,23 // 35
-	};
-
-	m_VBuffer = new VertexBuffer(verts, sizeof(verts), bufferprop);
-	m_IBuffer = new IndexBuffer(indices, _countof(indices));
-	m_IBuffer->Bind();
-	m_Shader = new Shader("Test", "res/shader/Shader.x", bufferprop);
 	m_Rotation = Mat4::Translate(Vec3(0.0f, 0.0f, -20.0f));
-
-	m_Projection = Mat4::Perspective(45.0f, (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.1f, 100.0f);
 	
-	m_Shader2 = new Shader("Test2", "res/shader/model.x", bufferprop2);
-	m_Shader2->Bind();
-	m_Shader2->SetUniformValue("u_Projection", m_Projection);
-	m_Shader2->SetUniformValue("u_Model", m_Rotation);
+	m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 0.0f), (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.04f, 10.0f);
 
-
+	m_Shader = new Shader("Model", "res/shader/model.x", bufferprop);
 	m_Shader->Bind();
-	m_Shader->SetUniformValue("u_Projection", m_Projection);
+	m_Shader->SetUniformValue("u_Camera", m_Camera->GetProjectionMatrix());
 	m_Shader->SetUniformValue("u_Model", m_Rotation);
 
 	FrameBufferProperties frameprop;
@@ -107,19 +42,20 @@ GameLayer::GameLayer()
 
 	m_Scene = new Scene();
 
-	m_Model = new Model("res/model/bayonet.fbx");
+	m_Model = new Model("res/model/Bayonet.fbx");
 }
 GameLayer::~GameLayer()
 {
-	delete m_VBuffer;
-	delete m_IBuffer;
 	delete m_Shader;
 	delete m_FrameBuffer;
+	delete m_Scene;
+	delete m_Model;
 }
 
 void GameLayer::Update(float elapsed)
 {
-	m_Rotation *= Mat4::Rotate(45.0f * elapsed, Math::Vec3(1.0f, 1.0f, 0.0f));
+	if(m_ViewportActive) m_Camera->Update(elapsed);
+	//m_Rotation *= Mat4::Rotate(45.0f * elapsed, Math::Vec3(1.0f, 1.0f, 0.0f));
 }
 
 
@@ -132,14 +68,9 @@ void GameLayer::DrawScene()
 {
 	m_FrameBuffer->Bind();
 
-	m_VBuffer->Bind();
-	m_IBuffer->Bind();
 	m_Shader->Bind();
 	m_Shader->SetUniformValue("u_Model", m_Rotation);
-	//Application::s_Application->m_RenderAPI->DrawIndices(m_IBuffer->GetCount());
-
-	m_Shader2->Bind();
-	m_Shader2->SetUniformValue("u_Model", m_Rotation);
+	m_Shader->SetUniformValue("u_Camera", m_Camera->GetCameraMatrix());
 	m_Model->Draw();
 
 	Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
@@ -231,17 +162,19 @@ void GameLayer::DrawImGui()
 		ImGui::Begin("Viewport", 0, s_ViewportWindow);
 	
 		ImGui::Text("%d fps, %gms", Application::s_Application->m_FramesPerSecond, Application::s_Application->m_FrameTimeMs);
-		static float width = 0.0f; 
-		static float height = 0.0f;
+		static uint width = 0; 
+		static uint height = 0;
 		if (width != ImGui::GetWindowWidth() || height != ImGui::GetWindowHeight())
 		{
-			width = ImGui::GetWindowWidth();
-			height = ImGui::GetWindowHeight();
-			m_Projection = Mat4::Perspective(45.0f, width / height, 0.1f, 100.0f);
-			m_FrameBuffer->Resize((int)width, (int)height);
+			width = (uint)ImGui::GetWindowWidth();
+			height = (uint)ImGui::GetWindowHeight();
+			m_Camera->Resize(width, height);
+			m_FrameBuffer->Resize(width, height);
+			Application::s_Application->m_RenderAPI->ResizeDefaultViewport(width, height);
 		}
+		m_ViewportHover = ImGui::IsWindowHovered();
 		DrawScene();
-		ImGui::Image((void*)(intptr_t)m_FrameBuffer->GetTextureHandle(), ImVec2(width, height));
+		ImGui::Image((void*)(intptr_t)m_FrameBuffer->GetTextureHandle(), ImVec2((float)width, (float)height), ImVec2(0, 1), ImVec2(1, 0));
 		ImGui::End();
 	}
 
@@ -320,12 +253,26 @@ void GameLayer::OnEvent(const Event& event)
 					break;
 				case DODO_KEY_F11:
 					Application::s_Application->m_Window->FullScreen();
+					break;
+				case DODO_KEY_Z:
+					if (m_ViewportHover && !m_ViewportActive)
+					{
+						m_ViewportActive = true;
+						Application::s_Application->m_Window->SetCursorVisibility(false);
+						m_Camera->ResetMouse();
+					}
+					else if (m_ViewportActive) 
+					{
+						m_ViewportActive = false;
+						Application::s_Application->m_Window->SetCursorVisibility(true);
+					}
+					break;
 			}
 			break;
 		case EventType::MOUSE_PRESSED:
 			break;
 		case EventType::MOUSE_POSITION:
-			const Math::TVec2<long> mousepos = static_cast<const MouseMoveEvent&>(event).m_MousePos;
+			if (m_ViewportActive) m_Camera->UpdateRotation();
 	}
 }
 
@@ -343,7 +290,7 @@ WindowProperties Dodeditor::PreInit()
 	props.m_Title = "Dodeditor";
 	props.m_Width = 1080;
 	props.m_Height = 720;
-	props.m_Flags = DodoWindowFlags_IMGUI | DodoWindowFlags_IMGUIDOCKING;
+	props.m_Flags = DodoWindowFlags_IMGUI | DodoWindowFlags_IMGUIDOCKING | DodoWindowFlags_BACKFACECULL;
 	return props;
 }
 

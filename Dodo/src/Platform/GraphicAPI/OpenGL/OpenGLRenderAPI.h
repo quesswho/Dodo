@@ -23,6 +23,7 @@ namespace Dodo {
 			inline void Viewport(uint width, uint height) const { glViewport(0, 0, (GLsizei)width, (GLsizei)height); }
 			inline void DrawIndices(uint count) const { glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); }
 			void DefaultFrameBuffer() const;
+			void ResizeDefaultViewport(uint width, uint height);
 
 			inline void DepthTest(bool depthtest) const { depthtest ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST); }
 			inline void StencilTest(bool stenciltest) const { stenciltest ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST); }
@@ -48,6 +49,8 @@ namespace Dodo {
 
 			std::string m_GPUInfo;
 			int m_VramKbs;
+
+			uint m_ViewportWidth, m_ViewportHeight;
 		private:
 		};
 	}

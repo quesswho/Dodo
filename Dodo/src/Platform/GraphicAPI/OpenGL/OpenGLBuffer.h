@@ -33,6 +33,7 @@ namespace Dodo {
 		BufferProperties(std::initializer_list<BufferElement> elements)
 			: m_Elements(elements), m_Stride(0)
 		{
+			// TODO: if component count is greater than 4, divide it because of limitation in opengl
 			for (int i = 0; i < m_Elements.size(); i++)
 			{
 				m_Elements[i].m_Index = i;
@@ -56,16 +57,15 @@ namespace Dodo {
 
 		class OpenGLVertexBuffer {
 		private:
-			uint m_BufferID;
+			uint m_VBufferID;
+			uint m_ABufferID;
 		public:
 			OpenGLVertexBuffer(const float* vertices, const uint& size, const BufferProperties& prop);
 			~OpenGLVertexBuffer();
 
-			void Create(const float* vertices, const uint& size);
-
 			const BufferProperties& GetBufferProperties() const { return m_BufferProperties; }
 
-			inline void Bind() const { glBindBuffer(GL_ARRAY_BUFFER, m_BufferID); }
+			inline void Bind() const { glBindVertexArray(m_ABufferID); }
 		private:
 			const BufferProperties m_BufferProperties;
 		};
@@ -77,31 +77,11 @@ namespace Dodo {
 			OpenGLIndexBuffer(const uint* indices, const uint& count);
 			~OpenGLIndexBuffer();
 
-			void Create(const uint* indices, const uint& count);
-
 			inline void Bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID); }
 
 			inline const uint GetCount() const { return m_Count; }
 		private:
 			const uint m_Count;
 		};
-
-		class OpenGLArrayBuffer {
-		private:
-			uint m_BufferID;
-		public:
-			OpenGLArrayBuffer(const OpenGLVertexBuffer* vBuffer, const OpenGLIndexBuffer* iBuffer);
-			~OpenGLArrayBuffer();
-
-			// No create function because of arraybuffer do not allocate much.
-
-			inline void Bind() const { glBindVertexArray(m_BufferID); }
-
-			inline const uint GetCount() const { return m_IndexBuffer->GetCount(); }
-		private:
-			const OpenGLVertexBuffer* m_VertexBuffer;
-			const OpenGLIndexBuffer* m_IndexBuffer;
-		};
 	}
-
 }

@@ -54,15 +54,10 @@ workspace "Dodo"
 			"_CRT_SECURE_NO_WARNINGS"
 		}
 		
-		libdirs { 
-			"%{prj.name}/lib/assimp/bin" 
-		}
-		
 		links {
 			"glad",
 			"opengl32.lib",
-			"imgui",
-			"assimp-vc142-mt.lib"
+			"imgui"
 		}
 	
 		filter "system:windows"
@@ -73,12 +68,32 @@ workspace "Dodo"
 			}
 
 		filter "configurations:Debug"
+			libdirs { 
+				"%{prj.name}/lib/assimp/bin/Debug" 
+			}
+			
+			links {
+				"assimpd.lib",
+				"IrrXMLd.lib",
+				"zlibd.lib"
+			}
+		
 			defines {
 				"DD_DEBUG"
 			}
 			symbols "On"
 	
 		filter "configurations:Release"
+			libdirs { 
+				"%{prj.name}/lib/assimp/bin/Release" 
+			}
+			
+			links {
+				"assimp.lib",
+				"IrrXML.lib",
+				"zlib.lib"
+			}
+			
 			defines {
 				"DD_RELEASE"
 			}

@@ -61,8 +61,7 @@ public:
 		props.m_Title = "SandBox";
 		props.m_Width = 1080;
 		props.m_Height = 720;
-		props.m_Fullscreen = false;
-		props.m_Vsync = false;
+		props.m_Flags = DodoWindowFlags_NONE;
 		return props;
 	}
 

@@ -15,47 +15,79 @@ GameLayer::GameLayer()
 		{ "POSITION", 3 } //vertices
 	};
 
+	BufferProperties bufferprop2 = {
+		{ "POSITION", 3 }, 
+		{ "TEXCOORD", 2 }, 
+		{ "NORMAL", 3 }, 
+		{ "TANGENT", 3 }
+	};
 
 	float verts[] = {
-		-0.5f, -0.5f, -0.5f,
-		0.5f, -0.5f, -0.5f,
-		0.5f,  0.5f, -0.5f,
-		-0.5f,  0.5f, -0.5f,
-
 		-0.5f, -0.5f,  0.5f,
 		0.5f, -0.5f,  0.5f,
 		0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f
+		-0.5f,  0.5f,  0.5f, // 3
+
+
+		-0.5f,  0.5f,  0.5f,
+		0.5f,  0.5f,  0.5f,
+		0.5f,  0.5f, -0.5f,
+		-0.5f,  0.5f, -0.5f, // 7
+							
+		-0.5f,  0.5f, -0.5f,
+		0.5f,  0.5f, -0.5f,
+		0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f, // 11
+
+		-0.5f, -0.5f, -0.5f,
+		0.5f, -0.5f, -0.5f,
+		0.5f, -0.5f,  0.5f,
+		-0.5f, -0.5f,  0.5f, // 15
+
+		0.5f, -0.5f,  0.5f,
+		0.5f, -0.5f, -0.5f,
+		0.5f,  0.5f, -0.5f,
+		0.5f,  0.5f,  0.5f, // 19
+
+		-0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f, -0.5f, // 23
 	};
 
 	uint indices[] = {
-		1,0,2,
-		2,0,3,
+		0,1,2,
+		0,2,3, // 5
 
-		6,7,4,
-		4,5,6,
+		4,5,6, // 8
+		4,6,7, // 11
 
-		0,1,4,
-		4,1,5,
+		8,9,10, // 14
+		8,10,11, // 17
 
-		6,2,3,
-		6,3,7,
+		12,13,14, // 20
+		12,14,15, // 23
 
-		1,2,5,
-		5,2,6,
+		16,17,18, // 26
+		16,18,19, // 29
 
-		7,3,0,
-		7,0,4
+		20,21,22, // 32
+		20,22,23 // 35
 	};
 
 	m_VBuffer = new VertexBuffer(verts, sizeof(verts), bufferprop);
 	m_IBuffer = new IndexBuffer(indices, _countof(indices));
-	m_VAO = new ArrayBuffer(m_VBuffer, m_IBuffer);
-
-	m_Shader = new Shader("Test", "res/shader/Shader.glsl", bufferprop);
-	m_Rotation = Mat4::Translate(Vec3(0.0f, 0.0f, -10.0f));
+	m_IBuffer->Bind();
+	m_Shader = new Shader("Test", "res/shader/Shader.x", bufferprop);
+	m_Rotation = Mat4::Translate(Vec3(0.0f, 0.0f, -20.0f));
 
 	m_Projection = Mat4::Perspective(45.0f, (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.1f, 100.0f);
+	
+	m_Shader2 = new Shader("Test2", "res/shader/model.x", bufferprop2);
+	m_Shader2->Bind();
+	m_Shader2->SetUniformValue("u_Projection", m_Projection);
+	m_Shader2->SetUniformValue("u_Model", m_Rotation);
+
 
 	m_Shader->Bind();
 	m_Shader->SetUniformValue("u_Projection", m_Projection);
@@ -74,12 +106,13 @@ GameLayer::GameLayer()
 	style.WindowRounding = 0.0f;
 
 	m_Scene = new Scene();
+
+	m_Model = new Model("res/model/bayonet.fbx");
 }
 GameLayer::~GameLayer()
 {
 	delete m_VBuffer;
 	delete m_IBuffer;
-	delete m_VAO;
 	delete m_Shader;
 	delete m_FrameBuffer;
 }
@@ -99,10 +132,15 @@ void GameLayer::DrawScene()
 {
 	m_FrameBuffer->Bind();
 
-	m_VAO->Bind();
+	m_VBuffer->Bind();
+	m_IBuffer->Bind();
 	m_Shader->Bind();
 	m_Shader->SetUniformValue("u_Model", m_Rotation);
-	Application::s_Application->m_RenderAPI->DrawIndices(m_VAO->GetCount());
+	//Application::s_Application->m_RenderAPI->DrawIndices(m_IBuffer->GetCount());
+
+	m_Shader2->Bind();
+	m_Shader2->SetUniformValue("u_Model", m_Rotation);
+	m_Model->Draw();
 
 	Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
 }

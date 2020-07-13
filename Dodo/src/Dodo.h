@@ -20,6 +20,7 @@
 
 		/* Scene */
 			#include "Core/Graphics/Scene/Scene.h"
+			#include "Core/Graphics/Scene/Model.h"
 
 	/* Math */
 

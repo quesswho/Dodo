@@ -5,7 +5,6 @@
 namespace Dodo { 
 	typedef Platform::OpenGLVertexBuffer VertexBuffer;
 	typedef Platform::OpenGLIndexBuffer IndexBuffer;
-	typedef Platform::OpenGLArrayBuffer ArrayBuffer;
 }
 #elif DD_API_DX11
 

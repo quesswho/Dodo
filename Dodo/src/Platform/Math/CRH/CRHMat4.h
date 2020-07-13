@@ -161,10 +161,10 @@ namespace Dodo {
 			inline const CRHMat4x4& operator*=(const CRHMat4x4& other)
 			{
 
-				const TVec4 row0 = TVec4(m_Elements[GetIndex(0, 0)], m_Elements[GetIndex(1, 0)], m_Elements[GetIndex(2, 0)], m_Elements[GetIndex(3, 0)]);
-				const TVec4 row1 = TVec4(m_Elements[GetIndex(0, 1)], m_Elements[GetIndex(1, 1)], m_Elements[GetIndex(2, 1)], m_Elements[GetIndex(3, 1)]);
-				const TVec4 row2 = TVec4(m_Elements[GetIndex(0, 2)], m_Elements[GetIndex(1, 2)], m_Elements[GetIndex(2, 2)], m_Elements[GetIndex(3, 2)]);
-				const TVec4 row3 = TVec4(m_Elements[GetIndex(0, 3)], m_Elements[GetIndex(1, 3)], m_Elements[GetIndex(2, 3)], m_Elements[GetIndex(3, 3)]);
+				const Math::TVec4 row0 = Math::TVec4(m_Elements[GetIndex(0, 0)], m_Elements[GetIndex(1, 0)], m_Elements[GetIndex(2, 0)], m_Elements[GetIndex(3, 0)]);
+				const Math::TVec4 row1 = Math::TVec4(m_Elements[GetIndex(0, 1)], m_Elements[GetIndex(1, 1)], m_Elements[GetIndex(2, 1)], m_Elements[GetIndex(3, 1)]);
+				const Math::TVec4 row2 = Math::TVec4(m_Elements[GetIndex(0, 2)], m_Elements[GetIndex(1, 2)], m_Elements[GetIndex(2, 2)], m_Elements[GetIndex(3, 2)]);
+				const Math::TVec4 row3 = Math::TVec4(m_Elements[GetIndex(0, 3)], m_Elements[GetIndex(1, 3)], m_Elements[GetIndex(2, 3)], m_Elements[GetIndex(3, 3)]);
 
 				m_Elements[0] = other.m_Columns[0].Dot(row0);
 				m_Elements[1] = other.m_Columns[0].Dot(row1);
@@ -362,7 +362,7 @@ namespace Dodo {
 			static inline const CRHMat4x4<T> Perspective(float fov, float aspectratio, float zNear, float zFar)
 			{
 
-				const float tanHalfFov = tan(ToRadians(fov) / 2);
+				const float tanHalfFov = tan(Math::ToRadians(fov) / 2);
 
 				/*	__														   __
 					| s,		 0,			0,					        0		|
@@ -407,8 +407,8 @@ namespace Dodo {
 			{
 				CRHMat4x4 result(1.0f);
 
-				const Vec3 r = Normalize(Cross(dir, up));
-				const Vec3 u = Cross(r, dir);
+				const Math::Vec3 r = Normalize(Cross(dir, up));
+				const Math::Vec3 u = Cross(r, dir);
 
 				result.m_Elements[GetIndex(0, 0)] = r.x;
 				result.m_Elements[GetIndex(1, 0)] = r.y;
@@ -426,7 +426,7 @@ namespace Dodo {
 				return result;
 			}
 			/////
-			// Usefull static functions
+			// Useful static functions
 			/////
 
 			static inline const CRHMat4x4<T> Multiply(const CRHMat4x4<T>& mat)

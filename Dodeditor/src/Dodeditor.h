@@ -17,17 +17,18 @@ public:
 	void Render();
 	void OnEvent(const Event& event);
 private:
-	VertexBuffer* m_VBuffer;
-	IndexBuffer* m_IBuffer;
 	Shader* m_Shader;
-	Shader* m_Shader2;
 	FrameBuffer* m_FrameBuffer;
 
+	Math::FreeCamera* m_Camera;
+
 	Math::Mat4 m_Rotation;
-	Math::Mat4 m_Projection;
 	Scene* m_Scene;
 
 	Model* m_Model;
+
+	bool m_ViewportActive;
+	bool m_ViewportHover;
 };
 
 class Dodeditor : public Application

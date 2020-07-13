@@ -8,7 +8,7 @@ namespace Dodo {
 	namespace Platform {
 
 		OpenGLRenderAPI::OpenGLRenderAPI() 
-			: m_GPUInfo(""), m_VramKbs(0)
+			: m_GPUInfo(""), m_VramKbs(0), m_ViewportWidth(0), m_ViewportHeight(0)
 		{}
 
 		OpenGLRenderAPI::~OpenGLRenderAPI() 
@@ -23,10 +23,13 @@ namespace Dodo {
 			{
 				if (GLAD_VERSION_MAJOR(res) > 3)
 				{
-					Viewport(winprop.m_Width, winprop.m_Height);
-					//glEnable(GL_CULL_FACE); // TODOD: Enable through winprop
-					//glCullFace(GL_BACK);
-					//glFrontFace(GL_CCW);
+					ResizeDefaultViewport(winprop.m_Width, winprop.m_Height);
+					if (winprop.m_Flags & DodoWindowFlags_BACKFACECULL)
+					{
+						glEnable(GL_CULL_FACE);
+						glCullFace(GL_BACK);
+						glFrontFace(GL_CCW);
+					}
 					glGetIntegerv(0x9048, &m_VramKbs);
 					m_GPUInfo = "";
 					m_GPUInfo = ((const char*)glGetString(GL_RENDERER));
@@ -47,6 +50,13 @@ namespace Dodo {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glViewport(0, 0, Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		}
+
+		void OpenGLRenderAPI::ResizeDefaultViewport(uint width, uint height)
+		{
+			m_ViewportWidth = width;
+			m_ViewportHeight = height;
+			glViewport(0, 0, width, height);
 		}
 
 		void OpenGLRenderAPI::ImGuiNewFrame() const

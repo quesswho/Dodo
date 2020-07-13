@@ -310,7 +310,9 @@ namespace Dodo {
 					break;
 				case WM_SIZE:
 					if (!Application::s_Application->m_Initializing)
+					{
 						Application::s_Application->m_Window->WindowResizeCallback(Math::TVec2<int>(LOWORD(lParam), HIWORD(lParam)));
+					}
 					break;
 				default:
 					result = DefWindowProc(hwnd, msg, wParam, lParam);
@@ -331,6 +333,7 @@ namespace Dodo {
 
 		void Win32Window::SetCursorPosition(Math::TVec2<long> pos)
 		{
+			m_MousePos = Math::TVec2<long>(pos.x, pos.y);
 			POINT pt;
 			pt.x = pos.x;
 			pt.y = pos.y;

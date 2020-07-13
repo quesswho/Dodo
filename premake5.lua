@@ -62,7 +62,10 @@ workspace "Dodo"
 			"Assimp"
 		}
 		
-		buildoptions { "/bigobj" }
+		buildoptions { 
+			"/bigobj",
+			"/Ob1"
+		}
 		
 		filter "system:windows"
 			systemversion "latest"

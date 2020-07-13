@@ -13,6 +13,7 @@ workspace "Dodo"
 	group "Dependencies"
 		include "Dodo/lib/glad"
 		include "Dodo/lib/imgui"
+		include "Dodo/lib/assimp"
 	
 	group "" -- Go to root level
 	project "Dodo"
@@ -57,9 +58,12 @@ workspace "Dodo"
 		links {
 			"glad",
 			"opengl32.lib",
-			"imgui"
+			"imgui",
+			"Assimp"
 		}
-	
+		
+		buildoptions { "/bigobj" }
+		
 		filter "system:windows"
 			systemversion "latest"
 			defines {
@@ -68,32 +72,12 @@ workspace "Dodo"
 			}
 
 		filter "configurations:Debug"
-			libdirs { 
-				"%{prj.name}/lib/assimp/bin/Debug" 
-			}
-			
-			links {
-				"assimpd.lib",
-				"IrrXMLd.lib",
-				"zlibd.lib"
-			}
-		
 			defines {
 				"DD_DEBUG"
 			}
 			symbols "On"
 	
 		filter "configurations:Release"
-			libdirs { 
-				"%{prj.name}/lib/assimp/bin/Release" 
-			}
-			
-			links {
-				"assimp.lib",
-				"IrrXML.lib",
-				"zlib.lib"
-			}
-			
 			defines {
 				"DD_RELEASE"
 			}

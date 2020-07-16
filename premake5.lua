@@ -36,7 +36,9 @@ workspace "Dodo"
 
 		files { 
 			"%{prj.name}/src/**.h", 
-			"%{prj.name}/src/**.cpp"
+			"%{prj.name}/src/**.cpp",
+			"%{prj.name}/lib/stb_image/stb_image.h",
+			"%{prj.name}/lib/stb_image/stb_image.cpp"
 		}
 
 		includedirs { 
@@ -47,7 +49,8 @@ workspace "Dodo"
 			"%{prj.name}/lib/spdlog/include",
 			"%{prj.name}/lib/glad/include",
 			"%{prj.name}/lib/imgui/include",
-			"%{prj.name}/lib/assimp/include"
+			"%{prj.name}/lib/assimp/include",
+			"%{prj.name}/lib/stb_image/stb_image.h"
 		}
 
 		defines

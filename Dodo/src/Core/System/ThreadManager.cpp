@@ -5,7 +5,7 @@
 namespace Dodo {
 
 	ThreadManager::ThreadManager(int amount)
-		: m_Terminate(false)
+		: m_Terminate(false), m_Amount(0)
 	{
 		m_WorkThreads.resize(amount);
 		for (int i = 0; i < amount; i++)

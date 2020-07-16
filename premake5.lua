@@ -42,15 +42,15 @@ workspace "Dodo"
 		}
 
 		includedirs { 
-			"%{prj.name}/src"
+			"%{prj.name}/src",
+			"%{prj.name}/lib/stb_image/"
 		}
 		
 		sysincludedirs {
 			"%{prj.name}/lib/spdlog/include",
 			"%{prj.name}/lib/glad/include",
 			"%{prj.name}/lib/imgui/include",
-			"%{prj.name}/lib/assimp/include",
-			"%{prj.name}/lib/stb_image/stb_image.h"
+			"%{prj.name}/lib/assimp/include"
 		}
 
 		defines

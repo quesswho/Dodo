@@ -10,13 +10,14 @@
 		//#include "Core/Application/Window.h"
 		//#include "Core/Application/Layer.h"
 	/* Common */
-		//#include "Core/Common/Common.h"	// Already included in other headers
-		//#include "Core/Common/Macros.h"	// ^
+		//#include "Core/Common/Common.h"
+		//#include "Core/Common/Macros.h"
 
 	/* Graphics */
 		#include "Core/Graphics/Buffer.h"
 		#include "Core/Graphics/Shader.h"
 		#include "Core/Graphics/FrameBuffer.h"
+		#include "Core/Graphics/Texture.h"
 
 		/* Scene */
 			#include "Core/Graphics/Scene/Scene.h"
@@ -24,14 +25,7 @@
 
 	/* Math */
 		#include "Core/Math/Camera/FreeCamera.h"
+
 	/* System */
 
 	/* Utilities*/
-
-/* Platform */
-	
-	/* GraphicsAPI */
-
-	/* WindowAPI */
-
-		/* Win32 */

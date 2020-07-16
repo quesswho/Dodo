@@ -4,20 +4,31 @@
 
 namespace Dodo {
 
-	typedef enum TextureFilter {
-		DODO_FILTER_MIN_MAG_LINEAR_MIP_NEAREST,
-		DODO_FILTER_MIN_MAG_MIP_LINEAR,
-		DODO_FILTER_MIN_NEAREST_MAG_LINEAR_MIP_NEAREST,
-		DODO_FILTER_MIN_NEAREST_MAG_MIP_LINEAR,
+	enum class TextureFilter : uint
+	{
+		FILTER_MIN_MAG_LINEAR_MIP_NEAREST,
+		FILTER_MIN_MAG_MIP_LINEAR,
+		FILTER_MIN_NEAREST_MAG_LINEAR_MIP_NEAREST,
+		FILTER_MIN_NEAREST_MAG_MIP_LINEAR,
 
-		DODO_FILTER_MIN_MAG_MIP_NEAREST,
-		DODO_FILTER_MIN_MAG_NEAREST_MIP_LINEAR,
-		DODO_FILTER_MIN_LINEAR_MAG_MIP_NEAREST,
-		DODO_FILTER_MIN_LINEAR_MAG_MIP_LINEAR
+		FILTER_MIN_MAG_MIP_NEAREST,
+		FILTER_MIN_MAG_NEAREST_MIP_LINEAR,
+		FILTER_MIN_LINEAR_MAG_MIP_NEAREST,
+		FILTER_MIN_LINEAR_MAG_MIP_LINEAR
+	};
+
+	enum class TextureWrapMode
+	{
+		WRAP_REPEAT,
+		WRAP_CLAMP_TO_BORDER,
+		WRAP_CLAMP_TO_EDGE,
+		WRAP_MIRRORED_REPEAT
 	};
 
 	struct TextureProp {
 		TextureFilter m_Filter;
+		TextureWrapMode m_WrapU;
+		TextureWrapMode m_WrapV;
 	};
 
 	namespace Platform {
@@ -31,6 +42,8 @@ namespace Dodo {
 			~OpenGLTexture();
 
 			void Bind() const;
+		private:
+			int m_Width, m_Height;
 		};
 	}
 }

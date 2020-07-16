@@ -22,7 +22,7 @@ namespace Dodo {
 		}
 
 		// Use only positive numbers
-		static int fast_mod(const int input, const int ceil) {
+		static inline int fast_mod(const int input, const int ceil) {
 			return input >= ceil ? input % ceil : input;
 		}
 	}

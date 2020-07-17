@@ -41,7 +41,6 @@ GameLayer::GameLayer()
 	style.WindowRounding = 0.0f;
 
 	m_Scene = new Scene();
-
 	m_Model = new Model("res/model/Bayonet.fbx");
 }
 GameLayer::~GameLayer()
@@ -178,6 +177,7 @@ void GameLayer::DrawImGui()
 		ImGui::End();
 	}
 
+	bool s_ClickHandled = false;
 	if (s_ShowEntityHierarchy)
 	{
 		static uint s_RenamingId = -1; // 4 294 967 295
@@ -185,18 +185,32 @@ void GameLayer::DrawImGui()
 		if (ImGui::Button("Create New Entity"))
 		{
 			s_RenamingId = m_Scene->CreateEntity();
+			m_SelectedEntity.insert(std::make_pair(s_RenamingId, false));
+			s_ClickHandled = true;
 			ImGui::SetNextTreeNodeOpen(true);
 		}
+
 
 		if(ImGui::TreeNode("Entities"))
 		{
 			static char s_Renameable[32] = "Unnamed";
+
 			for (auto ent : m_Scene->m_Entities)
 			{
 				if (ent.first != s_RenamingId)
 				{
+					bool open = ImGui::TreeNodeEx(ent.second.m_Name.c_str(), (m_SelectedEntity.at(ent.first) ? ImGuiTreeNodeFlags_Selected  : 0 ) | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
+					if (ImGui::IsItemClicked() && !ImGui::IsMouseDragging(0))
+					{
+						if(!io.KeyCtrl)
+							for (auto& e : m_SelectedEntity)
+								e.second = false;
 
-					if (ImGui::TreeNode(ent.second.m_Name.c_str()))
+						m_SelectedEntity.at(ent.first) = !m_SelectedEntity.at(ent.first);
+						s_ClickHandled = true;
+					}
+
+					if (open)
 					{
 						if (ImGui::Button("Add component"))
 						{
@@ -217,6 +231,11 @@ void GameLayer::DrawImGui()
 				}
 			}
 			ImGui::TreePop();
+			if(!s_ClickHandled && ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered())
+				for (auto& e : m_SelectedEntity)
+					e.second = false;
+
+			s_ClickHandled = false;
 		}
 
 		ImGui::End();

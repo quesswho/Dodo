@@ -29,6 +29,8 @@ private:
 
 	bool m_ViewportActive;
 	bool m_ViewportHover;
+
+	std::unordered_map<uint, bool> m_SelectedEntity;
 };
 
 class Dodeditor : public Application

@@ -236,14 +236,12 @@ namespace Dodo {
 				return result;
 			}
 
-			static const CRHMat3x3 Rotate(const float degrees)
+			static const CRHMat3x3 Rotate(const float radians)
 			{
 				CRHMat3x3 result;
 
-				const float r = ToRadians(degrees);
-
-				const float c = cos(r);
-				const float s = sin(r);
+				const float c = cos(radians);
+				const float s = sin(radians);
 
 				result.m_Elements[GetIndex(0, 0)] = c;
 				result.m_Elements[GetIndex(0, 1)] = -s;

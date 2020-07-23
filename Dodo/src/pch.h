@@ -9,6 +9,7 @@
 
 #include "Core/System/Memory.h"
 #include "Core/Utilities/Logger.h"
+#include "Core/Utilities/DebugTools.h"
 
 #include "Core/Math/Maths.h"
 

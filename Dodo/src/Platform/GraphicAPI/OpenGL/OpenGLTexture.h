@@ -36,12 +36,13 @@ namespace Dodo {
 		class OpenGLTexture {
 		private:
 			uint m_TextureID;
-			uint m_Index;
 		public:
 			OpenGLTexture(const char* path, uint index, const TextureProp& prop);
 			~OpenGLTexture();
 
 			void Bind() const;
+		public:
+			uint m_Index;
 		private:
 			int m_Width, m_Height;
 		};

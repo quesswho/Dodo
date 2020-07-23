@@ -46,7 +46,7 @@ namespace Dodo {
 			wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 			wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 			wc.lpszMenuName = NULL;
-			wc.lpszClassName = L"WindowsWindowClass";
+			wc.lpszClassName = "WindowsWindowClass";
 
 			if (!RegisterClassEx(&wc))
 			{
@@ -66,7 +66,7 @@ namespace Dodo {
 
 			if (m_WindowProperties.m_Flags & DodoWindowFlags_FULLSCREEN)
 			{
-				m_Hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, wc.lpszClassName, L"", WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP,
+				m_Hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, wc.lpszClassName, "", WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP,
 					0, 0, m_WindowProperties.m_Width, m_WindowProperties.m_Height, NULL, NULL, m_HInstance, NULL);
 
 				posX = (GetSystemMetrics(SM_CXSCREEN) - m_WindowProperties.m_Width) / 2;
@@ -78,7 +78,7 @@ namespace Dodo {
 			else
 			{
 
-				m_Hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, wc.lpszClassName, L"", WS_OVERLAPPEDWINDOW,
+				m_Hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, wc.lpszClassName, "", WS_OVERLAPPEDWINDOW,
 					0, 0, m_WindowProperties.m_Width, m_WindowProperties.m_Height, NULL, NULL, m_HInstance, NULL);
 
 				posX = (GetSystemMetrics(SM_CXSCREEN) - m_WindowProperties.m_Width) / 2 - (GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) - GetSystemMetrics(SM_CXFRAME)) / 2;
@@ -125,6 +125,8 @@ namespace Dodo {
 				m_Pcspecs.m_CpuBrand.erase(doubleSpace, 1);
 				doubleSpace = m_Pcspecs.m_CpuBrand.find("  ");
 			}
+
+			if (isspace(m_Pcspecs.m_CpuBrand.at(0))) m_Pcspecs.m_CpuBrand.erase(0, 1); // Remove space in beginning
 
 
 			MEMORYSTATUSEX memInfo;
@@ -326,7 +328,7 @@ namespace Dodo {
 			SetWindowTextA(m_Hwnd, m_WindowProperties.m_Title);
 		}
 
-		void Win32Window::SetCursorVisibility(bool vis)
+		void Win32Window::SetCursorVisible(bool vis)
 		{
 			ShowCursor(vis);
 		}
@@ -392,6 +394,37 @@ namespace Dodo {
 		void Win32Window::ImGuiEndFrame() const
 		{
 			ImGui::Render();
+		}
+
+		std::string Win32Window::OpenFileDialog() const
+		{
+			std::string result;
+			static OPENFILENAME ofn;
+
+			char path[100];
+
+			ZeroMemory(&ofn, sizeof(ofn));
+			ofn.lStructSize = sizeof(ofn);
+			ofn.hwndOwner = NULL;
+			ofn.lpstrFile = path;
+			ofn.lpstrFile[0] = '\0';
+			ofn.nMaxFile = sizeof(path);
+			ofn.lpstrFilter = "All\0*.*\0Text\0*.TXT\0";
+			ofn.nFilterIndex = 1;
+			ofn.lpstrFileTitle = NULL;
+			ofn.nMaxFileTitle = 0;
+			ofn.lpstrInitialDir = NULL;
+			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+			GetOpenFileName(&ofn);
+			result = path;
+			auto it = std::find(result.begin(), result.end(), '\\');
+			while (it != result.end()) {
+				result.replace(it, it + 1, "/");
+
+				it = std::find(it + 2, result.end(), '\\');
+			}
+
+			return result;
 		}
 
 		void Win32Window::KeyPressCallback(uint keycode)

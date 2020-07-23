@@ -50,7 +50,6 @@ namespace Dodo {
 
 		std::vector<Layer*> m_Layers;
 
-
 		float m_FrameTime;
 		bool m_Closed;
 		uint m_NumLogicalProcessors;

@@ -16,6 +16,7 @@ namespace Dodo {
 			Vec3 m_Right;
 			Vec3 m_Up;
 			Vec3 m_WorldUp;
+			Vec3 m_MoveDirection;
 
 			float m_Yaw, m_Pitch;
 			float m_Speed;

@@ -8,7 +8,7 @@ namespace Dodo {
 	namespace Platform {
 
 		OpenGLRenderAPI::OpenGLRenderAPI() 
-			: m_GPUInfo(""), m_VramKbs(0), m_ViewportWidth(0), m_ViewportHeight(0)
+			: m_GPUInfo(""), m_VramKbs(0), m_ViewportWidth(0), m_ViewportHeight(0), m_ViewportPosX(0), m_ViewportPosY(0)
 		{}
 
 		OpenGLRenderAPI::~OpenGLRenderAPI() 
@@ -56,7 +56,14 @@ namespace Dodo {
 		{
 			m_ViewportWidth = width;
 			m_ViewportHeight = height;
-			glViewport(0, 0, width, height);
+			glViewport(m_ViewportPosX, m_ViewportPosY, width, height);
+		}
+
+		void OpenGLRenderAPI::ResizeDefaultViewport(uint width, uint height, uint posX, uint posY)
+		{
+			m_ViewportPosX = posX;
+			m_ViewportPosY = posY;
+			ResizeDefaultViewport(width, height);
 		}
 
 		void OpenGLRenderAPI::ImGuiNewFrame() const

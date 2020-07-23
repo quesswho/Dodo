@@ -303,16 +303,14 @@ namespace Dodo {
 
 
 			// Recommended to normalize axis
-			static inline CRHMat4x4<T> Rotate(const T& degrees, const Math::TVec3<T>& axis)
+			static inline CRHMat4x4<T> Rotate(const float radians, const Math::TVec3<T>& axis)
 			{
 				CRHMat4x4 result(1.0f);
 
-				const float r = ToRadians(degrees);
+				const float c = cos(radians);
+				const float s = sin(radians);
 
-				const float c = cos(r);
-				const float s = sin(r);
-
-				const TVec3<T> temp((T(1) - c) * axis);
+				const Math::TVec3<T> temp((T(1) - c) * axis);
 
 				result.m_Elements[GetIndex(0, 0)] = c + axis.x * temp.x;
 				float aewqea = c + axis.x * temp.x;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Mesh.h"
+#include "Material.h"
 
 namespace Dodo {
 
@@ -17,12 +18,15 @@ namespace Dodo {
 		std::vector<Vertex> m_Vertices;
 		std::vector<uint> m_Indices;
 
+		Material* m_Material;
 		Mesh* m_Mesh;
 	public:
 
 		// Temporary loading approach
 		Model(const char* path);
 		~Model();
+
+		inline void SetMaterial(Material* material) { m_Material = material; }
 
 		void Draw() const;
 	private:

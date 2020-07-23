@@ -22,8 +22,22 @@ namespace Dodo {
 		}
 
 		// Use only positive numbers
-		static inline int fast_mod(const int input, const int ceil) {
+		static inline constexpr int fast_mod(const int input, const int ceil) {
 			return input >= ceil ? input % ceil : input;
+		}
+
+		static inline float fast_isqrt(const float x) noexcept
+		{
+			union {
+				float f;
+				uint32_t i;
+			};
+
+			const float x2  = x * 0.5f;
+			f = x;
+			i = 0x5f3759df - (i >> 1);
+			f = f * (1.5f - (x2 * f * f));
+			return f;
 		}
 	}
 }

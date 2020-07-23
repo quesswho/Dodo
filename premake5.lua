@@ -22,7 +22,8 @@ workspace "Dodo"
 		language "C++"
 		cppdialect "C++17"
 		staticruntime "on"
-
+		characterset "MBCS"
+		
 		configuration "Debug"
 			targetdir ("bin/Debug-%{cfg.architecture}/%{prj.name}/")
 			objdir ("bin/Debug-%{cfg.architecture}/%{prj.name}/intermediates/")
@@ -94,6 +95,7 @@ workspace "Dodo"
 		language "C++"
 		cppdialect "C++17"
 		staticruntime "On"
+		characterset "MBCS"
 		
 		configuration "Debug"
 			targetdir ("bin/Debug-%{cfg.architecture}/%{prj.name}/")
@@ -150,6 +152,7 @@ workspace "Dodo"
 		language "C++"
 		cppdialect "C++17"
 		staticruntime "On"
+		characterset "MBCS"
 		
 		configuration "Debug"
 			targetdir ("bin/Debug-%{cfg.architecture}/%{prj.name}/")

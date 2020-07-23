@@ -2,13 +2,19 @@
 
 #include <string>
 
+#include "Component/ModelComponent.h"
+
 namespace Dodo {
 
 
-	enum struct Components
+	enum ComponentFlags
 	{
-		MeshComponent = 1 << 0
+		None = 0,
+		FlagModelComponent = 1 << 0
 	};
+	DEFINE_ENUM_FLAG_OPERATORS(ComponentFlags);
+
+	inline ComponentFlags& operator |= (ComponentFlags& a, int b) throw() { return (ComponentFlags&)(((_ENUM_FLAG_SIZED_INTEGER<ComponentFlags>::type&)a) |= ((_ENUM_FLAG_SIZED_INTEGER<ComponentFlags>::type)b)); }
 
 	struct Entity {
 		Entity(const std::string& name)
@@ -16,6 +22,6 @@ namespace Dodo {
 		{}
 
 		std::string m_Name;
-		Components m_ComponentFlags;
+		ComponentFlags m_ComponentFlags;
 	};
 }

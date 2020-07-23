@@ -56,12 +56,14 @@ namespace Dodo {
 			void Update() const;
 			void SetTitle(const char* title);
 			void SetCursorPosition(Math::TVec2<long> pos);
-			void SetCursorVisibility(bool vis);
+			void SetCursorVisible(bool vis);
 			void VSync(bool vsync);
 			void FullScreen(bool fullscreen);
 			void FullScreen() { FullScreen(~m_WindowProperties.m_Flags & DodoWindowFlags_FULLSCREEN); }
 			void ImGuiNewFrame() const;
 			void ImGuiEndFrame() const;
+
+			std::string OpenFileDialog() const;
 
 			bool m_Keys[1024];
 			Math::TVec2<long> m_MousePos;

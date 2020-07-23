@@ -4,6 +4,7 @@
 namespace Dodo {
 
 	Scene::Scene()
+		: m_AmountOfComponents(1)
 	{}
 
 	Scene::~Scene()
@@ -32,5 +33,21 @@ namespace Dodo {
 			return false;
 		m_Entities.erase(id);
 		return true;
+	}
+
+	void Scene::AddComponent(uint id, ModelComponent* comp)
+	{
+		auto it = m_ModelComponent.find(id);
+		if (it != m_ModelComponent.end())
+			it->second = comp;
+		m_ModelComponent.insert(std::make_pair(id, comp));
+	}
+
+	void Scene::Draw()
+	{
+		for (auto& model : m_ModelComponent)
+		{
+			model.second->Draw();
+		}
 	}
 }

@@ -13,9 +13,9 @@ namespace Dodo {
 			m_T1 = std::chrono::high_resolution_clock::now();
 		}
 
-		unsigned int Stop()
+		float Stop()
 		{
-			return (std::chrono::high_resolution_clock::now() - m_T1).count();
+			return std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - m_T1).count();
 		}
 	};
 }

@@ -17,6 +17,10 @@ namespace Dodo {
 			const char* m_Name;
 			std::unordered_map<const char*, int> m_UniformLocations;
 		public:
+			explicit OpenGLShader(const char* name, uint shader) // Prone to change
+				: m_Name(name), m_ShaderID(shader)
+			{}
+
 			explicit OpenGLShader(const char* name, const char* path, const BufferProperties& shaderInput); // File path
 			explicit OpenGLShader(const char* name, std::string& source, const BufferProperties& shaderInput); // Shader code
 

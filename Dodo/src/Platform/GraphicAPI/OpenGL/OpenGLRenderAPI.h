@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/Graphics/ShaderBuilder.h"
 
 #include "Core/Application/Window.h"
 
@@ -47,6 +48,8 @@ namespace Dodo {
 
 				return m_VramKbs - availKb;
 			}
+
+			ShaderBuilder* m_ShaderBuilder;
 
 			std::string m_GPUInfo;
 			int m_VramKbs;

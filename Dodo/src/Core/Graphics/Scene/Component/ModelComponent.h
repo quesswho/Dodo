@@ -9,8 +9,9 @@ namespace Dodo {
 	private:
 		Model* m_Model;
 
-		Math::Transformation m_Transformation;
 	public:
+		Math::Transformation m_Transformation;
+
 		ModelComponent(const char* path)
 			: ModelComponent(path, Math::Transformation())
 		{}
@@ -19,13 +20,9 @@ namespace Dodo {
 
 		~ModelComponent();
 
-		void Move(const Math::Vec3& pos);
-		void Scale(const Math::Vec3& scale);
-		void Rotate(float radians, const Math::Vec3& axis);
-
 		void Transformation(const Math::Vec3& pos, const Math::Vec3& scale, const Math::Vec3& axis, float radians);
 
-		void Draw() const;
+		void Draw(const Math::Mat4& camera) const;
 
 		std::string m_Path;
 	};

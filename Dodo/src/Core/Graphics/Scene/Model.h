@@ -28,6 +28,9 @@ namespace Dodo {
 
 		inline void SetMaterial(Material* material) { m_Material = material; }
 
+		template<typename T>
+		inline void SetUniform(const char* location, T value) { m_Material->SetUniform(location, value); }
+		void Bind() const;
 		void Draw() const;
 	private:
 		bool Load(const char* path);

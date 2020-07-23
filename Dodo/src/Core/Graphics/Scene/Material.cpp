@@ -1,9 +1,15 @@
 #include "pch.h"
 #include "Material.h"
+#include "Core/Application/Application.h"
 
 namespace Dodo {
 
 	Material::Material()
+		: m_Shader(Application::s_Application->m_RenderAPI->m_ShaderBuilder->GetFallbackShader())
+	{}
+
+	Material::Material(Shader* shader)
+		: m_Shader(shader)
 	{}
 
 	Material::Material(Shader* shader, std::vector<Texture*> textures)
@@ -38,6 +44,7 @@ namespace Dodo {
 
 	void Material::Bind()
 	{
+		m_Shader->Bind();
 		for (auto& tex : m_Textures)
 			tex->Bind();
 	}

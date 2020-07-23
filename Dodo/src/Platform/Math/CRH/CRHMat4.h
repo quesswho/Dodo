@@ -19,7 +19,7 @@ namespace Dodo {
 			};
 
 			CRHMat4x4() 
-				: m_Elements{ 0 }
+				: m_Elements { 0 }
 			{}
 			CRHMat4x4(float diagonal) { Identity(diagonal); }
 

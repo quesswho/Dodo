@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "OpenGLRenderAPI.h"
 #include "Core/Application/Application.h"
-
 #include <imgui_impl_opengl3.h>
 
 namespace Dodo {
@@ -38,6 +37,8 @@ namespace Dodo {
 
 					if(Application::s_Application->m_WindowProperties.m_Flags & DodoWindowFlags_IMGUI)
 						ImGui_ImplOpenGL3_Init();
+
+					m_ShaderBuilder = new ShaderBuilder();
 					return 1;
 				}
 				return -2;

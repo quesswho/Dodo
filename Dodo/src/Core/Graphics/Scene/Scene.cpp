@@ -1,10 +1,11 @@
 #include "pch.h"
 #include "Scene.h"
+#include "Core/Application/Application.h"
 
 namespace Dodo {
 
 	Scene::Scene()
-		: m_AmountOfComponents(1)
+		: m_AmountOfComponents(1), m_Camera(Math::Mat4::Perspective(45.0f, Application::s_Application->m_WindowProperties.m_Width / Application::s_Application->m_WindowProperties.m_Height, 0.01f, 100.0f))
 	{}
 
 	Scene::~Scene()
@@ -47,7 +48,7 @@ namespace Dodo {
 	{
 		for (auto& model : m_ModelComponent)
 		{
-			model.second->Draw();
+			model.second->Draw(m_Camera);
 		}
 	}
 }

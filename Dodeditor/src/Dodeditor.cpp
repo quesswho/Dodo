@@ -20,12 +20,7 @@ GameLayer::GameLayer()
 
 	m_Rotation = Mat4::Translate(Vec3(0.0f, 0.0f, -20.0f));
 	
-	m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 0.0f), (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.04f, 10.0f);
-
-	m_Shader = new Shader("Model", "res/shader/model.x", bufferprop);
-	m_Shader->Bind();
-	m_Shader->SetUniformValue("u_Camera", m_Camera->GetProjectionMatrix());
-	m_Shader->SetUniformValue("u_Model", m_Rotation);
+	m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 20.0f), (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.04f, 10.0f);
 
 	FrameBufferProperties frameprop;
 	frameprop.m_Width = Application::s_Application->m_WindowProperties.m_Width;
@@ -76,8 +71,8 @@ void GameLayer::InitEditor()
 
 GameLayer::~GameLayer()
 {
-	delete m_Shader;
 	delete m_FrameBuffer;
+	delete m_Camera;
 	delete m_Scene;
 	delete m_Model;
 }
@@ -97,9 +92,8 @@ void GameLayer::DrawScene()
 {
 	m_FrameBuffer->Bind();
 
-	m_Shader->Bind();
-	m_Shader->SetUniformValue("u_Model", m_Rotation);
-	m_Shader->SetUniformValue("u_Camera", m_Camera->GetCameraMatrix());
+
+	m_Scene->UpdateCamera(m_Camera->GetCameraMatrix());
 	m_Scene->Draw();
 
 	Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
@@ -225,17 +219,26 @@ void GameLayer::DrawImGui()
 	if (m_EditorProperties.m_ShowHierarchy)
 	{
 		static uint s_RenamingId = -1; // 4 294 967 295
+		bool s_SetOpen = false;
 		ImGui::Begin(m_EditorProperties.m_HierarchyName);
 		if (ImGui::Button("Create New Entity"))
 		{
 			s_RenamingId = m_Scene->CreateEntity();
 			m_SelectedEntity.insert(std::make_pair(s_RenamingId, false));
 			s_ClickHandled = true;
-			ImGui::SetNextTreeNodeOpen(true);
+			s_SetOpen = true;
 		}
 
 
 		static char s_RenameableHierarchy[32] = "Unnamed";
+
+		ImGui::ColorButton("", ImColor(226, 189, 0), ImGuiColorEditFlags_NoBorder | ImGuiColorEditFlags_NoInputs);
+		ImGui::SameLine();
+		if (s_SetOpen)
+		{
+			s_SetOpen = false;
+			ImGui::SetNextTreeNodeOpen(true);
+		}
 		if(ImGui::TreeNode("Entities"))
 		{
 			if (m_Scene->m_Entities.size() > 0)
@@ -245,7 +248,14 @@ void GameLayer::DrawImGui()
 				{
 					if (ent.first != s_RenamingId || m_EditorProperties.m_ViewportInput)
 					{
-						bool open = ImGui::TreeNodeEx(ent.second.m_Name.c_str(), (m_SelectedEntity.at(ent.first) ? ImGuiTreeNodeFlags_Selected  : 0 ) | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_Leaf);
+						ImGui::ColorButton("", ImColor(120, 50, 0), ImGuiColorEditFlags_NoBorder | ImGuiColorEditFlags_NoInputs);
+						ImGui::SameLine();
+						bool open = ImGui::TreeNodeEx(ent.second.m_Name.c_str(), (m_SelectedEntity.at(ent.first) ? ImGuiTreeNodeFlags_Selected  : 0 ) | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
+						if (m_SelectedEntity.at(ent.first))
+						{
+							ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 40); // Move text to right side
+							ImGui::Text("%i", ent.first);
+						}
 						if (ImGui::IsItemClicked())
 						{
 							if(!io.KeyCtrl)
@@ -261,6 +271,7 @@ void GameLayer::DrawImGui()
 						{
 							static uint s_Selected = 1;
 							const char* selectedName = m_HierarchyComponents[s_Selected].m_Name;
+							ImGui::Indent();
 							if (ImGui::BeginCombo("###label", selectedName, 0))
 							{
 								for (int i = 0; i < m_HierarchyComponents.size(); i++)
@@ -310,6 +321,7 @@ void GameLayer::DrawImGui()
 					else
 					{
 						ImGui::SetKeyboardFocusHere(0);
+						ImGui::Indent();
 						if (ImGui::InputText(std::to_string(ent.first).c_str(), s_RenameableHierarchy, IM_ARRAYSIZE(s_RenameableHierarchy), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
 						{
 							if(s_RenameableHierarchy == '\0')
@@ -324,6 +336,7 @@ void GameLayer::DrawImGui()
 									e.second = false;
 							m_SelectedEntity.at(ent.first) = true;
 						}
+						ImGui::Unindent();
 					}
 				}
 			}
@@ -363,8 +376,8 @@ void GameLayer::DrawImGui()
 						strcpy_s(s_RenameableInspector, ent.m_Name.c_str());
 					}
 				}
-				ImGui::Text("Components:");
-				ImGui::Indent();
+
+				ImGui::Separator();
 
 				static uint s_Selected = 1;
 				const char* selectedName = m_InspectorComponents[s_Selected].m_Name;
@@ -383,7 +396,6 @@ void GameLayer::DrawImGui()
 					ImGui::EndCombo();
 				}
 
-
 				ImGui::Indent();
 				if (ImGui::Button("Add component"))
 				{
@@ -392,33 +404,46 @@ void GameLayer::DrawImGui()
 						ent.m_ComponentFlags |= 1 << (s_Selected - 1);
 					}
 				}
-
 				ImGui::Unindent();
+				ImGui::Separator();
 
-				if (ent.m_ComponentFlags > 0) ImGui::Separator();
+				ImGui::Text("Components:");
 				if (ent.m_ComponentFlags & FlagModelComponent)
 				{
-					ImGui::Text("ModelComponent");
-					ImGui::Indent();
-					auto comp = m_Scene->m_ModelComponent.find(e.first);
-					if (comp != m_Scene->m_ModelComponent.end())
+					if (ImGui::TreeNode("ModelComponent"))
 					{
-						ModelComponent* model = m_Scene->m_ModelComponent.at(e.first);
-						if (ImGui::Button("Browse")) {
-							m_Scene->AddComponent(e.first, new ModelComponent(Application::s_Application->m_Window->OpenFileDialog().c_str()));
-						}
+						auto comp = m_Scene->m_ModelComponent.find(e.first);
+						if (comp != m_Scene->m_ModelComponent.end())
+						{
+							ModelComponent* model = m_Scene->m_ModelComponent.at(e.first);
+							ImGui::Indent();
+							if (ImGui::Button("Browse")) {
+								m_Scene->AddComponent(e.first, new ModelComponent(Application::s_Application->m_Window->OpenFileDialog().c_str()));
+							}
+							ImGui::SameLine();
+							ImGui::Text(model->m_Path.c_str());
 
-						ImGui::Text(model->m_Path.c_str());
-					}
-					else
-					{
-						if (ImGui::Button("Browse")) {
-							m_Scene->AddComponent(e.first, new ModelComponent(Application::s_Application->m_Window->OpenFileDialog().c_str()));
+							if(ImGui::TreeNode("Transform"))
+							{
+								ImGui::Text("Translate:");
+								static float float3[3] = { 0.0f, 0.0f, 0.0f};
+								if (ImGui::DragFloat3("###label", float3))
+								{
+									model->m_Transformation.Move(Vec3(float3[0], float3[1], float3[2]));
+								}
+								ImGui::TreePop();
+							}
 						}
-						ImGui::SameLine();
-						ImGui::Text("...");
+						else
+						{
+							if (ImGui::Button("Browse")) {
+								m_Scene->AddComponent(e.first, new ModelComponent(Application::s_Application->m_Window->OpenFileDialog().c_str()));
+							}
+							ImGui::SameLine();
+							ImGui::Text("...");
+						}
+						ImGui::TreePop();
 					}
-
 				}
 				break;
 			}

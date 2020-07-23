@@ -23,6 +23,10 @@ namespace Dodo {
 
 		void AddComponent(uint id, ModelComponent* comp);
 
+		inline void UpdateCamera(const Math::Mat4 camera) { m_Camera = camera; }
+
 		const uint m_AmountOfComponents;
+	private:
+		Math::Mat4 m_Camera;
 	};
 }

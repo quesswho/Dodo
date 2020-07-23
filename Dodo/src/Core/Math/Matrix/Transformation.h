@@ -16,7 +16,7 @@ namespace Dodo {
 			Math::Mat4 m_Model;
 
 			Transformation()
-				: m_Pos(Vec3(0.0f)), m_Scale(Vec3(0.0f)), m_Axis(Vec3(0.0f, 1.0f, 0.0f)), m_Radians(0.0f)
+				: m_Pos(Vec3(0.0f)), m_Scale(Vec3(1.0f)), m_Axis(Vec3(0.0f, 1.0f, 0.0f)), m_Radians(0.0f)
 			{
 				Calculate();
 			}
@@ -63,6 +63,7 @@ namespace Dodo {
 
 			inline void Calculate()
 			{
+				m_Model = Mat4(1.0f);
 				m_Model = Mat4::Translate(m_Pos) * Mat4::Rotate(m_Radians, m_Axis) * Mat4::Scale(m_Scale);
 			}
 		};

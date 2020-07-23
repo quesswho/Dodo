@@ -60,14 +60,20 @@ namespace Dodo {
 		}
 		m_Count = (uint)m_Indices.size();
 		m_Mesh = new Mesh(new VertexBuffer((float*)&m_Vertices[0], (uint)m_Vertices.size() * sizeof(Vertex), BufferProperties({ { "POSITION", 3 }, { "TEXCOORD", 2 }, { "NORMAL", 3 }, { "TANGENT", 3 } })), new IndexBuffer(m_Indices.data(), (uint)m_Indices.size()));
-		m_Material = nullptr;
+		//if (!model->HasMaterials())
+		{
+			m_Material = new Material();
+		}
 		return true;
+	}
+
+	void Model::Bind() const
+	{ 
+		m_Material->Bind(); 
 	}
 
 	void Model::Draw() const
 	{
-		if (m_Material != nullptr) // TODO: Replace with error texture
-			m_Material->Bind();
 		m_Mesh->Draw();
 		Application::s_Application->m_RenderAPI->DrawIndices(m_Count);
 	}

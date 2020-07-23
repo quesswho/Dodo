@@ -46,7 +46,6 @@ public:
 	void Render();
 	void OnEvent(const Event& event);
 private:
-	Shader* m_Shader;
 	FrameBuffer* m_FrameBuffer;
 
 	Math::FreeCamera* m_Camera;

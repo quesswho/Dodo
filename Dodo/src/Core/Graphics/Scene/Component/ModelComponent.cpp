@@ -13,11 +13,6 @@ namespace Dodo {
 		delete m_Model;
 	}
 
-	void ModelComponent::Transformation(const Math::Vec3& pos, const Math::Vec3& scale, const Math::Vec3& axis, float radians)
-	{
-		m_Transformation.Transformate(pos, scale, axis, radians);
-	}
-
 	void ModelComponent::Draw(const Math::Mat4& camera) const
 	{
 		m_Model->Bind();

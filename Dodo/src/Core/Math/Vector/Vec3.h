@@ -11,6 +11,10 @@ namespace Dodo {
 				: x((T)0), y((T)0), z((T)0)
 			{}
 
+			TVec3(T* data)
+				: x(data[0]), y(data[1]), z(data[2])
+			{}
+
 			TVec3(T f)
 				: x(f), y(f), z(f)
 			{}

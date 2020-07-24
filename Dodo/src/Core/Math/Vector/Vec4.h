@@ -404,7 +404,7 @@ namespace Dodo {
 
 			constexpr TVec4& operator/=(int other)
 			{
-				other = 1.0f / other;
+				float temp = 1.0f / other;
 				this->x *= other;
 				this->y *= other;
 				this->z *= other;
@@ -417,7 +417,7 @@ namespace Dodo {
 
 			constexpr TVec4& operator/=(double other)
 			{
-				other = 1.0f / other;
+				float temp = 1.0f / other;
 				this->x *= other;
 				this->y *= other;
 				this->z *= other;
@@ -430,7 +430,7 @@ namespace Dodo {
 
 			constexpr TVec4& operator/=(const float other)
 			{
-				other = 1.0f / other;
+				float temp = 1.0f / other;
 				this->x *= other;
 				this->y *= other;
 				this->z *= other;

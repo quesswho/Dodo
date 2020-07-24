@@ -426,11 +426,44 @@ void GameLayer::DrawImGui()
 							if(ImGui::TreeNode("Transform"))
 							{
 								ImGui::Text("Translate:");
-								static float float3[3] = { 0.0f, 0.0f, 0.0f};
-								if (ImGui::DragFloat3("###label", float3))
+								static float trans[3] = { 0.0f, 0.0f, 0.0f};
+								if (ImGui::DragFloat3("##translate", trans, 0.1f))
 								{
-									model->m_Transformation.Move(Vec3(float3[0], float3[1], float3[2]));
+									model->m_Transformation.Move(Vec3(trans[0], trans[1], trans[2]));
 								}
+
+								ImGui::Text("Scale:");
+								static bool sync = false;
+								static float scale[3] = { 1.0f, 1.0f, 1.0f };
+								bool dragscale = false;
+								dragscale = ImGui::DragFloat3("##scale", scale, 0.002f, -100000.0f, 100000.0f, "%.3f", 1.0f);
+								ImGui::Checkbox("Sync", &sync);
+								if (dragscale)
+								{
+									if (sync)
+									{
+										Vec3 temp = ((Vec3)scale) - model->m_Transformation.m_Scale;
+										
+										model->m_Transformation.m_Scale += temp.x;
+										model->m_Transformation.m_Scale += temp.y;
+										model->m_Transformation.m_Scale += temp.z;
+										memcpy(scale, (float*)&model->m_Transformation.m_Scale, sizeof(Vec3));
+										model->m_Transformation.Calculate();
+									}
+									else
+										model->m_Transformation.Scale(Vec3(scale[0], scale[1], scale[2]));
+								}
+
+								ImGui::Text("Rotate:");
+								static float rotate[3] = { 0.0f, 0.0f, 0.0f };
+								if (ImGui::DragFloat3("##rotate", rotate, 0.5f))
+								{
+									Vec3 temp = ((Vec3)rotate);
+									temp = Vec3(std::fmod(temp.x, 360.0f), std::fmod(temp.y, 360.0f), std::fmod(temp.z, 360.0f));
+									memcpy(rotate, (float*)&temp, sizeof(Vec3));
+									model->m_Transformation.Rotate(temp);
+								}
+
 								ImGui::TreePop();
 							}
 						}

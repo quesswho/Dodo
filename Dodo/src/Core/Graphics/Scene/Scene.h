@@ -12,7 +12,7 @@ namespace Dodo {
 		std::unordered_map<uint, Entity> m_Entities;
 		std::unordered_map<uint, ModelComponent*> m_ModelComponent;
 	public:
-		Scene();
+		Scene(Math::FreeCamera* camera);
 		~Scene();
 
 		void Draw();
@@ -23,10 +23,10 @@ namespace Dodo {
 
 		void AddComponent(uint id, ModelComponent* comp);
 
-		inline void UpdateCamera(const Math::Mat4 camera) { m_Camera = camera; }
+		inline void UpdateCamera(Math::FreeCamera* camera) { m_Camera = camera; }
 
 		const uint m_AmountOfComponents;
 	private:
-		Math::Mat4 m_Camera;
+		Math::FreeCamera* m_Camera;
 	};
 }

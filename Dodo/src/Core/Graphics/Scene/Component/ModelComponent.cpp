@@ -13,11 +13,12 @@ namespace Dodo {
 		delete m_Model;
 	}
 
-	void ModelComponent::Draw(const Math::Mat4& camera) const
+	void ModelComponent::Draw(const Math::FreeCamera* camera) const
 	{
 		m_Model->Bind();
 		m_Model->SetUniform("u_Model", m_Transformation.m_Model);
-		m_Model->SetUniform("u_Camera", camera);
+		m_Model->SetUniform("u_Camera", camera->GetCameraMatrix());
+		m_Model->SetUniform("u_CameraPos", camera->GetCameraPos());
 		m_Model->Draw();
 	}
 

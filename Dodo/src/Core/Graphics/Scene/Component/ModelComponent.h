@@ -2,6 +2,7 @@
 
 #include "Core/Graphics/Scene/Model.h"
 #include "Core/Math/Matrix/Transformation.h"
+#include "Core/Math/Camera/FreeCamera.h"
 
 namespace Dodo {
 
@@ -20,7 +21,7 @@ namespace Dodo {
 
 		~ModelComponent();
 
-		void Draw(const Math::Mat4& camera) const;
+		void Draw(const Math::FreeCamera* camera) const;
 
 		std::string m_Path;
 	};

@@ -4,8 +4,8 @@
 
 namespace Dodo {
 
-	Scene::Scene()
-		: m_AmountOfComponents(1), m_Camera(Math::Mat4::Perspective(45.0f, Application::s_Application->m_WindowProperties.m_Width / Application::s_Application->m_WindowProperties.m_Height, 0.01f, 100.0f))
+	Scene::Scene(Math::FreeCamera* camera)
+		: m_AmountOfComponents(1), m_Camera(camera) //Math::Mat4::Perspective(45.0f, Application::s_Application->m_WindowProperties.m_Width / Application::s_Application->m_WindowProperties.m_Height, 0.01f, 100.0f))
 	{}
 
 	Scene::~Scene()

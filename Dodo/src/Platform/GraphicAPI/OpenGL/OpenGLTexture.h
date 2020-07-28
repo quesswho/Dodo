@@ -26,6 +26,9 @@ namespace Dodo {
 	};
 
 	struct TextureProp {
+		TextureProp()
+			: m_Filter(TextureFilter::FILTER_MIN_NEAREST_MAG_MIP_LINEAR), m_WrapU(TextureWrapMode::WRAP_REPEAT), m_WrapV(TextureWrapMode::WRAP_REPEAT)
+		{}
 		TextureFilter m_Filter;
 		TextureWrapMode m_WrapU;
 		TextureWrapMode m_WrapV;
@@ -37,7 +40,7 @@ namespace Dodo {
 		private:
 			uint m_TextureID;
 		public:
-			OpenGLTexture(const char* path, uint index, const TextureProp& prop);
+			OpenGLTexture(const char* path, uint index, const TextureProp& prop = TextureProp());
 			~OpenGLTexture();
 
 			void Bind() const;

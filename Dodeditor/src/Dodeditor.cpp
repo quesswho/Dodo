@@ -46,8 +46,8 @@ GameLayer::GameLayer()
 	style.WindowRounding = 0.0f;
 	style.TabRounding = 0.0f;
 
-	m_Scene = new Scene();
-	m_Model = new Model("res/model/Bayonet.fbx");
+	m_Scene = new Scene(m_Camera);
+	//m_Model = new Model("res/model/Bayonet.fbx");
 	InitEditor();
 }
 
@@ -93,7 +93,7 @@ void GameLayer::DrawScene()
 	m_FrameBuffer->Bind();
 
 
-	m_Scene->UpdateCamera(m_Camera->GetCameraMatrix());
+	m_Scene->UpdateCamera(m_Camera);
 	m_Scene->Draw();
 
 	Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
@@ -427,7 +427,7 @@ void GameLayer::DrawImGui()
 							{
 								ImGui::Text("Translate:");
 								static float trans[3] = { 0.0f, 0.0f, 0.0f};
-								if (ImGui::DragFloat3("##translate", trans, 0.1f))
+								if (ImGui::DragFloat3("##translate", trans, 0.05f))
 								{
 									model->m_Transformation.Move(Vec3(trans[0], trans[1], trans[2]));
 								}

@@ -66,7 +66,6 @@ namespace Dodo {
 			uchar* data = stbi_load(path, &m_Width, &m_Height, &channels, 0);
 			if (data)
 			{
-
 				int internalFormat = 0;
 				switch (channels)
 				{

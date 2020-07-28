@@ -374,36 +374,36 @@ namespace Dodo {
 
 			// Division //
 
-			constexpr TVec3& operator/=(int other)
+			constexpr TVec3& operator/=(const int other)
 			{
-				other = 1 / other;
-				this->x *= other;
-				this->y *= other;
-				this->z *= other;
+				const float temp = 1 / other;
+				this->x *= temp;
+				this->y *= temp;
+				this->z *= temp;
 				return *this;
 			}
 
 			friend TVec3 operator/(TVec3 left, const int right) { return left /= right; }
 
 
-			constexpr TVec3& operator/=(double other)
+			constexpr TVec3& operator/=(const double other)
 			{
-				other = 1 / other;
-				this->x *= other;
-				this->y *= other;
-				this->z *= other;
+				const float temp = 1 / other;
+				this->x *= temp;
+				this->y *= temp;
+				this->z *= temp;
 				return *this;
 			}
 
 			friend TVec3 operator/(TVec3 left, const double right) { return left /= right; }
 
 
-			constexpr TVec3& operator/=(float other)
+			constexpr TVec3& operator/=(const float other)
 			{
-				other = 1 / other;
-				this->x *= other;
-				this->y *= other;
-				this->z *= other;
+				const float temp = 1 / other;
+				this->x *= temp;
+				this->y *= temp;
+				this->z *= temp;
 				return *this;
 			}
 

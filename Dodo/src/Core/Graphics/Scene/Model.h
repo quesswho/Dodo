@@ -18,7 +18,7 @@ namespace Dodo {
 		std::vector<Vertex> m_Vertices;
 		std::vector<uint> m_Indices;
 
-		Material* m_Material;
+		std::vector<Material*> m_Material;
 		Mesh* m_Mesh;
 	public:
 
@@ -26,10 +26,10 @@ namespace Dodo {
 		Model(const char* path);
 		~Model();
 
-		inline void SetMaterial(Material* material) { m_Material = material; }
+		inline void AddMaterial(Material* material) { m_Material.push_back(material); }
 
 		template<typename T>
-		inline void SetUniform(const char* location, T value) { m_Material->SetUniform(location, value); }
+		inline void SetUniform(const char* location, T value) { m_Material[0]->SetUniform(location, value); }
 		void Bind() const;
 		void Draw() const;
 	private:

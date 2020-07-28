@@ -402,26 +402,26 @@ namespace Dodo {
 
 			// Division //
 
-			constexpr TVec4& operator/=(int other)
+			constexpr TVec4& operator/=(const int other)
 			{
-				float temp = 1.0f / other;
-				this->x *= other;
-				this->y *= other;
-				this->z *= other;
-				this->w *= other;
+				const float temp = 1.0f / other;
+				this->x *= temp;
+				this->y *= temp;
+				this->z *= temp;
+				this->w *= temp;
 				return *this;
 			}
 
 			friend TVec4 operator/(TVec4 left, const int right) { return left /= right; }
 
 
-			constexpr TVec4& operator/=(double other)
+			constexpr TVec4& operator/=(const double other)
 			{
-				float temp = 1.0f / other;
-				this->x *= other;
-				this->y *= other;
-				this->z *= other;
-				this->w *= other;
+				const float temp = 1.0f / other;
+				this->x *= temp;
+				this->y *= temp;
+				this->z *= temp;
+				this->w *= temp;
 				return *this;
 			}
 
@@ -430,11 +430,11 @@ namespace Dodo {
 
 			constexpr TVec4& operator/=(const float other)
 			{
-				float temp = 1.0f / other;
-				this->x *= other;
-				this->y *= other;
-				this->z *= other;
-				this->w *= other;
+				const float temp = 1.0f / other;
+				this->x *= temp;
+				this->y *= temp;
+				this->z *= temp;
+				this->w *= temp;
 				return *this;
 			}
 

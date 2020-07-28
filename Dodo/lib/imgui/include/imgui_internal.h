@@ -1490,7 +1490,8 @@ struct ImGuiContext
     int                     WantCaptureKeyboardNextFrame;
     int                     WantTextInputNextFrame;
     char                    TempBuffer[1024*3+1];               // Temporary text buffer
-
+#pragma warning(push)
+#pragma warning(disable : 26812)
     ImGuiContext(ImFontAtlas* shared_font_atlas)
     {
         Initialized = false;
@@ -1634,6 +1635,7 @@ struct ImGuiContext
         WantCaptureMouseNextFrame = WantCaptureKeyboardNextFrame = WantTextInputNextFrame = -1;
         memset(TempBuffer, 0, sizeof(TempBuffer));
     }
+#pragma warning(pop)
 };
 
 //-----------------------------------------------------------------------------

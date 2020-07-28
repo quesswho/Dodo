@@ -6,6 +6,10 @@ project "Assimp"
 	targetdir ("bin/" .. outputdir .. "/")
 	objdir ("bin/" .. outputdir .. "/%{prj.name}_intermediates")
 	
+	disablewarnings { 
+	"26812",
+	"26451"
+	}
 	
 	files
 	{

@@ -13,7 +13,7 @@ namespace Dodo {
 
 	uint Scene::CreateEntity(const std::string& name)
 	{
-		uint result = m_Entities.size();
+		uint result = (uint)m_Entities.size();
 		m_Entities.insert(std::make_pair(result, Entity(name)));
 		return result;
 	}

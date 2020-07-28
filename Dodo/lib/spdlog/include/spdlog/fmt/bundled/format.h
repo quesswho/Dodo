@@ -253,6 +253,8 @@ inline bool is_big_endian() {
   };
   return bit_cast<bytes>(u).data[0] == 0;
 }
+#pragma warning(push)
+#pragma warning(disable : 26812)
 
 // A fallback implementation of uintptr_t for systems that lack it.
 struct fallback_uintptr {
@@ -1502,6 +1504,8 @@ template <typename Range> class basic_writer {
         prefix[0] = specs.sign == sign::plus ? '+' : ' ';
         ++prefix_size;
       }
+      else
+          prefix[0] = '?';
     }
 
     struct dec_writer {
@@ -1714,7 +1718,9 @@ template <typename Range> class basic_writer {
   void write_int(T value, const Spec& spec) {
     handle_int_type_spec(spec.type, int_writer<T, Spec>(*this, value, spec));
   }
-
+#pragma warning(push)
+#pragma warning(disable : 6011)
+#pragma warning(disable : 6385)
   template <typename T, FMT_ENABLE_IF(std::is_floating_point<T>::value)>
   void write(T value, format_specs specs = {}) {
     if (const_check(!is_supported_floating_point(value))) {
@@ -1776,7 +1782,7 @@ template <typename Range> class basic_writer {
                                                 static_cast<int>(buffer.size()),
                                                 exp, fspecs, point));
   }
-
+#pragma warning(pop)
   void write(char value) {
     auto&& it = reserve(1);
     *it++ = value;
@@ -3546,7 +3552,7 @@ FMT_CONSTEXPR basic_string_view<Char> compile_string_to_view(
   return {s,
           N - ((std::char_traits<Char>::to_int_type(s[N - 1]) == 0) ? 1 : 0)};
 }
-
+#pragma warning(pop)
 // Converts string_view to basic_string_view.
 template <typename Char>
 FMT_CONSTEXPR basic_string_view<Char> compile_string_to_view(

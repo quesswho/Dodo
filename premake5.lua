@@ -66,6 +66,11 @@ workspace "Dodo"
 			"Assimp"
 		}
 		
+		disablewarnings { 
+			"26812",
+			"26451"		
+		}
+		
 		buildoptions { 
 			"/bigobj",
 			"/Ob1"
@@ -161,6 +166,11 @@ workspace "Dodo"
 			targetdir ("bin/Release-%{cfg.architecture}/%{prj.name}/")
 			objdir ("bin/Release-%{cfg.architecture}/%{prj.name}/intermediates/")
 		configuration "*"
+		
+		disablewarnings { 
+			"26812",
+			"26451"		
+		}
 		
 		files { 
 			"%{prj.name}/src/**.h",

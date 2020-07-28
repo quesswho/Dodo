@@ -28,7 +28,8 @@ struct padding_info
         right,
         center
     };
-
+#pragma warning(push)
+#pragma warning(disable : 26812)
     padding_info() = default;
     padding_info(size_t width, padding_info::pad_side side, bool truncate)
         : width_(width)
@@ -37,6 +38,7 @@ struct padding_info
         , enabled_(true)
     {}
 
+#pragma warning(pop)
     bool enabled() const
     {
         return enabled_;

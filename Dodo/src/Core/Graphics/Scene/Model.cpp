@@ -70,7 +70,7 @@ namespace Dodo {
 		m_Count = (uint)m_Indices.size();
 		m_Mesh = new Mesh(new VertexBuffer((float*)&m_Vertices[0], (uint)m_Vertices.size() * sizeof(Vertex), BufferProperties({ { "POSITION", 3 }, { "TEXCOORD", 2 }, { "NORMAL", 3 }, { "TANGENT", 3 } })), new IndexBuffer(m_Indices.data(), (uint)m_Indices.size()));
 		ShaderBuilderFlags flags = ShaderBuilderFlagNone;
-		for (int i = 0; i < model->mNumMaterials; i++)
+		for (uint i = 0; i < model->mNumMaterials; i++)
 		{
 			aiMaterial* mat = model->mMaterials[i];
 			std::vector<Texture*> textures;
@@ -86,17 +86,22 @@ namespace Dodo {
 			if (str.length > 0)
 			{
 				flags |= ShaderBuilderFlagSpecularMap;
-				textures.push_back(new Texture(str.C_Str(), textures.size()));
+				textures.push_back(new Texture(str.C_Str(), (uint)textures.size()));
 			}
 			str = "";
 			mat->GetTexture(aiTextureType_NORMALS, 0, &str);
 			if (str.length > 0)
 			{
 				flags |= ShaderBuilderFlagNormalMap;
-				textures.push_back(new Texture(str.C_Str(), textures.size()));
+				textures.push_back(new Texture(str.C_Str(), (uint)textures.size()));
 			}
 			str = "";
-			Material* material = new Material(Application::s_Application->m_RenderAPI->m_ShaderBuilder->BuildVertexFragmentShader(path, flags), textures);
+			Material* material;
+			if (textures.size() > 0)
+				material = new Material(Application::s_Application->m_RenderAPI->m_ShaderBuilder->BuildVertexFragmentShader(path, flags), textures);
+			else
+				material = new Material(); // Fallback shader
+
 			m_Material.push_back(material);
 		}
 

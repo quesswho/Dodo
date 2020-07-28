@@ -21,7 +21,10 @@ namespace Dodo {
 		DodoWindowFlags_IMGUIDOCKING	= 1 << 3,
 		DodoWindowFlags_BACKFACECULL	= 1 << 4,
 	};
+#pragma warning(push)
+#pragma warning(disable : 26812)
 	DEFINE_ENUM_FLAG_OPERATORS(WindowFlags);
+#pragma warning(pop)
 
 	struct WindowProperties {
 		WindowProperties() : m_Width(0), m_Height(0), m_Title("Dodo Engine"), m_Flags(DodoWindowFlags_NONE) {}

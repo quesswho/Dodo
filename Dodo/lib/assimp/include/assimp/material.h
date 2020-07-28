@@ -54,13 +54,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assimp/types.h>
 
+#pragma warning(push)
+#pragma warning(disable : 26812)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // Name for default materials (2nd is used if meshes have UV coords)
 #define AI_DEFAULT_MATERIAL_NAME          "DefaultMaterial"
-
 // ---------------------------------------------------------------------------
 /** @brief Defines how the Nth texture of a specific type is combined with
  *  the result of all previous layers.
@@ -472,6 +474,7 @@ enum aiBlendMode
 #endif
 };
 
+#pragma warning(pop) // C26812
 
 #include "./Compiler/pushpack1.h"
 

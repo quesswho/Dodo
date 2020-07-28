@@ -19,7 +19,10 @@ namespace Dodo {
 		ShaderBuilderFlagSpecularMap = 1 << 8,
 		ShaderBuilderFlagNormalMap = 1 << 9,
 	};
-	DEFINE_ENUM_FLAG_OPERATORS(ShaderBuilderFlags)
+#pragma warning(push)
+#pragma warning(disable : 26812)
+	DEFINE_ENUM_FLAG_OPERATORS(ShaderBuilderFlags);
+#pragma warning(pop)
 
 	namespace Platform {
 

@@ -215,6 +215,7 @@ void GameLayer::DrawImGui()
 
 	static char s_RenameableInspector[32] = "";
 
+	static bool InspectorNewSelect = false;
 	bool s_ClickHandled = false;
 	if (m_EditorProperties.m_ShowHierarchy)
 	{
@@ -250,7 +251,9 @@ void GameLayer::DrawImGui()
 					{
 						ImGui::ColorButton("", ImColor(120, 50, 0), ImGuiColorEditFlags_NoBorder | ImGuiColorEditFlags_NoInputs);
 						ImGui::SameLine();
+						ImGui::PushID((int)ent.first);
 						bool open = ImGui::TreeNodeEx(ent.second.m_Name.c_str(), (m_SelectedEntity.at(ent.first) ? ImGuiTreeNodeFlags_Selected  : 0 ) | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
+						ImGui::PopID();
 						if (m_SelectedEntity.at(ent.first))
 						{
 							ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 40); // Move text to right side
@@ -265,6 +268,8 @@ void GameLayer::DrawImGui()
 							m_SelectedEntity.at(ent.first) = !m_SelectedEntity.at(ent.first);
 							strcpy_s(s_RenameableInspector, ent.second.m_Name.c_str());
 							s_ClickHandled = true;
+							if (m_SelectedEntity.at(ent.first))
+								InspectorNewSelect = true;
 						}
 
 						if (open)
@@ -314,7 +319,7 @@ void GameLayer::DrawImGui()
 								}
 								ImGui::Unindent();
 							}
-
+							ImGui::Unindent();
 							ImGui::TreePop();
 						}
 					}
@@ -335,6 +340,7 @@ void GameLayer::DrawImGui()
 								for (auto& e : m_SelectedEntity)
 									e.second = false;
 							m_SelectedEntity.at(ent.first) = true;
+							InspectorNewSelect = true;
 						}
 						ImGui::Unindent();
 					}
@@ -356,6 +362,9 @@ void GameLayer::DrawImGui()
 
 	if (m_EditorProperties.m_ShowInspector)
 	{
+		static float translate[3] = { 0.0f, 0.0f, 0.0f};
+		static float scale[3] = { 1.0f, 1.0f, 1.0f };
+		static float rotate[3] = { 0.0f, 0.0f, 0.0f };
 		ImGui::Begin(m_EditorProperties.m_InspectorName);
 		for (auto& e : m_SelectedEntity)
 		{
@@ -416,6 +425,13 @@ void GameLayer::DrawImGui()
 						if (comp != m_Scene->m_ModelComponent.end())
 						{
 							ModelComponent* model = m_Scene->m_ModelComponent.at(e.first);
+							if (InspectorNewSelect)
+							{
+								memcpy(translate, (float*)&model->m_Transformation.m_Pos, 4 * sizeof(float));
+								memcpy(scale, (float*)&model->m_Transformation.m_Scale, 4 * sizeof(float));
+								memcpy(translate, (float*)&model->m_Transformation.m_Rotation, 4 * sizeof(float));
+								InspectorNewSelect = false;
+							}
 							ImGui::Indent();
 							if (ImGui::Button("Browse")) {
 								m_Scene->AddComponent(e.first, new ModelComponent(Application::s_Application->m_Window->OpenFileDialog().c_str()));
@@ -426,15 +442,13 @@ void GameLayer::DrawImGui()
 							if(ImGui::TreeNode("Transform"))
 							{
 								ImGui::Text("Translate:");
-								static float trans[3] = { 0.0f, 0.0f, 0.0f};
-								if (ImGui::DragFloat3("##translate", trans, 0.05f))
+								if (ImGui::DragFloat3("##translate", translate, 0.05f))
 								{
-									model->m_Transformation.Move(Vec3(trans[0], trans[1], trans[2]));
+									model->m_Transformation.Move(Vec3(translate[0], translate[1], translate[2]));
 								}
 
 								ImGui::Text("Scale:");
 								static bool sync = false;
-								static float scale[3] = { 1.0f, 1.0f, 1.0f };
 								bool dragscale = false;
 								dragscale = ImGui::DragFloat3("##scale", scale, 0.002f, -100000.0f, 100000.0f, "%.3f", 1.0f);
 								ImGui::Checkbox("Sync", &sync);
@@ -455,7 +469,6 @@ void GameLayer::DrawImGui()
 								}
 
 								ImGui::Text("Rotate:");
-								static float rotate[3] = { 0.0f, 0.0f, 0.0f };
 								if (ImGui::DragFloat3("##rotate", rotate, 0.5f))
 								{
 									Vec3 temp = ((Vec3)rotate);

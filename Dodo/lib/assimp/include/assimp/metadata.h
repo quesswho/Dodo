@@ -84,6 +84,8 @@ typedef enum aiMetadataType {
   * The type field uniquely identifies the underlying type of the data field
   */
 // -------------------------------------------------------------------------------
+#pragma warning(push)
+#pragma warning(disable : 26812)
 struct aiMetadataEntry {
     aiMetadataType mType;
     void *mData;
@@ -97,6 +99,7 @@ struct aiMetadataEntry {
 #endif
 };
 
+#pragma warning(pop)
 #ifdef __cplusplus
 
 #include <string>

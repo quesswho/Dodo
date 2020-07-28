@@ -240,7 +240,8 @@ struct aiLight
     C_STRUCT aiVector2D mSize;
 
 #ifdef __cplusplus
-
+#pragma warning(push)
+#pragma warning(disable : 26812)
     aiLight() AI_NO_EXCEPT
         :   mType                 (aiLightSource_UNDEFINED)
         ,   mAttenuationConstant  (0.f)
@@ -255,6 +256,7 @@ struct aiLight
 #endif
 };
 
+#pragma warning(pop)
 #ifdef __cplusplus
 }
 #endif 

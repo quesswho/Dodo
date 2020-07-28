@@ -650,13 +650,16 @@ template <typename T> class buffer {
 
  protected:
   // Don't initialize ptr_ since it is not accessed to save a few cycles.
+#pragma warning(push)
+#pragma warning(disable : 26812)
+#pragma warning(disable : 26495)
   buffer(std::size_t sz) FMT_NOEXCEPT : size_(sz), capacity_(sz) {}
 
   buffer(T* p = nullptr, std::size_t sz = 0, std::size_t cap = 0) FMT_NOEXCEPT
       : ptr_(p),
         size_(sz),
         capacity_(cap) {}
-
+#pragma warning(pop)
   /** Sets the buffer data and capacity. */
   void set(T* buf_data, std::size_t buf_capacity) FMT_NOEXCEPT {
     ptr_ = buf_data;

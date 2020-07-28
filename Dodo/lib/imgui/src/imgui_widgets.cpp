@@ -55,6 +55,8 @@ Index of this file:
 #pragma warning (disable: 5054)     // operator '|': deprecated between enumerations of different types
 #endif
 #endif
+#pragma warning(push)
+#pragma warning(disable : 26812)
 
 // Clang/GCC warnings with -Weverything
 #if defined(__clang__)
@@ -6053,6 +6055,7 @@ int ImGui::PlotEx(ImGuiPlotType plot_type, const char* label, float (*values_get
     // This is currently not exposed in the public API because we need a larger redesign of the whole thing, but in the short-term we are making it available in PlotEx().
     return idx_hovered;
 }
+#pragma warning(pop)
 
 struct ImGuiPlotArrayGetterData
 {

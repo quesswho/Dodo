@@ -68,6 +68,8 @@ aiPropertyTypeInfo ai_real_to_property_type_info(double) {
 //! @cond never
 
 // ---------------------------------------------------------------------------
+#pragma warning(push)
+#pragma warning(disable : 26812)
 AI_FORCE_INLINE
 aiReturn aiMaterial::GetTexture( aiTextureType type,
        unsigned int  index,
@@ -79,7 +81,7 @@ aiReturn aiMaterial::GetTexture( aiTextureType type,
        aiTextureMapMode* mapmode    /*= NULL*/) const {
     return ::aiGetMaterialTexture(this,type,index,path,mapping,uvindex,blend,op,mapmode);
 }
-
+#pragma warning(pop)
 // ---------------------------------------------------------------------------
 AI_FORCE_INLINE
 unsigned int aiMaterial::GetTextureCount(aiTextureType type) const {

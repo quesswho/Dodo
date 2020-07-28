@@ -312,6 +312,8 @@ struct aiNodeAnim {
     C_ENUM aiAnimBehaviour mPostState;
 
 #ifdef __cplusplus
+#pragma warning(push)
+#pragma warning(disable : 26812)
     aiNodeAnim() AI_NO_EXCEPT
             : mNumPositionKeys(0),
               mPositionKeys(nullptr),
@@ -329,6 +331,7 @@ struct aiNodeAnim {
         delete[] mRotationKeys;
         delete[] mScalingKeys;
     }
+#pragma warning(pop)
 #endif // __cplusplus
 };
 

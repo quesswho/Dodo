@@ -5,6 +5,9 @@ project "imgui"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin/" .. outputdir .. "/%{prj.name}/intermediates")
 	
+	disablewarnings { 
+		"26812"
+	}
 	
 	files
 	{

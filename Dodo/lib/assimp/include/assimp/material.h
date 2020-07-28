@@ -54,9 +54,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assimp/types.h>
 
-#pragma warning(push)
-#pragma warning(disable : 26812)
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -473,8 +470,6 @@ enum aiBlendMode
     _aiBlendMode_Force32Bit = INT_MAX
 #endif
 };
-
-#pragma warning(pop) // C26812
 
 #include "./Compiler/pushpack1.h"
 
@@ -1439,6 +1434,8 @@ ASSIMP_API C_ENUM aiReturn aiGetMaterialFloatArray(
 * @return Specifies whether the key has been found. If not, the output
 *   float remains unmodified.*/
 // ---------------------------------------------------------------------------
+#pragma warning(push)
+#pragma warning(disable : 26812)
 inline aiReturn aiGetMaterialFloat(const aiMaterial* pMat,
     const char* pKey,
     unsigned int type,
@@ -1469,6 +1466,7 @@ ASSIMP_API C_ENUM aiReturn aiGetMaterialIntegerArray(const C_STRUCT aiMaterial* 
      int* pOut,
      unsigned int* pMax);
 
+#pragma warning(pop)
 
 #ifdef __cplusplus
 

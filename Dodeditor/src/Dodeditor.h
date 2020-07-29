@@ -45,6 +45,10 @@ public:
 	void Update(float elapsed);
 	void Render();
 	void OnEvent(const Event& event);
+
+	void DrawViewport();
+	void DrawHierarchy();
+	void DrawInspector();
 private:
 	FrameBuffer* m_FrameBuffer;
 
@@ -61,6 +65,9 @@ private:
 
 	std::vector<Component> m_HierarchyComponents;
 	std::vector<Component> m_InspectorComponents;
+
+	char* m_CurrentInspectorName;
+	bool m_InspectorSelectNew;
 };
 
 class Dodeditor : public Application

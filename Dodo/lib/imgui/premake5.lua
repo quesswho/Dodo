@@ -6,7 +6,8 @@ project "imgui"
 	objdir ("bin/" .. outputdir .. "/%{prj.name}/intermediates")
 	
 	disablewarnings { 
-		"26812"
+		"26812",
+		"6011"
 	}
 	
 	files

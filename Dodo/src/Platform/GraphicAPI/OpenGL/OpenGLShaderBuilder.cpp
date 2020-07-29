@@ -49,7 +49,7 @@ namespace Dodo {
 			delete m_FallbackShader;
 		}
 
-		Shader* OpenGLShaderBuilder::BuildVertexFragmentShader(const char* name, const ShaderBuilderFlags flags) const
+		Shader* OpenGLShaderBuilder::BuildVertexFragmentShader(const ShaderBuilderFlags flags, const char* name) const
 		{
 			////////////
 			// Vertex //

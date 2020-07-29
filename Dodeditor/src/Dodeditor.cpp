@@ -506,7 +506,7 @@ void GameLayer::DrawInspector()
 						{
 							memcpy(translate, (float*)&model->m_Transformation.m_Pos, 4 * sizeof(float));
 							memcpy(scale, (float*)&model->m_Transformation.m_Scale, 4 * sizeof(float));
-							memcpy(translate, (float*)&model->m_Transformation.m_Rotation, 4 * sizeof(float));
+							memcpy(rotate, (float*)&model->m_Transformation.m_Rotation, 4 * sizeof(float));
 							m_InspectorSelectNew = false;
 						}
 						ImGui::Indent();

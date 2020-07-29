@@ -9,6 +9,7 @@
 #include "Event.h"
 
 #include "Core/Graphics/RenderAPI.h"
+#include "Core/Data/AssetManager.h"
 
 namespace Dodo {
 
@@ -42,6 +43,7 @@ namespace Dodo {
 		Window* m_Window;
 		RenderAPI* m_RenderAPI;
 		ThreadManager* m_ThreadManager;
+		AssetManager* m_AssetManager;
 
 		bool m_Initializing;
 	private:

@@ -176,9 +176,7 @@ namespace Dodo {
 		int OpenGLShader::GetLocation(const char* location)
 		{
 			if (m_UniformLocations.find(location) != m_UniformLocations.end())
-			{
 				return m_UniformLocations[location];
-			}
 
 			// New location
 			const int locationi = glGetUniformLocation(m_ShaderID, location);

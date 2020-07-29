@@ -98,7 +98,8 @@ namespace Dodo {
 			str = "";
 			Material* material;
 			if (textures.size() > 0)
-				material = new Material(Application::s_Application->m_RenderAPI->m_ShaderBuilder->BuildVertexFragmentShader(path, flags), textures);
+				material = new Material(Application::s_Application->m_AssetManager->GetShader(flags), textures);
+				//material = new Material(Application::s_Application->m_RenderAPI->m_ShaderBuilder->BuildVertexFragmentShader(path, flags), textures);
 			else
 				material = new Material(); // Fallback shader
 

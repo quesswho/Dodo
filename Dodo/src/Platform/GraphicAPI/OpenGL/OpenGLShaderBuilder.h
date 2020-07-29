@@ -32,7 +32,9 @@ namespace Dodo {
 			OpenGLShaderBuilder();
 			~OpenGLShaderBuilder();
 
-			Shader* BuildVertexFragmentShader(const char* name, const ShaderBuilderFlags flags) const;
+			Shader* BuildVertexFragmentShader(const ShaderBuilderFlags flags, const char* name) const;
+			inline Shader* BuildVertexFragmentShader(const ShaderBuilderFlags flags) const { return BuildVertexFragmentShader(flags, std::to_string(flags).c_str()); }
+
 			uint CompileVertexFragmentShader(const char* vertex, const char* fragment) const;
 
 			inline Shader* GetFallbackShader() const { return m_FallbackShader; }

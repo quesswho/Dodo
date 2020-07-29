@@ -129,7 +129,12 @@ workspace "Dodo"
 		links {
 			"Dodo"
 		}
-
+		
+		defines
+		{
+			"_CRT_SECURE_NO_WARNINGS"
+		}
+		
 		filter "system:windows"
 			systemversion "latest"
 			defines {

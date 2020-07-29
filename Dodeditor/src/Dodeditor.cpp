@@ -47,7 +47,6 @@ GameLayer::GameLayer()
 	style.TabRounding = 0.0f;
 
 	m_Scene = new Scene(m_Camera);
-	//m_Model = new Model("res/model/Bayonet.fbx");
 	InitEditor();
 }
 
@@ -64,9 +63,15 @@ void GameLayer::InitEditor()
 	m_EditorProperties.m_ShowHierarchy = true;
 	m_EditorProperties.m_ShowInspector = true;
 
+	// Hierarchy
 	m_HierarchyComponents.push_back(Component("None"));
 	m_HierarchyComponents.push_back(Component("ModelComponent"));
+
+
+	// Inspector
 	m_InspectorComponents = m_HierarchyComponents;
+	m_CurrentInspectorName = new char[32];
+	m_InspectorSelectNew = false;
 }
 
 GameLayer::~GameLayer()
@@ -185,317 +190,12 @@ void GameLayer::DrawImGui()
 	}
 	ImGui::End();
 
-	static ImGuiWindowFlags s_ViewportWindow = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
+	if (m_EditorProperties.m_ShowViewport) DrawViewport();
 
-	if (m_EditorProperties.m_ShowViewport)
-	{
-		ImGui::Begin("Viewport", 0, s_ViewportWindow);
-	
-		ImGui::Text("%d fps, %gms", Application::s_Application->m_FramesPerSecond, Application::s_Application->m_FrameTimeMs);
-		static uint width = 0; 
-		static uint height = 0;
-		static uint posX = 0;
-		static uint posY = 0;
-		if (width != ImGui::GetWindowWidth() || height != ImGui::GetWindowHeight() || posX != ImGui::GetWindowPos().x || posY != ImGui::GetWindowPos().y)
-		{
-			width = (uint)ImGui::GetWindowWidth();
-			height = (uint)ImGui::GetWindowHeight();
-			posX = (uint)ImGui::GetWindowPos().x;
-			posY = (uint)ImGui::GetWindowPos().y;
+	if (m_EditorProperties.m_ShowHierarchy) DrawHierarchy();
 
-			m_Camera->Resize(width, height);
-			m_FrameBuffer->Resize(width, height);
-			Application::s_Application->m_RenderAPI->ResizeDefaultViewport(width, height, posX, posY);
-		}
-		m_EditorProperties.m_ViewportHover = ImGui::IsWindowHovered();
-		DrawScene();
-		ImGui::Image((void*)(intptr_t)m_FrameBuffer->GetTextureHandle(), ImVec2((float)width, (float)height), ImVec2(0, 1), ImVec2(1, 0));
-		ImGui::End();
-	}
+	if (m_EditorProperties.m_ShowInspector) DrawInspector();
 
-	static char s_RenameableInspector[32] = "";
-
-	static bool InspectorNewSelect = false;
-	bool s_ClickHandled = false;
-	if (m_EditorProperties.m_ShowHierarchy)
-	{
-		static uint s_RenamingId = -1; // 4 294 967 295
-		bool s_SetOpen = false;
-		ImGui::Begin(m_EditorProperties.m_HierarchyName);
-		if (ImGui::Button("Create New Entity"))
-		{
-			s_RenamingId = m_Scene->CreateEntity();
-			m_SelectedEntity.insert(std::make_pair(s_RenamingId, false));
-			s_ClickHandled = true;
-			s_SetOpen = true;
-		}
-
-
-		static char s_RenameableHierarchy[32] = "Unnamed";
-
-		ImGui::ColorButton("", ImColor(226, 189, 0), ImGuiColorEditFlags_NoBorder | ImGuiColorEditFlags_NoInputs);
-		ImGui::SameLine();
-		if (s_SetOpen)
-		{
-			s_SetOpen = false;
-			ImGui::SetNextTreeNodeOpen(true);
-		}
-		if(ImGui::TreeNode("Entities"))
-		{
-			if (m_Scene->m_Entities.size() > 0)
-			{
-
-				for (auto& ent : m_Scene->m_Entities)
-				{
-					if (ent.first != s_RenamingId || m_EditorProperties.m_ViewportInput)
-					{
-						ImGui::ColorButton("", ImColor(120, 50, 0), ImGuiColorEditFlags_NoBorder | ImGuiColorEditFlags_NoInputs);
-						ImGui::SameLine();
-						ImGui::PushID((int)ent.first);
-						bool open = ImGui::TreeNodeEx(ent.second.m_Name.c_str(), (m_SelectedEntity.at(ent.first) ? ImGuiTreeNodeFlags_Selected  : 0 ) | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
-						ImGui::PopID();
-						if (m_SelectedEntity.at(ent.first))
-						{
-							ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 40); // Move text to right side
-							ImGui::Text("%i", ent.first);
-						}
-						if (ImGui::IsItemClicked())
-						{
-							if(!io.KeyCtrl)
-								for (auto& e : m_SelectedEntity)
-									e.second = false;
-
-							m_SelectedEntity.at(ent.first) = !m_SelectedEntity.at(ent.first);
-							strcpy_s(s_RenameableInspector, ent.second.m_Name.c_str());
-							s_ClickHandled = true;
-							if (m_SelectedEntity.at(ent.first))
-								InspectorNewSelect = true;
-						}
-
-						if (open)
-						{
-							static uint s_Selected = 1;
-							const char* selectedName = m_HierarchyComponents[s_Selected].m_Name;
-							ImGui::Indent();
-							if (ImGui::BeginCombo("###label", selectedName, 0))
-							{
-								for (int i = 0; i < m_HierarchyComponents.size(); i++)
-								{
-									auto& comp = m_HierarchyComponents[i];
-									std::string name = comp.m_Name;
-									if (ImGui::Selectable(name.c_str(), comp.m_Selected))
-									{
-										s_Selected = i;
-										break;
-									}
-								}
-								ImGui::EndCombo();
-							}
-
-
-							ImGui::Indent();
-							if (ImGui::Button("Add component"))
-							{
-								if (s_Selected != 0)
-								{
-
-									for (auto& e : m_SelectedEntity)
-										e.second = false;
-									m_SelectedEntity.at(ent.first) = true;
-
-									ent.second.m_ComponentFlags |= 1 << (s_Selected - 1);
-								}
-							}
-							ImGui::Unindent();
-
-							if (ent.second.m_ComponentFlags != 0)
-							{
-								ImGui::Text("Components:");
-								ImGui::Separator();
-								ImGui::Indent();
-								if (ent.second.m_ComponentFlags & FlagModelComponent)
-								{
-									ImGui::BulletText("ModelComponent");
-								}
-								ImGui::Unindent();
-							}
-							ImGui::Unindent();
-							ImGui::TreePop();
-						}
-					}
-					else
-					{
-						ImGui::SetKeyboardFocusHere(0);
-						ImGui::Indent();
-						if (ImGui::InputText(std::to_string(ent.first).c_str(), s_RenameableHierarchy, IM_ARRAYSIZE(s_RenameableHierarchy), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
-						{
-							if(s_RenameableHierarchy == '\0')
-								strcpy_s(s_RenameableHierarchy, "Unnamed");
-
-							m_Scene->RenameEntity(ent.first, s_RenameableHierarchy);
-							strcpy_s(s_RenameableInspector, s_RenameableHierarchy);
-							strcpy_s(s_RenameableHierarchy, "Unnamed");
-							s_RenamingId = -1;
-							if (!io.KeyCtrl)
-								for (auto& e : m_SelectedEntity)
-									e.second = false;
-							m_SelectedEntity.at(ent.first) = true;
-							InspectorNewSelect = true;
-						}
-						ImGui::Unindent();
-					}
-				}
-			}
-			else
-				ImGui::Text("No entities here...");
-
-			ImGui::TreePop();
-			if(!s_ClickHandled && ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered() && ImGui::IsWindowHovered())
-				for (auto& e : m_SelectedEntity)
-					e.second = false;
-
-			s_ClickHandled = false;
-		}
-
-		ImGui::End();
-	}
-
-	if (m_EditorProperties.m_ShowInspector)
-	{
-		static float translate[3] = { 0.0f, 0.0f, 0.0f};
-		static float scale[3] = { 1.0f, 1.0f, 1.0f };
-		static float rotate[3] = { 0.0f, 0.0f, 0.0f };
-		ImGui::Begin(m_EditorProperties.m_InspectorName);
-		for (auto& e : m_SelectedEntity)
-		{
-			if (e.second)
-			{
-				ImGui::Text("Name:");
-
-				Entity& ent = m_Scene->m_Entities.at(e.first);
-
-				if (ImGui::InputText("##label", s_RenameableInspector, IM_ARRAYSIZE(s_RenameableInspector), ImGuiInputTextFlags_EnterReturnsTrue))
-				{
-					if (strcmp(s_RenameableInspector, "") != 0)
-					{
-						m_Scene->RenameEntity(e.first, s_RenameableInspector);
-					}
-					else
-					{
-						strcpy_s(s_RenameableInspector, ent.m_Name.c_str());
-					}
-				}
-
-				ImGui::Separator();
-
-				static uint s_Selected = 1;
-				const char* selectedName = m_InspectorComponents[s_Selected].m_Name;
-				if (ImGui::BeginCombo("###label", selectedName, 0))
-				{
-					for (int i = 0; i < m_InspectorComponents.size(); i++)
-					{
-						auto& comp = m_InspectorComponents[i];
-						std::string name = comp.m_Name;
-						if (ImGui::Selectable(name.c_str(), comp.m_Selected))
-						{
-							s_Selected = i;
-							break;
-						}
-					}
-					ImGui::EndCombo();
-				}
-
-				ImGui::Indent();
-				if (ImGui::Button("Add component"))
-				{
-					if (s_Selected != 0)
-					{
-						ent.m_ComponentFlags |= 1 << (s_Selected - 1);
-					}
-				}
-				ImGui::Unindent();
-				ImGui::Separator();
-
-				ImGui::Text("Components:");
-				if (ent.m_ComponentFlags & FlagModelComponent)
-				{
-					if (ImGui::TreeNode("ModelComponent"))
-					{
-						auto comp = m_Scene->m_ModelComponent.find(e.first);
-						if (comp != m_Scene->m_ModelComponent.end())
-						{
-							ModelComponent* model = m_Scene->m_ModelComponent.at(e.first);
-							if (InspectorNewSelect)
-							{
-								memcpy(translate, (float*)&model->m_Transformation.m_Pos, 4 * sizeof(float));
-								memcpy(scale, (float*)&model->m_Transformation.m_Scale, 4 * sizeof(float));
-								memcpy(translate, (float*)&model->m_Transformation.m_Rotation, 4 * sizeof(float));
-								InspectorNewSelect = false;
-							}
-							ImGui::Indent();
-							if (ImGui::Button("Browse")) {
-								m_Scene->AddComponent(e.first, new ModelComponent(Application::s_Application->m_Window->OpenFileDialog().c_str()));
-							}
-							ImGui::SameLine();
-							ImGui::Text(model->m_Path.c_str());
-
-							if(ImGui::TreeNode("Transform"))
-							{
-								ImGui::Text("Translate:");
-								if (ImGui::DragFloat3("##translate", translate, 0.05f))
-								{
-									model->m_Transformation.Move(Vec3(translate[0], translate[1], translate[2]));
-								}
-
-								ImGui::Text("Scale:");
-								static bool sync = false;
-								bool dragscale = false;
-								dragscale = ImGui::DragFloat3("##scale", scale, 0.002f, -100000.0f, 100000.0f, "%.3f", 1.0f);
-								ImGui::Checkbox("Sync", &sync);
-								if (dragscale)
-								{
-									if (sync)
-									{
-										Vec3 temp = ((Vec3)scale) - model->m_Transformation.m_Scale;
-										
-										model->m_Transformation.m_Scale += temp.x;
-										model->m_Transformation.m_Scale += temp.y;
-										model->m_Transformation.m_Scale += temp.z;
-										memcpy(scale, (float*)&model->m_Transformation.m_Scale, sizeof(Vec3));
-										model->m_Transformation.Calculate();
-									}
-									else
-										model->m_Transformation.Scale(Vec3(scale[0], scale[1], scale[2]));
-								}
-
-								ImGui::Text("Rotate:");
-								if (ImGui::DragFloat3("##rotate", rotate, 0.5f))
-								{
-									Vec3 temp = ((Vec3)rotate);
-									temp = Vec3(std::fmod(temp.x, 360.0f), std::fmod(temp.y, 360.0f), std::fmod(temp.z, 360.0f));
-									memcpy(rotate, (float*)&temp, sizeof(Vec3));
-									model->m_Transformation.Rotate(temp);
-								}
-
-								ImGui::TreePop();
-							}
-						}
-						else
-						{
-							if (ImGui::Button("Browse")) {
-								m_Scene->AddComponent(e.first, new ModelComponent(Application::s_Application->m_Window->OpenFileDialog().c_str()));
-							}
-							ImGui::SameLine();
-							ImGui::Text("...");
-						}
-						ImGui::TreePop();
-					}
-				}
-				break;
-			}
-		}
-		ImGui::End();
-	}
 	Application::s_Application->ImGuiEndFrame();
 }
 
@@ -551,7 +251,328 @@ void GameLayer::OnEvent(const Event& event)
 	}
 }
 
+//////////////
+// Viewport //
+//////////////
 
+void GameLayer::DrawViewport()
+{
+	static ImGuiWindowFlags s_ViewportWindow = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
+	ImGui::Begin("Viewport", 0, s_ViewportWindow);
+
+	ImGui::Text("%d fps, %gms", Application::s_Application->m_FramesPerSecond, Application::s_Application->m_FrameTimeMs);
+	static uint width = 0;
+	static uint height = 0;
+	static uint posX = 0;
+	static uint posY = 0;
+	if (width != ImGui::GetWindowWidth() || height != ImGui::GetWindowHeight() || posX != ImGui::GetWindowPos().x || posY != ImGui::GetWindowPos().y)
+	{
+		width = (uint)ImGui::GetWindowWidth();
+		height = (uint)ImGui::GetWindowHeight();
+		posX = (uint)ImGui::GetWindowPos().x;
+		posY = (uint)ImGui::GetWindowPos().y;
+
+		m_Camera->Resize(width, height);
+		m_FrameBuffer->Resize(width, height);
+		Application::s_Application->m_RenderAPI->ResizeDefaultViewport(width, height, posX, posY);
+	}
+	m_EditorProperties.m_ViewportHover = ImGui::IsWindowHovered();
+	DrawScene();
+	ImGui::Image((void*)(intptr_t)m_FrameBuffer->GetTextureHandle(), ImVec2((float)width, (float)height), ImVec2(0, 1), ImVec2(1, 0));
+	ImGui::End();
+}
+
+///////////////
+// Hierarchy //
+///////////////
+
+void GameLayer::DrawHierarchy()
+{
+	ImGuiIO& io = ImGui::GetIO();
+	static bool s_ClickHandled = false;
+	static uint s_RenamingId = -1; // 4 294 967 295
+	static bool s_SetOpen = false;
+	ImGui::Begin(m_EditorProperties.m_HierarchyName);
+	if (ImGui::Button("Create New Entity"))
+	{
+		s_RenamingId = m_Scene->CreateEntity();
+		m_SelectedEntity.insert(std::make_pair(s_RenamingId, false));
+		s_ClickHandled = true;
+		s_SetOpen = true;
+	}
+
+
+	static char s_RenameableHierarchy[32] = "Unnamed";
+
+	ImGui::ColorButton("", ImColor(226, 189, 0), ImGuiColorEditFlags_NoBorder | ImGuiColorEditFlags_NoInputs);
+	ImGui::SameLine();
+	if (s_SetOpen)
+	{
+		s_SetOpen = false;
+		ImGui::SetNextTreeNodeOpen(true);
+	}
+	if (ImGui::TreeNode("Entities"))
+	{
+		if (m_Scene->m_Entities.size() > 0)
+		{
+
+			for (auto& ent : m_Scene->m_Entities)
+			{
+				if (ent.first != s_RenamingId || m_EditorProperties.m_ViewportInput)
+				{
+					ImGui::ColorButton("", ImColor(120, 50, 0), ImGuiColorEditFlags_NoBorder | ImGuiColorEditFlags_NoInputs);
+					ImGui::SameLine();
+					ImGui::PushID((int)ent.first);
+					bool open = ImGui::TreeNodeEx(ent.second.m_Name.c_str(), (m_SelectedEntity.at(ent.first) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
+					ImGui::PopID();
+					if (m_SelectedEntity.at(ent.first))
+					{
+						ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 40); // Move text to right side
+						ImGui::Text("%i", ent.first);
+					}
+					if (ImGui::IsItemClicked())
+					{
+						if (!io.KeyCtrl)
+							for (auto& e : m_SelectedEntity)
+								e.second = false;
+
+						m_SelectedEntity.at(ent.first) = !m_SelectedEntity.at(ent.first);
+						strcpy(m_CurrentInspectorName, ent.second.m_Name.c_str());
+						s_ClickHandled = true;
+						if (m_SelectedEntity.at(ent.first))
+						{
+							m_InspectorSelectNew = true;
+							m_EditorProperties.m_ShowInspector = true;
+						}
+					}
+
+					if (open)
+					{
+						static uint s_Selected = 1;
+						const char* selectedName = m_HierarchyComponents[s_Selected].m_Name;
+						ImGui::Indent();
+						if (ImGui::BeginCombo("###label", selectedName, 0))
+						{
+							for (int i = 0; i < m_HierarchyComponents.size(); i++)
+							{
+								auto& comp = m_HierarchyComponents[i];
+								std::string name = comp.m_Name;
+								if (ImGui::Selectable(name.c_str(), comp.m_Selected))
+								{
+									s_Selected = i;
+									break;
+								}
+							}
+							ImGui::EndCombo();
+						}
+
+
+						ImGui::Indent();
+						if (ImGui::Button("Add component"))
+						{
+							if (s_Selected != 0)
+							{
+
+								for (auto& e : m_SelectedEntity)
+									e.second = false;
+								m_SelectedEntity.at(ent.first) = true;
+
+								ent.second.m_ComponentFlags |= 1 << (s_Selected - 1);
+							}
+						}
+						ImGui::Unindent();
+
+						if (ent.second.m_ComponentFlags != 0)
+						{
+							ImGui::Text("Components:");
+							ImGui::Separator();
+							ImGui::Indent();
+							if (ent.second.m_ComponentFlags & FlagModelComponent)
+							{
+								ImGui::BulletText("ModelComponent");
+							}
+							ImGui::Unindent();
+						}
+						ImGui::Unindent();
+						ImGui::TreePop();
+					}
+				}
+				else
+				{
+					ImGui::SetKeyboardFocusHere(0);
+					ImGui::Indent();
+					if (ImGui::InputText(std::to_string(ent.first).c_str(), s_RenameableHierarchy, IM_ARRAYSIZE(s_RenameableHierarchy), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+					{
+						if (s_RenameableHierarchy == '\0')
+							strcpy_s(s_RenameableHierarchy, "Unnamed");
+
+						m_Scene->RenameEntity(ent.first, s_RenameableHierarchy);
+						strcpy(m_CurrentInspectorName, s_RenameableHierarchy);
+						strcpy_s(s_RenameableHierarchy, "Unnamed");
+						s_RenamingId = -1;
+						if (!io.KeyCtrl)
+							for (auto& e : m_SelectedEntity)
+								e.second = false;
+						m_SelectedEntity.at(ent.first) = true;
+						m_InspectorSelectNew = true;
+					}
+					ImGui::Unindent();
+				}
+			}
+		}
+		else
+			ImGui::Text("No entities here...");
+
+		ImGui::TreePop();
+		if (!s_ClickHandled && ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered() && ImGui::IsWindowHovered())
+			for (auto& e : m_SelectedEntity)
+				e.second = false;
+
+		s_ClickHandled = false;
+	}
+
+	ImGui::End();
+}
+
+///////////////
+// Inspector //
+///////////////
+void GameLayer::DrawInspector()
+{
+	static float translate[3] = { 0.0f, 0.0f, 0.0f };
+	static float scale[3] = { 1.0f, 1.0f, 1.0f };
+	static float rotate[3] = { 0.0f, 0.0f, 0.0f };
+	ImGui::Begin(m_EditorProperties.m_InspectorName);
+	for (auto& e : m_SelectedEntity)
+	{
+		if (e.second)
+		{
+			ImGui::Text("Name:");
+
+			Entity& ent = m_Scene->m_Entities.at(e.first);
+
+			if (ImGui::InputText("##label", m_CurrentInspectorName, IM_ARRAYSIZE(m_CurrentInspectorName), ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				if (strcmp(m_CurrentInspectorName, "") != 0)
+				{
+					m_Scene->RenameEntity(e.first, m_CurrentInspectorName);
+				}
+				else
+				{
+					strcpy(m_CurrentInspectorName, ent.m_Name.c_str());
+				}
+			}
+
+			ImGui::Separator();
+
+			static uint s_Selected = 1;
+			const char* selectedName = m_InspectorComponents[s_Selected].m_Name;
+			if (ImGui::BeginCombo("###label", selectedName, 0))
+			{
+				for (int i = 0; i < m_InspectorComponents.size(); i++)
+				{
+					auto& comp = m_InspectorComponents[i];
+					std::string name = comp.m_Name;
+					if (ImGui::Selectable(name.c_str(), comp.m_Selected))
+					{
+						s_Selected = i;
+						break;
+					}
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::Indent();
+			if (ImGui::Button("Add component"))
+			{
+				if (s_Selected != 0)
+				{
+					ent.m_ComponentFlags |= 1 << (s_Selected - 1);
+				}
+			}
+			ImGui::Unindent();
+			ImGui::Separator();
+
+			ImGui::Text("Components:");
+			if (ent.m_ComponentFlags & FlagModelComponent)
+			{
+				if (ImGui::TreeNode("ModelComponent"))
+				{
+					auto comp = m_Scene->m_ModelComponent.find(e.first);
+					if (comp != m_Scene->m_ModelComponent.end())
+					{
+						ModelComponent* model = m_Scene->m_ModelComponent.at(e.first);
+						if (m_InspectorSelectNew)
+						{
+							memcpy(translate, (float*)&model->m_Transformation.m_Pos, 4 * sizeof(float));
+							memcpy(scale, (float*)&model->m_Transformation.m_Scale, 4 * sizeof(float));
+							memcpy(translate, (float*)&model->m_Transformation.m_Rotation, 4 * sizeof(float));
+							m_InspectorSelectNew = false;
+						}
+						ImGui::Indent();
+						if (ImGui::Button("Browse")) {
+							m_Scene->AddComponent(e.first, new ModelComponent(Application::s_Application->m_Window->OpenFileDialog().c_str()));
+						}
+						ImGui::SameLine();
+						ImGui::Text(model->m_Path.c_str());
+
+						if (ImGui::TreeNode("Transform"))
+						{
+							ImGui::Text("Translate:");
+							if (ImGui::DragFloat3("##translate", translate, 0.05f))
+							{
+								model->m_Transformation.Move(Vec3(translate[0], translate[1], translate[2]));
+							}
+
+							ImGui::Text("Scale:");
+							static bool sync = false;
+							bool dragscale = false;
+							dragscale = ImGui::DragFloat3("##scale", scale, 0.002f, -100000.0f, 100000.0f, "%.3f", 1.0f);
+							ImGui::Checkbox("Sync", &sync);
+							if (dragscale)
+							{
+								if (sync)
+								{
+									Vec3 temp = ((Vec3)scale) - model->m_Transformation.m_Scale;
+
+									model->m_Transformation.m_Scale += temp.x;
+									model->m_Transformation.m_Scale += temp.y;
+									model->m_Transformation.m_Scale += temp.z;
+									memcpy(scale, (float*)&model->m_Transformation.m_Scale, sizeof(Vec3));
+									model->m_Transformation.Calculate();
+								}
+								else
+									model->m_Transformation.Scale(Vec3(scale[0], scale[1], scale[2]));
+							}
+
+							ImGui::Text("Rotate:");
+							if (ImGui::DragFloat3("##rotate", rotate, 0.5f))
+							{
+								Vec3 temp = ((Vec3)rotate);
+								temp = Vec3(std::fmod(temp.x, 360.0f), std::fmod(temp.y, 360.0f), std::fmod(temp.z, 360.0f));
+								memcpy(rotate, (float*)&temp, sizeof(Vec3));
+								model->m_Transformation.Rotate(temp);
+							}
+
+							ImGui::TreePop();
+						}
+					}
+					else
+					{
+						if (ImGui::Button("Browse")) {
+							m_Scene->AddComponent(e.first, new ModelComponent(Application::s_Application->m_Window->OpenFileDialog().c_str()));
+						}
+						ImGui::SameLine();
+						ImGui::Text("...");
+					}
+					ImGui::TreePop();
+				}
+			}
+			break;
+		}
+	}
+	ImGui::End();
+}
 
 
 

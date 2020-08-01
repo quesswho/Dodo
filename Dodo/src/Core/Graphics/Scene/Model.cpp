@@ -22,6 +22,8 @@ namespace Dodo {
 
 	bool Model::Load(const char* path)
 	{
+		m_Vertices.clear();
+		m_Indices.clear();
 		Assimp::Importer imp;
 
 		const aiScene* model = imp.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace);
@@ -33,6 +35,7 @@ namespace Dodo {
 		for (uint i = 0; i < model->mNumMeshes; i++)
 		{
 			aiMesh* mesh = model->mMeshes[i];
+			m_Vertices.reserve(mesh->mNumVertices);
 			for (uint j = 0; j < mesh->mNumVertices; j++)
 			{
 				Vertex vertex;
@@ -57,14 +60,14 @@ namespace Dodo {
 				vertex.m_Tangent.y = mesh->mTangents[j].y;
 				vertex.m_Tangent.z = mesh->mTangents[j].z;
 
-				m_Vertices.push_back(vertex);
+				m_Vertices.emplace_back(vertex);
 			}
-
+			m_Indices.reserve(mesh->mNumFaces * 3); // Triangles
 			for (uint k = 0; k < mesh->mNumFaces; k++)
 			{
 				aiFace face = mesh->mFaces[k];
 				for (uint j = 0; j < face.mNumIndices; j++)
-					m_Indices.push_back(face.mIndices[j]);
+					m_Indices.emplace_back(face.mIndices[j]);
 			}
 		}
 		m_Count = (uint)m_Indices.size();

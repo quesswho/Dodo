@@ -60,7 +60,7 @@ namespace Dodo {
 			uint m_VBufferID;
 			uint m_ABufferID;
 		public:
-			OpenGLVertexBuffer(const float* vertices, const uint& size, const BufferProperties& prop);
+			OpenGLVertexBuffer(const float* vertices, const uint size, const BufferProperties& prop);
 			~OpenGLVertexBuffer();
 
 			const BufferProperties& GetBufferProperties() const { return m_BufferProperties; }
@@ -74,7 +74,7 @@ namespace Dodo {
 		private:
 			uint m_BufferID;
 		public:
-			OpenGLIndexBuffer(const uint* indices, const uint& count);
+			OpenGLIndexBuffer(const uint* indices, const uint count);
 			~OpenGLIndexBuffer();
 
 			inline void Bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID); }

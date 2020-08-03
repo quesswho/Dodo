@@ -9,7 +9,6 @@ namespace Dodo {
 	class ModelComponent {
 	private:
 		Model* m_Model;
-
 	public:
 		Math::Transformation m_Transformation;
 

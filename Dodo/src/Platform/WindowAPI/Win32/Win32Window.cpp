@@ -139,7 +139,7 @@ namespace Dodo {
 			RegisterRawMouse();
 			CreateDeviceContext();
 			
-			wglSwapIntervalEXT(m_WindowProperties.m_Flags & DodoWindowFlags_VSYNC);
+			VSync(m_WindowProperties.m_Flags & DodoWindowFlags_VSYNC);
 
 			SetWindowTextA(m_Hwnd, m_WindowProperties.m_Title);
 

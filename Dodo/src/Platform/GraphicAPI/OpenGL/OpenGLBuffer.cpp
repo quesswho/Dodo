@@ -6,7 +6,7 @@ namespace Dodo {
 
 		// VertexBuffer //
 
-		OpenGLVertexBuffer::OpenGLVertexBuffer(const float* vertices, const uint& size, const BufferProperties& prop)
+		OpenGLVertexBuffer::OpenGLVertexBuffer(const float* vertices, const uint size, const BufferProperties& prop)
 			: m_BufferProperties(prop), m_VBufferID(0)
 		{
 			glGenBuffers(1, &m_VBufferID);
@@ -39,7 +39,7 @@ namespace Dodo {
 
 		// IndexBuffer //
 
-		OpenGLIndexBuffer::OpenGLIndexBuffer(const uint* indices, const uint& count)
+		OpenGLIndexBuffer::OpenGLIndexBuffer(const uint* indices, const uint count)
 			: m_Count(count), m_BufferID(0)
 		{
 			glGenBuffers(1, &m_BufferID);

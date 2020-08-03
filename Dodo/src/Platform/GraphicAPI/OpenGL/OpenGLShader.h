@@ -15,13 +15,13 @@ namespace Dodo {
 
 			uint m_ShaderID;
 			const char* m_Name;
-			std::unordered_map<const char*, int> m_UniformLocations;
+			std::unordered_map<std::string, int> m_UniformLocations;
 		public:
 			OpenGLShader(const char* name, uint shader) // Internal use only
 				: m_Name(name), m_ShaderID(shader)
 			{}
 
-			OpenGLShader(const char* name, uint shader, std::unordered_map<const char*, int> uniformLocations) // Internal use only
+			OpenGLShader(const char* name, uint shader, std::unordered_map<std::string, int> uniformLocations) // Internal use only
 				: m_Name(name), m_ShaderID(shader), m_UniformLocations(uniformLocations)
 			{}
 

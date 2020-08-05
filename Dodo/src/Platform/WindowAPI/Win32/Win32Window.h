@@ -20,6 +20,7 @@ namespace Dodo {
 		DodoWindowFlags_IMGUI			= 1 << 2,
 		DodoWindowFlags_IMGUIDOCKING	= 1 << 3,
 		DodoWindowFlags_BACKFACECULL	= 1 << 4,
+		DodoWindowFlags_SERIALIZESCENE  = 1 << 5,
 	};
 #pragma warning(push)
 #pragma warning(disable : 26812)
@@ -66,8 +67,11 @@ namespace Dodo {
 			void ImGuiNewFrame() const;
 			void ImGuiEndFrame() const;
 
-			std::string OpenFileDialog() const;
-
+			std::string OpenFileDialog();
+			void DefaultWorkDirectory() { ChangeWorkDirectory(m_MainWorkDirectory); }
+			void CurrentDialogDirector() { ChangeWorkDirectory(m_CurrentDialogDirectory); }
+			void ChangeWorkDirectory(std::string dir);
+			inline const std::string GetMainWorkDirectory() const { return m_MainWorkDirectory; }
 			bool m_Keys[1024];
 			Math::TVec2<long> m_MousePos;
 			bool m_Focused;
@@ -90,6 +94,8 @@ namespace Dodo {
 			PIXELFORMATDESCRIPTOR GetPixelFormat() const;
 			short int CreateDeviceContext();
 			
+			std::string m_CurrentDialogDirectory;
+			std::string m_MainWorkDirectory;
 		};
 		static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 		static Win32Window* s_WindowClass;

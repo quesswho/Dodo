@@ -4,7 +4,8 @@
 
 namespace Dodo {
 
-	AssetManager::AssetManager()
+	AssetManager::AssetManager(bool serialization)
+		: m_Serialization(serialization)
 	{
 		m_ModelLoader = new ModelLoader();
 	}

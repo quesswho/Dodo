@@ -64,6 +64,7 @@ namespace Dodo {
 					indices.push_back(face.mIndices[j]);
 			}
 		}
+		Application::s_Application->m_Window->CurrentDialogDirector();
 		const Mesh* mesh = new Mesh(new VertexBuffer((float*)&vertices[0], totalVertices * sizeof(Vertex), BufferProperties({ { "POSITION", 3 }, { "TEXCOORD", 2 }, { "NORMAL", 3 }, { "TANGENT", 3 } })), new IndexBuffer(indices.data(), totalIndices));
 		Material* material = nullptr;
 		if (!model->HasMaterials())

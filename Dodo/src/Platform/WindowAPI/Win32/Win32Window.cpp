@@ -1,11 +1,13 @@
 #include "pch.h"
 #include "Win32Window.h"
 
+#include "Core/System/FileUtils.h"
+
+#include <filesystem>
 #include "Core/Application/Application.h"
 #include <glad/wgl.h>
 
 #include <imgui_impl_win32.h>
-
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace Dodo {
@@ -132,7 +134,13 @@ namespace Dodo {
 			MEMORYSTATUSEX memInfo;
 			memInfo.dwLength = sizeof(MEMORYSTATUSEX);
 			GlobalMemoryStatusEx(&memInfo);
-			m_Pcspecs.m_TotalPhysicalMemory = memInfo.ullTotalPhys;                                           
+			m_Pcspecs.m_TotalPhysicalMemory = memInfo.ullTotalPhys;     
+
+			m_MainWorkDirectory = std::filesystem::current_path().string();
+
+			m_CurrentDialogDirectory = m_MainWorkDirectory;
+
+			FileUtils::RemoveDoubleBackslash(m_MainWorkDirectory);
 
 			memset(m_Keys, 0, sizeof(m_Keys));
 
@@ -396,8 +404,9 @@ namespace Dodo {
 			ImGui::Render();
 		}
 
-		std::string Win32Window::OpenFileDialog() const
+		std::string Win32Window::OpenFileDialog()
 		{
+			ChangeWorkDirectory(m_CurrentDialogDirectory);
 			std::string result;
 			static OPENFILENAME ofn;
 
@@ -417,14 +426,17 @@ namespace Dodo {
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 			GetOpenFileName(&ofn);
 			result = path;
-			auto it = std::find(result.begin(), result.end(), '\\');
-			while (it != result.end()) {
-				result.replace(it, it + 1, "/");
 
-				it = std::find(it + 2, result.end(), '\\');
-			}
+			FileUtils::RemoveDoubleBackslash(result);
 
+			m_CurrentDialogDirectory = std::filesystem::current_path().string();
+			Application::s_Application->m_Window->DefaultWorkDirectory();
 			return result;
+		}
+
+		void Win32Window::ChangeWorkDirectory(std::string dir)
+		{
+			std::filesystem::current_path(dir);
 		}
 
 		void Win32Window::KeyPressCallback(uint keycode)

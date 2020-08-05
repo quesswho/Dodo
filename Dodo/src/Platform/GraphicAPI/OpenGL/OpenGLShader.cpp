@@ -3,7 +3,7 @@
 
 #include <glad/gl.h>
 
-#include "Core/Utilities/FileUtils.h"
+#include "Core/System/FileUtils.h"
 #include "Core/Application/Application.h"
 
 namespace Dodo {
@@ -20,12 +20,12 @@ namespace Dodo {
 				*newpath = '\0';
 				strcat(newpath, path);
 				newpath[strlen(path) - 1] = 'g';
-				CompileInit(FileUtils::ReadFile(strcat(newpath, "lsl"))); // turning .x into .glsl
+				CompileInit(FileUtils::ReadTextFile(strcat(newpath, "lsl"))); // turning .x into .glsl
 				delete[] newpath;
 			}
 			else
 			{
-				CompileInit(FileUtils::ReadFile(path));
+				CompileInit(FileUtils::ReadTextFile(path));
 			}
 		}
 
@@ -154,12 +154,20 @@ namespace Dodo {
 
 		void OpenGLShader::ReloadFromPath(const char* path)
 		{
-			CompileInit(FileUtils::ReadFile(path));
+			glDeleteProgram(m_ShaderID);
+			CompileInit(FileUtils::ReadTextFile(path));
 		}
 
 		void OpenGLShader::ReloadFromSource(std::string& source)
 		{
+			glDeleteProgram(m_ShaderID);
 			CompileInit(source);
+		}
+
+		void OpenGLShader::ReloadFromSource(const char* vertex, const char* fragment)
+		{
+			glDeleteProgram(m_ShaderID);
+			CompileVFShader(vertex, fragment);
 		}
 
 		void OpenGLShader::Bind() const

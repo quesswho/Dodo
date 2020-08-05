@@ -38,6 +38,7 @@ namespace Dodo {
 
 			void ReloadFromPath(const char* path);
 			void ReloadFromSource(std::string& source);
+			void ReloadFromSource(const char* vertex, const char* fragment);
 
 			void CreateConstantBuffers() {}
 

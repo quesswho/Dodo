@@ -15,7 +15,7 @@ namespace Dodo {
 		std::unordered_map<uint, Model*> m_Models;		 // Stores id as key and model pointer as value
 		std::unordered_map<std::string, uint> m_ModelID; // Stores path as key and id as value
 	public:
-		AssetManager();
+		AssetManager(bool serialization);
 		~AssetManager();
 
 		Shader* GetShader(ShaderBuilderFlags flags);
@@ -24,5 +24,7 @@ namespace Dodo {
 		Model* CreateModel(const char* path, uint id);
 	public:
 		ModelLoader* m_ModelLoader;
+	private:
+		bool m_Serialization;
 	};
 }

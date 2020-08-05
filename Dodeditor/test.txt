@@ -1,0 +1,17 @@
+Entities:
+	0:
+		name "atararaiar"
+		comp "ModelComponent":
+			path "res/model/knife.fbx"
+			transformation:
+				0.000000 1.850000 0.000000
+				0.800000 0.800000 0.800000
+				-0.061087 -0.174533 -0.628319
+	1:
+		name "teata"
+		comp "ModelComponent":
+			path "res/model/knife.fbx"
+			transformation:
+				0.000000 -3.850000 0.000000
+				1.000000 1.000000 1.000000
+				0.000000 -0.994838 0.000000

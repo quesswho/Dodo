@@ -9,7 +9,7 @@ namespace Dodo {
 
 	enum ComponentFlags
 	{
-		None = 0,
+		FlagNone = 0,
 		FlagModelComponent = 1 << 0
 	};
 	DEFINE_ENUM_FLAG_OPERATORS(ComponentFlags);

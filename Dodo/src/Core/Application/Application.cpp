@@ -78,7 +78,7 @@ namespace Dodo {
 			DD_FATAL("Could not initialize RenderAPI. Error: {}", res);
 		}
 
-		m_AssetManager = ddnew AssetManager();
+		m_AssetManager = ddnew AssetManager(m_WindowProperties.m_Flags & DodoWindowFlags_SERIALIZESCENE);
 	}
 
 	void Application::Init() {}

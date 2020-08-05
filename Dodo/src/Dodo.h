@@ -12,6 +12,8 @@
 	/* Common */
 		//#include "Core/Common/Common.h"
 		//#include "Core/Common/Macros.h"
+	/* Data */
+		#include "Core/Data/AsciiSceneFile.h"
 
 	/* Graphics */
 		#include "Core/Graphics/Buffer.h"

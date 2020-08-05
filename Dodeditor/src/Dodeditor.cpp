@@ -144,21 +144,27 @@ void GameLayer::DrawImGui()
 		{
 			if (ImGui::BeginMenu("New")) 
 			{
-				ImGui::MenuItem("Project");
-				ImGui::MenuItem("Scene");
+				if (ImGui::MenuItem("Scene"))
+				{
+
+				}
 				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("Open"))
 			{
-				ImGui::MenuItem("Project");
+				if (ImGui::MenuItem("Scene"))
+				{
+
+				}
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Save"))
+			if (ImGui::MenuItem("Save"))
 			{
-				ImGui::MenuItem("Project");
-				ImGui::EndMenu();
+				Application::s_Application->m_Window->DefaultWorkDirectory();
+				AsciiSceneFile file;
+				file.Write("test.txt", m_Scene);
 			}
 
 			if (ImGui::BeginMenu("Import/Export"))
@@ -381,11 +387,11 @@ void GameLayer::DrawHierarchy()
 							}
 						}
 						ImGui::Unindent();
+						ImGui::Separator();
 
 						if (ent.second.m_ComponentFlags != 0)
 						{
 							ImGui::Text("Components:");
-							ImGui::Separator();
 							ImGui::Indent();
 							if (ent.second.m_ComponentFlags & FlagModelComponent)
 							{
@@ -394,6 +400,7 @@ void GameLayer::DrawHierarchy()
 							ImGui::Unindent();
 						}
 						ImGui::Unindent();
+						ImGui::Separator();
 						ImGui::TreePop();
 					}
 				}
@@ -513,7 +520,9 @@ void GameLayer::DrawInspector()
 						}
 						ImGui::Indent();
 						if (ImGui::Button("Browse")) {
-							m_Scene->AddComponent(e.first, new ModelComponent(Application::s_Application->m_Window->OpenFileDialog().c_str()));
+							std::string str = Application::s_Application->m_Window->OpenFileDialog();
+							if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(Application::s_Application->m_Window->GetMainWorkDirectory().length()); // In main work directory
+							m_Scene->AddComponent(e.first, new ModelComponent(str.c_str()));
 						}
 						ImGui::SameLine();
 						ImGui::Text(model->m_Path.c_str());
@@ -562,7 +571,10 @@ void GameLayer::DrawInspector()
 					else
 					{
 						if (ImGui::Button("Browse")) {
-							m_Scene->AddComponent(e.first, new ModelComponent(Application::s_Application->m_Window->OpenFileDialog().c_str()));
+							std::string str = Application::s_Application->m_Window->OpenFileDialog();
+							if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) 
+								str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
+							m_Scene->AddComponent(e.first, new ModelComponent(str.c_str()));
 						}
 						ImGui::SameLine();
 						ImGui::Text("...");

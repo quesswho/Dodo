@@ -9,14 +9,6 @@ namespace Dodo {
 
 	void AsciiSceneFile::Write(const char* path, Scene* scene)
 	{
-
-		const char* indent = "	";
-
-		if (FileUtils::FileExists(path))
-		{
-
-		}
-
 		std::vector<std::string> result;
 		
 		result.emplace_back("Entities:");

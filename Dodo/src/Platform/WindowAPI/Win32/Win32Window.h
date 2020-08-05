@@ -69,7 +69,7 @@ namespace Dodo {
 
 			std::string OpenFileDialog();
 			void DefaultWorkDirectory() { ChangeWorkDirectory(m_MainWorkDirectory); }
-			void CurrentDialogDirector() { ChangeWorkDirectory(m_CurrentDialogDirectory); }
+			void CurrentDialogDirectory() { ChangeWorkDirectory(m_CurrentDialogDirectory); }
 			void ChangeWorkDirectory(std::string dir);
 			inline const std::string GetMainWorkDirectory() const { return m_MainWorkDirectory; }
 			bool m_Keys[1024];

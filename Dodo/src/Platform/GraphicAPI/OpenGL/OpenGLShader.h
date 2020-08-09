@@ -42,7 +42,7 @@ namespace Dodo {
 
 			void CreateConstantBuffers() {}
 
-			const char* GetName() const { return m_Name; }
+			const char* GetEntryName() const { return m_Name; }
 
 			void SetUniformValue(const char* location, const int value);
 			void SetUniformValue(const char* location, const float value);

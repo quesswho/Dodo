@@ -6,6 +6,7 @@
 #include <functional>
 #include <algorithm>
 #include <sstream>
+#include <numeric>
 
 #include "Core/System/Memory.h"
 #include "Core/Utilities/Logger.h"

@@ -10492,7 +10492,7 @@ ImGuiWindowSettings* ImGui::CreateNewWindowSettings(const char* name)
     ImGuiWindowSettings* settings = g.SettingsWindows.alloc_chunk(chunk_size);
     IM_PLACEMENT_NEW(settings) ImGuiWindowSettings();
     settings->ID = ImHashStr(name, name_len);
-    memcpy(settings->GetName(), name, name_len + 1);   // Store with zero terminator
+    memcpy(settings->GetEntryName(), name, name_len + 1);   // Store with zero terminator
 
     return settings;
 }
@@ -10726,7 +10726,7 @@ static void WindowSettingsHandler_WriteAll(ImGuiContext* ctx, ImGuiSettingsHandl
     buf->reserve(buf->size() + g.SettingsWindows.size() * 6); // ballpark reserve
     for (ImGuiWindowSettings* settings = g.SettingsWindows.begin(); settings != NULL; settings = g.SettingsWindows.next_chunk(settings))
     {
-        const char* settings_name = settings->GetName();
+        const char* settings_name = settings->GetEntryName();
         buf->appendf("[%s][%s]\n", handler->TypeName, settings_name);
         if (settings->ViewportId != 0 && settings->ViewportId != ImGui::IMGUI_VIEWPORT_DEFAULT_ID)
         {
@@ -15536,7 +15536,7 @@ void ImGui::ShowMetricsWindow(bool* p_open)
         static void NodeWindowSettings(ImGuiWindowSettings* settings)
         {
             ImGui::Text("0x%08X \"%s\" Pos (%d,%d) Size (%d,%d) Collapsed=%d",
-                settings->ID, settings->GetName(), settings->Pos.x, settings->Pos.y, settings->Size.x, settings->Size.y, settings->Collapsed);
+                settings->ID, settings->GetEntryName(), settings->Pos.x, settings->Pos.y, settings->Size.x, settings->Size.y, settings->Collapsed);
         }
 
         static void NodeViewport(ImGuiViewportP* viewport)
@@ -15798,7 +15798,7 @@ void ImGui::ShowMetricsWindow(bool* p_open)
             ImGui::Text("In SettingsWindows:");
             for (ImGuiWindowSettings* settings = g.SettingsWindows.begin(); settings != NULL; settings = g.SettingsWindows.next_chunk(settings))
                 if (settings->DockId != 0)
-                    ImGui::BulletText("Window '%s' -> DockId %08X", settings->GetName(), settings->DockId);
+                    ImGui::BulletText("Window '%s' -> DockId %08X", settings->GetEntryName(), settings->DockId);
             ImGui::Text("In SettingsNodes:");
             for (int n = 0; n < dc->NodesSettings.Size; n++)
             {
@@ -15809,7 +15809,7 @@ void ImGui::ShowMetricsWindow(bool* p_open)
                     if (ImGuiWindow* window = FindWindowByID(settings->SelectedWindowId))
                         selected_tab_name = window->Name;
                     else if (ImGuiWindowSettings* window_settings = FindWindowSettings(settings->SelectedWindowId))
-                        selected_tab_name = window_settings->GetName();
+                        selected_tab_name = window_settings->GetEntryName();
                 }
                 ImGui::BulletText("Node %08X, Parent %08X, SelectedTab %08X ('%s')", settings->ID, settings->ParentNodeId, settings->SelectedWindowId, selected_tab_name ? selected_tab_name : settings->SelectedWindowId ? "N/A" : "");
             }

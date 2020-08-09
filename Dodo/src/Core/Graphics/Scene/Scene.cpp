@@ -11,6 +11,16 @@ namespace Dodo {
 	Scene::~Scene()
 	{}
 
+	void Scene::CreateEntity(uint id, const std::string& name)
+	{
+		if (m_Entities.find(id) != m_Entities.end())
+		{
+			id = (uint)m_Entities.size();
+			DD_WARN("Failed to give entity correct id: {}", name);
+		}
+		m_Entities.insert(std::make_pair(id, Entity(name)));
+	}
+
 	uint Scene::CreateEntity(const std::string& name)
 	{
 		uint result = (uint)m_Entities.size();
@@ -42,6 +52,7 @@ namespace Dodo {
 		if (it != m_ModelComponent.end())
 			it->second = comp;
 		m_ModelComponent.insert(std::make_pair(id, comp));
+		m_Entities.at(id).m_ComponentFlags |= FlagModelComponent;
 	}
 
 	void Scene::Draw()

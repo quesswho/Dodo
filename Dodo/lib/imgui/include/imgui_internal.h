@@ -1236,7 +1236,7 @@ struct ImGuiWindowSettings
     bool        WantApply;      // Set when loaded from .ini data (to enable merging/loading .ini data into an already running context)
 
     ImGuiWindowSettings()       { ID = 0; Pos = Size = ViewportPos = ImVec2ih(0, 0); ViewportId = DockId = ClassId = 0; DockOrder = -1; Collapsed = WantApply = false; }
-    char* GetName()             { return (char*)(this + 1); }
+    char* GetEntryName()             { return (char*)(this + 1); }
 };
 
 struct ImGuiSettingsHandler

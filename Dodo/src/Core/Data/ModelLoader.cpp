@@ -64,7 +64,11 @@ namespace Dodo {
 					indices.push_back(face.mIndices[j]);
 			}
 		}
-		Application::s_Application->m_Window->CurrentDialogDirectory();
+		std::string workdir = path;
+		if (workdir.find('/') != std::string::npos)
+			workdir.erase(workdir.begin() + workdir.find_last_of('/'), workdir.end());
+
+		Application::s_Application->m_Window->ChangeWorkDirectory(workdir);
 		const Mesh* mesh = new Mesh(new VertexBuffer((float*)&vertices[0], totalVertices * sizeof(Vertex), BufferProperties({ { "POSITION", 3 }, { "TEXCOORD", 2 }, { "NORMAL", 3 }, { "TANGENT", 3 } })), new IndexBuffer(indices.data(), totalIndices));
 		Material* material = nullptr;
 		if (!model->HasMaterials())

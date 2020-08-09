@@ -13,7 +13,7 @@ namespace Dodo {
 		{}
 
 		inline const uint GetComponentCount() const { return m_ComponentCount; }
-		inline const char* GetName() const { return m_Name; }
+		inline const char* GetEntryName() const { return m_Name; }
 
 	public:
 		uchar m_Index;

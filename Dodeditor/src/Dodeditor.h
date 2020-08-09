@@ -49,6 +49,7 @@ public:
 	void DrawViewport();
 	void DrawHierarchy();
 	void DrawInspector();
+
 private:
 	FrameBuffer* m_FrameBuffer;
 
@@ -68,6 +69,8 @@ private:
 
 	char* m_CurrentInspectorName;
 	bool m_InspectorSelectNew;
+
+	AsciiSceneFile m_File;
 };
 
 class Dodeditor : public Application

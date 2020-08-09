@@ -6,6 +6,14 @@
 using namespace Dodo;
 using namespace Math;
 
+static int ImGuiFilterAZ(ImGuiTextEditCallbackData* data)
+{
+	ImWchar c = data->EventChar;
+	if (c >= 'A' && c <= 'Z') return 0;
+	if (c >= 'a' && c <= 'z') { data->EventChar += 'A' - 'a'; return 0; }
+	return 1;
+}
+
 GameLayer::GameLayer()
 {
 	Application::s_Application->m_RenderAPI->ClearColor(0.2f, 0.2f, 0.9f);
@@ -155,7 +163,7 @@ void GameLayer::DrawImGui()
 			{
 				if (ImGui::MenuItem("Scene"))
 				{
-
+					m_Scene = m_File.Read(Application::s_Application->m_Window->OpenFileDialog().c_str());
 				}
 				ImGui::EndMenu();
 			}
@@ -163,8 +171,8 @@ void GameLayer::DrawImGui()
 			if (ImGui::MenuItem("Save"))
 			{
 				Application::s_Application->m_Window->DefaultWorkDirectory();
-				AsciiSceneFile file;
-				file.Write("test.txt", m_Scene);
+				
+				m_File.Write("test.txt", m_Scene);
 			}
 
 			if (ImGui::BeginMenu("Import/Export"))
@@ -408,7 +416,7 @@ void GameLayer::DrawHierarchy()
 				{
 					ImGui::SetKeyboardFocusHere(0);
 					ImGui::Indent();
-					if (ImGui::InputText(std::to_string(ent.first).c_str(), s_RenameableHierarchy, IM_ARRAYSIZE(s_RenameableHierarchy), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+					if (ImGui::InputText(std::to_string(ent.first).c_str(), s_RenameableHierarchy, IM_ARRAYSIZE(s_RenameableHierarchy), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackCharFilter, ImGuiFilterAZ))
 					{
 						if (s_RenameableHierarchy == '\0')
 							strcpy_s(s_RenameableHierarchy, "Unnamed");
@@ -458,7 +466,7 @@ void GameLayer::DrawInspector()
 
 			Entity& ent = m_Scene->m_Entities.at(e.first);
 
-			if (ImGui::InputText("##label", m_CurrentInspectorName, 32, ImGuiInputTextFlags_EnterReturnsTrue))
+			if (ImGui::InputText("##label", m_CurrentInspectorName, 32, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCharFilter, ImGuiFilterAZ))
 			{
 				if (strcmp(m_CurrentInspectorName, "") != 0)
 				{
@@ -513,7 +521,7 @@ void GameLayer::DrawInspector()
 						ModelComponent* model = m_Scene->m_ModelComponent.at(e.first);
 						if (m_InspectorSelectNew)
 						{
-							memcpy(translate, (float*)&model->m_Transformation.m_Pos, 4 * sizeof(float));
+							memcpy(translate, (float*)&model->m_Transformation.m_Position, 4 * sizeof(float));
 							memcpy(scale, (float*)&model->m_Transformation.m_Scale, 4 * sizeof(float));
 							memcpy(rotate, (float*)&model->m_Transformation.m_Rotation, 4 * sizeof(float));
 							m_InspectorSelectNew = false;
@@ -587,7 +595,6 @@ void GameLayer::DrawInspector()
 	}
 	ImGui::End();
 }
-
 
 
 Dodeditor::Dodeditor()

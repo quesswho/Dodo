@@ -67,7 +67,8 @@ namespace Dodo {
 			void ImGuiNewFrame() const;
 			void ImGuiEndFrame() const;
 
-			std::string OpenFileDialog();
+			std::string OpenFileSelector(const char* filter = "All\0 * .*\0");
+			std::string OpenFileSaver(const char* filter = "All\0 * .*\0", const char* extension = "\0");
 			void DefaultWorkDirectory() { ChangeWorkDirectory(m_MainWorkDirectory); }
 			void CurrentDialogDirectory() { ChangeWorkDirectory(m_CurrentDialogDirectory); }
 			void ChangeWorkDirectory(std::string dir);

@@ -50,15 +50,13 @@ public:
 	void DrawHierarchy();
 	void DrawInspector();
 
+	void ChangeScene(Scene* scene);
 private:
 	FrameBuffer* m_FrameBuffer;
 
 	Math::FreeCamera* m_Camera;
 
-	Math::Mat4 m_Rotation;
 	Scene* m_Scene;
-
-	Model* m_Model;
 
 	EditorProperties m_EditorProperties;
 

@@ -404,7 +404,7 @@ namespace Dodo {
 			ImGui::Render();
 		}
 
-		std::string Win32Window::OpenFileDialog()
+		std::string Win32Window::OpenFileSelector(const char* filter)
 		{
 			ChangeWorkDirectory(m_CurrentDialogDirectory);
 			std::string result;
@@ -418,13 +418,45 @@ namespace Dodo {
 			ofn.lpstrFile = path;
 			ofn.lpstrFile[0] = '\0';
 			ofn.nMaxFile = sizeof(path);
-			ofn.lpstrFilter = "All\0*.*\0Text\0*.TXT\0";
+			ofn.lpstrFilter = filter;
 			ofn.nFilterIndex = 1;
 			ofn.lpstrFileTitle = NULL;
 			ofn.nMaxFileTitle = 0;
 			ofn.lpstrInitialDir = NULL;
 			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 			GetOpenFileName(&ofn);
+			result = path;
+
+			FileUtils::RemoveDoubleBackslash(result);
+
+			m_CurrentDialogDirectory = std::filesystem::current_path().string();
+			Application::s_Application->m_Window->DefaultWorkDirectory();
+			return result;
+		}
+
+
+		std::string Win32Window::OpenFileSaver(const char* filter, const char* extension)
+		{
+			ChangeWorkDirectory(m_CurrentDialogDirectory);
+			std::string result;
+			static OPENFILENAME ofn;
+
+			char path[100];
+
+			ZeroMemory(&ofn, sizeof(ofn));
+			ofn.lStructSize = sizeof(ofn);
+			ofn.hwndOwner = NULL;
+			ofn.lpstrFile = path;
+			ofn.lpstrFile[0] = '\0';
+			ofn.nMaxFile = sizeof(path);
+			ofn.lpstrDefExt = extension;
+			ofn.lpstrFilter = filter;
+			ofn.nFilterIndex = 1;
+			ofn.lpstrFileTitle = NULL;
+			ofn.nMaxFileTitle = 0;
+			ofn.lpstrInitialDir = NULL;
+			ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+			GetSaveFileName(&ofn);
 			result = path;
 
 			FileUtils::RemoveDoubleBackslash(result);

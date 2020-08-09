@@ -169,7 +169,7 @@ namespace Dodo {
 		{
 			size_t loc = str.find(',');
 			float x = std::stof(str.substr(str.find('=') + 1, loc - 1));
-			size_t loc2 = str.find(',', loc);
+			size_t loc2 = str.find(',', loc + 1);
 			float y = std::stof(str.substr(loc + 1, loc2 - 1));
 			float z = std::stof(str.substr(loc2 + 1, str.size()));
 			return Math::Vec3(x, y, z);
@@ -189,9 +189,9 @@ namespace Dodo {
 		{
 			size_t loc = str.find(',');
 			float x = std::stof(str.substr(str.find('=') + 1, loc - 1));
-			size_t loc2 = str.find(',', loc);
+			size_t loc2 = str.find(',', loc + 1);
 			float y = std::stof(str.substr(loc + 1, loc2 - 1));
-			loc = str.find(',', loc2);
+			loc = str.find(',', loc2 + 1);
 			float z = std::stof(str.substr(loc2 + 1, loc - 1));
 			float w = std::stof(str.substr(loc + 1, str.size()));
 			return Math::Vec4(x, y, z, w);
@@ -210,19 +210,19 @@ namespace Dodo {
 			std::string str = m_File[m_CurrentLine];
 			size_t loc = str.find(',');
 			float posX = std::stof(str.substr(str.find('=') + 1, loc - 1));
-			size_t loc2 = str.find(',', loc);
+			size_t loc2 = str.find(',', loc + 1);
 			float posY = std::stof(str.substr(loc + 1 , loc2 - 1));
 			float posZ = std::stof(str.substr(loc2 + 1, str.size()));
 			str = m_File[m_CurrentLine + 1];
 			loc = str.find(',');
 			float scaleX = std::stof(str.substr(str.find('=') + 1, loc - 1));
-			loc2 = str.find(',', loc);
+			loc2 = str.find(',', loc + 1);
 			float scaleY = std::stof(str.substr(loc + 1, loc2 - 1));
 			float scaleZ = std::stof(str.substr(loc2 + 1, str.size()));
 			str = m_File[m_CurrentLine + 2];
 			loc = str.find(',');
 			float rotateX = std::stof(str.substr(str.find('=') + 1, loc - 1));
-			loc2 = str.find(',', loc);
+			loc2 = str.find(',', loc + 1);
 			float rotateY = std::stof(str.substr(loc + 1, loc2 - 1));
 			float rotateZ = std::stof(str.substr(loc2 + 1, str.size()));
 

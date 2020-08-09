@@ -4,8 +4,8 @@
 
 namespace Dodo {
 
-	Scene::Scene(Math::FreeCamera* camera)
-		: m_AmountOfComponents(1), m_Camera(camera) //Math::Mat4::Perspective(45.0f, Application::s_Application->m_WindowProperties.m_Width / Application::s_Application->m_WindowProperties.m_Height, 0.01f, 100.0f))
+	Scene::Scene(Math::FreeCamera* camera, std::string name)
+		: m_AmountOfComponents(1), m_Name(name), m_Camera(camera) //Math::Mat4::Perspective(45.0f, Application::s_Application->m_WindowProperties.m_Width / Application::s_Application->m_WindowProperties.m_Height, 0.01f, 100.0f))
 	{}
 
 	Scene::~Scene()
@@ -52,7 +52,7 @@ namespace Dodo {
 		if (it != m_ModelComponent.end())
 			it->second = comp;
 		m_ModelComponent.insert(std::make_pair(id, comp));
-		m_Entities.at(id).m_ComponentFlags |= FlagModelComponent;
+		m_Entities.at(id).m_ComponentFlags |= comp->GetFlagType();
 	}
 
 	void Scene::Draw()

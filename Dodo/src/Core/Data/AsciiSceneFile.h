@@ -13,7 +13,7 @@ namespace Dodo {
 	public:
 		AsciiSceneFile();
 		
-		void Write(const char* path, Scene* scene); // TODO: add flag to pack model data in file
+		void Write(const char* path, Scene* scene);
 		Scene* Read(const char* path);
 	private:
 		inline void Error(uint line) { DD_WARN("Not able to retrieve entry at line: {}", line); } // kind of silly

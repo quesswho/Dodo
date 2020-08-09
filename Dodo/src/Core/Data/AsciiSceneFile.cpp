@@ -17,10 +17,10 @@ namespace Dodo {
 		{
 			m_File.CreateSection(std::to_string(ent.first));
 			m_File.AddValue("name", ent.second.m_Name);
-			if (ent.second.m_ComponentFlags != FlagNone)
+			if (ent.second.m_ComponentFlags != ComponentFlag_None)
 			{
 				m_File.CreateSection("components");
-				if(ent.second.m_ComponentFlags & FlagModelComponent)
+				if(ent.second.m_ComponentFlags & ComponentFlag_ModelComponent)
 				{
 					m_File.CreateSection("ModelComponent");
 					m_File.AddValue("path", scene->m_ModelComponent[ent.first]->m_Path);

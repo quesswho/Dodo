@@ -9,10 +9,13 @@ namespace Dodo {
 
 	class Scene {
 	public:
+		std::string m_Name;
+
 		std::unordered_map<uint, Entity> m_Entities;
 		std::unordered_map<uint, ModelComponent*> m_ModelComponent;
+
 	public:
-		Scene(Math::FreeCamera* camera);
+		Scene(Math::FreeCamera* camera, std::string name = "Unnamed");
 		~Scene();
 
 		void Draw();

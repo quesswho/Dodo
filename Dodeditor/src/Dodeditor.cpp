@@ -6,11 +6,12 @@
 using namespace Dodo;
 using namespace Math;
 
-static int ImGuiFilterAZ(ImGuiTextEditCallbackData* data)
+static int ImGuiFilterAz09(ImGuiTextEditCallbackData* data)
 {
 	ImWchar c = data->EventChar;
 	if (c >= 'A' && c <= 'Z') return 0;
-	if (c >= 'a' && c <= 'z') { data->EventChar += 'A' - 'a'; return 0; }
+	if (c >= 'a' && c <= 'z') return 0;
+	if (c >= '0' && c <= '9') return 0;
 	return 1;
 }
 
@@ -25,8 +26,6 @@ GameLayer::GameLayer()
 		{ "NORMAL", 3 }, 
 		{ "TANGENT", 3 }
 	};
-
-	m_Rotation = Mat4::Translate(Vec3(0.0f, 0.0f, -20.0f));
 	
 	m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 20.0f), (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.04f, 10.0f);
 
@@ -84,10 +83,10 @@ void GameLayer::InitEditor()
 
 GameLayer::~GameLayer()
 {
+	Application::s_Application->m_Window->DefaultWorkDirectory();
 	delete m_FrameBuffer;
 	delete m_Camera;
 	delete m_Scene;
-	delete m_Model;
 }
 
 void GameLayer::Update(float elapsed)
@@ -110,6 +109,13 @@ void GameLayer::DrawScene()
 	m_Scene->Draw();
 
 	Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
+}
+
+void GameLayer::ChangeScene(Scene* scene)
+{
+	m_SelectedEntity.clear();
+	for (auto ent : scene->m_Entities)
+		m_SelectedEntity.emplace(ent.first, false);
 }
 
 void GameLayer::DrawImGui()
@@ -163,16 +169,33 @@ void GameLayer::DrawImGui()
 			{
 				if (ImGui::MenuItem("Scene"))
 				{
-					m_Scene = m_File.Read(Application::s_Application->m_Window->OpenFileDialog().c_str());
+					std::string path = Application::s_Application->m_Window->OpenFileSelector("Dodo Ascii Scene File\0*.das\0");
+					if (path != "")
+					{
+						delete m_Scene;
+						m_Scene = m_File.Read(path.c_str());
+						ChangeScene(m_Scene);
+					}
 				}
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::MenuItem("Save"))
+			/*if (ImGui::MenuItem("Save"))
 			{
 				Application::s_Application->m_Window->DefaultWorkDirectory();
 				
-				m_File.Write("test.txt", m_Scene);
+				m_File.Write("test.das", m_Scene);
+			}*/
+
+			if (ImGui::MenuItem("Save As..."))
+			{
+				Application::s_Application->m_Window->DefaultWorkDirectory();
+				std::string path = Application::s_Application->m_Window->OpenFileSaver("Dodo Ascii Scene File\0*.das\0", ".das");
+				if (path != "")
+				{
+					m_File.Write(path.c_str(), m_Scene);
+				}
+
 			}
 
 			if (ImGui::BeginMenu("Import/Export"))
@@ -397,11 +420,11 @@ void GameLayer::DrawHierarchy()
 						ImGui::Unindent();
 						ImGui::Separator();
 
-						if (ent.second.m_ComponentFlags != 0)
+						if (ent.second.m_ComponentFlags != ComponentFlag_None)
 						{
 							ImGui::Text("Components:");
 							ImGui::Indent();
-							if (ent.second.m_ComponentFlags & FlagModelComponent)
+							if (ent.second.m_ComponentFlags & ComponentFlag_ModelComponent)
 							{
 								ImGui::BulletText("ModelComponent");
 							}
@@ -416,7 +439,7 @@ void GameLayer::DrawHierarchy()
 				{
 					ImGui::SetKeyboardFocusHere(0);
 					ImGui::Indent();
-					if (ImGui::InputText(std::to_string(ent.first).c_str(), s_RenameableHierarchy, IM_ARRAYSIZE(s_RenameableHierarchy), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackCharFilter, ImGuiFilterAZ))
+					if (ImGui::InputText(std::to_string(ent.first).c_str(), s_RenameableHierarchy, IM_ARRAYSIZE(s_RenameableHierarchy), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackCharFilter, ImGuiFilterAz09))
 					{
 						if (s_RenameableHierarchy == '\0')
 							strcpy_s(s_RenameableHierarchy, "Unnamed");
@@ -466,7 +489,7 @@ void GameLayer::DrawInspector()
 
 			Entity& ent = m_Scene->m_Entities.at(e.first);
 
-			if (ImGui::InputText("##label", m_CurrentInspectorName, 32, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCharFilter, ImGuiFilterAZ))
+			if (ImGui::InputText("##label", m_CurrentInspectorName, 32, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCharFilter, ImGuiFilterAz09))
 			{
 				if (strcmp(m_CurrentInspectorName, "") != 0)
 				{
@@ -511,7 +534,7 @@ void GameLayer::DrawInspector()
 			ImGui::Separator();
 
 			ImGui::Text("Components:");
-			if (ent.m_ComponentFlags & FlagModelComponent)
+			if (ent.m_ComponentFlags & ComponentFlag_ModelComponent)
 			{
 				if (ImGui::TreeNode("ModelComponent"))
 				{
@@ -521,14 +544,17 @@ void GameLayer::DrawInspector()
 						ModelComponent* model = m_Scene->m_ModelComponent.at(e.first);
 						if (m_InspectorSelectNew)
 						{
-							memcpy(translate, (float*)&model->m_Transformation.m_Position, 4 * sizeof(float));
-							memcpy(scale, (float*)&model->m_Transformation.m_Scale, 4 * sizeof(float));
-							memcpy(rotate, (float*)&model->m_Transformation.m_Rotation, 4 * sizeof(float));
+							memcpy(translate, (float*)&model->m_Transformation.m_Position, 3 * sizeof(float));
+							memcpy(scale, (float*)&model->m_Transformation.m_Scale, 3 * sizeof(float));
+							memcpy(rotate, (float*)&model->m_Transformation.m_Rotation, 3 * sizeof(float));
+							rotate[0] = Math::ToDegrees(rotate[0]);
+							rotate[1] = Math::ToDegrees(rotate[1]);
+							rotate[2] = Math::ToDegrees(rotate[2]);
 							m_InspectorSelectNew = false;
 						}
 						ImGui::Indent();
 						if (ImGui::Button("Browse")) {
-							std::string str = Application::s_Application->m_Window->OpenFileDialog();
+							std::string str = Application::s_Application->m_Window->OpenFileSelector("Model\0*.fbx;*.obj\0");
 							if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(Application::s_Application->m_Window->GetMainWorkDirectory().length()); // In main work directory
 							m_Scene->AddComponent(e.first, new ModelComponent(str.c_str()));
 						}
@@ -544,7 +570,7 @@ void GameLayer::DrawInspector()
 							}
 
 							ImGui::Text("Scale:");
-							static bool sync = false;
+							static bool sync = true;
 							bool dragscale = false;
 							dragscale = ImGui::DragFloat3("##scale", scale, 0.002f, -100000.0f, 100000.0f, "%.3f", 1.0f);
 							ImGui::Checkbox("Sync", &sync);
@@ -579,10 +605,13 @@ void GameLayer::DrawInspector()
 					else
 					{
 						if (ImGui::Button("Browse")) {
-							std::string str = Application::s_Application->m_Window->OpenFileDialog();
-							if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) 
-								str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
-							m_Scene->AddComponent(e.first, new ModelComponent(str.c_str()));
+							std::string str = Application::s_Application->m_Window->OpenFileSelector("Model\0*.fbx;*.obj\0");
+							if (str != "")
+							{
+								if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) 
+									str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
+								m_Scene->AddComponent(e.first, new ModelComponent(str.c_str()));
+							}
 						}
 						ImGui::SameLine();
 						ImGui::Text("...");

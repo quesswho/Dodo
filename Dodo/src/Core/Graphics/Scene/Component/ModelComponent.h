@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Components.h"
 #include "Core/Graphics/Scene/Model.h"
 #include "Core/Math/Matrix/Transformation.h"
 #include "Core/Math/Camera/FreeCamera.h"
@@ -21,6 +22,8 @@ namespace Dodo {
 		~ModelComponent();
 
 		void Draw(const Math::FreeCamera* camera) const;
+
+		inline constexpr ComponentFlag GetFlagType() const { return ComponentFlag::ComponentFlag_ModelComponent; }
 
 		std::string m_Path;
 	};

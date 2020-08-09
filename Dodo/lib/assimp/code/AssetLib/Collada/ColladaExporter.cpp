@@ -1701,7 +1701,7 @@ ColladaExporter::NameIdPair ColladaExporter::AddObjectIndexToMaps(AiObjectType t
     // Get the name and id postfix
     switch (type) {
     case AiObjectType::Mesh: name = mScene->mMeshes[index]->mName.C_Str(); break;
-    case AiObjectType::Material: name = mScene->mMaterials[index]->GetName().C_Str(); break;
+    case AiObjectType::Material: name = mScene->mMaterials[index]->GetEntryName().C_Str(); break;
     case AiObjectType::Animation: name = mScene->mAnimations[index]->mName.C_Str(); break;
     case AiObjectType::Light:
         name = mScene->mLights[index]->mName.C_Str();

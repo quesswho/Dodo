@@ -402,7 +402,7 @@ aiMaterial::~aiMaterial() {
 }
 
 // ------------------------------------------------------------------------------------------------
-aiString aiMaterial::GetName() {
+aiString aiMaterial::GetEntryName() {
     aiString name;
     Get(AI_MATKEY_NAME, name);
 

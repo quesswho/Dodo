@@ -682,7 +682,7 @@ public:
       * @return The name of the material.
       */
     // -------------------------------------------------------------------
-    aiString GetName();
+    aiString GetEntryName();
 
     // -------------------------------------------------------------------
     /** @brief Retrieve an array of Type values with a specific key

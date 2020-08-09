@@ -17,6 +17,7 @@ namespace Dodo {
 
 		void Draw();
 
+		void CreateEntity(uint id, const std::string& name);
 		uint CreateEntity(const std::string& name = "Unnamed");
 		bool RenameEntity(uint id, const std::string& name); // true ? Success : No entity with specified id
 		bool DeleteEntity(uint id);

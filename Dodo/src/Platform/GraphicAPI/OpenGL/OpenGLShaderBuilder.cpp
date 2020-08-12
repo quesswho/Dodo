@@ -61,10 +61,12 @@ namespace Dodo {
 
 			// Buffer layout //
 
-			if (flags | ShaderBuilderFlagNoTexcoord)
+			if (!(flags & ShaderBuilderFlagNoTexcoord))
 			{
-
-				vertex.append("layout (location = 1) in vec2 a_Texcoord;\n");
+				if (flags & ShaderBuilderFlagCubeMap)
+					vertex.append("layout (location = 1) in vec3 a_Texcoord;\n");
+				else
+					vertex.append("layout (location = 1) in vec2 a_Texcoord;\n");
 				if (flags & ShaderBuilderFlagTangentSpace || flags & ShaderBuilderFlagNormalMap)
 				{
 					vertex.append("layout (location = 2) in vec3 a_Normal;\n");
@@ -80,7 +82,7 @@ namespace Dodo {
 					vertex.append("layout (location = 1) in vec3 a_Normal;\n");
 					vertex.append("layout (location = 2) in vec3 a_Tangent;\n");
 				}
-				else
+				else if(!(flags & ShaderBuilderFlagCubeMap))
 					vertex.append("layout (location = 1) in vec3 a_Normal;\n");
 			}
 
@@ -105,10 +107,15 @@ namespace Dodo {
 			// Interface Block //
 
 			vertex.append("out Vertex_Out {\n");
-			if (flags | ShaderBuilderFlagNormalMap)
-				vertex.append("		vec3 FragPos;\n");
-			if (flags | ShaderBuilderFlagNoTexcoord)
-				vertex.append("		vec2 TexCoord;\n");
+			vertex.append("		vec3 FragPos;\n");
+			if (!(flags & ShaderBuilderFlagNoTexcoord))
+				if (flags & ShaderBuilderFlagCubeMap)
+					vertex.append("		vec3 TexCoord;\n");
+				else
+					vertex.append("		vec2 TexCoord;\n");
+			else if(flags & ShaderBuilderFlagCubeMap)
+				vertex.append("		vec3 TexCoord;\n");
+
 			if (flags & ShaderBuilderFlagLightDirectionUniform || flags & ShaderBuilderFlagSpecularUniform || flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagNormalMap)
 				vertex.append("		vec3 LightDirection;\n");
 			if (flags & ShaderBuilderFlagNormalMap)
@@ -118,7 +125,7 @@ namespace Dodo {
 					"		vec3 TangentFragPos;\n"
 				);
 			}
-			else
+			else if (!(flags & ShaderBuilderFlagCubeMap))
 			{
 				vertex.append("		vec3 Normal;\n");
 			}
@@ -134,12 +141,13 @@ namespace Dodo {
 
 			// Main //
 
-			if (flags | ShaderBuilderFlagNoTexcoord)
+			if (!(flags & ShaderBuilderFlagNoTexcoord))
 				vertex.append("		vertex_out.TexCoord = a_Texcoord;\n");
-
+			else if(flags & ShaderBuilderFlagCubeMap) // No texcoord & with cubemap
+				vertex.append("		vertex_out.TexCoord = a_Position;\n");
 			if (flags & ShaderBuilderFlagLightDirectionUniform || flags & ShaderBuilderFlagSpecularUniform || flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap)
 			{
-				if(flags | ShaderBuilderFlagNormalMap)
+				if(!(flags & ShaderBuilderFlagNormalMap))
 					vertex.append("		vertex_out.LightDirection = normalize(-u_LightDir);\n");
 			}
 
@@ -155,17 +163,24 @@ namespace Dodo {
 					"	mat3 TBN = transpose(mat3(T, B, N));\n"
 					"	vertex_out.TangentCameraPos = TBN * u_CameraPos;\n"
 					"	vertex_out.TangentFragPos = TBN * vertex_out.FragPos;\n"
-					"	vertex_out.LightDirection = TBN * normalize(-u_LightDir);"
+					"	vertex_out.LightDirection = TBN * normalize(-u_LightDir);\n"
 				);
 			}
-			else
+			else if (!(flags & ShaderBuilderFlagCubeMap))
 			{
 				vertex.append("		vertex_out.Normal = a_Normal;\n");
 				if (flags & ShaderBuilderFlagsCameraPositionUniform || flags & ShaderBuilderFlagSpecularUniform || flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagNormalMap)
 					vertex.append("		vertex_out.CameraPos = u_CameraPos;\n");
 			}
 
-			vertex.append("		gl_Position = u_Camera * u_Model * vec4(a_Position, 1.0);\n");
+			if (flags & ShaderBuilderFlagMaxDepth)
+			{
+				vertex.append("		gl_Position = vec4(u_Camera * u_Model * vec4(a_Position, 1.0f)).xyww;\n");
+			}
+			else
+			{
+				vertex.append("		gl_Position = u_Camera * u_Model * vec4(a_Position, 1.0f);\n");
+			}
 			vertex.append("}\0");
 
 			//////////////
@@ -174,7 +189,7 @@ namespace Dodo {
 
 			std::string fragment =
 				"#version 330 core\n"
-				"out vec4 pixel;";
+				"out vec4 pixel;\n";
 
 			// Uniform //
 
@@ -192,14 +207,22 @@ namespace Dodo {
 				fragment.append("uniform sampler2D u_DiffuseMap;\n");
 			if (flags & ShaderBuilderFlagSpecularMap)
 				fragment.append("uniform sampler2D u_SpecularMap;\n");
-
+			if (flags & ShaderBuilderFlagCubeMap)
+			{
+				fragment.append("uniform samplerCube u_CubeMap;\n");
+				//fragment.append("uniform sampler2D u_CubeMap;\n");
+			}
 			// Interface Block //
 
 			fragment.append("in Vertex_Out {\n");
-			if(flags | ShaderBuilderFlagNormalMap)
-				fragment.append("		vec3 FragPos;\n");
-			if (flags | ShaderBuilderFlagNoTexcoord)
-				fragment.append("		vec2 TexCoord;\n");
+			fragment.append("		vec3 FragPos;\n");
+			if (!(flags & ShaderBuilderFlagNoTexcoord))
+				if(flags & ShaderBuilderFlagCubeMap)
+					fragment.append("		vec3 TexCoord;\n");
+				else
+					fragment.append("		vec2 TexCoord;\n");
+			else if (flags & ShaderBuilderFlagCubeMap)
+				fragment.append("		vec3 TexCoord;\n");
 			if (flags & ShaderBuilderFlagLightDirectionUniform || flags & ShaderBuilderFlagSpecularUniform || flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagNormalMap)
 				fragment.append("		vec3 LightDirection;\n");
 			if (flags & ShaderBuilderFlagNormalMap)
@@ -209,7 +232,7 @@ namespace Dodo {
 					"		vec3 TangentFragPos;\n"
 				);
 			}
-			else
+			else if (!(flags & ShaderBuilderFlagCubeMap))
 				fragment.append("		vec3 Normal;\n");
 
 			if(flags & ShaderBuilderFlagsCameraPositionUniform || flags & ShaderBuilderFlagSpecularUniform || flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagNormalMap)
@@ -222,18 +245,23 @@ namespace Dodo {
 			);
 
 			// Main //
-
+			if (flags & ShaderBuilderFlagCubeMap)
+			{
+				fragment.append("	result = max(frag_in.FragPos.y * vec3(0.1f, 0.15f, 1.0f), vec3(0.0f, 0.1f, 0.2f));\n");
+				fragment.append("	result = texture(u_CubeMap, frag_in.TexCoord.xyz).rgb;\n");
+				//fragment.append("	result = texture(u_CubeMap, frag_in.TexCoord.xy).rgb;\n");
+			}
 			if (flags & ShaderBuilderFlagNormalMap)
-				fragment.append("	vec3 normal = normalize(texture(u_NormalMap, frag_in.TexCoord).rgb * 2.0f - 1.0f);\n");
-			else
+				fragment.append("	vec3 normal = normalize(texture(u_NormalMap, frag_in.TexCoord.xy).rgb * 2.0f - 1.0f);\n");
+			else if(!(flags& ShaderBuilderFlagCubeMap))
 				fragment.append("	vec3 normal = frag_in.Normal;\n");
 
 			if (flags & ShaderBuilderFlagDiffuseMap)
 				if (flags & ShaderBuilderFlagColorUniform)
-					fragment.append("	vec3 color = texture(u_DiffuseMap, frag_in.TexCoord).rgb * u_Color;\n");
+					fragment.append("	vec3 color = texture(u_DiffuseMap, frag_in.TexCoord.xy).rgb * u_Color;\n");
 				else
-					fragment.append("	vec3 color = texture(u_DiffuseMap, frag_in.TexCoord).rgb;\n");
-			else
+					fragment.append("	vec3 color = texture(u_DiffuseMap, frag_in.TexCoord.xy).rgb;\n");
+			else if (!(flags & ShaderBuilderFlagCubeMap))
 				if (flags & ShaderBuilderFlagColorUniform)
 					fragment.append("	vec3 color = u_Color;\n");
 				else
@@ -252,7 +280,7 @@ namespace Dodo {
 					if (flags & ShaderBuilderFlagSpecularUniform)
 						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * vec3(u_Specular);\n");
 					else if (flags & ShaderBuilderFlagSpecularMap)
-						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * texture(u_SpecularMap, frag_in.TexCoord).rgb;\n");
+						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * texture(u_SpecularMap, frag_in.TexCoord.xy).rgb;\n");
 					fragment.append("	result = ambient + diffuse + specular;\n");
 				}
 				else
@@ -267,27 +295,26 @@ namespace Dodo {
 					if (flags & ShaderBuilderFlagSpecularUniform)
 						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * vec3(u_Specular);\n");
 					else if(flags & ShaderBuilderFlagSpecularMap)
-						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * texture(u_SpecularMap, frag_in.TexCoord).rgb;\n");
+						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * texture(u_SpecularMap, frag_in.TexCoord.xy).rgb;\n");
 					fragment.append("	result = ambient + diffuse + specular;\n");
 				}
 			}
-			else
+			else if(!(flags & ShaderBuilderFlagCubeMap))
 				fragment.append("	result = color;\n");
 			fragment.append("	pixel = vec4(result, 1.0f);\n");
 
 			fragment.append("}\0");
 			Shader* shader = new Shader(std::to_string(flags).c_str(), CompileVertexFragmentShader(vertex.c_str(), fragment.c_str()));
 			shader->Bind();
+			int i = 0;
+			if (flags & ShaderBuilderFlagCubeMap)
+				shader->SetUniformValue("u_CubeMap", i++);
 			if (flags & ShaderBuilderFlagDiffuseMap)
-				shader->SetUniformValue("u_DiffuseMap", 0);
+				shader->SetUniformValue("u_DiffuseMap", i++);
 			if (flags & ShaderBuilderFlagSpecularMap)
-			{
-				shader->SetUniformValue("u_SpecularMap", 1);
-				if (flags & ShaderBuilderFlagNormalMap)
-					shader->SetUniformValue("u_NormalMap", 2);
-			}
-			else if (flags & ShaderBuilderFlagNormalMap)
-				shader->SetUniformValue("u_NormalMap", 1);
+				shader->SetUniformValue("u_SpecularMap", i++);
+			if (flags & ShaderBuilderFlagNormalMap)
+				shader->SetUniformValue("u_NormalMap", i++);
 			
 			return shader;
 		}

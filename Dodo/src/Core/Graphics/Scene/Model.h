@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Mesh.h"
-#include "Material.h"
+#include "Core/Graphics/Material/Material.h"
 
 namespace Dodo {
 

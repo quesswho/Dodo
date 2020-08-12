@@ -4,7 +4,6 @@
 
 namespace Dodo {
 
-
 	class MemoryMetrics {
 	public:
 		static size_t s_AllocatedBytes;

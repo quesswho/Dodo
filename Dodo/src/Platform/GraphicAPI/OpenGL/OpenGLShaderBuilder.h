@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Common.h"
-#include "Core/Graphics/Shader.h"
+#include "Core/Graphics/Material/Shader.h"
 
 namespace Dodo {
 
@@ -18,6 +18,8 @@ namespace Dodo {
 		ShaderBuilderFlagDiffuseMap = 1 << 7,
 		ShaderBuilderFlagSpecularMap = 1 << 8,
 		ShaderBuilderFlagNormalMap = 1 << 9,
+		ShaderBuilderFlagCubeMap = 1 << 10,
+		ShaderBuilderFlagMaxDepth = 1 << 11,
 	};
 #pragma warning(push)
 #pragma warning(disable : 26812)

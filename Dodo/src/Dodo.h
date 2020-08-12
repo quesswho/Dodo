@@ -17,9 +17,9 @@
 
 	/* Graphics */
 		#include "Core/Graphics/Buffer.h"
-		#include "Core/Graphics/Shader.h"
 		#include "Core/Graphics/FrameBuffer.h"
-		#include "Core/Graphics/Texture.h"
+		#include "Core/Graphics/Material/Shader.h"
+		#include "Core/Graphics/Material/Texture.h"
 
 		/* Scene */
 			#include "Core/Graphics/Scene/Scene.h"

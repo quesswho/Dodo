@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
-#include "Core/Graphics/Texture.h"
-#include "Core/Graphics/Shader.h"
+#include "Texture.h"
+#include "Shader.h"
 
 namespace Dodo {
 

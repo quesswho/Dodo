@@ -9,7 +9,7 @@ namespace Dodo {
 
 	namespace Platform {
 
-		OpenGLTexture::OpenGLTexture(const char* path, uint index, const TextureProp& prop)
+		OpenGLTexture::OpenGLTexture(const char* path, uint index, const TextureProperties& prop)
 			: m_Index(index)
 		{
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);

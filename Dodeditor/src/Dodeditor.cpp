@@ -54,6 +54,18 @@ GameLayer::GameLayer()
 	style.TabRounding = 0.0f;
 
 	m_Scene = new Scene(m_Camera);
+
+	std::vector<std::string> skyboxPath = {
+		"res/texture/skybox/right.jpg",
+		"res/texture/skybox/left.jpg",
+		"res/texture/skybox/top.jpg",
+		"res/texture/skybox/bottom.jpg",
+		"res/texture/skybox/front.jpg",
+		"res/texture/skybox/back.jpg",
+	};
+
+	m_Scene->m_SkyBox = new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath);
+
 	InitEditor();
 }
 
@@ -312,6 +324,7 @@ void GameLayer::DrawViewport()
 		m_Camera->Resize(width, height);
 		m_FrameBuffer->Resize(width, height);
 		Application::s_Application->m_RenderAPI->ResizeDefaultViewport(width, height, posX, posY);
+		m_Scene->m_SkyBox->m_Projection = m_Camera->GetProjectionMatrix();
 	}
 	m_EditorProperties.m_ViewportHover = ImGui::IsWindowHovered();
 	DrawScene();
@@ -609,7 +622,7 @@ void GameLayer::DrawInspector()
 							if (str != "")
 							{
 								if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) 
-									str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
+									str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory so erase global directory
 								m_Scene->AddComponent(e.first, new ModelComponent(str.c_str()));
 							}
 						}
@@ -636,7 +649,7 @@ WindowProperties Dodeditor::PreInit()
 	props.m_Title = "Dodeditor";
 	props.m_Width = 1600;
 	props.m_Height = 960;
-	props.m_Flags = DodoWindowFlags_IMGUI | DodoWindowFlags_IMGUIDOCKING | DodoWindowFlags_BACKFACECULL;
+	props.m_Flags = DodoWindowFlags_IMGUI | DodoWindowFlags_IMGUIDOCKING;
 	return props;
 }
 

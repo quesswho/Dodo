@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include "Entity.h"
 #include "Component/ModelComponent.h"
+#include "Core/Graphics/Skybox.h"
 
 namespace Dodo {
 
@@ -13,6 +14,8 @@ namespace Dodo {
 
 		std::unordered_map<uint, Entity> m_Entities;
 		std::unordered_map<uint, ModelComponent*> m_ModelComponent;
+
+		Skybox* m_SkyBox;
 
 	public:
 		Scene(Math::FreeCamera* camera, std::string name = "Unnamed");

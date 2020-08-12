@@ -5,7 +5,7 @@
 namespace Dodo {
 
 	Scene::Scene(Math::FreeCamera* camera, std::string name)
-		: m_AmountOfComponents(1), m_Name(name), m_Camera(camera) //Math::Mat4::Perspective(45.0f, Application::s_Application->m_WindowProperties.m_Width / Application::s_Application->m_WindowProperties.m_Height, 0.01f, 100.0f))
+		: m_AmountOfComponents(1), m_Name(name), m_Camera(camera), m_SkyBox(0) //Math::Mat4::Perspective(45.0f, Application::s_Application->m_WindowProperties.m_Width / Application::s_Application->m_WindowProperties.m_Height, 0.01f, 100.0f))
 	{}
 
 	Scene::~Scene()
@@ -61,5 +61,6 @@ namespace Dodo {
 		{
 			model.second->Draw(m_Camera);
 		}
+		if (m_SkyBox) m_SkyBox->Draw(m_Camera->GetViewMatrix());
 	}
 }

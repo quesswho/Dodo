@@ -230,8 +230,7 @@ namespace Dodo {
 			return Math::Transformation(posX, posY, posZ, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ);
 		}
 		catch (...)
-		{
-		}
+		{}
 
 		m_CurrentLine += 3;
 		DD_WARN("Not able to retrieve transformation at line: {}", m_CurrentLine-3);

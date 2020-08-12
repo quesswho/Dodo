@@ -426,7 +426,7 @@ namespace Dodo {
 			/////
 			// Useful static functions
 			/////
-
+			
 			static inline const CRHMat4x4<T> Multiply(const CRHMat4x4<T>& mat)
 			{
 				return mat;
@@ -437,6 +437,19 @@ namespace Dodo {
 			{
 				CRHMat4x4<T> result;
 				result = mat * Multiply(others...);
+				return result;
+			}
+
+			static inline const CRHMat4x4<T> RelinquishToMat3(const CRHMat4x4<T>& mat)
+			{
+				CRHMat4x4<T> result = mat;
+				result.m_Elements[GetIndex(0, 3)] = 0.0f;
+				result.m_Elements[GetIndex(1, 3)] = 0.0f;
+				result.m_Elements[GetIndex(2, 3)] = 0.0f;
+				result.m_Elements[GetIndex(3, 0)] = 0.0f;
+				result.m_Elements[GetIndex(3, 1)] = 0.0f;
+				result.m_Elements[GetIndex(3, 2)] = 0.0f;
+				result.m_Elements[GetIndex(3, 3)] = 1.0f;
 				return result;
 			}
 

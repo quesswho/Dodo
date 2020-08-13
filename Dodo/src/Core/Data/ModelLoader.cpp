@@ -13,7 +13,7 @@ namespace Dodo {
 	{
 		Assimp::Importer imp;
 
-		const aiScene* model = imp.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace);
+		const aiScene* model = imp.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_PreTransformVertices);
 
 		if (!model || model->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !model->mRootNode)
 		{
@@ -78,7 +78,7 @@ namespace Dodo {
 		else
 		{
 			if(model->mNumMaterials > 1)
-				DD_WARN("More than one material define, using the first one!");
+				DD_WARN("More than one material defined, using the first one!");
 
 			ShaderBuilderFlags flags = ShaderBuilderFlagNone;
 
@@ -183,7 +183,7 @@ namespace Dodo {
 		else
 		{
 			if (model->mNumMaterials > 1)
-				DD_WARN("More than one material define, using the first one!");
+				DD_WARN("More than one material defined, using the first one!");
 
 
 			aiMaterial* mat = model->mMaterials[0];

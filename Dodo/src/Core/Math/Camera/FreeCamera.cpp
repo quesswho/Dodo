@@ -8,7 +8,7 @@ namespace Dodo {
 		FreeCamera::FreeCamera(Vec3& pos, Vec3& viewDir, float aspectRatio, float sensitivity, float speed)
 			: m_CameraPos(pos), m_ViewDir(viewDir), m_Yaw(-90.0f), m_Pitch(0.0f), m_Sensitivity(sensitivity), m_Speed(speed), m_Forward(0.0f, 0.0f, 0.0f), m_Right(1.0f, 0.0f, 0.0f), m_WorldUp(Vec3(0.0f, 1.0f, 0.0f))
 		{
-			m_ProjectionMatrix = Mat4::Perspective(45.0f, aspectRatio, 0.001f, 100.0f);
+			m_ProjectionMatrix = Mat4::Perspective(45.0f, aspectRatio, 0.001f, 1000.0f);
 			m_LastMousePos = TVec2<long>(Application::s_Application->m_RenderAPI->m_ViewportPosX + Application::s_Application->m_RenderAPI->m_ViewportWidth / 2, Application::s_Application->m_RenderAPI->m_ViewportPosY + Application::s_Application->m_RenderAPI->m_ViewportHeight / 2);
 			Application::s_Application->m_Window->SetCursorPosition(TVec2<long>(m_LastMousePos.x, m_LastMousePos.y));
 			CalculateProjectionViewMatrix();
@@ -23,7 +23,7 @@ namespace Dodo {
 
 		void FreeCamera::Resize(uint width, uint height)
 		{
-			m_ProjectionMatrix = Mat4::Perspective(45.0f, (float)width / height, 0.001f, 100.0f);
+			m_ProjectionMatrix = Mat4::Perspective(45.0f, (float)width / height, 0.001f, 1000.0f);
 			m_MouseRect = TVec4<int>(Application::s_Application->m_RenderAPI->m_ViewportPosX + width / 4, Application::s_Application->m_RenderAPI->m_ViewportPosX + (int)(width * (3.0 / 4.0)), Application::s_Application->m_RenderAPI->m_ViewportPosY + height / 4, Application::s_Application->m_RenderAPI->m_ViewportPosY + (int)((double)height * (3.0 / 4.0)));
 			CalculateProjectionViewMatrix();
 		}

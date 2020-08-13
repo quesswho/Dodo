@@ -130,6 +130,35 @@ void GameLayer::ChangeScene(Scene* scene)
 		m_SelectedEntity.emplace(ent.first, false);
 }
 
+void GameLayer::OnEvent(const Event& event)
+{
+	switch (event.GetType())
+	{
+		case EventType::KEY_PRESSED:
+			switch (static_cast<const KeyPressEvent&>(event).m_Key)
+			{
+				case DODO_KEY_Z:
+					if (m_EditorProperties.m_ViewportHover && !m_EditorProperties.m_ViewportInput)
+					{
+						m_EditorProperties.m_ViewportInput = true;
+						Application::s_Application->m_Window->SetCursorVisible(false);
+						m_Camera->ResetMouse();
+					}
+					else if (m_EditorProperties.m_ViewportInput)
+					{
+						m_EditorProperties.m_ViewportInput = false;
+						Application::s_Application->m_Window->SetCursorVisible(true);
+					}
+					break;
+			}
+			break;
+		case EventType::MOUSE_PRESSED:
+			break;
+		case EventType::MOUSE_POSITION:
+			if (m_EditorProperties.m_ViewportInput) m_Camera->UpdateRotation();
+	}
+}
+
 void GameLayer::DrawImGui()
 {
 	Application::s_Application->ImGuiNewFrame();
@@ -265,40 +294,6 @@ void GameLayer::ResetDockspace(uint dockspace_id)
 	ImGui::DockBuilderFinish(dockspace_id);
 }
 
-void GameLayer::OnEvent(const Event& event)
-{
-	switch (event.GetType())
-	{
-		case EventType::KEY_PRESSED:
-			switch (static_cast<const KeyPressEvent&>(event).m_Key)
-			{
-				case DODO_KEY_ESCAPE:
-					Application::s_Application->Shutdown();
-					break;
-				case DODO_KEY_F11:
-					Application::s_Application->m_Window->FullScreen();
-					break;
-				case DODO_KEY_Z:
-					if (m_EditorProperties.m_ViewportHover && !m_EditorProperties.m_ViewportInput)
-					{
-						m_EditorProperties.m_ViewportInput = true;
-						Application::s_Application->m_Window->SetCursorVisible(false);
-						m_Camera->ResetMouse();
-					}
-					else if (m_EditorProperties.m_ViewportInput)
-					{
-						m_EditorProperties.m_ViewportInput = false;
-						Application::s_Application->m_Window->SetCursorVisible(true);
-					}
-					break;
-			}
-			break;
-		case EventType::MOUSE_PRESSED:
-			break;
-		case EventType::MOUSE_POSITION:
-			if (m_EditorProperties.m_ViewportInput) m_Camera->UpdateRotation();
-	}
-}
 
 //////////////
 // Viewport //
@@ -568,7 +563,7 @@ void GameLayer::DrawInspector()
 						ImGui::Indent();
 						if (ImGui::Button("Browse")) {
 							std::string str = Application::s_Application->m_Window->OpenFileSelector("Model\0*.fbx;*.obj\0");
-							if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(Application::s_Application->m_Window->GetMainWorkDirectory().length()); // In main work directory
+							if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
 							m_Scene->AddComponent(e.first, new ModelComponent(str.c_str()));
 						}
 						ImGui::SameLine();
@@ -585,7 +580,7 @@ void GameLayer::DrawInspector()
 							ImGui::Text("Scale:");
 							static bool sync = true;
 							bool dragscale = false;
-							dragscale = ImGui::DragFloat3("##scale", scale, 0.002f, -100000.0f, 100000.0f, "%.3f", 1.0f);
+							dragscale = ImGui::DragFloat3("##scale", scale, 0.001f, -100000.0f, 100000.0f, "%.4f", 1.0f);
 							ImGui::Checkbox("Sync", &sync);
 							if (dragscale)
 							{

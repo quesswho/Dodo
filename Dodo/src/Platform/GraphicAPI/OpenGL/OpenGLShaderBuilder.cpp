@@ -58,6 +58,7 @@ namespace Dodo {
 			std::string vertex = 
 				"#version 330 core\n"
 				"layout (location = 0) in vec3 a_Position;\n";
+			vertex.reserve(vertex.capacity() + 263); // atleast 263 characters always present in vertex shader
 
 			// Buffer layout //
 
@@ -106,8 +107,8 @@ namespace Dodo {
 
 			// Interface Block //
 
-			vertex.append("out Vertex_Out {\n");
-			vertex.append("		vec3 FragPos;\n");
+			vertex.append("out Vertex_Out {\n"
+			"		vec3 FragPos;\n");
 			if (!(flags & ShaderBuilderFlagNoTexcoord))
 				if (flags & ShaderBuilderFlagCubeMap)
 					vertex.append("		vec3 TexCoord;\n");
@@ -191,16 +192,13 @@ namespace Dodo {
 				"#version 330 core\n"
 				"out vec4 pixel;\n";
 
+			fragment.reserve(fragment.capacity() + 102); // atleast 102 characters always present in fragment shader
 			// Uniform //
 
 			if (flags & ShaderBuilderFlagSpecularUniform)
-			{
 				fragment.append("uniform float u_Specular = 0.0f;\n");
-			}
-
 			if(flags & ShaderBuilderFlagColorUniform)
 				fragment.append("uniform vec3 u_Color = vec3(1.0f, 0.0f, 0.0f);\n");
-
 			if (flags & ShaderBuilderFlagNormalMap)
 				fragment.append("uniform sampler2D u_NormalMap;\n");
 			if (flags & ShaderBuilderFlagDiffuseMap)
@@ -208,10 +206,8 @@ namespace Dodo {
 			if (flags & ShaderBuilderFlagSpecularMap)
 				fragment.append("uniform sampler2D u_SpecularMap;\n");
 			if (flags & ShaderBuilderFlagCubeMap)
-			{
 				fragment.append("uniform samplerCube u_CubeMap;\n");
-				//fragment.append("uniform sampler2D u_CubeMap;\n");
-			}
+
 			// Interface Block //
 
 			fragment.append("in Vertex_Out {\n");
@@ -246,11 +242,7 @@ namespace Dodo {
 
 			// Main //
 			if (flags & ShaderBuilderFlagCubeMap)
-			{
-				fragment.append("	result = max(frag_in.FragPos.y * vec3(0.1f, 0.15f, 1.0f), vec3(0.0f, 0.1f, 0.2f));\n");
 				fragment.append("	result = texture(u_CubeMap, frag_in.TexCoord.xyz).rgb;\n");
-				//fragment.append("	result = texture(u_CubeMap, frag_in.TexCoord.xy).rgb;\n");
-			}
 			if (flags & ShaderBuilderFlagNormalMap)
 				fragment.append("	vec3 normal = normalize(texture(u_NormalMap, frag_in.TexCoord.xy).rgb * 2.0f - 1.0f);\n");
 			else if(!(flags& ShaderBuilderFlagCubeMap))
@@ -301,9 +293,10 @@ namespace Dodo {
 			}
 			else if(!(flags & ShaderBuilderFlagCubeMap))
 				fragment.append("	result = color;\n");
-			fragment.append("	pixel = vec4(result, 1.0f);\n");
+			fragment.append(
+				"	pixel = vec4(result, 1.0f);\n"
+				"}\0");
 
-			fragment.append("}\0");
 			Shader* shader = new Shader(std::to_string(flags).c_str(), CompileVertexFragmentShader(vertex.c_str(), fragment.c_str()));
 			shader->Bind();
 			int i = 0;

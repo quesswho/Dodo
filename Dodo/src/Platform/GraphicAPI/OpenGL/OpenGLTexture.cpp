@@ -50,10 +50,15 @@ namespace Dodo {
 			uint filter = static_cast<uint>(prop.m_Filter);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter < 4 ? GL_LINEAR : GL_NEAREST);
-			if(filter > 2 && filter < 6)
+			/*if(filter > 2 && filter < 6)
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter & 1 ? GL_NEAREST_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST);
 			else
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter & 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_NEAREST);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter & 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR_MIPMAP_NEAREST);*/
+
+			if (filter > 2 && filter < 6)
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			else
+				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
 			if (prop.m_WrapU == TextureWrapMode::WRAP_CLAMP_TO_BORDER || prop.m_WrapV == TextureWrapMode::WRAP_CLAMP_TO_BORDER)
 			{

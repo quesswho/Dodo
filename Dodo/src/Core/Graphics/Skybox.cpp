@@ -51,8 +51,7 @@ namespace Dodo {
 
     Skybox::Skybox(const Math::Mat4& projection, std::vector<std::string> paths)
         : m_Projection(projection), m_Shader(Application::s_Application->m_AssetManager->GetShader(ShaderBuilderFlags::ShaderBuilderFlagCubeMap | ShaderBuilderFlags::ShaderBuilderFlagMaxDepth | ShaderBuilderFlags::ShaderBuilderFlagNoTexcoord)),
-        m_VertexBuffer(new VertexBuffer(s_SkyboxVertices, sizeof(s_SkyboxVertices), BufferProperties({ { "POSITION", 3 } }))), m_CubeMapTexture(new CubeMapTexture(paths, 0, TextureProperties(TextureFilter::FILTER_MIN_MAG_MIP_LINEAR, TextureWrapMode::WRAP_CLAMP_TO_EDGE, TextureWrapMode::WRAP_CLAMP_TO_EDGE))),
-        m_Texture(new Texture(paths[0].c_str()))
+        m_VertexBuffer(new VertexBuffer(s_SkyboxVertices, sizeof(s_SkyboxVertices), BufferProperties({ { "POSITION", 3 } }))), m_CubeMapTexture(new CubeMapTexture(paths, 0, TextureProperties(TextureFilter::FILTER_MIN_MAG_MIP_LINEAR, TextureWrapMode::WRAP_CLAMP_TO_EDGE, TextureWrapMode::WRAP_CLAMP_TO_EDGE)))
 	{}
 
 	Skybox::~Skybox()
@@ -69,7 +68,6 @@ namespace Dodo {
         m_Shader->SetUniformValue("u_CubeMap", 0);
         m_CubeMapTexture->Bind();
         m_VertexBuffer->Bind();
-       //m_Texture->Bind();
         Application::s_Application->m_RenderAPI->DrawArray(36);
 		Application::s_Application->m_RenderAPI->DepthComparisonFunction(DepthComparisonFunction::LESS);
 	}

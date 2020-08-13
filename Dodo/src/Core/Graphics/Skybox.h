@@ -11,7 +11,6 @@ namespace Dodo {
 	private:
 		VertexBuffer* m_VertexBuffer;
 		CubeMapTexture* m_CubeMapTexture;
-		Texture* m_Texture;
 		Shader* m_Shader;
 	public:
 		Math::Mat4 m_Projection;

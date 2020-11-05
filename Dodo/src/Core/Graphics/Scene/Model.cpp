@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "Model.h"
 
-#include "Core/Application/Application.h"
-
 namespace Dodo {
 
 	Model::Model(const Mesh* mesh, Material* material)

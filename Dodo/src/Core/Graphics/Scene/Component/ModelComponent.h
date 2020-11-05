@@ -3,7 +3,6 @@
 #include "Components.h"
 #include "Core/Graphics/Scene/Model.h"
 #include "Core/Math/Matrix/Transformation.h"
-#include "Core/Math/Camera/FreeCamera.h"
 
 namespace Dodo {
 
@@ -21,9 +20,18 @@ namespace Dodo {
 
 		~ModelComponent();
 
-		void Draw(const Math::FreeCamera* camera) const;
+		template<typename T>
+		void Draw(const T* camera) const
+		{
+			m_Model->Bind();
+			m_Model->SetUniform("u_Model", m_Transformation.m_Model);
+			m_Model->SetUniform("u_Camera", camera->GetCameraMatrix());
+			m_Model->SetUniform("u_CameraPos", camera->GetCameraPos());
+			m_Model->Draw();
+		}
 
-		inline constexpr ComponentFlag GetFlagType() const { return ComponentFlag::ComponentFlag_ModelComponent; }
+		static inline const std::string& GetName() { return std::string("ModelComponent"); }
+		static inline const ComponentFlag GetFlagType() { return ComponentFlag::ComponentFlag_ModelComponent; }
 
 		std::string m_Path;
 	};

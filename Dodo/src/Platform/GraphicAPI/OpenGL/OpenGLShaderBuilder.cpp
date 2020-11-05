@@ -154,6 +154,7 @@ namespace Dodo {
 
 			if (flags & ShaderBuilderFlagNormalMap)
 			{
+
 				vertex.append(
 					"	mat3 normalMatrix = transpose(inverse(mat3(u_Model)));\n"
 					"	vec3 T = normalize(normalMatrix * a_Tangent);\n"
@@ -293,6 +294,7 @@ namespace Dodo {
 			}
 			else if(!(flags & ShaderBuilderFlagCubeMap))
 				fragment.append("	result = color;\n");
+
 			fragment.append(
 				"	pixel = vec4(result, 1.0f);\n"
 				"}\0");

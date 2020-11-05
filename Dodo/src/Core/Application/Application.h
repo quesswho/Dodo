@@ -44,7 +44,6 @@ namespace Dodo {
 		RenderAPI* m_RenderAPI;
 		ThreadManager* m_ThreadManager;
 		AssetManager* m_AssetManager;
-
 		bool m_Initializing;
 	private:
 		double m_TotalPhysMemGbs;

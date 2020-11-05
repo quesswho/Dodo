@@ -3,8 +3,12 @@
 #include "Core/Common.h"
 #include <unordered_map>
 #include "Entity.h"
+
 #include "Component/ModelComponent.h"
+#include "Component/Rectangle2DComponent.h"
+
 #include "Core/Graphics/Skybox.h"
+#include "Core/Math/Camera/FreeCamera.h"
 
 namespace Dodo {
 
@@ -14,6 +18,7 @@ namespace Dodo {
 
 		std::unordered_map<uint, Entity> m_Entities;
 		std::unordered_map<uint, ModelComponent*> m_ModelComponent;
+		std::unordered_map<uint, Rectangle2DComponent*> m_Rectangle2DComponent;
 
 		Skybox* m_SkyBox;
 

@@ -5,13 +5,13 @@
 
 namespace Dodo {
 
-	class Model {
+	class Rectangle {
 	private:
 		Material* m_Material;
 		const Mesh* m_Mesh;
 	public:
-		Model(const Mesh* mesh, Material* material);
-		~Model();
+		Rectangle(Material* material);
+		~Rectangle();
 
 		inline void SetMaterial(Material* material) { m_Material = material; }
 

@@ -5,10 +5,8 @@
 namespace Dodo {
 
 	AssetManager::AssetManager(bool serialization)
-		: m_Serialization(serialization)
-	{
-		m_ModelLoader = new ModelLoader();
-	}
+		: m_Serialization(serialization), m_ModelLoader(new ModelLoader), m_MeshFactory(new MeshFactory()), m_Rectangle(0)
+	{}
 
 	AssetManager::~AssetManager()
 	{
@@ -16,6 +14,7 @@ namespace Dodo {
 			delete shaderbuildershader.second;
 		for (auto model : m_Models)
 			delete model.second;
+
 	}
 
 	Shader* AssetManager::GetShader(ShaderBuilderFlags flags)
@@ -49,5 +48,16 @@ namespace Dodo {
 		m_ModelID.emplace(path, m_Models.size());
 		m_Models.emplace(m_Models.size(), model);
 		return model;
+	}
+
+	Mesh* AssetManager::GetRectangle()
+	{
+		if (m_Rectangle)
+			return m_Rectangle;
+		else
+		{
+			m_Rectangle = m_MeshFactory->GetRectangleMesh();
+			return m_Rectangle;
+		}
 	}
 }

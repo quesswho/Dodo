@@ -26,7 +26,7 @@ namespace Dodo {
 
 	struct TextureProperties {
 		TextureProperties()
-			: m_Filter(TextureFilter::FILTER_MIN_MAG_MIP_NEAREST), m_WrapU(TextureWrapMode::WRAP_REPEAT), m_WrapV(TextureWrapMode::WRAP_REPEAT)
+			: m_Filter(TextureFilter::FILTER_MIN_NEAREST_MAG_MIP_LINEAR), m_WrapU(TextureWrapMode::WRAP_REPEAT), m_WrapV(TextureWrapMode::WRAP_REPEAT)
 		{}
 		TextureProperties(TextureFilter filter, TextureWrapMode wrapU, TextureWrapMode wrapV)
 			: m_Filter(filter), m_WrapU(wrapU), m_WrapV(wrapV)

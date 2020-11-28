@@ -13,6 +13,7 @@ namespace Dodo {
 	public:
 		Material();
 		Material(Shader* shader);
+		Material(Shader* shader, Texture* texture);
 		Material(Shader* shader, std::vector<Texture*> textures);
 
 		~Material();

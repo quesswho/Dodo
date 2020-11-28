@@ -1,6 +1,7 @@
 #pragma once
 #include "Core/Common.h"
 #include "Core/Graphics/Material/ShaderBuilder.h"
+#include "MaterialLoader.h"
 #include "Core/Graphics/Scene/Model.h"
 #include "Core/Graphics/Scene/Mesh/MeshFactory.h"
 #include "Core/Graphics/CubeMap.h"
@@ -14,6 +15,9 @@ namespace Dodo {
 	private:
 		std::unordered_map<ShaderBuilderFlags, Shader*> m_ShaderBuilderShaders;  // Stores all shaders created by shaderbuilder
 
+		std::unordered_map<uint, Material*> m_Materials;
+		std::unordered_map<std::string, uint> m_MaterialID;
+
 		std::unordered_map<uint, Model*> m_Models;		 // Stores id as key and model pointer as value
 		std::unordered_map<std::string, uint> m_ModelID; // Stores path as key and id as value
 	public:
@@ -21,6 +25,7 @@ namespace Dodo {
 		~AssetManager();
 
 		Shader* GetShader(ShaderBuilderFlags flags);
+		Material* GetMaterial(const char* path);
 		Model* GetModel(const char* path);
 
 		Model* CreateModel(const char* path, uint id);
@@ -28,6 +33,7 @@ namespace Dodo {
 		Mesh* GetRectangle();
 	public:
 		ModelLoader* m_ModelLoader;
+		MaterialLoader* m_MaterialLoader;
 		MeshFactory* m_MeshFactory;
 	private:
 		// MeshFactory

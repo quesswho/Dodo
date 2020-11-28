@@ -9,13 +9,48 @@ namespace Dodo {
 
 	namespace Platform {
 
-		OpenGLTexture::OpenGLTexture(const char* path, uint index, const TextureProperties& prop)
+		OpenGLTexture::OpenGLTexture(const char* path, uint index, const TextureSettings& settings)
 			: m_Index(index)
+		{
+			int width, height, channels;
+			stbi_set_flip_vertically_on_load(true);
+			uchar* data = stbi_load(path, &width, &height, &channels, 0);
+			if (data)
+			{
+				TextureProperties props((uint)width, (uint)height);
+				switch (channels)
+				{
+					case 3:
+						props.m_Format = TextureFormat::FORMAT_RGB;
+						break;
+					case 4:
+						props.m_Format = TextureFormat::FORMAT_RGBA;
+						break;
+					default:
+						DD_ERR("File format is not supported! {}", channels);
+				}
+				m_TextureProperties = props;
+				Init(data, settings);
+			}
+			else
+			{
+				DD_ERR("Could not load texture: {}", path);
+			}
+			stbi_image_free(data);
+		}
+
+		OpenGLTexture::OpenGLTexture(uchar* data, TextureProperties prop, uint index, const TextureSettings& settings)
+			: m_Index(index), m_TextureProperties(prop)
+		{
+			Init(data, settings);
+		}
+
+		void OpenGLTexture::Init(uchar* data, const TextureSettings& settings)
 		{
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
 			glBindTexture(GL_TEXTURE_2D, m_TextureID);
 
-			switch (prop.m_WrapU)
+			switch (settings.m_WrapU)
 			{
 				case TextureWrapMode::WRAP_REPEAT:
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -31,7 +66,7 @@ namespace Dodo {
 					break;
 			}
 
-			switch (prop.m_WrapV)
+			switch (settings.m_WrapV)
 			{
 				case TextureWrapMode::WRAP_REPEAT:
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -47,7 +82,7 @@ namespace Dodo {
 					break;
 			}
 
-			uint filter = static_cast<uint>(prop.m_Filter);
+			uint filter = static_cast<uint>(settings.m_Filter);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter < 4 ? GL_LINEAR : GL_NEAREST);
 			/*if(filter > 2 && filter < 6)
@@ -60,38 +95,24 @@ namespace Dodo {
 			else
 				glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-			if (prop.m_WrapU == TextureWrapMode::WRAP_CLAMP_TO_BORDER || prop.m_WrapV == TextureWrapMode::WRAP_CLAMP_TO_BORDER)
+			if (settings.m_WrapU == TextureWrapMode::WRAP_CLAMP_TO_BORDER || settings.m_WrapV == TextureWrapMode::WRAP_CLAMP_TO_BORDER)
 			{
 				float borderColor[] = { 1.0f, 0.4f, 0.8f, 1.0f };
 				glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 			}
 
-			int  channels;
-			stbi_set_flip_vertically_on_load(true);
-			uchar* data = stbi_load(path, &m_Width, &m_Height, &channels, 0);
-			if (data)
+			uint format;
+			switch (m_TextureProperties.m_Format)
 			{
-				int internalFormat = 0;
-				switch (channels)
-				{
-					case 3:
-						internalFormat = GL_RGB;
-						break;
-					case 4:
-						internalFormat = GL_RGBA;
-						break;
-					default:
-						DD_ERR("File format is not supported! {}", channels);
-				}
-
-				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, internalFormat, GL_UNSIGNED_BYTE, data);
-				glGenerateMipmap(GL_TEXTURE_2D);
+				case TextureFormat::FORMAT_RGB:
+					format = GL_RGB;
+					break;
+				case TextureFormat::FORMAT_RGBA:
+					format = GL_RGBA;
+					break;
 			}
-			else
-			{
-				DD_ERR("Could not load texture: {}", path);
-			}
-			stbi_image_free(data);
+			glTexImage2D(GL_TEXTURE_2D, 0, format, m_TextureProperties.m_Width, m_TextureProperties.m_Height, 0, format, GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
 		}
 
 		OpenGLTexture::~OpenGLTexture()

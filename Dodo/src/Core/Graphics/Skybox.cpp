@@ -51,7 +51,7 @@ namespace Dodo {
 
     Skybox::Skybox(const Math::Mat4& projection, std::vector<std::string> paths)
         : m_Projection(projection), m_Shader(Application::s_Application->m_AssetManager->GetShader(ShaderBuilderFlags::ShaderBuilderFlagCubeMap | ShaderBuilderFlags::ShaderBuilderFlagMaxDepth | ShaderBuilderFlags::ShaderBuilderFlagNoTexcoord)),
-        m_VertexBuffer(new VertexBuffer(s_SkyboxVertices, sizeof(s_SkyboxVertices), BufferProperties({ { "POSITION", 3 } }))), m_CubeMapTexture(new CubeMapTexture(paths, 0, TextureProperties(TextureFilter::FILTER_MIN_MAG_MIP_LINEAR, TextureWrapMode::WRAP_CLAMP_TO_EDGE, TextureWrapMode::WRAP_CLAMP_TO_EDGE)))
+        m_VertexBuffer(new VertexBuffer(s_SkyboxVertices, sizeof(s_SkyboxVertices), BufferProperties({ { "POSITION", 3 } }))), m_CubeMapTexture(new CubeMapTexture(paths, 0, TextureSettings(TextureFilter::FILTER_MIN_MAG_MIP_LINEAR, TextureWrapMode::WRAP_CLAMP_TO_EDGE, TextureWrapMode::WRAP_CLAMP_TO_EDGE)))
 	{}
 
 	Skybox::~Skybox()

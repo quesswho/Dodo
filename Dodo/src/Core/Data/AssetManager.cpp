@@ -5,7 +5,7 @@
 namespace Dodo {
 
 	AssetManager::AssetManager(bool serialization)
-		: m_Serialization(serialization), m_ModelLoader(new ModelLoader), m_MeshFactory(new MeshFactory()), m_Rectangle(0)
+		: m_Serialization(serialization), m_ModelLoader(new ModelLoader), m_MaterialLoader(new MaterialLoader), m_MeshFactory(new MeshFactory()), m_Rectangle(0)
 	{}
 
 	AssetManager::~AssetManager()
@@ -48,6 +48,16 @@ namespace Dodo {
 		m_ModelID.emplace(path, m_Models.size());
 		m_Models.emplace(m_Models.size(), model);
 		return model;
+	}
+
+	Material* AssetManager::GetMaterial(const char* path)
+	{
+		if (m_MaterialID.find(path) != m_MaterialID.end())
+			return m_Materials[m_MaterialID.at(path)];
+		Material* mat = m_MaterialLoader->LoadMaterial(path);
+		m_MaterialID.emplace(path, m_Models.size());
+		m_Materials.emplace(m_Models.size(), mat);
+		return mat;
 	}
 
 	Mesh* AssetManager::GetRectangle()

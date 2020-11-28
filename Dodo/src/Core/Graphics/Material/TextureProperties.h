@@ -3,6 +3,31 @@
 
 namespace Dodo {
 
+	enum class TextureFormat : byte
+	{
+		FORMAT_RGB,
+		FORMAT_RGBA
+	};
+
+	struct TextureProperties {
+		TextureProperties()
+			: m_Width(0), m_Height(0), m_Format(TextureFormat::FORMAT_RGB)
+		{}
+
+		TextureProperties(uint width, uint height)
+			: m_Width(width), m_Height(height), m_Format(TextureFormat::FORMAT_RGB)
+		{}
+
+		TextureProperties(uint width, uint height, TextureFormat format)
+			: m_Width(width), m_Height(height), m_Format(format)
+		{}
+
+
+		uint m_Width;
+		uint m_Height;
+		TextureFormat m_Format;
+	};
+
 	enum class TextureFilter : uint
 	{
 		FILTER_MIN_MAG_LINEAR_MIP_NEAREST,
@@ -24,11 +49,11 @@ namespace Dodo {
 		WRAP_MIRRORED_REPEAT
 	};
 
-	struct TextureProperties {
-		TextureProperties()
+	struct TextureSettings {
+		TextureSettings()
 			: m_Filter(TextureFilter::FILTER_MIN_NEAREST_MAG_MIP_LINEAR), m_WrapU(TextureWrapMode::WRAP_REPEAT), m_WrapV(TextureWrapMode::WRAP_REPEAT)
 		{}
-		TextureProperties(TextureFilter filter, TextureWrapMode wrapU, TextureWrapMode wrapV)
+		TextureSettings(TextureFilter filter, TextureWrapMode wrapU, TextureWrapMode wrapV)
 			: m_Filter(filter), m_WrapU(wrapU), m_WrapV(wrapV)
 		{}
 		TextureFilter m_Filter;

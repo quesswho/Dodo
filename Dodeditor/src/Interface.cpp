@@ -502,7 +502,8 @@ void Interface::DrawInspector()
 						if (ImGui::Button("Browse")) {
 							std::string str = Application::s_Application->m_Window->OpenFileSelector("Model\0*.fbx;*.obj\0");
 							if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
-							m_Scene->AddComponent(e.first, new ModelComponent(str.c_str()));
+							model = new ModelComponent(str.c_str());
+							m_Scene->AddComponent(e.first, model);
 						}
 						ImGui::SameLine();
 						ImGui::Text(model->m_Path.c_str());
@@ -573,12 +574,12 @@ void Interface::DrawInspector()
 					auto comp = m_Scene->m_Rectangle2DComponent.find(e.first);
 					if (comp != m_Scene->m_Rectangle2DComponent.end())
 					{
-						ModelComponent* model = m_Scene->m_ModelComponent.at(e.first);
+						Rectangle2DComponent* comp = m_Scene->m_Rectangle2DComponent.at(e.first);
 						if (m_InspectorSelectNew)
 						{
-							memcpy(translate, (float*)&model->m_Transformation.m_Position, 3 * sizeof(float));
-							memcpy(scale, (float*)&model->m_Transformation.m_Scale, 3 * sizeof(float));
-							memcpy(rotate, (float*)&model->m_Transformation.m_Rotation, 3 * sizeof(float));
+							memcpy(translate, (float*)&comp->m_Transformation.m_Position, 3 * sizeof(float));
+							memcpy(scale, (float*)&comp->m_Transformation.m_Scale, 3 * sizeof(float));
+							memcpy(rotate, (float*)&comp->m_Transformation.m_Rotation, 3 * sizeof(float));
 							rotate[0] = Math::ToDegrees(rotate[0]);
 							rotate[1] = Math::ToDegrees(rotate[1]);
 							rotate[2] = Math::ToDegrees(rotate[2]);
@@ -586,40 +587,41 @@ void Interface::DrawInspector()
 						}
 						ImGui::Indent();
 						if (ImGui::Button("Browse")) {
-							std::string str = Application::s_Application->m_Window->OpenFileSelector("Model\0*.fbx;*.obj\0");
+							std::string str = Application::s_Application->m_Window->OpenFileSelector("Texture\0*.png;*.jpg;*.tga\0");
 							if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
-							m_Scene->AddComponent(e.first, new ModelComponent(str.c_str()));
+							comp = new Rectangle2DComponent(str.c_str());
+							m_Scene->AddComponent(e.first, comp);
 						}
 						ImGui::SameLine();
-						ImGui::Text(model->m_Path.c_str());
+						ImGui::Text(comp->m_Path.c_str());
 
 						if (ImGui::TreeNode("Transform"))
 						{
 							ImGui::Text("Translate:");
 							if (ImGui::DragFloat3("##translate", translate, 0.05f))
 							{
-								model->m_Transformation.Move(Vec3(translate[0], translate[1], translate[2]));
+								comp->m_Transformation.Move(Vec3(translate[0], translate[1], translate[2]));
 							}
 
 							ImGui::Text("Scale:");
 							static bool sync = true;
 							bool dragscale = false;
-							dragscale = ImGui::DragFloat3("##scale", scale, 0.001f, -100000.0f, 100000.0f, "%.4f", 1.0f);
+							dragscale = ImGui::DragFloat3("##scale", scale, 0.0001f, -100000.0f, 100000.0f, "%.4f", 1.001f);
 							ImGui::Checkbox("Sync", &sync);
 							if (dragscale)
 							{
 								if (sync)
 								{
-									Vec3 temp = ((Vec3)scale) - model->m_Transformation.m_Scale;
+									Vec3 temp = ((Vec3)scale) - comp->m_Transformation.m_Scale;
 
-									model->m_Transformation.m_Scale += temp.x;
-									model->m_Transformation.m_Scale += temp.y;
-									model->m_Transformation.m_Scale += temp.z;
-									memcpy(scale, (float*)&model->m_Transformation.m_Scale, sizeof(Vec3));
-									model->m_Transformation.Calculate();
+									comp->m_Transformation.m_Scale += temp.x;
+									comp->m_Transformation.m_Scale += temp.y;
+									comp->m_Transformation.m_Scale += temp.z;
+									memcpy(scale, (float*)&comp->m_Transformation.m_Scale, sizeof(Vec3));
+									comp->m_Transformation.Calculate();
 								}
 								else
-									model->m_Transformation.Scale(Vec3(scale[0], scale[1], scale[2]));
+									comp->m_Transformation.Scale(Vec3(scale[0], scale[1], scale[2]));
 							}
 
 							ImGui::Text("Rotate:");
@@ -628,7 +630,7 @@ void Interface::DrawInspector()
 								Vec3 temp = ((Vec3)rotate);
 								temp = Vec3(std::fmod(temp.x, 360.0f), std::fmod(temp.y, 360.0f), std::fmod(temp.z, 360.0f));
 								memcpy(rotate, (float*)&temp, sizeof(Vec3));
-								model->m_Transformation.Rotate(temp);
+								comp->m_Transformation.Rotate(temp);
 							}
 
 							ImGui::TreePop();
@@ -637,7 +639,7 @@ void Interface::DrawInspector()
 					else
 					{
 						if (ImGui::Button("Browse")) {
-							std::string str = Application::s_Application->m_Window->OpenFileSelector("Model\0*.fbx;*.obj\0");
+							std::string str = Application::s_Application->m_Window->OpenFileSelector("Texture\0*.png;*.jpg;*.tga\0");
 							if (str != "")
 							{
 								if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory()))

@@ -10,7 +10,7 @@ namespace Dodo {
 	namespace Platform {
 
 		OpenGLTexture::OpenGLTexture(const char* path, uint index, const TextureSettings& settings)
-			: m_Index(index)
+			: m_Index(index), m_TextureID(0)
 		{
 			int width, height, channels;
 			stbi_set_flip_vertically_on_load(true);
@@ -97,7 +97,7 @@ namespace Dodo {
 
 			if (settings.m_WrapU == TextureWrapMode::WRAP_CLAMP_TO_BORDER || settings.m_WrapV == TextureWrapMode::WRAP_CLAMP_TO_BORDER)
 			{
-				float borderColor[] = { 1.0f, 0.4f, 0.8f, 1.0f };
+				float borderColor[] = { 1.0f, 0.4f, 0.8f, 0.09f };
 				glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 			}
 
@@ -110,6 +110,8 @@ namespace Dodo {
 				case TextureFormat::FORMAT_RGBA:
 					format = GL_RGBA;
 					break;
+				default:
+					format = GL_RGB;
 			}
 			glTexImage2D(GL_TEXTURE_2D, 0, format, m_TextureProperties.m_Width, m_TextureProperties.m_Height, 0, format, GL_UNSIGNED_BYTE, data);
 			glGenerateMipmap(GL_TEXTURE_2D);

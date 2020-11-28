@@ -3,6 +3,7 @@
 #include "Core/Graphics/Material/ShaderBuilder.h"
 #include "MaterialLoader.h"
 #include "Core/Graphics/Scene/Model.h"
+#include "Core/Graphics/Scene/Rectangle.h"
 #include "Core/Graphics/Scene/Mesh/MeshFactory.h"
 #include "Core/Graphics/CubeMap.h"
 #include "ModelLoader.h"
@@ -29,15 +30,10 @@ namespace Dodo {
 		Model* GetModel(const char* path);
 
 		Model* CreateModel(const char* path, uint id);
-
-		Mesh* GetRectangle();
 	public:
 		ModelLoader* m_ModelLoader;
 		MaterialLoader* m_MaterialLoader;
 		MeshFactory* m_MeshFactory;
-	private:
-		// MeshFactory
-		Mesh* m_Rectangle;
 
 	private:
 		bool m_Serialization;

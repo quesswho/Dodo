@@ -20,6 +20,7 @@ namespace Dodo {
 			if (ent.second.m_ComponentFlags != ComponentFlag_None)
 			{
 				m_File.CreateSection("components");
+				// Components
 				if(ent.second.m_ComponentFlags & ComponentFlag_ModelComponent)
 				{
 					m_File.CreateSection("ModelComponent");
@@ -27,6 +28,14 @@ namespace Dodo {
 					m_File.AddValue("transformation", scene->m_ModelComponent[ent.first]->m_Transformation);
 					m_File.UnIndent();
 				}
+				if (ent.second.m_ComponentFlags & ComponentFlag_Rectangle2DComponent)
+				{
+					m_File.CreateSection("Rectangle2D");
+					m_File.AddValue("path", scene->m_Rectangle2DComponent[ent.first]->m_Path);
+					m_File.AddValue("transformation", scene->m_Rectangle2DComponent[ent.first]->m_Transformation);
+					m_File.UnIndent();
+				}
+
 				m_File.UnIndent();
 			}
 			m_File.UnIndent();
@@ -54,14 +63,24 @@ namespace Dodo {
 							result->CreateEntity(id, m_File.GetString());
 							if (m_File.EntryExists("components"))
 							{
+								// Components
 								m_File.NextLine();
-								if (m_File.GetSection() == "ModelComponent" && m_File.EntryExists("path"))
+								std::string section = m_File.GetSection();
+								if (section == "ModelComponent")
 								{
 									std::string path = m_File.GetString();
+									if (path == "") Error(m_File.m_CurrentLine);
 									result->AddComponent(id, new ModelComponent(path.c_str(), m_File.GetTransformation()));
+								}
+								else if (section == "Rectangle2D")
+								{
+									std::string path = m_File.GetString();
+									if (path == "") Error(m_File.m_CurrentLine);
+									result->AddComponent(id, new Rectangle2DComponent(path.c_str(), m_File.GetTransformation()));
 								}
 								else
 									Error(m_File.m_CurrentLine);
+							
 							}
 							else
 								Error(m_File.m_CurrentLine);

@@ -50,8 +50,12 @@ namespace Dodo {
 	{
 		auto it = m_ModelComponent.find(id);
 		if (it != m_ModelComponent.end())
+		{
+			delete it->second;
 			it->second = comp;
-		m_ModelComponent.insert(std::make_pair(id, comp));
+		}
+		else
+			m_ModelComponent.insert(std::make_pair(id, comp));
 		m_Entities.at(id).m_ComponentFlags |= comp->GetFlagType();
 	}
 
@@ -59,21 +63,25 @@ namespace Dodo {
 	{
 		auto it = m_Rectangle2DComponent.find(id);
 		if (it != m_Rectangle2DComponent.end())
+		{
+			delete it->second;
 			it->second = comp;
-		m_Rectangle2DComponent.insert(std::make_pair(id, comp));
+		}
+		else
+			m_Rectangle2DComponent.insert(std::make_pair(id, comp));
 		m_Entities.at(id).m_ComponentFlags |= comp->GetFlagType();
 	}
 
 	void Scene::Draw()
 	{
-		for (auto& model : m_ModelComponent)
+		for (auto& comp : m_ModelComponent)
 		{
-			model.second->Draw(m_Camera);
+			comp.second->Draw(m_Camera);
 		}
 
-		for (auto& rect : m_Rectangle2DComponent)
+		for (auto& comp : m_Rectangle2DComponent)
 		{
-			rect.second->Draw(m_Camera);
+			comp.second->Draw(m_Camera);
 		}
 
 		if (m_SkyBox) m_SkyBox->Draw(m_Camera->GetViewMatrix());

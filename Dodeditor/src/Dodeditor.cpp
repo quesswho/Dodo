@@ -8,6 +8,7 @@ GameLayer::GameLayer()
 {
 	Application::s_Application->m_RenderAPI->ClearColor(0.2f, 0.2f, 0.9f);
 	Application::s_Application->m_RenderAPI->DepthTest(true);
+	Application::s_Application->m_RenderAPI->Blending(true);
 
 	BufferProperties bufferprop = {
 		{ "POSITION", 3 }, 

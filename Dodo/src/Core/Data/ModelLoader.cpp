@@ -111,7 +111,7 @@ namespace Dodo {
 			else
 				material = new Material(); // Fallback shader
 		}
-
+		Application::s_Application->m_Window->DefaultWorkDirectory();
 		return new Model(mesh, material);
 	}
 

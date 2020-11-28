@@ -10,5 +10,6 @@ namespace Dodo {
 		Mesh* GetRectangleMesh();
 	private:
 		const BufferProperties m_BasicProperties;
+		Mesh* m_RectangleMesh;
 	};
 }

@@ -16,6 +16,13 @@ namespace Dodo {
 	public:
 		inline static std::shared_ptr<spdlog::logger> GetLogger() { return m_Logger; }
 
+		template<typename... Args>
+		static void ErrorHandler(const char* file, int line, std::string message, const Args &... args)
+		{
+			std::string finalmsg = "at " + std::string(file) + ":" + std::to_string(line) + " " + message;
+			m_Logger->error(finalmsg, args...);
+		}
+
 		Logger();
 	private:
 		
@@ -26,7 +33,7 @@ namespace Dodo {
 // Easy access to log functions
 #define DD_INFO(...) Dodo::Logger::GetLogger()->info(__VA_ARGS__)
 #define DD_WARN(...) Dodo::Logger::GetLogger()->warn(__VA_ARGS__)
-#define DD_ERR(...) Dodo::Logger::GetLogger()->error(__VA_ARGS__)
-#define DD_FATAL(...) Dodo::Logger::GetLogger()->error(__VA_ARGS__); __debugbreak()
+#define DD_ERR(...) Dodo::Logger::ErrorHandler(__FILE__, __LINE__, __VA_ARGS__)
+#define DD_FATAL(...) Dodo::Logger::ErrorHandler(__FILE__, __LINE__, __VA_ARGS__); __debugbreak()
 
 #endif

@@ -6,7 +6,7 @@
 namespace Dodo {
 
 	Rectangle2DComponent::Rectangle2DComponent(const char* path, const Math::Transformation& transformation)
-		: m_Transformation(transformation), m_Path(path)
+		: m_Transformation(transformation), m_Path(path), m_Rectangle()
 	{}
 
 	Rectangle2DComponent::~Rectangle2DComponent()

@@ -55,12 +55,27 @@ namespace Dodo {
 		m_Entities.at(id).m_ComponentFlags |= comp->GetFlagType();
 	}
 
+	void Scene::AddComponent(uint id, Rectangle2DComponent* comp)
+	{
+		auto it = m_Rectangle2DComponent.find(id);
+		if (it != m_Rectangle2DComponent.end())
+			it->second = comp;
+		m_Rectangle2DComponent.insert(std::make_pair(id, comp));
+		m_Entities.at(id).m_ComponentFlags |= comp->GetFlagType();
+	}
+
 	void Scene::Draw()
 	{
 		for (auto& model : m_ModelComponent)
 		{
 			model.second->Draw(m_Camera);
 		}
+
+		for (auto& rect : m_Rectangle2DComponent)
+		{
+			rect.second->Draw(m_Camera);
+		}
+
 		if (m_SkyBox) m_SkyBox->Draw(m_Camera->GetViewMatrix());
 	}
 }

@@ -12,6 +12,12 @@ namespace Dodo {
 		: m_Shader(shader)
 	{}
 
+	Material::Material(Shader* shader, Texture* texture)
+		: m_Shader(shader)
+	{
+		m_Textures.push_back(texture);
+	}
+
 	Material::Material(Shader* shader, std::vector<Texture*> textures)
 		: m_Shader(shader), m_Textures(textures)
 	{

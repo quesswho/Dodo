@@ -10,14 +10,18 @@ namespace Dodo {
 		private:
 			uint m_TextureID;
 		public:
-			OpenGLTexture(const char* path, uint index = 0, const TextureProperties& prop = TextureProperties());
+			OpenGLTexture(const char* path, uint index = 0, const TextureSettings& settings = TextureSettings());
+			OpenGLTexture(uchar* data, TextureProperties prop, uint index = 0, const TextureSettings& settings = TextureSettings());
 			~OpenGLTexture();
 
 			void Bind() const;
+		private:
+			void Init(uchar* data, const TextureSettings& settings);
 		public:
 			uint m_Index;
+			const TextureProperties& GetTextureProperties() const { return m_TextureProperties; }
 		private:
-			int m_Width, m_Height;
+			TextureProperties m_TextureProperties;
 		};
 	}
 }

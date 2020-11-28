@@ -8,7 +8,7 @@ namespace Dodo {
 
 	namespace Platform {
 
-		OpenGLCubeMapTexture::OpenGLCubeMapTexture(std::vector<std::string> paths, uint index, const TextureProperties& prop)
+		OpenGLCubeMapTexture::OpenGLCubeMapTexture(std::vector<std::string> paths, uint index, const TextureSettings& prop)
 			: m_Index(index)
 		{
 			glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_TextureID);

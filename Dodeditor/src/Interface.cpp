@@ -570,8 +570,8 @@ void Interface::DrawInspector()
 			{
 				if (ImGui::TreeNode("Rectangle2D"))
 				{
-					auto comp = m_Scene->m_ModelComponent.find(e.first);
-					if (comp != m_Scene->m_ModelComponent.end())
+					auto comp = m_Scene->m_Rectangle2DComponent.find(e.first);
+					if (comp != m_Scene->m_Rectangle2DComponent.end())
 					{
 						ModelComponent* model = m_Scene->m_ModelComponent.at(e.first);
 						if (m_InspectorSelectNew)
@@ -642,7 +642,7 @@ void Interface::DrawInspector()
 							{
 								if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory()))
 									str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory so erase global directory
-								m_Scene->AddComponent(e.first, new ModelComponent(str.c_str()));
+								m_Scene->AddComponent(e.first, new Rectangle2DComponent(str.c_str()));
 							}
 						}
 						ImGui::SameLine();

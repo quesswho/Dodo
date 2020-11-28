@@ -374,6 +374,10 @@ void Interface::DrawHierarchy()
 							{
 								ImGui::BulletText("ModelComponent");
 							}
+							if (ent.second.m_ComponentFlags & ComponentFlag_Rectangle2DComponent)
+							{
+								ImGui::BulletText("Rectangle2DComponent");
+							}
 							ImGui::Unindent();
 						}
 						ImGui::Unindent();
@@ -519,7 +523,7 @@ void Interface::DrawInspector()
 							ImGui::Text("Scale:");
 							static bool sync = true;
 							bool dragscale = false;
-							dragscale = ImGui::DragFloat3("##scale", scale, 0.001f, -100000.0f, 100000.0f, "%.4f", 1.0f);
+							dragscale = ImGui::DragFloat3("##scale", scale, 0.0001f, -100000.0f, 100000.0f, "%.4f", 1.001f);
 							ImGui::Checkbox("Sync", &sync);
 							if (dragscale)
 							{

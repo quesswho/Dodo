@@ -38,12 +38,33 @@ namespace Dodo {
 		bool RenameEntity(uint id, const std::string& name); // true ? Success : No entity with specified id
 		bool DeleteEntity(uint id);
 
-		void AddComponent(uint id, ModelComponent* comp);
+		template<typename T>
+		void AddComponent(uint id, T comp)
+		{
+			auto it = m_Entities.find(id);
+			if (it != m_Entities.end())
+			{
+				int i = 0;
+				for (auto& c : (*it).second.m_Components)
+				{
+					if (c.index() == comp->GetIndex())
+					{
+						(*it).second.m_Components.erase((*it).second.m_Components.begin() + i);
+						delete std::get<T>(c);
+						break;
+					}
+					i++;
+				}
+				(*it).second.m_Components.emplace_back(comp);
+				if (comp->IsDrawable()) (*it).second.m_Drawable.emplace_back((*it).second.m_Components.size()-1);
+			}
+		}
+
+		/*void AddComponent(uint id, ModelComponent* comp);
 		void AddComponent(uint id, Rectangle2DComponent* comp);
+		*/
 
 		inline void UpdateCamera(Math::FreeCamera* camera) { m_Camera = camera; }
-
-		const uint m_AmountOfComponents;
 	private:
 		Math::FreeCamera* m_Camera;
 	};

@@ -488,10 +488,10 @@ void Interface::DrawInspector()
 			{
 				if (ImGui::TreeNode("ModelComponent"))
 				{
-					auto comp = m_Scene->m_ModelComponent.find(e.first);
-					if (comp != m_Scene->m_ModelComponent.end())
+					auto& compvar = ent.FindComponent(ModelComponent::GetIndex());
+					if (compvar.index() == ModelComponent::GetIndex())
 					{
-						ModelComponent* model = m_Scene->m_ModelComponent.at(e.first);
+						ModelComponent* model = std::get<ModelComponent::GetIndex()>(compvar);
 						if (m_InspectorSelectNew)
 						{
 							memcpy(translate, (float*)&model->m_Transformation.m_Position, 3 * sizeof(float));
@@ -575,10 +575,10 @@ void Interface::DrawInspector()
 			{
 				if (ImGui::TreeNode("Rectangle2D"))
 				{
-					auto comp = m_Scene->m_Rectangle2DComponent.find(e.first);
-					if (comp != m_Scene->m_Rectangle2DComponent.end())
+					auto& compvar = ent.FindComponent(Rectangle2DComponent::GetIndex());
+					if (compvar.index() == Rectangle2DComponent::GetIndex())
 					{
-						Rectangle2DComponent* comp = m_Scene->m_Rectangle2DComponent.at(e.first);
+						Rectangle2DComponent* comp = std::get<Rectangle2DComponent::GetIndex()>(compvar);
 						if (m_InspectorSelectNew)
 						{
 							memcpy(translate, (float*)&comp->m_Transformation.m_Position, 3 * sizeof(float));

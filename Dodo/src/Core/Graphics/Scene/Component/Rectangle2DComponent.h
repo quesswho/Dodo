@@ -3,6 +3,7 @@
 #include "Components.h"
 #include "Core/Graphics/Scene/Rectangle.h"
 #include "Core/Math/Matrix/Transformation.h"
+#include "Core/Math/MathFunc.h"
 
 namespace Dodo {
 
@@ -26,12 +27,14 @@ namespace Dodo {
 			m_Rectangle->Bind();
 			m_Rectangle->SetUniform("u_Model", m_Transformation.m_Model);
 			m_Rectangle->SetUniform("u_Camera", camera->GetCameraMatrix());
-			m_Rectangle->SetUniform("u_CameraPos", camera->GetCameraPos());
 			m_Rectangle->Draw();
 		}
 
+		static inline bool IsDrawable() { return true; }
 		static inline const std::string& GetName() { return std::string("ModelComponent"); }
 		static inline const ComponentFlag GetFlagType() { return ComponentFlag::ComponentFlag_Rectangle2DComponent; }
+		static constexpr int GetIndex() { return Math::floorlog2(GetFlagType()); }
+
 		std::string m_Path;
 	};
 }

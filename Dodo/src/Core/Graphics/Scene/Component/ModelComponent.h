@@ -3,6 +3,7 @@
 #include "Components.h"
 #include "Core/Graphics/Scene/Model.h"
 #include "Core/Math/Matrix/Transformation.h"
+#include "Core/Math/MathFunc.h"
 
 namespace Dodo {
 
@@ -30,8 +31,10 @@ namespace Dodo {
 			m_Model->Draw();
 		}
 
+		static inline bool IsDrawable() { return true; }
 		static inline const std::string& GetName() { return std::string("ModelComponent"); }
-		static inline const ComponentFlag GetFlagType() { return ComponentFlag::ComponentFlag_ModelComponent; }
+		static constexpr ComponentFlag GetFlagType() { return ComponentFlag::ComponentFlag_ModelComponent; }
+		static constexpr int GetIndex() { return Math::floorlog2(GetFlagType()); }
 
 		std::string m_Path;
 	};

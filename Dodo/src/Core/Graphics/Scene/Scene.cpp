@@ -5,7 +5,7 @@
 namespace Dodo {
 
 	Scene::Scene(Math::FreeCamera* camera, std::string name)
-		: m_AmountOfComponents(1), m_Name(name), m_Camera(camera), m_SkyBox(0) //Math::Mat4::Perspective(45.0f, Application::s_Application->m_WindowProperties.m_Width / Application::s_Application->m_WindowProperties.m_Height, 0.01f, 100.0f))
+		: m_Name(name), m_Camera(camera), m_SkyBox(0) //Math::Mat4::Perspective(45.0f, Application::s_Application->m_WindowProperties.m_Width / Application::s_Application->m_WindowProperties.m_Height, 0.01f, 100.0f))
 	{}
 
 	Scene::~Scene()
@@ -46,7 +46,7 @@ namespace Dodo {
 		return true;
 	}
 
-	void Scene::AddComponent(uint id, ModelComponent* comp)
+	/*void Scene::AddComponent(uint id, ModelComponent* comp)
 	{
 		auto it = m_ModelComponent.find(id);
 		if (it != m_ModelComponent.end())
@@ -70,11 +70,11 @@ namespace Dodo {
 		else
 			m_Rectangle2DComponent.insert(std::make_pair(id, comp));
 		m_Entities.at(id).m_ComponentFlags |= comp->GetFlagType();
-	}
+	}*/
 
 	void Scene::Draw()
 	{
-		for (auto& comp : m_ModelComponent)
+		/*for (auto& comp : m_ModelComponent)
 		{
 			comp.second->Draw(m_Camera);
 		}
@@ -82,6 +82,26 @@ namespace Dodo {
 		for (auto& comp : m_Rectangle2DComponent)
 		{
 			comp.second->Draw(m_Camera);
+		}*/
+
+		for (auto& ent : m_Entities)
+		{
+			for (auto i : ent.second.m_Drawable)
+			{
+				auto& drawable = ent.second.m_Components[i];
+				switch (drawable.index())
+				{
+					case 0:
+						std::get<0>(drawable)->Draw(m_Camera);
+						break;
+					case 1:
+						std::get<1>(drawable)->Draw(m_Camera);
+						break;
+					default:
+						DD_ERR("This should never occurr.");
+						break;
+				}
+			}
 		}
 
 		if (m_SkyBox) m_SkyBox->Draw(m_Camera->GetViewMatrix());

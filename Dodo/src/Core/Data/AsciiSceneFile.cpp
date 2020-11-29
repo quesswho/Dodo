@@ -13,7 +13,7 @@ namespace Dodo {
 		m_File.BeginWrite();
 
 		m_File.CreateSection("Entities");
-		for (auto ent : scene->m_Entities)
+		for (auto& ent : scene->m_Entities)
 		{
 			m_File.CreateSection(std::to_string(ent.first));
 			m_File.AddValue("name", ent.second.m_Name);
@@ -21,21 +21,32 @@ namespace Dodo {
 			{
 				m_File.CreateSection("components");
 				// Components
-				if(ent.second.m_ComponentFlags & ComponentFlag_ModelComponent)
+				for (auto& varcomp : ent.second.m_Components)
 				{
-					m_File.CreateSection("ModelComponent");
-					m_File.AddValue("path", scene->m_ModelComponent[ent.first]->m_Path);
-					m_File.AddValue("transformation", scene->m_ModelComponent[ent.first]->m_Transformation);
-					m_File.UnIndent();
+					switch (varcomp.index())
+					{
+						case 0:
+						{
+							auto& comp = std::get<0>(varcomp);
+							m_File.CreateSection("ModelComponent");
+							m_File.AddValue("path", comp->m_Path);
+							m_File.AddValue("transformation", comp->m_Transformation);
+							m_File.UnIndent();
+							break;
+						}
+						case 1:
+						{
+							auto& comp = std::get<1>(varcomp);
+							m_File.CreateSection("Rectangle2D");
+							m_File.AddValue("path", comp->m_Path);
+							m_File.AddValue("transformation", comp->m_Transformation);
+							m_File.UnIndent();
+							break;
+						}
+						default:
+							DD_ERR("Missing implementation!");
+					}
 				}
-				if (ent.second.m_ComponentFlags & ComponentFlag_Rectangle2DComponent)
-				{
-					m_File.CreateSection("Rectangle2D");
-					m_File.AddValue("path", scene->m_Rectangle2DComponent[ent.first]->m_Path);
-					m_File.AddValue("transformation", scene->m_Rectangle2DComponent[ent.first]->m_Transformation);
-					m_File.UnIndent();
-				}
-
 				m_File.UnIndent();
 			}
 			m_File.UnIndent();

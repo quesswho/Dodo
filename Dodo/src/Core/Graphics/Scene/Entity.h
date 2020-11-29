@@ -13,10 +13,22 @@ namespace Dodo {
 		Entity(const std::string& name)
 			: m_Name(name), m_ComponentFlags()
 		{}
-		
-		std::vector<std::variant<ModelComponent*, Rectangle2DComponent*>> m_Components; // Order needs to be the same as in the ComponentFlag enum!
+		using ComponentType = std::variant<ModelComponent*, Rectangle2DComponent*, std::monostate>;
 
-		std::vector<short> m_Drawable; // Position in vector
+		std::vector<ComponentType> m_Components; // Order needs to be the same as in the ComponentFlag enum!
+
+		std::vector<short> m_Drawable; // Position of all drawables in vector<variant<...>>
+
+		ComponentType FindComponent(int type) // GetIndex()
+		{
+			for (int i = 0; i < m_Components.size(); i++)
+			{
+				ComponentType comp = m_Components[i];
+				if (type == comp.index())
+					return comp;
+			}
+			return std::monostate {};
+		}
 
 		std::string m_Name;
 		ComponentFlag m_ComponentFlags;

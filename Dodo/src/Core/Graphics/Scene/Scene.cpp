@@ -46,44 +46,8 @@ namespace Dodo {
 		return true;
 	}
 
-	/*void Scene::AddComponent(uint id, ModelComponent* comp)
-	{
-		auto it = m_ModelComponent.find(id);
-		if (it != m_ModelComponent.end())
-		{
-			delete it->second;
-			it->second = comp;
-		}
-		else
-			m_ModelComponent.insert(std::make_pair(id, comp));
-		m_Entities.at(id).m_ComponentFlags |= comp->GetFlagType();
-	}
-
-	void Scene::AddComponent(uint id, Rectangle2DComponent* comp)
-	{
-		auto it = m_Rectangle2DComponent.find(id);
-		if (it != m_Rectangle2DComponent.end())
-		{
-			delete it->second;
-			it->second = comp;
-		}
-		else
-			m_Rectangle2DComponent.insert(std::make_pair(id, comp));
-		m_Entities.at(id).m_ComponentFlags |= comp->GetFlagType();
-	}*/
-
 	void Scene::Draw()
 	{
-		/*for (auto& comp : m_ModelComponent)
-		{
-			comp.second->Draw(m_Camera);
-		}
-
-		for (auto& comp : m_Rectangle2DComponent)
-		{
-			comp.second->Draw(m_Camera);
-		}*/
-
 		for (auto& ent : m_Entities)
 		{
 			for (auto i : ent.second.m_Drawable)

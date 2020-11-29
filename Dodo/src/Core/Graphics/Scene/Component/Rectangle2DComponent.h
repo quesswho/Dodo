@@ -32,7 +32,7 @@ namespace Dodo {
 
 		static inline bool IsDrawable() { return true; }
 		static inline const std::string& GetName() { return std::string("ModelComponent"); }
-		static inline const ComponentFlag GetFlagType() { return ComponentFlag::ComponentFlag_Rectangle2DComponent; }
+		static constexpr ComponentFlag GetFlagType() { return ComponentFlag::ComponentFlag_Rectangle2DComponent; }
 		static constexpr int GetIndex() { return Math::floorlog2(GetFlagType()); }
 
 		std::string m_Path;

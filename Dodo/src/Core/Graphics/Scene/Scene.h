@@ -18,13 +18,6 @@ namespace Dodo {
 
 		std::unordered_map<uint, Entity> m_Entities;
 
-		// Could this be replaced with std:vector<std::variant<...>> inside Entity class?
-		// Draw function would have to be redone; every component wont be a renderable component. Perhaps a constant variable inside the component class which implies what kind of component it is.
-
-		// Entity Components
-		std::unordered_map<uint, ModelComponent*> m_ModelComponent;
-		std::unordered_map<uint, Rectangle2DComponent*> m_Rectangle2DComponent;
-
 		Skybox* m_SkyBox;
 
 	public:
@@ -56,13 +49,9 @@ namespace Dodo {
 					i++;
 				}
 				(*it).second.m_Components.emplace_back(comp);
-				if (comp->IsDrawable()) (*it).second.m_Drawable.emplace_back((*it).second.m_Components.size()-1);
+				if (comp->IsDrawable()) (*it).second.m_Drawable.emplace_back((*it).second.m_Components.size()-1); // Add the component to the drawable list
 			}
 		}
-
-		/*void AddComponent(uint id, ModelComponent* comp);
-		void AddComponent(uint id, Rectangle2DComponent* comp);
-		*/
 
 		inline void UpdateCamera(Math::FreeCamera* camera) { m_Camera = camera; }
 	private:

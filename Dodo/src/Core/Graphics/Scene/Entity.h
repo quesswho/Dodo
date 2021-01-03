@@ -10,16 +10,16 @@ namespace Dodo {
 
 
 	struct Entity {
+		using ComponentType = std::variant<ModelComponent*, Rectangle2DComponent*, std::monostate>; // Order needs to be the same as in the ComponentFlag enum!
+		
 		Entity(const std::string& name)
 			: m_Name(name), m_ComponentFlags()
 		{}
-		using ComponentType = std::variant<ModelComponent*, Rectangle2DComponent*, std::monostate>;
 
-		std::vector<ComponentType> m_Components; // Order needs to be the same as in the ComponentFlag enum!
-
+		std::vector<ComponentType> m_Components;
 		std::vector<short> m_Drawable; // Position of all drawables in vector<variant<...>>
 
-		ComponentType FindComponent(int type) // GetIndex()
+		ComponentType FindComponent(int type) // The argument is the same as GetIndex() function inside all the components.
 		{
 			for (int i = 0; i < m_Components.size(); i++)
 			{
@@ -27,7 +27,7 @@ namespace Dodo {
 				if (type == comp.index())
 					return comp;
 			}
-			return std::monostate {};
+			return std::monostate {}; // Did not find a component.
 		}
 
 		std::string m_Name;

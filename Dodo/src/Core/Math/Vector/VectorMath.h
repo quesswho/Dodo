@@ -82,19 +82,10 @@ namespace Dodo {
 				(first.z - second.z) * (first.z - second.z));
 		}
 
-		// Normalize a Vec3
+		// Use when values are above 1.0f
 		static inline const TVec3<float> Normalize(const TVec3<float>& vec)
 		{
-			float mag = vec.Magnitude();
-			if (mag > 0)
-				return vec * (1.0f / mag);
-			return vec;
-		}
-
-		// Use when values are above 1.0f
-		static inline const TVec3<float> fast_Normalize(const TVec3<float>& vec)
-		{
-			return vec * fast_isqrt(Dot(vec, vec));
+			return vec.Normalize();
 		}
 
 		// Normalize and negate a Vec3

@@ -497,8 +497,10 @@ namespace Dodo {
 	
 		void Win32Window::MouseMoveCallback(Math::TVec2<long> pos)
 		{
+			static MouseMoveEvent mouseEvent = MouseMoveEvent(m_MousePos);
 			m_MousePos += pos;
-			Application::s_Application->OnEvent(MouseMoveEvent(m_MousePos));
+			mouseEvent.m_MousePos = m_MousePos;
+			Application::s_Application->OnEvent(mouseEvent);
 		}
 	
 		void Win32Window::WindowResizeCallback(Math::TVec2<int> size)

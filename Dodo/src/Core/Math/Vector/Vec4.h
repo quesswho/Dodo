@@ -126,62 +126,38 @@ namespace Dodo {
 
 			// Vector math //
 
+			// Return the sum of all the components squared
+			constexpr float SquareSum() const
+			{
+				return (float)(this->x * this->x + this->y * this->y + this->z * this->z + this->w * this->w);
+			}
+
 			// Return the magnitude of the vector
 			inline constexpr float Magnitude() const
 			{
-				return sqrt((float)(this->x * this->x + this->y * this->y + this->z * this->z + this->w * this->w));
+				return sqrt(SquareSum()); 
 			}
 
 			// Return normalized vector
 			inline TVec4 Normalize() const
 			{
-				float mag = this->Magnitude();
-				if (mag > 0)
-					return *this * (1.0f / mag);
-
-				return *this; // Can't normalize a zero vector
+				return *this * fast_isqrt(SquareSum());
 			}
 
 			// Normalize this vector
 			inline void NormalizeVector()
 			{
-				float mag = this->Magnitude();
-				if (mag > 0)
-					*this *= (1.0f / mag);
+				*this *= fast_isqrt(SquareSum());
 			}
 
-			// Limit magnitude with int
+			// Return a vector with a magnitude of limit
 			inline constexpr TVec4 Limit(const int limit) const
 			{
 				return this->Normalize() * limit;
 			}
 
-			// Limit this magnitude with int
+			// Limit the vectors magnitude
 			inline void LimitVector(const int limit)
-			{
-				*this = this->Normalize() * limit;
-			}
-
-			// Limit magnitude with double
-			inline constexpr TVec4 Limit(const double limit) const
-			{
-				return this->Normalize() * limit;
-			}
-
-			// Limit this magnitude with double
-			inline void LimitVector(const double limit)
-			{
-				*this = this->Normalize() * limit;
-			}
-
-			// Limit magnitude with float
-			inline constexpr TVec4 Limit(const float limit) const
-			{
-				return this->Normalize() * limit;
-			}
-
-			// Limit this magnitude with float
-			inline void LimitVector(const float limit)
 			{
 				*this = this->Normalize() * limit;
 			}

@@ -59,62 +59,40 @@ namespace Dodo {
 
 			// Vector math //
 
+			// Return the sum of all the components squared
+			constexpr float SquareSum() const
+			{
+				return (float)(this->x * this->x + this->y * this->y);
+			}
+
 			// Return the magnitude of the vector
 			constexpr float Magnitude() const 
 			{
-				return sqrt((float)(this->x * this->x + this->y * this->y));
+				return sqrt(SquareSum());
 			}
 
 			// Return normalized vector
 			inline TVec2 Normalize() const
 			{
-				float mag = this->Magnitude();
-				if (mag > 0)
-					return *this * (1.0f / mag);
-
-				return *this; // Can't normalize a zero vector
+				return *this * fast_isqrt(SquareSum());
 			}
 
 			// Normalize this vector
 			inline void NormalizeVector()
 			{
-				float mag = this->Magnitude();
-				if (mag > 0)
-					*this *= (1.0f / mag);
+				*this *= fast_isqrt(SquareSum());
 			}
 
-			// Limit magnitude with int
-			inline TVec2 Limit(const int limit) const
+			// Return a vector with a magnitude of limit
+			template<typename T>
+			inline TVec2 Limit(const T limit) const
 			{
 				return this->Normalize() * limit;
 			}
 
-			// Limit this magnitude with int
-			inline void LimitVector(const int limit)
-			{
-				*this = this->Normalize() * limit;
-			}
-
-			// Limit magnitude with double
-			inline TVec2 Limit(const double limit) const
-			{
-				return this->Normalize() * limit;
-			}
-
-			// Limit this magnitude with double
-			inline void LimitVector(const double limit)
-			{
-				*this = this->Normalize() * limit;
-			}
-
-			// Limit magnitude with float
-			inline TVec2 Limit(const float limit) const
-			{	
-				return this->Normalize() * limit;
-			}
-
-			// Limit this magnitude with float
-			inline void LimitVector(const float limit)
+			// Limit the vectors magnitude
+			template<typename T>
+			inline void LimitVector(const T limit)
 			{
 				*this = this->Normalize() * limit;
 			}

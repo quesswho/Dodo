@@ -48,6 +48,7 @@ namespace Dodo {
 					}
 					i++;
 				}
+				(*it).second.m_ComponentFlags |= comp->GetFlagType();
 				(*it).second.m_Components.emplace_back(comp);
 				if (comp->IsDrawable()) (*it).second.m_Drawable.emplace_back((*it).second.m_Components.size()-1); // Add the component to the drawable list
 			}

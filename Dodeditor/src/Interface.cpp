@@ -274,7 +274,7 @@ void Interface::DrawHierarchy()
 	ImGuiIO& io = ImGui::GetIO();
 	static bool s_ClickHandled = false;
 	static uint s_RenamingId = -1; // 4 294 967 295
-	static bool s_SetOpen = false;
+	static bool s_SetOpen = true;
 	ImGui::Begin(m_EditorProperties.m_HierarchyName);
 	if (ImGui::Button("Create New Entity"))
 	{
@@ -283,7 +283,6 @@ void Interface::DrawHierarchy()
 		s_ClickHandled = true;
 		s_SetOpen = true;
 	}
-
 
 	static char s_RenameableHierarchy[32] = "Unnamed";
 
@@ -486,7 +485,7 @@ void Interface::DrawInspector()
 			ImGui::Text("Components:");
 			if (ent.m_ComponentFlags & ComponentFlag_ModelComponent) // ModelComponent //
 			{
-				if (ImGui::TreeNode("ModelComponent"))
+				if (ImGui::TreeNodeEx("ModelComponent", ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					auto& compvar = ent.FindComponent(ModelComponent::GetIndex());
 					if (compvar.index() == ModelComponent::GetIndex())
@@ -512,7 +511,7 @@ void Interface::DrawInspector()
 						ImGui::SameLine();
 						ImGui::Text(model->m_Path.c_str());
 
-						if (ImGui::TreeNode("Transform"))
+						if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 						{
 							ImGui::Text("Translate:");
 							if (ImGui::DragFloat3("##translate", translate, 0.05f))
@@ -573,7 +572,7 @@ void Interface::DrawInspector()
 
 			if (ent.m_ComponentFlags & ComponentFlag_Rectangle2DComponent) // Rectangle2D
 			{
-				if (ImGui::TreeNode("Rectangle2D"))
+				if (ImGui::TreeNodeEx("Rectangle2D", ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					auto& compvar = ent.FindComponent(Rectangle2DComponent::GetIndex());
 					if (compvar.index() == Rectangle2DComponent::GetIndex())
@@ -599,7 +598,7 @@ void Interface::DrawInspector()
 						ImGui::SameLine();
 						ImGui::Text(comp->m_Path.c_str());
 
-						if (ImGui::TreeNode("Transform"))
+						if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 						{
 							ImGui::Text("Translate:");
 							if (ImGui::DragFloat3("##translate", translate, 0.05f))

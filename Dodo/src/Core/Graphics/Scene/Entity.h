@@ -15,6 +15,7 @@ namespace Dodo {
 		Entity(const std::string& name)
 			: m_Name(name), m_ComponentFlags()
 		{}
+
 		~Entity()
 		{
 			for (ComponentType& comp : m_Components)

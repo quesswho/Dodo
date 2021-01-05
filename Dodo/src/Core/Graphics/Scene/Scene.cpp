@@ -18,13 +18,13 @@ namespace Dodo {
 			id = (uint)m_Entities.size();
 			DD_WARN("Failed to give entity correct id: {}", name);
 		}
-		m_Entities.insert(std::make_pair(id, Entity(name)));
+		m_Entities.emplace(std::make_pair(id, Entity(name)));
 	}
 
 	uint Scene::CreateEntity(const std::string& name)
 	{
 		uint result = (uint)m_Entities.size();
-		m_Entities.insert(std::make_pair(result, Entity(name)));
+		m_Entities.emplace(std::make_pair(result, Entity(name)));
 		return result;
 	}
 

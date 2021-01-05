@@ -28,6 +28,7 @@ void Interface::SetChangeSceneCallback(void (*callback)(Scene*))
 
 void Interface::ChangeScene(Scene* scene)
 {
+	
 	m_Scene = scene;
 	m_ChangeScene = true;
 	m_SelectedEntity.clear();
@@ -134,8 +135,10 @@ bool Interface::BeginDraw()
 					std::string path = Application::s_Application->m_Window->OpenFileSelector("Dodo Ascii Scene File\0*.das\0");
 					if (path != "")
 					{
+						Scene* scene = m_File.Read(path.c_str());
+						scene->m_SkyBox = m_Scene->m_SkyBox;
 						delete m_Scene;
-						ChangeScene(m_File.Read(path.c_str()));
+						ChangeScene(scene);
 					}
 				}
 				ImGui::EndMenu();
@@ -328,39 +331,6 @@ void Interface::DrawHierarchy()
 
 					if (open)
 					{
-						/*static uint s_Selected = 1;
-						const char* selectedName = m_HierarchyComponents[s_Selected].m_Name;
-						ImGui::Indent();
-						if (ImGui::BeginCombo("###label", selectedName, 0))
-						{
-							for (int i = 0; i < m_HierarchyComponents.size(); i++)
-							{
-								auto& comp = m_HierarchyComponents[i];
-								std::string name = comp.m_Name;
-								if (ImGui::Selectable(name.c_str(), comp.m_Selected))
-								{
-									s_Selected = i;
-									break;
-								}
-							}
-							ImGui::EndCombo();
-						}
-
-
-						ImGui::Indent();
-						if (ImGui::Button("Add component"))
-						{
-							if (s_Selected != 0)
-							{
-
-								for (auto& e : m_SelectedEntity)
-									e.second = false;
-								m_SelectedEntity.at(ent.first) = true;
-
-								ent.second.m_ComponentFlags |= 1 << (s_Selected - 1);
-							}
-						}
-						ImGui::Unindent();*/
 						ImGui::Separator();
 
 						if (ent.second.m_ComponentFlags != ComponentFlag_None)

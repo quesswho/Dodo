@@ -40,6 +40,8 @@ public:
 	EditorProperties m_EditorProperties;
 	
 	Scene* m_Scene;
+
+	std::unordered_map<uint, bool> m_SelectedEntity;
 public:
 	Interface(Scene* scene);
 
@@ -66,7 +68,6 @@ private:
 	std::vector<Component> m_HierarchyComponents;
 	std::vector<Component> m_InspectorComponents;
 
-	std::unordered_map<uint, bool> m_SelectedEntity;
 
 	char* m_CurrentInspectorName;
 	bool m_InspectorSelectNew;

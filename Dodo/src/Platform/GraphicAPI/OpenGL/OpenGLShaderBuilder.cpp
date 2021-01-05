@@ -161,7 +161,6 @@ namespace Dodo {
 					"	vec3 N = normalize(normalMatrix * a_Normal);\n"
 					"	T = normalize(T - dot(T, N) * N);\n"
 					"	vec3 B = cross(N, T);\n"
-					"	\n"
 					"	mat3 TBN = transpose(mat3(T, B, N));\n"
 					"	vertex_out.TangentCameraPos = TBN * u_CameraPos;\n"
 					"	vertex_out.TangentFragPos = TBN * vertex_out.FragPos;\n"

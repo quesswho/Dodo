@@ -10,5 +10,7 @@ namespace Dodo {
 	{}
 
 	ModelComponent::~ModelComponent()
-	{}
+	{
+	
+	}
 }

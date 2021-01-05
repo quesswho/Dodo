@@ -44,7 +44,7 @@ namespace Dodo {
 							break;
 						}
 						default:
-							DD_ERR("Missing implementation!");
+							DD_ERR("Missing implementation while writing to scene file!");
 					}
 				}
 				m_File.UnIndent();

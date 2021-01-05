@@ -7,7 +7,7 @@ namespace Dodo {
 	namespace Platform {
 
 		OpenGLRenderAPI::OpenGLRenderAPI() 
-			: m_GPUInfo(""), m_VramKbs(0), m_ViewportWidth(0), m_ViewportHeight(0), m_ViewportPosX(0), m_ViewportPosY(0)
+			: m_ShaderBuilder(0), m_GPUInfo(""), m_VramKbs(0), m_ViewportWidth(0), m_ViewportHeight(0), m_ViewportPosX(0), m_ViewportPosY(0)
 		{}
 
 		OpenGLRenderAPI::~OpenGLRenderAPI() 
@@ -22,6 +22,7 @@ namespace Dodo {
 			{
 				if (GLAD_VERSION_MAJOR(res) > 3)
 				{
+					glEnable(GL_MULTISAMPLE);
 					ResizeDefaultViewport(winprop.m_Width, winprop.m_Height);
 					if (winprop.m_Flags & DodoWindowFlags_BACKFACECULL)
 					{

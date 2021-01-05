@@ -17,7 +17,7 @@ GameLayer::GameLayer()
 		{ "TANGENT", 3 }
 	};
 	
-	m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 20.0f), (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.04f, 10.0f);
+	m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 20.0f), (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.04f, 1.0f);
 
 	FrameBufferProperties frameprop;
 	frameprop.m_Width = Application::s_Application->m_WindowProperties.m_Width;
@@ -114,12 +114,28 @@ void GameLayer::OnEvent(const Event& event)
 						Application::s_Application->m_Window->SetCursorVisible(true);
 					}
 					break;
+				case DODO_KEY_DELETE:
+
+					std::vector<decltype(m_Interface->m_SelectedEntity)::key_type> toDelete;
+					for (auto&& e : m_Interface->m_SelectedEntity)
+					{
+						if (e.second) 
+						{
+							m_Scene->DeleteEntity(e.first);
+							toDelete.emplace_back(e.first); // Cant erase item while looping over map. Therefore erase later
+						}
+					}
+
+					for (auto&& key : toDelete)
+						m_Interface->m_SelectedEntity.erase(key);
+					break;
 			}
 			break;
 		case EventType::MOUSE_PRESSED:
 			break;
 		case EventType::MOUSE_POSITION:
 			if (m_Interface->m_EditorProperties.m_ViewportInput) m_Camera->UpdateRotation();
+			break;
 	}
 }
 

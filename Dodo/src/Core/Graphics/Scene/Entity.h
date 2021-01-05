@@ -15,6 +15,12 @@ namespace Dodo {
 		Entity(const std::string& name)
 			: m_Name(name), m_ComponentFlags()
 		{}
+		~Entity()
+		{
+			for (ComponentType& comp : m_Components)
+				comp = std::monostate();
+			m_Components.clear();
+		}
 
 		std::vector<ComponentType> m_Components;
 		std::vector<short> m_Drawable; // Position of all drawables in vector<variant<...>>

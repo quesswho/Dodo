@@ -31,7 +31,7 @@ void Interface::ChangeScene(Scene* scene)
 	m_Scene = scene;
 	m_ChangeScene = true;
 	m_SelectedEntity.clear();
-	for (auto ent : m_Scene->m_Entities)
+	for (auto& ent : m_Scene->m_Entities)
 		m_SelectedEntity.emplace(ent.first, false);
 }
 
@@ -71,7 +71,6 @@ void Interface::InitInterface()
 	m_EditorProperties.m_ShowInspector = true;
 
 	// Hierarchy
-	m_HierarchyComponents.push_back(Component("None"));
 	m_HierarchyComponents.push_back(Component("ModelComponent"));
 	m_HierarchyComponents.push_back(Component("Rectangle2D"));
 
@@ -274,30 +273,29 @@ void Interface::DrawHierarchy()
 	ImGuiIO& io = ImGui::GetIO();
 	static bool s_ClickHandled = false;
 	static uint s_RenamingId = -1; // 4 294 967 295
-	static bool s_SetOpen = true;
 	ImGui::Begin(m_EditorProperties.m_HierarchyName);
-	if (ImGui::Button("Create New Entity"))
+
+	if (ImGui::BeginPopupContextWindow("Right-Click Hierarchy", ImGuiPopupFlags_MouseButtonRight))
 	{
-		s_RenamingId = m_Scene->CreateEntity();
-		m_SelectedEntity.insert(std::make_pair(s_RenamingId, false));
-		s_ClickHandled = true;
-		s_SetOpen = true;
+		if (ImGui::MenuItem("Create New"))
+		{
+			s_RenamingId = m_Scene->CreateEntity();
+			m_SelectedEntity.insert(std::make_pair(s_RenamingId, false));
+			s_ClickHandled = true;
+		}
+		ImGui::EndPopup();
 	}
 
 	static char s_RenameableHierarchy[32] = "Unnamed";
 
 	ImGui::ColorButton("", ImColor(226, 189, 0), ImGuiColorEditFlags_NoTooltip);
 	ImGui::SameLine();
-	if (s_SetOpen)
-	{
-		s_SetOpen = false;
-		ImGui::SetNextTreeNodeOpen(true);
-	}
-	if (ImGui::TreeNode("Entities"))
+
+
+	if (ImGui::TreeNodeEx("Entities", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		if (m_Scene->m_Entities.size() > 0)
 		{
-
 			for (auto& ent : m_Scene->m_Entities)
 			{
 				if (ent.first != s_RenamingId || m_EditorProperties.m_ViewportInput)
@@ -330,7 +328,7 @@ void Interface::DrawHierarchy()
 
 					if (open)
 					{
-						static uint s_Selected = 1;
+						/*static uint s_Selected = 1;
 						const char* selectedName = m_HierarchyComponents[s_Selected].m_Name;
 						ImGui::Indent();
 						if (ImGui::BeginCombo("###label", selectedName, 0))
@@ -362,7 +360,7 @@ void Interface::DrawHierarchy()
 								ent.second.m_ComponentFlags |= 1 << (s_Selected - 1);
 							}
 						}
-						ImGui::Unindent();
+						ImGui::Unindent();*/
 						ImGui::Separator();
 
 						if (ent.second.m_ComponentFlags != ComponentFlag_None)
@@ -408,7 +406,10 @@ void Interface::DrawHierarchy()
 			}
 		}
 		else
-			ImGui::Text("No entities here...");
+		{
+			ImGui::Separator();
+			ImGui::TextColored(ImVec4(0.34f, 129.0f, 0, 255), "Right click here!");
+		}
 
 		ImGui::TreePop();
 		if (!s_ClickHandled && ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered() && ImGui::IsWindowHovered())
@@ -434,10 +435,7 @@ void Interface::DrawInspector()
 	{
 		if (e.second)
 		{
-			ImGui::Text("Name:");
-
 			Entity& ent = m_Scene->m_Entities.at(e.first);
-
 			if (ImGui::InputText("##label", m_CurrentInspectorName, 32, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCharFilter, ImGuiFilterAz09))
 			{
 				if (strcmp(m_CurrentInspectorName, "") != 0)
@@ -451,38 +449,42 @@ void Interface::DrawInspector()
 			}
 
 			ImGui::Separator();
-
-			static uint s_Selected = 1;
-			const char* selectedName = m_InspectorComponents[s_Selected].m_Name;
-			if (ImGui::BeginCombo("###label", selectedName, 0))
-			{
-				for (int i = 0; i < m_InspectorComponents.size(); i++)
-				{
-					auto& comp = m_InspectorComponents[i];
-					std::string name = comp.m_Name;
-					if (ImGui::Selectable(name.c_str(), comp.m_Selected))
-					{
-						s_Selected = i;
-						break;
-					}
-				}
-				ImGui::EndCombo();
-			}
-			if (m_InspectorSelectNew)
-				s_Selected = m_InspectorComponents.size() > 0 ? 1 : 0;
-
-			ImGui::Indent();
-			if (ImGui::Button("Add component"))
-			{
-				if (s_Selected != 0)
-				{
-					ent.m_ComponentFlags |= ((ComponentFlag)(s_Selected) << 0);
-				}
-			}
-			ImGui::Unindent();
-			ImGui::Separator();
-
 			ImGui::Text("Components:");
+
+			if (ImGui::BeginPopupContextWindow("Right-Click Inspector", ImGuiPopupFlags_MouseButtonRight))
+			{
+				if (ImGui::BeginMenu("Add.."))
+				{
+					if (ImGui::BeginMenu("Geometry"))
+					{
+						for (int i = 0; i < m_InspectorComponents.size(); i++)
+						{
+							std::string name = m_InspectorComponents[i].m_Name;
+							if (ImGui::MenuItem(name.c_str()))
+							{
+								ent.m_ComponentFlags |= ((ComponentFlag)(i+1) << 0);
+								break;
+							}
+						}
+						ImGui::EndMenu();
+					}
+					if (ImGui::BeginMenu("Script"))
+					{
+						ImGui::EndMenu();
+					}
+					if (ImGui::BeginMenu("Audio"))
+					{
+						ImGui::EndMenu();
+					}
+					if (ImGui::BeginMenu("Other"))
+					{
+						ImGui::EndMenu();
+					}
+					ImGui::EndMenu();
+				}
+				ImGui::EndPopup();
+			}
+
 			if (ent.m_ComponentFlags & ComponentFlag_ModelComponent) // ModelComponent //
 			{
 				if (ImGui::TreeNodeEx("ModelComponent", ImGuiTreeNodeFlags_DefaultOpen))
@@ -656,6 +658,12 @@ void Interface::DrawInspector()
 					ImGui::TreePop();
 				}
 			}
+			if (ent.m_ComponentFlags == 0)
+			{
+				ImGui::Separator();
+				ImGui::TextColored(ImVec4(0.34f, 129.0f, 0, 255), "Right click here!");
+			}
+
 			if (m_InspectorSelectNew) m_InspectorSelectNew = false;
 			break;
 		}

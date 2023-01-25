@@ -276,13 +276,19 @@ namespace Dodo {
 						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * vec3(u_Specular);\n");
 					else if (flags & ShaderBuilderFlagSpecularMap)
 						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * texture(u_SpecularMap, frag_in.TexCoord.xy).rgb;\n");
-					fragment.append("	result = vec4(ambient + specular, 0.0f) + diffuse;\n");
+					if (flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagSpecularUniform) {
+						fragment.append("	result = vec4(ambient + specular, 0.0f) + diffuse;\n");
+					}
+					else
+					{
+						fragment.append("	result = vec4(ambient, 0.0f) + diffuse;\n");
+					}
 				}
 				else
 				{
 					fragment.append(
 						"	vec3 ambient = color.rgb * 0.1f;\n"
-						"	vec3 diffuse = max(dot(frag_in.LightDirection, normal), 0.0f) * color;\n"
+						"	vec4 diffuse = vec4(max(dot(frag_in.LightDirection, normal), 0.0f) * color.rgb, color.a);\n"
 						"	vec3 viewDir = normalize(frag_in.CameraPos - frag_in.FragPos);\n"
 						"	vec3 halfwayDir = normalize(frag_in.LightDirection + viewDir);\n"
 					);
@@ -312,7 +318,13 @@ namespace Dodo {
 				"	pixel = result;\n"
 				"}\0");
 
-			Shader* shader = new Shader(std::to_string(flags).c_str(), CompileVertexFragmentShader(vertex.c_str(), fragment.c_str()));
+			uint shaderid = CompileVertexFragmentShader(vertex.c_str(), fragment.c_str());
+			if (!shaderid) {
+				DD_ERR("Failed to build shader with flag {}", flags);
+				return m_FallbackShader;
+			}
+
+			Shader* shader = new Shader(std::to_string(flags).c_str(), shaderid);
 			shader->Bind();
 			int i = 0;
 			if (flags & ShaderBuilderFlagCubeMap)
@@ -323,7 +335,7 @@ namespace Dodo {
 				shader->SetUniformValue("u_SpecularMap", i++);
 			if (flags & ShaderBuilderFlagNormalMap)
 				shader->SetUniformValue("u_NormalMap", i++);
-			
+
 			return shader;
 		}
 
@@ -370,8 +382,9 @@ namespace Dodo {
 
 			if (failed)
 			{
+				DD_ERR("{}", fragment);
 				Application::s_Application->m_Window->FocusConsole(); // Make the error more noticeable
-				return -1; // Get error from both shaders
+				return 0; // Get error from both shaders
 			}
 
 			//LINKING
@@ -387,7 +400,7 @@ namespace Dodo {
 				stringlog.append("Linking Shader: ");
 				stringlog = std::regex_replace(stringlog, std::regex("\\Error:"), "");
 				DD_ERR(stringlog);
-				return -1;
+				return 0;
 			}
 			glDeleteShader(vertexID);
 			glDeleteShader(fragmentID);

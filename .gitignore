@@ -899,6 +899,8 @@ _deps
 *.o
 *.obj
 
+!Dodeditor/res/*/*.obj
+
 # Precompiled Headers
 *.gch
 *.pch

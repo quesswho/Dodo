@@ -7,7 +7,7 @@ namespace Dodo
 		: m_BasicProperties( { {"POSITION", 3 }, { "TEXCOORD", 2 }}), m_RectangleMesh(0)
 	{}
 
-	Mesh* MeshFactory::GetRectangleMesh() {
+	Mesh* MeshFactory::GetRectangleMesh(Material* material) {
 		if (!m_RectangleMesh)
 		{
 
@@ -20,7 +20,7 @@ namespace Dodo
 			uint indices[] = {
 				0,1,2,3,2,1
 			};
-			return new Mesh(new VertexBuffer(vertices, sizeof(vertices), m_BasicProperties), new IndexBuffer(indices, _countof(indices)));
+			return new Mesh(new VertexBuffer(vertices, sizeof(vertices), m_BasicProperties), new IndexBuffer(indices, _countof(indices)), material);
 		}
 		else
 			return m_RectangleMesh;

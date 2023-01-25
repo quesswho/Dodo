@@ -6,7 +6,7 @@
 namespace Dodo {
 
 	Rectangle::Rectangle(Material* material)
-		: m_Mesh(Application::s_Application->m_AssetManager->m_MeshFactory->GetRectangleMesh()), m_Material(material)
+		: m_Mesh(Application::s_Application->m_AssetManager->m_MeshFactory->GetRectangleMesh(material)), m_Material(material)
 	{}
 
 	Rectangle::~Rectangle()

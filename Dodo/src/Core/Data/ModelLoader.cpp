@@ -9,7 +9,7 @@
 namespace Dodo {
 
 
-	Mesh* ModelLoader::LoadMesh(aiMesh* mesh)
+	Mesh* ModelLoader::LoadMesh(aiMesh* mesh, Material* material)
 	{
 		std::vector<Vertex> vertices;
 		std::vector<uint> indices;
@@ -52,7 +52,8 @@ namespace Dodo {
 
 		return new Mesh(new VertexBuffer((float*)&vertices[0], totalVertices * sizeof(Vertex), 
 			BufferProperties({ { "POSITION", 3 }, { "TEXCOORD", 2 }, { "NORMAL", 3 }, { "TANGENT", 3 } })), 
-			new IndexBuffer(indices.data(), totalIndices));
+			new IndexBuffer(indices.data(), totalIndices),
+			material);
 	}
 
 	Model* ModelLoader::LoadModel(const char* path)
@@ -66,37 +67,32 @@ namespace Dodo {
 			DD_WARN("Unable to load model: {}", path);
 			return nullptr; // TODO: Replace with error model
 		}
-
-		std::vector<Mesh*> meshes;
-		meshes.reserve(model->mNumMeshes);
-
-		for (uint i = 0; i < model->mNumMeshes; i++)
-		{
-			meshes.push_back(LoadMesh(model->mMeshes[i]));
-		}
 		
 		// Change work directory to get the textures
 		Application::s_Application->m_Window->TruncateWorkDirectory(path);
 
-		Material* material = nullptr;
+		std::vector<Material*> materials;
+		materials.reserve(model->mNumMaterials);
 		if (!model->HasMaterials())
 		{
-			material = new Material();
+			materials.push_back(new Material());
+			DD_WARN("No materials found for {}", path);
 		}
-		else
-		{
-			if(model->mNumMaterials > 1)
-				DD_WARN("More than one material defined, using the first one!");
 
+		for (int i = 0; i < model->mNumMaterials; i++)
+		{
+			Material* material = nullptr;
 			ShaderBuilderFlags flags = ShaderBuilderFlagNone;
 
-			aiMaterial* mat = model->mMaterials[0];
+			aiMaterial* mat = model->mMaterials[i];
 			std::vector<Texture*> textures;
 			aiString str;
+			
 			mat->GetTexture(aiTextureType_DIFFUSE, 0, &str);
 			if (str.length > 0)
 			{
 				flags |= ShaderBuilderFlagDiffuseMap;
+				DD_INFO("Diffuse map: {0}, {1}", str.C_Str(), (uint)textures.size());
 				textures.push_back(new Texture(str.C_Str(), 0));
 			}
 			str = "";
@@ -104,22 +100,54 @@ namespace Dodo {
 			if (str.length > 0)
 			{
 				flags |= ShaderBuilderFlagSpecularMap;
+				DD_INFO("Specular map: {0}, {1}", str.C_Str(), (uint)textures.size());
 				textures.push_back(new Texture(str.C_Str(), (uint)textures.size()));
 			}
-			str = "";
+
 			mat->GetTexture(aiTextureType_NORMALS, 0, &str);
 			if (str.length > 0)
 			{
 				flags |= ShaderBuilderFlagNormalMap;
+				DD_INFO("Normal map: {0}, {1}", str.C_Str(), (uint)textures.size());
 				textures.push_back(new Texture(str.C_Str(), (uint)textures.size()));
 			}
-			
-			if (textures.size() > 0)
+
+			mat->GetTexture(aiTextureType_DISPLACEMENT, 0, &str);
+			if (str.length > 0)
+			{
+				flags |= ShaderBuilderFlagNormalMap;
+				DD_INFO("Normal map: {0}, {1}", str.C_Str(), (uint)textures.size());
+				textures.push_back(new Texture(str.C_Str(), (uint)textures.size()));
+			}
+
+
+			if (textures.size() > 0) {
+				Shader* shader = Application::s_Application->m_AssetManager->GetShader(flags);
+				if (!shader) {
+					DD_WARN("Could not create Shader");
+				}
 				material = new Material(Application::s_Application->m_AssetManager->GetShader(flags), textures);
-			else
+			}
+			else {
 				material = new Material(); // Fallback shader
+				DD_WARN("Material {0} does not have any textures: {1}", mat->GetEntryName().C_Str(), path);
+			}
+
+			materials.push_back(material);
 		}
+
 		Application::s_Application->m_Window->DefaultWorkDirectory();
-		return new Model(meshes, material);
+		DD_INFO("{} materials loaded", materials.size());
+
+		std::vector<Mesh*> meshes;
+		meshes.reserve(model->mNumMeshes);
+
+		for (uint i = 0; i < model->mNumMeshes; i++)
+		{
+			meshes.push_back(LoadMesh(model->mMeshes[i], materials[model->mMeshes[i]->mMaterialIndex]));
+			//meshes.push_back(LoadMesh(model->mMeshes[i], new Material()));
+		}
+
+		return new Model(meshes);
 	}
 }

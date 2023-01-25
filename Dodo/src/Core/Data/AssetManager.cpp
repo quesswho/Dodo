@@ -19,6 +19,7 @@ namespace Dodo {
 
 	Shader* AssetManager::GetShader(ShaderBuilderFlags flags)
 	{
+		//return Application::s_Application->m_RenderAPI->m_ShaderBuilder->BuildVertexFragmentShader(flags);
 		if (m_ShaderBuilderShaders.find(flags) != m_ShaderBuilderShaders.end())
 			return m_ShaderBuilderShaders[flags];
 

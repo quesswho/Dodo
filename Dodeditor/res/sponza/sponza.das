@@ -1,18 +1,18 @@
 Entities:
 	0:
-		name="tat"
+		name="sponza"
 		components:
 			ModelComponent:
 				path="res/sponza/sponza.obj"
-				transformation=0.000000,0.000000,0.000000
-					=0.010000,0.010000,0.010000
+				transformation=0.000000,-6.250000,17.600000
+					=0.020000,0.020000,0.020000
 					=0.000000,0.000000,0.000000
 	1:
 		name="teast12313"
 		components:
 			ModelComponent:
 				path="res/model/knife.fbx"
-				transformation=2.300000,-5.100000,-11.600000
+				transformation=2.300000,-5.100000,16.100000
 					=1.450000,1.450000,1.450000
 					=-0.445059,-0.759218,-1.186824
 	2:

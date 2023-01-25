@@ -21,7 +21,7 @@ project "imgui"
 		"include"
 	}
 	
-	sysincludedirs
+	externalincludedirs
 	{
 		"../glad/include"
 	}

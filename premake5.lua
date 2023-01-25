@@ -24,13 +24,13 @@ workspace "Dodo"
 		staticruntime "on"
 		characterset "MBCS"
 		
-		configuration "Debug"
+		filter "configurations:Debug"
 			targetdir ("bin/Debug-%{cfg.architecture}/%{prj.name}/")
 			objdir ("bin/Debug-%{cfg.architecture}/%{prj.name}/intermediates/")
-		configuration "Release"
+			filter "configurations:Release"
 			targetdir ("bin/Release-%{cfg.architecture}/%{prj.name}/")
 			objdir ("bin/Release-%{cfg.architecture}/%{prj.name}/intermediates/")
-		configuration "*"
+		filter "*"
 
 		pchheader "pch.h"
 		pchsource "%{prj.name}/src/pch.cpp"
@@ -47,7 +47,7 @@ workspace "Dodo"
 			"%{prj.name}/lib/stb_image/"
 		}
 		
-		sysincludedirs {
+		externalincludedirs {
 			"%{prj.name}/lib/spdlog/include",
 			"%{prj.name}/lib/glad/include",
 			"%{prj.name}/lib/imgui/include",
@@ -102,13 +102,13 @@ workspace "Dodo"
 		staticruntime "On"
 		characterset "MBCS"
 		
-		configuration "Debug"
+		filter "configurations:Debug"
 			targetdir ("bin/Debug-%{cfg.architecture}/%{prj.name}/")
 			objdir ("bin/Debug-%{cfg.architecture}/%{prj.name}/intermediates/")
-		configuration "Release"
+			filter "configurations:Release"
 			targetdir ("bin/Release-%{cfg.architecture}/%{prj.name}/")
 			objdir ("bin/Release-%{cfg.architecture}/%{prj.name}/intermediates/")
-		configuration "*"
+		filter "*"
 		
 		files { 
 			"%{prj.name}/src/**.h",
@@ -119,7 +119,7 @@ workspace "Dodo"
 			"Dodo/src"
 		}
 		
-		sysincludedirs {
+		externalincludedirs {
 			"Dodo/lib/spdlog/include",
 			"Dodo/lib/glad/include",
 			"Dodo/lib/imgui/include",
@@ -164,13 +164,13 @@ workspace "Dodo"
 		staticruntime "On"
 		characterset "MBCS"
 		
-		configuration "Debug"
+		filter "configurations:Debug"
 			targetdir ("bin/Debug-%{cfg.architecture}/%{prj.name}/")
 			objdir ("bin/Debug-%{cfg.architecture}/%{prj.name}/intermediates/")
-		configuration "Release"
+		filter "configurations:Release"
 			targetdir ("bin/Release-%{cfg.architecture}/%{prj.name}/")
 			objdir ("bin/Release-%{cfg.architecture}/%{prj.name}/intermediates/")
-		configuration "*"
+		filter "*"
 		
 		disablewarnings { 
 			"26812",
@@ -187,7 +187,7 @@ workspace "Dodo"
 			"Dodo/src"
 		}
 		
-		sysincludedirs {
+		externalincludedirs {
 			"Dodo/lib/spdlog/include",
 			"Dodo/lib/glad/include",
 			"Dodo/lib/imgui/include",

@@ -39,7 +39,7 @@ project "Assimp"
 		"contrib/rapidjson/include"
 	}
 	
-	sysincludedirs
+	externalincludedirs
 	{
 		
 	}

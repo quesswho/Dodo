@@ -10,3 +10,5 @@ Dodo engine uses the following libraries:
 * Assimp (Loading models such as .fbx or .obj)
 
 ![Level editor](https://i.imgur.com/NJ8vQal.png)
+
+![Sponza Scene](https://i.imgur.com/Ccqicyl.png)

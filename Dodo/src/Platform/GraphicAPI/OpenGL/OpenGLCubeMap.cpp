@@ -65,7 +65,9 @@ namespace Dodo {
 			for (int i = 0; i < paths.size(); i++)
 			{
 				int channels, width, height;
+				stbi_set_flip_vertically_on_load(false);
 				uchar* data = stbi_load(paths[i].c_str(), &width, &height, &channels, 0);
+				stbi_set_flip_vertically_on_load(true);
 				if (data)
 				{
 					int internalFormat = 0;

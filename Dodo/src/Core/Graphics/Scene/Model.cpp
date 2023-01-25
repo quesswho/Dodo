@@ -13,11 +13,6 @@ namespace Dodo {
 			delete mesh;
 	}
 
-	void Model::Bind() const
-	{ 
-		//m_Material->Bind(); 
-	}
-
 	void Model::Draw() const
 	{
 		for (auto mesh : m_Meshes)

@@ -92,32 +92,32 @@ namespace Dodo {
 			if (str.length > 0)
 			{
 				flags |= ShaderBuilderFlagDiffuseMap;
-				DD_INFO("Diffuse map: {0}, {1}", str.C_Str(), (uint)textures.size());
 				textures.push_back(new Texture(str.C_Str(), 0));
+				DD_INFO("Diffuse map: {0}", str.C_Str());
 			}
 			str = "";
 			mat->GetTexture(aiTextureType_SPECULAR, 0, &str);
 			if (str.length > 0)
 			{
 				flags |= ShaderBuilderFlagSpecularMap;
-				DD_INFO("Specular map: {0}, {1}", str.C_Str(), (uint)textures.size());
 				textures.push_back(new Texture(str.C_Str(), (uint)textures.size()));
+				DD_INFO("Specular map: {0}", str.C_Str());
 			}
 
 			mat->GetTexture(aiTextureType_NORMALS, 0, &str);
 			if (str.length > 0)
 			{
 				flags |= ShaderBuilderFlagNormalMap;
-				DD_INFO("Normal map: {0}, {1}", str.C_Str(), (uint)textures.size());
 				textures.push_back(new Texture(str.C_Str(), (uint)textures.size()));
+				DD_INFO("Normal map: {0}", str.C_Str());
 			}
 
 			mat->GetTexture(aiTextureType_DISPLACEMENT, 0, &str);
 			if (str.length > 0)
 			{
 				flags |= ShaderBuilderFlagNormalMap;
-				DD_INFO("Normal map: {0}, {1}", str.C_Str(), (uint)textures.size());
 				textures.push_back(new Texture(str.C_Str(), (uint)textures.size()));
+				DD_INFO("Normal map: {0}", str.C_Str());
 			}
 
 
@@ -145,7 +145,6 @@ namespace Dodo {
 		for (uint i = 0; i < model->mNumMeshes; i++)
 		{
 			meshes.push_back(LoadMesh(model->mMeshes[i], materials[model->mMeshes[i]->mMaterialIndex]));
-			//meshes.push_back(LoadMesh(model->mMeshes[i], new Material()));
 		}
 
 		return new Model(meshes);

@@ -102,7 +102,7 @@ namespace Dodo {
 
 			if(flags & ShaderBuilderFlagLightDirectionUniform || flags & ShaderBuilderFlagSpecularUniform || flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagNormalMap)
 			{
-				vertex.append("uniform vec3 u_LightDir = vec3(0.0f, -0.5f, -0.5f);\n");
+				vertex.append("uniform vec3 u_LightDir = vec3(0.2f, -0.5f, -0.5f);\n");
 			}
 
 			// Interface Block //

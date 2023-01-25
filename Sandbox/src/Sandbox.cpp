@@ -1,33 +1,66 @@
 #include "SandBox.h"
 
-#include <imgui_impl_win32.h>
-#include <imgui_impl_opengl3.h>
 using namespace Dodo;
+using namespace Math;
 
 GameLayer::GameLayer()
 {
 	Application::s_Application->m_RenderAPI->ClearColor(0.2f, 0.2f, 0.9f);
+	Application::s_Application->m_RenderAPI->DepthTest(true);
+	Application::s_Application->m_RenderAPI->Blending(true);
+
+	BufferProperties bufferprop = {
+		{ "POSITION", 3 },
+		{ "TEXCOORD", 2 },
+		{ "NORMAL", 3 },
+		{ "TANGENT", 3 }
+	};
+
+	m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 20.0f), (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.04f, 10.0f);
+
+	FrameBufferProperties frameprop;
+	frameprop.m_Width = Application::s_Application->m_WindowProperties.m_Width;
+	frameprop.m_Height = Application::s_Application->m_WindowProperties.m_Height;
+
+	m_FrameBuffer = new FrameBuffer(frameprop);
+
+	m_Scene = m_File.Read("res/sponza/sponza.das");
+
+	std::vector<std::string> skyboxPath = {
+		"res/texture/skybox/right.jpg",
+		"res/texture/skybox/left.jpg",
+		"res/texture/skybox/top.jpg",
+		"res/texture/skybox/bottom.jpg",
+		"res/texture/skybox/front.jpg",
+		"res/texture/skybox/back.jpg",
+	};
+
+	m_Scene->m_SkyBox = new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath);
+
+	Application::s_Application->m_Window->SetCursorVisible(false);
+	m_Camera->ResetMouse();
 }
 GameLayer::~GameLayer()
 {
-
+	Application::s_Application->m_Window->DefaultWorkDirectory();
+	delete m_FrameBuffer;
+	delete m_Camera;
+	delete m_Scene;
 }
 
 void GameLayer::Update(float elapsed)
 {
-
+	m_Camera->Update(elapsed);
 }
 
 void GameLayer::Render()
 {
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
+	Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
+	//m_FrameBuffer->Bind();
 
-	ImGui::ShowDemoWindow();
+	m_Scene->UpdateCamera(m_Camera);
+	m_Scene->Draw();
 
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void GameLayer::OnEvent(const Event& event)
@@ -35,13 +68,22 @@ void GameLayer::OnEvent(const Event& event)
 	switch (event.GetType())
 	{
 		case EventType::KEY_PRESSED:
-			if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_ESCAPE)
+			if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_F11) 
+			{
+				Application::s_Application->m_Window->FullScreen();
+				m_Camera->Resize(Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height);
+			}
+				
+			if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_ESCAPE) 
+			{
 				Application::s_Application->Shutdown();
+			}
 			break;
 		case EventType::MOUSE_PRESSED:
 			break;
 		case EventType::MOUSE_POSITION:
-			const Math::TVec2<long> mousepos = static_cast<const MouseMoveEvent&>(event).m_MousePos;
+			m_Camera->UpdateRotation();
+			break;
 	}
 }
 
@@ -61,7 +103,7 @@ public:
 		props.m_Title = "SandBox";
 		props.m_Width = 1080;
 		props.m_Height = 720;
-		props.m_Flags = DodoWindowFlags_NONE;
+		props.m_Flags = DodoWindowFlags_BACKFACECULL;
 		return props;
 	}
 

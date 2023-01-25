@@ -3,6 +3,8 @@
 #include "Core/Graphics/Material/ShaderBuilder.h"
 #include "Core/Graphics/Scene/Model.h"
 
+#include <assimp/scene.h>
+
 namespace Dodo {
 
 	struct ModelLoader {
@@ -53,6 +55,7 @@ namespace Dodo {
 		///////////////////////////////////////////////////
 
 		Model* LoadModel(const char* path);
-		std::tuple<ModelData*, Model*> LoadModelData(const char* path);
+	private:
+		Mesh* LoadMesh(aiMesh* mesh);
 	};
 }

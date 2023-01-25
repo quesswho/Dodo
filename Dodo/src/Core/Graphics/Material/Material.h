@@ -18,7 +18,6 @@ namespace Dodo {
 
 		~Material();
 
-		inline void SetShader(Shader* shader) { m_Shader = shader; }
 		void AddTexture(Texture* texture);
 
 		Texture* GetTexture(uint index)
@@ -30,7 +29,10 @@ namespace Dodo {
 		}
 
 		template<typename T>
-		inline void SetUniform(const char* location, T value) { m_Shader->SetUniformValue(location, value); }
+		void SetUniform(const char* location, T value) {
+			m_Shader->Bind();
+			m_Shader->SetUniformValue(location, value); 
+		}
 
 		void Bind();
 	};

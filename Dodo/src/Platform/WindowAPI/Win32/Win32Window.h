@@ -72,6 +72,7 @@ namespace Dodo {
 			void DefaultWorkDirectory() { ChangeWorkDirectory(m_MainWorkDirectory); }
 			void CurrentDialogDirectory() { ChangeWorkDirectory(m_CurrentDialogDirectory); }
 			void ChangeWorkDirectory(std::string dir);
+			void TruncateWorkDirectory(std::string dir);
 			inline const std::string GetMainWorkDirectory() const { return m_MainWorkDirectory; }
 			bool m_Keys[1024];
 			Math::TVec2<long> m_MousePos;

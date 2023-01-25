@@ -471,6 +471,13 @@ namespace Dodo {
 			std::filesystem::current_path(dir);
 		}
 
+		void Win32Window::TruncateWorkDirectory(std::string dir)
+		{
+			if (dir.find('/') != std::string::npos)
+				dir.erase(dir.begin() + dir.find_last_of('/'), dir.end());
+			std::filesystem::current_path(dir);
+		}
+
 		void Win32Window::KeyPressCallback(uint keycode)
 		{
 			m_Keys[keycode] = true;

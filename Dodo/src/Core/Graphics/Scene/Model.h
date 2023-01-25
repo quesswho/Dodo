@@ -8,9 +8,9 @@ namespace Dodo {
 	class Model {
 	private:
 		Material* m_Material;
-		const Mesh* m_Mesh;
+		std::vector<Mesh*> m_Meshes;
 	public:
-		Model(const Mesh* mesh, Material* material);
+		Model(std::vector<Mesh*> meshes, Material* material);
 		~Model();
 
 		inline void SetMaterial(Material* material) { m_Material = material; }

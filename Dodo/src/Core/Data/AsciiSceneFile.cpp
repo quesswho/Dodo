@@ -69,35 +69,36 @@ namespace Dodo {
 				{
 					try {
 						int id = std::stoi(m_File.GetSection());
-						if (m_File.EntryExists("name"))
+						if (!m_File.EntryExists("name"))
 						{
-							result->CreateEntity(id, m_File.GetString());
-							if (m_File.EntryExists("components"))
-							{
-								// Components
-								m_File.NextLine();
-								std::string section = m_File.GetSection();
-								if (section == "ModelComponent")
-								{
-									std::string path = m_File.GetString();
-									if (path == "") Error(m_File.m_CurrentLine);
-									result->AddComponent(id, new ModelComponent(path.c_str(), m_File.GetTransformation()));
-								}
-								else if (section == "Rectangle2D")
-								{
-									std::string path = m_File.GetString();
-									if (path == "") Error(m_File.m_CurrentLine);
-									result->AddComponent(id, new Rectangle2DComponent(path.c_str(), m_File.GetTransformation()));
-								}
-								else
-									Error(m_File.m_CurrentLine);
-							
-							}
-							else
-								Error(m_File.m_CurrentLine);
+							Error(m_File.m_CurrentLine);
+							return result;
+						}
+						result->CreateEntity(id, m_File.GetString());
+						if (!m_File.EntryExists("components"))
+						{
+							Error(m_File.m_CurrentLine);
+							return result;
+						}
+						// Components
+						m_File.NextLine();
+						std::string section = m_File.GetSection();
+						if (section == "ModelComponent")
+						{
+							std::string path = m_File.GetString();
+							if (path == "") Error(m_File.m_CurrentLine);
+							result->AddComponent(id, new ModelComponent(path.c_str(), m_File.GetTransformation()));
+						}
+						else if (section == "Rectangle2D")
+						{
+							std::string path = m_File.GetString();
+							if (path == "") Error(m_File.m_CurrentLine);
+							result->AddComponent(id, new Rectangle2DComponent(path.c_str(), m_File.GetTransformation()));
 						}
 						else
+						{
 							Error(m_File.m_CurrentLine);
+						}
 					}
 					catch (...)
 					{

@@ -3,13 +3,14 @@
 
 namespace Dodo {
 
-	Model::Model(const Mesh* mesh, Material* material)
-		: m_Mesh(mesh), m_Material(material)
+	Model::Model(std::vector<Mesh*> meshes, Material* material)
+		: m_Meshes(meshes), m_Material(material)
 	{}
 
 	Model::~Model()
 	{
-		delete m_Mesh;
+		for(auto mesh : m_Meshes)
+			delete mesh;
 		delete m_Material;
 	}
 
@@ -20,6 +21,7 @@ namespace Dodo {
 
 	void Model::Draw() const
 	{
-		m_Mesh->Draw();
+		for (auto mesh : m_Meshes)
+			mesh->Draw();
 	}
 }

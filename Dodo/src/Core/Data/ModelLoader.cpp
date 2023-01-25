@@ -69,7 +69,7 @@ namespace Dodo {
 			workdir.erase(workdir.begin() + workdir.find_last_of('/'), workdir.end());
 
 		Application::s_Application->m_Window->ChangeWorkDirectory(workdir);
-		const Mesh* mesh = new Mesh(new VertexBuffer((float*)&vertices[0], totalVertices * sizeof(Vertex), BufferProperties({ { "POSITION", 3 }, { "TEXCOORD", 2 }, { "NORMAL", 3 }, { "TANGENT", 3 } })), new IndexBuffer(indices.data(), totalIndices));
+		Mesh* mesh = new Mesh(new VertexBuffer((float*)&vertices[0], totalVertices * sizeof(Vertex), BufferProperties({ { "POSITION", 3 }, { "TEXCOORD", 2 }, { "NORMAL", 3 }, { "TANGENT", 3 } })), new IndexBuffer(indices.data(), totalIndices));
 		Material* material = nullptr;
 		if (!model->HasMaterials())
 		{
@@ -112,7 +112,7 @@ namespace Dodo {
 				material = new Material(); // Fallback shader
 		}
 		Application::s_Application->m_Window->DefaultWorkDirectory();
-		return new Model(mesh, material);
+		return new Model({ mesh }, material);
 	}
 
 	std::tuple<ModelLoader::ModelData*, Model*> ModelLoader::LoadModelData(const char* path)
@@ -174,7 +174,7 @@ namespace Dodo {
 					indices.push_back(face.mIndices[j]);
 			}
 		}
-		const Mesh* mesh = new Mesh(new VertexBuffer((float*)&vertices[0], totalVertices * sizeof(Vertex), BufferProperties({ { "POSITION", 3 }, { "TEXCOORD", 2 }, { "NORMAL", 3 }, { "TANGENT", 3 } })), new IndexBuffer(indices.data(), totalIndices));
+		Mesh* mesh = new Mesh(new VertexBuffer((float*)&vertices[0], totalVertices * sizeof(Vertex), BufferProperties({ { "POSITION", 3 }, { "TEXCOORD", 2 }, { "NORMAL", 3 }, { "TANGENT", 3 } })), new IndexBuffer(indices.data(), totalIndices));
 		Material* material = nullptr;
 		if (!model->HasMaterials())
 		{
@@ -220,6 +220,6 @@ namespace Dodo {
 				material = new Material(); // Fallback shader
 		}
 
-		return std::make_tuple(new ModelLoader::ModelData(vertices, indices, textureInfo, flags), new Model(mesh, material));
+		return std::make_tuple(new ModelLoader::ModelData(vertices, indices, textureInfo, flags), new Model({ mesh }, material));
 	}
 }

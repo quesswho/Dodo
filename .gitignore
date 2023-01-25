@@ -900,6 +900,7 @@ _deps
 *.obj
 
 !Dodeditor/res/*/*.obj
+!Sandbox/res/*/*.obj
 
 # Precompiled Headers
 *.gch

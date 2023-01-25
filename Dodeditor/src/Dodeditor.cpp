@@ -3,7 +3,6 @@
 using namespace Dodo;
 using namespace Math;
 
-
 GameLayer::GameLayer()
 {
 	Application::s_Application->m_RenderAPI->ClearColor(0.2f, 0.2f, 0.9f);

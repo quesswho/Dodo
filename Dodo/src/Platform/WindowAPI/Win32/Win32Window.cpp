@@ -368,6 +368,12 @@ namespace Dodo {
 				SetWindowPos(m_Hwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, 
 					mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top, 0);
 				
+				Application::s_Application->m_WindowProperties.m_Width = GetSystemMetrics(SM_CXSCREEN);
+				Application::s_Application->m_WindowProperties.m_Height = GetSystemMetrics(SM_CYSCREEN);
+
+				Application::s_Application->m_RenderAPI->ResizeDefaultViewport(Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height);
+				DD_INFO("{0}, {1}", GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+
 				m_WindowProperties.m_Flags |= DodoWindowFlags_FULLSCREEN;
 				Application::s_Application->m_WindowProperties.m_Flags |= DodoWindowFlags_FULLSCREEN;
 			}

@@ -24,7 +24,6 @@ namespace Dodo {
 		template<typename T>
 		void Draw(const T* camera) const
 		{
-			m_Rectangle->Bind();
 			m_Rectangle->SetUniform("u_Model", m_Transformation.m_Model);
 			m_Rectangle->SetUniform("u_Camera", camera->GetCameraMatrix());
 			m_Rectangle->Draw();

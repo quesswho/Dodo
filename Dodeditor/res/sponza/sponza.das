@@ -12,7 +12,7 @@ Entities:
 		components:
 			ModelComponent:
 				path="res/model/knife.fbx"
-				transformation=2.300000,-5.100000,16.100000
+				transformation=2.300000,-6.350000,3.650000
 					=1.450000,1.450000,1.450000
 					=-0.445059,-0.759218,-1.186824
 	2:

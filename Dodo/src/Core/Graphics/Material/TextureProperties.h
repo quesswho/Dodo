@@ -5,6 +5,7 @@ namespace Dodo {
 
 	enum class TextureFormat : byte
 	{
+		FORMAT_RED,
 		FORMAT_RGB,
 		FORMAT_RGBA
 	};
@@ -51,7 +52,7 @@ namespace Dodo {
 
 	struct TextureSettings {
 		TextureSettings()
-			: m_Filter(TextureFilter::FILTER_MIN_NEAREST_MAG_MIP_LINEAR), m_WrapU(TextureWrapMode::WRAP_REPEAT), m_WrapV(TextureWrapMode::WRAP_REPEAT)
+			: m_Filter(TextureFilter::FILTER_MIN_MAG_MIP_LINEAR), m_WrapU(TextureWrapMode::WRAP_REPEAT), m_WrapV(TextureWrapMode::WRAP_REPEAT)
 		{}
 
 		TextureSettings(TextureWrapMode wrap)

@@ -20,6 +20,9 @@ namespace Dodo {
 				TextureProperties props((uint)width, (uint)height);
 				switch (channels)
 				{
+					case 1:
+						props.m_Format = TextureFormat::FORMAT_RED;
+						break;
 					case 3:
 						props.m_Format = TextureFormat::FORMAT_RGB;
 						break;
@@ -27,7 +30,7 @@ namespace Dodo {
 						props.m_Format = TextureFormat::FORMAT_RGBA;
 						break;
 					default:
-						DD_ERR("File format is not supported! {}", channels);
+						DD_ERR("File format is not supported! {}", path);
 				}
 				m_TextureProperties = props;
 				Init(data, settings);
@@ -100,6 +103,9 @@ namespace Dodo {
 			uint format;
 			switch (m_TextureProperties.m_Format)
 			{
+				case TextureFormat::FORMAT_RED:
+					format = GL_RED;
+					break;
 				case TextureFormat::FORMAT_RGB:
 					format = GL_RGB;
 					break;

@@ -104,15 +104,11 @@ namespace Dodo {
 				DD_INFO("Specular map: {0}", str.C_Str());
 			}
 
+			str = "";
 			mat->GetTexture(aiTextureType_NORMALS, 0, &str);
-			if (str.length > 0)
-			{
-				flags |= ShaderBuilderFlagNormalMap;
-				textures.push_back(new Texture(str.C_Str(), (uint)textures.size()));
-				DD_INFO("Normal map: {0}", str.C_Str());
-			}
-
-			mat->GetTexture(aiTextureType_DISPLACEMENT, 0, &str);
+			// NORMALS and DISPLACEMENT is the same thing
+			if (str.length == 0) mat->GetTexture(aiTextureType_DISPLACEMENT, 0, &str);
+			
 			if (str.length > 0)
 			{
 				flags |= ShaderBuilderFlagNormalMap;

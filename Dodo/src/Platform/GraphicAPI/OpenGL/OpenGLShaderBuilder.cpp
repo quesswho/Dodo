@@ -249,19 +249,23 @@ namespace Dodo {
 			else if(!(flags& ShaderBuilderFlagCubeMap))
 				fragment.append("	vec3 normal = frag_in.Normal;\n");
 
-			if (flags & ShaderBuilderFlagDiffuseMap) // What will the color be assigned to
-				if (flags & ShaderBuilderFlagColorUniform)
+			if (flags & ShaderBuilderFlagDiffuseMap) { // What will the color be assigned to
+				if (flags & ShaderBuilderFlagColorUniform) {
 					fragment.append("	vec4 color = vec4(texture(u_DiffuseMap, frag_in.TexCoord.xy).rgba * vec4(u_Color, 1.0f);\n");
-				else
+				}
+				else {
 					fragment.append("	vec4 color = texture(u_DiffuseMap, frag_in.TexCoord.xy).rgba;\n");
-			else if (!(flags & ShaderBuilderFlagCubeMap))
+				}
+				fragment.append("	if(color.a < 0.85) discard;\n");
+			}
+			else if (!(flags & ShaderBuilderFlagCubeMap)) {
 				if (flags & ShaderBuilderFlagColorUniform)
 					fragment.append("	vec4 color = vec4(u_Color, 1.0f);\n");
 				else if (flags & ShaderBuilderFlagBasicTexture)
 					fragment.append("	vec4 color = texture(u_TextureMap, frag_in.TexCoord.xy).rgba;\n");
 				else
 					fragment.append("	vec4 color = vec4(1.0f, 0.0f, 0.0f, 1.0f);\n");
-
+			}
 			if (flags & ShaderBuilderFlagLightDirectionUniform || flags & ShaderBuilderFlagSpecularUniform || flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagNormalMap)
 			{
 				if (flags & ShaderBuilderFlagNormalMap)
@@ -275,7 +279,7 @@ namespace Dodo {
 					if (flags & ShaderBuilderFlagSpecularUniform)
 						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * vec3(u_Specular);\n");
 					else if (flags & ShaderBuilderFlagSpecularMap)
-						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * texture(u_SpecularMap, frag_in.TexCoord.xy).rgb;\n");
+						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * texture(u_SpecularMap, frag_in.TexCoord.xy).rrr;\n");
 					if (flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagSpecularUniform) {
 						fragment.append("	result = vec4(ambient + specular, 0.0f) + diffuse;\n");
 					}
@@ -301,7 +305,7 @@ namespace Dodo {
 					}
 					else if (flags & ShaderBuilderFlagSpecularMap)
 					{
-						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * texture(u_SpecularMap, frag_in.TexCoord.xy).rgb;\n"
+						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * texture(u_SpecularMap, frag_in.TexCoord.xy).rrr;\n"
 							"	result = vec4(ambient + specular, 0.0f) + diffuse;\n");
 					}
 					else

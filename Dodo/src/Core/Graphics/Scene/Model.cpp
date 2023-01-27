@@ -18,4 +18,10 @@ namespace Dodo {
 		for (auto mesh : m_Meshes)
 			mesh->Draw();
 	}
+
+	void Model::Draw(Material* material) const
+	{
+		for (auto mesh : m_Meshes)
+			mesh->Draw(material);
+	}
 }

@@ -22,5 +22,6 @@ namespace Dodo {
 		void SetUniform(const char* location, T value) { m_Material->SetUniform(location, value); }
 
 		void Draw() const;
+		void Draw(Material* material) const;
 	};
 }

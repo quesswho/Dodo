@@ -70,4 +70,26 @@ namespace Dodo {
 
 		if (m_SkyBox) m_SkyBox->Draw(m_Camera->GetViewMatrix());
 	}
+
+	void Scene::Draw(Material* material) {
+		for (auto& ent : m_Entities)
+		{
+			for (auto i : ent.second.m_Drawable)
+			{
+				auto& drawable = ent.second.m_Components[i];
+				switch (drawable.index())
+				{
+				case 0:
+					std::get<0>(drawable)->Draw(m_Camera);
+					break;
+				case 1:
+					std::get<1>(drawable)->Draw(m_Camera);
+					break;
+				default:
+					DD_ERR("This should never occurr.");
+					break;
+				}
+			}
+		}
+	}
 }

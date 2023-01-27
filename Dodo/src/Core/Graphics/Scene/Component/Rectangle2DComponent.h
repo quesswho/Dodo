@@ -26,7 +26,14 @@ namespace Dodo {
 		{
 			m_Rectangle->SetUniform("u_Model", m_Transformation.m_Model);
 			m_Rectangle->SetUniform("u_Camera", camera->GetCameraMatrix());
+			m_Rectangle->SetUniform("u_CameraPos", camera->GetCameraPos());
 			m_Rectangle->Draw();
+		}
+
+		template<typename T>
+		void Draw(const T* camera, Material* material) const
+		{
+			m_Rectangle->Draw(material);
 		}
 
 		static inline bool IsDrawable() { return true; }

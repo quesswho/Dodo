@@ -22,4 +22,12 @@ namespace Dodo {
 		m_IBuffer->Bind();
 		Application::s_Application->m_RenderAPI->DrawIndices(m_IBuffer->GetCount());
 	}
+
+	void Mesh::Draw(Material* material) const
+	{
+		material->Bind();
+		m_VBuffer->Bind();
+		m_IBuffer->Bind();
+		Application::s_Application->m_RenderAPI->DrawIndices(m_IBuffer->GetCount());
+	}
 }

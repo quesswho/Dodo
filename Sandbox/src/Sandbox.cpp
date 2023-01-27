@@ -112,8 +112,8 @@ public:
 		props.m_Title = "SandBox";
 		props.m_Width = 1080;
 		props.m_Height = 720;
-		//props.m_Flags = DodoWindowFlags_BACKFACECULL;
-		props.m_Flags = DodoWindowFlags_NONE;
+		props.m_Flags = DodoWindowFlags_BACKFACECULL;
+		//props.m_Flags = DodoWindowFlags_NONE;
 		return props;
 	}
 

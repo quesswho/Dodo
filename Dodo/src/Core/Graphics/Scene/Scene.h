@@ -9,6 +9,7 @@
 
 #include "Core/Graphics/Skybox.h"
 #include "Core/Math/Camera/FreeCamera.h"
+#include "Light.h"
 
 namespace Dodo {
 
@@ -19,7 +20,7 @@ namespace Dodo {
 		std::unordered_map<uint, Entity> m_Entities;
 
 		Skybox* m_SkyBox;
-
+		LightSystem m_LightSystem;
 	public:
 		Scene(Math::FreeCamera* camera, std::string name = "Unnamed");
 		~Scene();

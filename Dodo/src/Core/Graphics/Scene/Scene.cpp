@@ -56,10 +56,10 @@ namespace Dodo {
 				switch (drawable.index())
 				{
 					case 0:
-						std::get<0>(drawable)->Draw(m_Camera);
+						std::get<0>(drawable)->Draw(m_Camera, m_LightSystem);
 						break;
 					case 1:
-						std::get<1>(drawable)->Draw(m_Camera);
+						std::get<1>(drawable)->Draw(m_Camera, m_LightSystem);
 						break;
 					default:
 						DD_ERR("This should never occurr.");
@@ -80,10 +80,10 @@ namespace Dodo {
 				switch (drawable.index())
 				{
 				case 0:
-					std::get<0>(drawable)->Draw(m_Camera);
+					std::get<0>(drawable)->Draw(m_Camera, material);
 					break;
 				case 1:
-					std::get<1>(drawable)->Draw(m_Camera);
+					std::get<1>(drawable)->Draw(m_Camera, material);
 					break;
 				default:
 					DD_ERR("This should never occurr.");

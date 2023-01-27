@@ -381,8 +381,7 @@ namespace Dodo {
 			{
 				SetWindowLongPtr(m_Hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
 
-				HMONITOR hmon = MonitorFromWindow(m_Hwnd,
-					MONITOR_DEFAULTTONEAREST);
+				HMONITOR hmon = MonitorFromWindow(m_Hwnd, MONITOR_DEFAULTTONEAREST);
 				MONITORINFO mi = { sizeof(mi) };
 				GetMonitorInfo(hmon, &mi);
 				int posX, posY;
@@ -392,6 +391,11 @@ namespace Dodo {
 				SetWindowPos(m_Hwnd, HWND_TOP, posX, posY,
 					m_WindowProperties.m_Width + GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) - GetSystemMetrics(SM_CXFRAME),
 					m_WindowProperties.m_Height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYSMSIZE) - GetSystemMetrics(SM_CYEDGE) - GetSystemMetrics(SM_CYFRAME), 0);
+
+				Application::s_Application->m_WindowProperties.m_Width = m_WindowProperties.m_Width + GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) - GetSystemMetrics(SM_CXFRAME);
+				Application::s_Application->m_WindowProperties.m_Height = m_WindowProperties.m_Height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYSMSIZE) - GetSystemMetrics(SM_CYEDGE) - GetSystemMetrics(SM_CYFRAME);
+
+				Application::s_Application->m_RenderAPI->ResizeDefaultViewport(Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height);
 
 				m_WindowProperties.m_Flags &= ~DodoWindowFlags_FULLSCREEN;
 				Application::s_Application->m_WindowProperties.m_Flags &= ~DodoWindowFlags_FULLSCREEN;

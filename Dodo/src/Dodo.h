@@ -20,8 +20,9 @@
 		#include "Core/Graphics/FrameBuffer.h"
 		#include "Core/Graphics/Material/Shader.h"
 		#include "Core/Graphics/Material/Texture.h"
+		#include "Core/Graphics/PostEffect.h"
 
-		/* Scene */
+	/* Scene */
 			#include "Core/Graphics/Scene/Scene.h"
 			#include "Core/Graphics/Scene/Model.h"
 

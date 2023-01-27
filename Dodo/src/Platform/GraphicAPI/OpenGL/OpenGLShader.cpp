@@ -9,11 +9,11 @@
 namespace Dodo {
 	namespace Platform {
 
-		OpenGLShader::OpenGLShader(const char* name, const char* path, const BufferProperties& shaderInput)
+		OpenGLShader::OpenGLShader(const char* name, const char* path)
 			: m_Name(name)
 		{
 			size_t len = strlen(path);
-			if (path[len - 1] == 'x' && path[len - 2] == '.')
+			if (path[len - 1] == 'x' && path[len - 2] == '.') // Why is this here?
 			{
 				len += strlen("lsl");
 				char* newpath = new char[len + 1];
@@ -29,7 +29,7 @@ namespace Dodo {
 			}
 		}
 
-		OpenGLShader::OpenGLShader(const char* name, std::string& source, const BufferProperties& shaderInput)
+		OpenGLShader::OpenGLShader(const char* name, std::string& source)
 			: m_Name(name)
 		{
 			CompileInit(source);

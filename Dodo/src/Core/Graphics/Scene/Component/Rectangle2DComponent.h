@@ -4,6 +4,7 @@
 #include "Core/Graphics/Scene/Rectangle.h"
 #include "Core/Math/Matrix/Transformation.h"
 #include "Core/Math/MathFunc.h"
+#include "Core/Graphics/Scene/Light.h"
 
 namespace Dodo {
 
@@ -22,8 +23,9 @@ namespace Dodo {
 		~Rectangle2DComponent();
 
 		template<typename T>
-		void Draw(const T* camera) const
+		void Draw(const T* camera, const LightSystem& lights) const
 		{
+			m_Rectangle->SetUniform("u_LightDir", lights.m_Directional.m_Direction);
 			m_Rectangle->SetUniform("u_Model", m_Transformation.m_Model);
 			m_Rectangle->SetUniform("u_Camera", camera->GetCameraMatrix());
 			m_Rectangle->SetUniform("u_CameraPos", camera->GetCameraPos());
@@ -33,6 +35,9 @@ namespace Dodo {
 		template<typename T>
 		void Draw(const T* camera, Material* material) const
 		{
+			m_Rectangle->SetUniform("u_Model", m_Transformation.m_Model);
+			m_Rectangle->SetUniform("u_Camera", camera->GetCameraMatrix());
+			m_Rectangle->SetUniform("u_CameraPos", camera->GetCameraPos());
 			m_Rectangle->Draw(material);
 		}
 

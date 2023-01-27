@@ -4,6 +4,7 @@
 #include "Core/Graphics/Scene/Model.h"
 #include "Core/Math/Matrix/Transformation.h"
 #include "Core/Math/MathFunc.h"
+#include "Core/Graphics/Scene/Light.h"
 
 namespace Dodo {
 
@@ -22,8 +23,9 @@ namespace Dodo {
 		~ModelComponent();
 
 		template<typename T>
-		void Draw(const T* camera) const
+		void Draw(const T* camera, const LightSystem& lights) const
 		{
+			m_Model->SetUniform("u_LightDir", lights.m_Directional.m_Direction);
 			m_Model->SetUniform("u_Model", m_Transformation.m_Model);
 			m_Model->SetUniform("u_Camera", camera->GetCameraMatrix());
 			m_Model->SetUniform("u_CameraPos", camera->GetCameraPos());
@@ -33,6 +35,9 @@ namespace Dodo {
 		template<typename T>
 		void Draw(const T* camera, Material* material) const
 		{
+			m_Model->SetUniform("u_Model", m_Transformation.m_Model);
+			m_Model->SetUniform("u_Camera", camera->GetCameraMatrix());
+			m_Model->SetUniform("u_CameraPos", camera->GetCameraPos());
 			m_Model->Draw(material);
 		}
 

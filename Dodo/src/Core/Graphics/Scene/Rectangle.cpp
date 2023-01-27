@@ -16,4 +16,9 @@ namespace Dodo {
 	{
 		m_Mesh->Draw();
 	}
+
+	void Rectangle::Draw(Material* material) const
+	{
+		m_Mesh->Draw(material);
+	}
 }

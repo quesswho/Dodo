@@ -222,7 +222,8 @@ newmtl Material__47
 	Kd 0.5880 0.5880 0.5880
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-
+	map_Kd textures\sponza_bricks_a_diff.png
+	
 newmtl flagpole
 	Ns 10.0000
 	Ni 1.5000

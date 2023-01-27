@@ -56,11 +56,11 @@ namespace Dodo {
 		{}
 
 		TextureSettings(TextureWrapMode wrap)
-			: m_Filter(TextureFilter::FILTER_MIN_NEAREST_MAG_MIP_LINEAR), m_WrapU(wrap), m_WrapV(wrap)
+			: m_Filter(TextureFilter::FILTER_MIN_MAG_MIP_LINEAR), m_WrapU(wrap), m_WrapV(wrap)
 		{}
 
 		TextureSettings(TextureWrapMode wrapU, TextureWrapMode wrapV)
-			: m_Filter(TextureFilter::FILTER_MIN_NEAREST_MAG_MIP_LINEAR), m_WrapU(wrapU), m_WrapV(wrapV)
+			: m_Filter(TextureFilter::FILTER_MIN_MAG_MIP_LINEAR), m_WrapU(wrapU), m_WrapV(wrapV)
 		{}
 
 		TextureSettings(TextureFilter filter)

@@ -22,9 +22,11 @@ GameLayer::GameLayer()
 	frameprop.m_Width = Application::s_Application->m_WindowProperties.m_Width;
 	frameprop.m_Height = Application::s_Application->m_WindowProperties.m_Height;
 
-	m_FrameBuffer = new FrameBuffer(frameprop);
+	m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.fx");
+	m_Gamma = 1.5f;
 
 	m_Scene = m_File.Read("res/sponza/sponza.das");
+	//m_Scene = m_File.Read("res/knife.das");
 
 	std::vector<std::string> skyboxPath = {
 		"res/texture/skybox/right.jpg",
@@ -43,24 +45,31 @@ GameLayer::GameLayer()
 GameLayer::~GameLayer()
 {
 	Application::s_Application->m_Window->DefaultWorkDirectory();
-	delete m_FrameBuffer;
+	delete m_PostEffect;
 	delete m_Camera;
 	delete m_Scene;
 }
 
 void GameLayer::Update(float elapsed)
 {
+	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_UP])
+		m_Gamma += 1 * elapsed;
+	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_DOWN])
+		m_Gamma -= 1 * elapsed;
+
+	m_PostEffect->SetUniformValue("u_Gamma", m_Gamma);
+
 	m_Camera->Update(elapsed);
 }
 
 void GameLayer::Render()
 {
-	Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
-	//m_FrameBuffer->Bind();
+	m_PostEffect->Bind();
 
 	m_Scene->UpdateCamera(m_Camera);
 	m_Scene->Draw();
-
+	 
+	m_PostEffect->Draw();
 }
 
 void GameLayer::OnEvent(const Event& event)
@@ -103,7 +112,8 @@ public:
 		props.m_Title = "SandBox";
 		props.m_Width = 1080;
 		props.m_Height = 720;
-		props.m_Flags = DodoWindowFlags_BACKFACECULL;
+		//props.m_Flags = DodoWindowFlags_BACKFACECULL;
+		props.m_Flags = DodoWindowFlags_NONE;
 		return props;
 	}
 

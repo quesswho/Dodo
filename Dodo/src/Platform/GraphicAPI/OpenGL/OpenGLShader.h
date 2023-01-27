@@ -25,13 +25,13 @@ namespace Dodo {
 				: m_Name(name), m_ShaderID(shader), m_UniformLocations(uniformLocations)
 			{}
 
-			explicit OpenGLShader(const char* name, const char* path, const BufferProperties& shaderInput); // File path
-			explicit OpenGLShader(const char* name, std::string& source, const BufferProperties& shaderInput); // Shader code
+			explicit OpenGLShader(const char* name, const char* path); // File path
+			explicit OpenGLShader(const char* name, std::string& source); // Shader code
 
 			~OpenGLShader();
 
-			static OpenGLShader* CreateFromPath(const char* name, const char* path, const BufferProperties& shaderInput) { return new OpenGLShader(name, path, shaderInput); }
-			static OpenGLShader* CreateFromSource(const char* name, std::string& source, const BufferProperties& shaderInput) { return new OpenGLShader(name, source, shaderInput); }
+			static OpenGLShader* CreateFromPath(const char* name, const char* path) { return new OpenGLShader(name, path); }
+			static OpenGLShader* CreateFromSource(const char* name, std::string& source) { return new OpenGLShader(name, source); }
 
 			void Bind() const;
 			void Unbind() const;

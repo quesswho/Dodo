@@ -22,14 +22,12 @@ namespace Dodo {
 			{
 				if (GLAD_VERSION_MAJOR(res) > 3)
 				{
+					glFrontFace(GL_CCW);
 					glEnable(GL_MULTISAMPLE);
 					ResizeDefaultViewport(winprop.m_Width, winprop.m_Height);
-					if (winprop.m_Flags & DodoWindowFlags_BACKFACECULL)
-					{
-						glEnable(GL_CULL_FACE);
-						glCullFace(GL_BACK);
-						glFrontFace(GL_CCW);
-					}
+					m_CullingDefault = winprop.m_Flags & DodoWindowFlags_BACKFACECULL ? 1 : 0;
+					Culling(m_CullingDefault);
+
 					glGetIntegerv(0x9048, &m_VramKbs);
 					m_GPUInfo = "";
 					m_GPUInfo = ((const char*)glGetString(GL_RENDERER));
@@ -52,6 +50,29 @@ namespace Dodo {
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glViewport(0, 0, Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		}
+
+		void OpenGLRenderAPI::Blending(bool blending) const
+		{
+			if (blending)
+			{
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				glEnable(GL_BLEND);
+			}
+			else
+			{
+				glDisable(GL_BLEND);
+			}
+		}
+
+		void OpenGLRenderAPI::Culling(bool cull, bool backface) {
+			if (cull) {
+				glEnable(GL_CULL_FACE);
+				glCullFace(backface ? GL_BACK : GL_FRONT);
+			}
+			else {
+				glDisable(GL_CULL_FACE);
+			}
 		}
 
 		void OpenGLRenderAPI::ResizeDefaultViewport(uint width, uint height)

@@ -82,8 +82,8 @@ namespace Dodo {
 		for (int i = 0; i < model->mNumMaterials; i++)
 		{
 			Material* material = nullptr;
-			ShaderBuilderFlags flags = ShaderBuilderFlagNone;
-
+			//ShaderBuilderFlags flags = ShaderBuilderFlagNone;
+			ShaderBuilderFlags flags = ShaderBuilderFlagShadowMap;
 			aiMaterial* mat = model->mMaterials[i];
 			std::vector<Texture*> textures;
 			aiString str;

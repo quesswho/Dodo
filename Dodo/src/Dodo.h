@@ -21,6 +21,7 @@
 		#include "Core/Graphics/Material/Shader.h"
 		#include "Core/Graphics/Material/Texture.h"
 		#include "Core/Graphics/PostEffect.h"
+		#include "Core/Graphics/ShadowMap.h"
 
 	/* Scene */
 			#include "Core/Graphics/Scene/Scene.h"

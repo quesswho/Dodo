@@ -44,16 +44,8 @@ namespace Dodo {
 			inline void DepthComparisonFunction(DepthComparisonFunction func) const { glDepthFunc(GL_NEVER + (int)func); }
 			inline void DepthTest(bool depthtest) const { depthtest ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST); }
 			inline void StencilTest(bool stenciltest) const { stenciltest ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST); }
-			void Blending(bool blending) const 
-			{
-				if (blending)
-				{
-					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-					glEnable(GL_BLEND);
-				}
-				else
-					glDisable(GL_BLEND);
-			}
+			void Blending(bool blending) const;
+			void Culling(bool cull, bool backface = true);
 
 			inline const char* GetAPIName() const { return "OpenGL"; }
 			int CurrentVRamUsage() const
@@ -70,6 +62,8 @@ namespace Dodo {
 			int m_VramKbs;
 
 			uint m_ViewportWidth, m_ViewportHeight, m_ViewportPosX, m_ViewportPosY;
+
+			bool m_CullingDefault;
 		private:
 		};
 	}

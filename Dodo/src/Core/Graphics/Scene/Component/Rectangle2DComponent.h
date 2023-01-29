@@ -25,6 +25,7 @@ namespace Dodo {
 		template<typename T>
 		void Draw(const T* camera, const LightSystem& lights) const
 		{
+			m_Rectangle->SetUniform("u_LightCamera", lights.m_Directional.m_LightCamera);
 			m_Rectangle->SetUniform("u_LightDir", lights.m_Directional.m_Direction);
 			m_Rectangle->SetUniform("u_Model", m_Transformation.m_Model);
 			m_Rectangle->SetUniform("u_Camera", camera->GetCameraMatrix());
@@ -32,12 +33,9 @@ namespace Dodo {
 			m_Rectangle->Draw();
 		}
 
-		template<typename T>
-		void Draw(const T* camera, Material* material) const
+		void Draw(Material* material) const
 		{
 			m_Rectangle->SetUniform("u_Model", m_Transformation.m_Model);
-			m_Rectangle->SetUniform("u_Camera", camera->GetCameraMatrix());
-			m_Rectangle->SetUniform("u_CameraPos", camera->GetCameraPos());
 			m_Rectangle->Draw(material);
 		}
 

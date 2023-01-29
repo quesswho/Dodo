@@ -21,6 +21,7 @@ namespace Dodo {
 		ShaderBuilderFlagCubeMap = 1 << 10,
 		ShaderBuilderFlagMaxDepth = 1 << 11,
 		ShaderBuilderFlagBasicTexture = 1 << 12,
+		ShaderBuilderFlagShadowMap = 1 << 13,
 	};
 #pragma warning(push)
 #pragma warning(disable : 26812)

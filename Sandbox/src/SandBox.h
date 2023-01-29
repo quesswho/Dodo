@@ -23,5 +23,14 @@ private:
 
 	PostEffect* m_PostEffect;
 
+	// Shader should be in shadowmap
+	ShadowMap* m_ShadowMap;
+	Material* m_ShadowMapMaterial;
+
+	Math::Mat4 m_LightProjection;
+	Math::Mat4 m_LightView;
+
+	Math::Vec3 m_LightLook;
+
 	float m_Gamma;
 };

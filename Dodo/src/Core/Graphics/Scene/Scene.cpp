@@ -71,7 +71,9 @@ namespace Dodo {
 		if (m_SkyBox) m_SkyBox->Draw(m_Camera->GetViewMatrix());
 	}
 
-	void Scene::Draw(Material* material) {
+	void Scene::Draw(const Math::Mat4& lightCamera, Material* material) {
+		Application::s_Application->m_RenderAPI->Culling(true, false);
+		material->SetUniform("u_LightCamera", lightCamera);
 		for (auto& ent : m_Entities)
 		{
 			for (auto i : ent.second.m_Drawable)
@@ -80,10 +82,10 @@ namespace Dodo {
 				switch (drawable.index())
 				{
 				case 0:
-					std::get<0>(drawable)->Draw(m_Camera, material);
+					std::get<0>(drawable)->Draw(material);
 					break;
 				case 1:
-					std::get<1>(drawable)->Draw(m_Camera, material);
+					std::get<1>(drawable)->Draw(material);
 					break;
 				default:
 					DD_ERR("This should never occurr.");
@@ -91,5 +93,7 @@ namespace Dodo {
 				}
 			}
 		}
+		Application::s_Application->m_RenderAPI->Culling(Application::s_Application->m_RenderAPI->m_CullingDefault, true);
+		//if (m_SkyBox) m_SkyBox->Draw(m_Camera->GetViewMatrix());
 	}
 }

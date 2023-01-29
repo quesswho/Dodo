@@ -105,6 +105,10 @@ namespace Dodo {
 				vertex.append("uniform vec3 u_LightDir = vec3(0.2f, -0.5f, -0.5f);\n");
 			}
 
+			if (flags & ShaderBuilderFlagShadowMap) {
+				vertex.append("		uniform mat4 u_LightCamera;\n");
+			}
+
 			// Interface Block //
 
 			vertex.append("out Vertex_Out {\n"
@@ -119,6 +123,7 @@ namespace Dodo {
 
 			if (flags & ShaderBuilderFlagLightDirectionUniform || flags & ShaderBuilderFlagSpecularUniform || flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagNormalMap)
 				vertex.append("		vec3 LightDirection;\n");
+
 			if (flags & ShaderBuilderFlagNormalMap)
 			{
 				vertex.append(
@@ -132,6 +137,9 @@ namespace Dodo {
 			}
 			if (flags & ShaderBuilderFlagsCameraPositionUniform || flags & ShaderBuilderFlagSpecularUniform || flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagNormalMap)
 				vertex.append("		vec3 CameraPos;\n");
+			if (flags & ShaderBuilderFlagShadowMap) {
+				vertex.append("		vec4 LightFragPos;\n");
+			}
 
 			vertex.append(
 				"} vertex_out;\n"
@@ -172,7 +180,9 @@ namespace Dodo {
 				if (flags & ShaderBuilderFlagsCameraPositionUniform || flags & ShaderBuilderFlagSpecularUniform || flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagNormalMap)
 					vertex.append("		vertex_out.CameraPos = u_CameraPos;\n");
 			}
-
+			if (flags & ShaderBuilderFlagShadowMap) {
+				vertex.append("		vertex_out.LightFragPos = u_LightCamera * u_Model * vec4(a_Position, 1.0);\n");
+			}
 			if (flags & ShaderBuilderFlagMaxDepth)
 			{
 				vertex.append("		gl_Position = vec4(u_Camera * u_Model * vec4(a_Position, 1.0f)).xyww;\n");
@@ -208,7 +218,10 @@ namespace Dodo {
 				fragment.append("uniform samplerCube u_CubeMap;\n");
 			else if(flags & ShaderBuilderFlagBasicTexture)
 				fragment.append("uniform sampler2D u_TextureMap;\n");
-
+			if (flags & ShaderBuilderFlagShadowMap) {
+				fragment.append("uniform sampler2D u_DepthMap;\n");
+				fragment.append("float ShadowCalculation(vec3 normal);\n");
+			}
 			// Interface Block //
 
 			fragment.append("in Vertex_Out {\n");
@@ -234,12 +247,17 @@ namespace Dodo {
 
 			if(flags & ShaderBuilderFlagsCameraPositionUniform || flags & ShaderBuilderFlagSpecularUniform || flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagNormalMap)
 				fragment.append("		vec3 CameraPos;\n");
+			if (flags & ShaderBuilderFlagShadowMap) {
+				fragment.append("		vec4 LightFragPos;\n");
+			}
 
 			fragment.append(
 				"} frag_in;\n"
 				"void main() {\n"
 				"	vec4 result = vec4(0.0f);\n"
 			);
+			//if (flags & ShaderBuilderFlagShadowMap)
+			//	fragment.append("pixel = vec4(vec3(texture(u_DepthMap, frag_in.TexCoord.xy).r), 1.0f);\n return;\n");
 
 			// Main //
 			if (flags & ShaderBuilderFlagCubeMap)
@@ -266,6 +284,14 @@ namespace Dodo {
 				else
 					fragment.append("	vec4 color = vec4(1.0f, 0.0f, 0.0f, 1.0f);\n");
 			}
+
+			if (flags & ShaderBuilderFlagShadowMap) {
+				fragment.append("	float shadow = ShadowCalculation(normal);\n");
+			}
+			else {
+				fragment.append("	float shadow = 0.0;\n");
+			}
+
 			if (flags & ShaderBuilderFlagLightDirectionUniform || flags & ShaderBuilderFlagSpecularUniform || flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagNormalMap)
 			{
 				if (flags & ShaderBuilderFlagNormalMap)
@@ -281,11 +307,11 @@ namespace Dodo {
 					else if (flags & ShaderBuilderFlagSpecularMap)
 						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * texture(u_SpecularMap, frag_in.TexCoord.xy).rrr;\n");
 					if (flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagSpecularUniform) {
-						fragment.append("	result = vec4(ambient + specular, 0.0f) + diffuse;\n");
+						fragment.append("	result = vec4(ambient + (1.0f - shadow) * (diffuse.rgb + specular), diffuse.a);\n");
 					}
 					else
 					{
-						fragment.append("	result = vec4(ambient, 0.0f) + diffuse;\n");
+						fragment.append("	result = vec4(ambient + (1.0f - shadow) * (diffuse.rgb), diffuse.a);\n");
 					}
 				}
 				else
@@ -300,17 +326,17 @@ namespace Dodo {
 					if (flags & ShaderBuilderFlagSpecularUniform)
 					{
 						fragment.append("	vec4 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * vec3(u_Specular);\n"
-							"	result = vec4(ambient + specular, 0.0f) + diffuse;\n");
+										"	result = vec4(ambient + (1.0f - shadow) * (diffuse.rgb + specular), diffuse.a);\n");
 
 					}
 					else if (flags & ShaderBuilderFlagSpecularMap)
 					{
 						fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * texture(u_SpecularMap, frag_in.TexCoord.xy).rrr;\n"
-							"	result = vec4(ambient + specular, 0.0f) + diffuse;\n");
+										"	result = vec4(ambient + (1.0f - shadow) * (diffuse.rgb + specular), diffuse.a);\n");
 					}
 					else
 					{
-						fragment.append("	result = vec4(ambient, 0.0f) + diffuse;\n");
+						fragment.append("	result = vec4(ambient + (1.0f - shadow) * (diffuse.rgb), diffuse.a);\n");
 					}
 				}
 			}
@@ -320,11 +346,56 @@ namespace Dodo {
 
 			fragment.append(
 				"	pixel = result;\n"
-				"}\0");
+				"}\n");
+			if (flags & ShaderBuilderFlagShadowMap) {
+				/*fragment.append(
+					"float ShadowCalculation(vec3 normal) {\n"
+					"	vec3 projCoords = frag_in.LightFragPos.xyz / frag_in.LightFragPos.w;\n"
+					"	if(projCoords.z > 1.0)\n"
+					"		return 0.0;\n"
+					"	projCoords = projCoords * 0.5 + 0.5;\n"
+					"	float closestDepth = texture(u_DepthMap, projCoords.xy).r;\n"
+					"	float currentDepth = projCoords.z;\n"
+					"	float bias = max(0.07 * (1.0 - dot(normal, frag_in.LightDirection)), 0.01);\n"
+					"	float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;\n"
+					"	return shadow;\n"
+					"}\n");*/
+
+				fragment.append(
+					"vec2 sampleOffsetDirections[8] = vec2[](\n"
+					"	vec2(1, 1), vec2(1, -1), vec2(-1, -1), vec2(-1, 1),\n"
+					"	vec2(1, 0), vec2(-1, 0), vec2(0, 1), vec2(0, -1));\n"
+					"float ShadowCalculation(vec3 normal) {\n"
+					"	vec3 projCoords = frag_in.LightFragPos.xyz / frag_in.LightFragPos.w;\n"
+					"	if(projCoords.z > 1.0)\n"
+					"		return 0.0;\n"
+					"	projCoords = projCoords * 0.5 + 0.5;\n"
+					"	float currentDepth = projCoords.z;\n"
+					"	float bias = max(0.005 * (1.0 - dot(normal, frag_in.LightDirection)), 0.001);\n"
+					"	float shadow = 0.0;\n"
+					"	int samples = 8;\n"
+					"	vec2 texelSize = 1.0 / textureSize(u_DepthMap, 0);\n"
+					"	float delta = 2.0/float(samples);"
+					"	for (float x = -1; x <= 1-delta; x += delta)\n"
+					"	{\n"
+					"		for (float y = -1; y <= 1-delta; y += delta)\n"
+					"		{\n"
+					"			float closestDepth = texture(u_DepthMap, projCoords.xy + vec2(x,y) * texelSize).r;\n"
+					"			if (currentDepth - bias > closestDepth)\n"
+					"				shadow += 1.0;\n"
+					"		}\n"
+					"	}\n"
+					"	shadow /= float(samples*samples);\n"
+					"	return max(shadow, 0.0f);\n"
+					"}\n");
+			}
+			fragment.append("\0");
 
 			uint shaderid = CompileVertexFragmentShader(vertex.c_str(), fragment.c_str());
 			if (!shaderid) {
 				DD_ERR("Failed to build shader with flag {}", flags);
+				DD_ERR("Vertex Shader: \n{}", vertex.c_str());
+				DD_ERR("Fragment Shader: \n{}", fragment.c_str());
 				return m_FallbackShader;
 			}
 
@@ -339,6 +410,8 @@ namespace Dodo {
 				shader->SetUniformValue("u_SpecularMap", i++);
 			if (flags & ShaderBuilderFlagNormalMap)
 				shader->SetUniformValue("u_NormalMap", i++);
+			if (flags & ShaderBuilderFlagShadowMap)
+				shader->SetUniformValue("u_DepthMap", 3);
 
 			return shader;
 		}

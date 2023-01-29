@@ -9,6 +9,6 @@ Dodo engine uses the following libraries:
 * stb_image (Loading textures)
 * Assimp (Loading models such as .fbx or .obj)
 
-![Sponza Scene](https://i.imgur.com/KohXnpv.png)
+![Sponza Scene](https://i.imgur.com/feKrrhv.png)
 
-![Level editor](https://i.imgur.com/NJ8vQal.png)
+![Level editor](https://i.imgur.com/6pS0l5n.png)

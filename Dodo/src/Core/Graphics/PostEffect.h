@@ -27,7 +27,7 @@ namespace Dodo {
 				m_Shader->SetUniformValue(location, val);
 			}
 
-			inline void Draw(uint index = 0) const {
+			inline void Draw() const {
 				Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
 				m_Shader->Bind();
 				m_Vertexbuffer->Bind();

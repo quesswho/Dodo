@@ -30,6 +30,8 @@ void Interface::ChangeScene(Scene* scene)
 {
 	
 	m_Scene = scene;
+	m_Scene->m_LightSystem.m_Directional.m_Direction = Vec3(0.4f, -1.0f, 0.4f).Normalize(); // Temporary because light direction is not stored in scene file
+
 	m_ChangeScene = true;
 	m_SelectedEntity.clear();
 	for (auto& ent : m_Scene->m_Entities)

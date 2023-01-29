@@ -12,7 +12,7 @@ Entities:
 		components:
 			ModelComponent:
 				path="res/model/knife.fbx"
-				transformation=2.300000,-6.350000,3.650000
+				transformation=2.300000,-6.350000,4.450000
 					=1.450000,1.450000,1.450000
 					=-0.445059,-0.759218,-1.186824
 	2:
@@ -20,17 +20,17 @@ Entities:
 		components:
 			ModelComponent:
 				path="res/model/knife.fbx"
-				transformation=6.700000,-8.050000,-8.050000
-					=0.528000,0.528000,0.528000
-					=-0.087266,-0.994838,-0.994838
+				transformation=-19.900000,4.400000,18.200001
+					=0.062500,0.062500,0.062500
+					=1.579523,-1.570796,-0.078540
 	3:
 		name="knife4"
 		components:
 			ModelComponent:
 				path="res/model/knife.fbx"
-				transformation=5.400000,-5.950000,-5.950000
-					=1.000000,1.000000,1.000000
-					=-0.654499,5.131269,5.131269
+				transformation=-19.500000,3.700000,17.700001
+					=0.210900,0.210900,0.210900
+					=0.218166,4.127704,5.445427
 	4:
 		name="grass"
 		components:

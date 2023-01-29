@@ -13,7 +13,7 @@ namespace Dodo {
 		~Model();
 
 		template<typename T>
-		void SetUniform(const char* location, T value) { for(auto mesh : m_Meshes) mesh->SetUniform(location, value); }
+		void SetUniform(const char* location, T value) { for (auto mesh : m_Meshes) { mesh->SetUniform(location, value); }}
 
 		void Draw() const;
 		void Draw(Material* material) const;

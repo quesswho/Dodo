@@ -30,7 +30,7 @@ namespace Dodo {
 				glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RenderBuffer);
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			}
-			else {
+			else if (m_FrameBufferProperties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_DEPTH){
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_FrameBufferProperties.m_Width, m_FrameBufferProperties.m_Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

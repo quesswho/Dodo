@@ -62,6 +62,9 @@ void Interface::InitInterface()
 	style.WindowRounding = 0.0f;
 	style.TabRounding = 0.0f;
 
+	ImGuiIO& io = ImGui::GetIO();
+	io.Fonts->AddFontFromFileTTF("res/font/opensans/opensans.ttf", 16);
+
 	m_EditorProperties.m_ViewportName = "Viewport";
 	m_EditorProperties.m_HierarchyName = "Hierarchy";
 	m_EditorProperties.m_InspectorName = "Inspector";

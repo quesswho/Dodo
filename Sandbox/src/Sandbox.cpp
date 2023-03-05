@@ -94,11 +94,12 @@ void GameLayer::Update(float elapsed)
 		m_LightLook += elapsed * Vec3(0.0f, 0.0f, 1.0f) * 10.0f;
 	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_LEFT])
 		m_LightLook -= elapsed * Vec3(0.0f, 0.0f, 1.0f) * 10.0f;
-
 	m_LightView = Mat4::LookAt(
 		Vec3(-8.0f, 35.0f, 23.0f),
 		m_LightLook,
 		Vec3(0.0, 1.0, 0.0));
+
+
 	m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
 
 	m_PostEffect->SetUniformValue("u_Gamma", m_Gamma);

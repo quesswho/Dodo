@@ -23,6 +23,7 @@ namespace Dodo {
 
 	uint Scene::CreateEntity(const std::string& name)
 	{
+		// TODO: Use UUID instead
 		uint result = (uint)m_Entities.size();
 		m_Entities.emplace(std::make_pair(result, Entity(name)));
 		return result;

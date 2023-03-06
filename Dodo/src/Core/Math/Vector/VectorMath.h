@@ -41,12 +41,6 @@ namespace Dodo {
 			return vec;
 		}
 
-		// Use when values are above 1.0f
-		static inline const TVec2<float> fast_Normalize(const TVec2<float>& vec)
-		{
-			return vec * fast_isqrt(Dot(vec, vec));
-		}
-
 		// Turn vec2 using degrees into vec2 using radians
 		static inline const TVec2<float> ToRadians(const TVec2<float>& degrees)
 		{
@@ -144,14 +138,8 @@ namespace Dodo {
 		{
 			float mag = vec.Magnitude();
 			if (mag > 0)
-				return vec * (1 / mag);
+				return vec * (1.0f / mag);
 			return vec;
-		}
-
-		// Use when values are above 1.0f
-		static inline const TVec4<float> fast_Normalize(const TVec4<float>& vec)
-		{
-			return vec * fast_isqrt(Dot(vec, vec));
 		}
 
 		// Turn vec4 using degrees into vec4 using radians

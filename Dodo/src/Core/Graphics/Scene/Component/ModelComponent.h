@@ -33,7 +33,7 @@ namespace Dodo {
 			m_Model->Draw();
 		}
 
-		void Draw(Material* material) const
+		void Draw(Ref<Material> material) const
 		{
 			material->SetUniform("u_Model", m_Transformation.m_Model);
 			m_Model->Draw(material);

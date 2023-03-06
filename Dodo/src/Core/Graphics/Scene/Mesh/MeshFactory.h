@@ -8,7 +8,7 @@ namespace Dodo {
 	public:
 		MeshFactory();
 
-		Mesh* GetRectangleMesh(Material* material);
+		Mesh* GetRectangleMesh(Ref<Material> material);
 	private:
 		const BufferProperties m_BasicProperties;
 		Mesh* m_RectangleMesh;

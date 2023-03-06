@@ -5,7 +5,7 @@
 
 namespace Dodo {
 
-	Rectangle::Rectangle(Material* material)
+	Rectangle::Rectangle(Ref<Material> material)
 		: m_Mesh(Application::s_Application->m_AssetManager->m_MeshFactory->GetRectangleMesh(material))
 	{}
 
@@ -17,7 +17,7 @@ namespace Dodo {
 		m_Mesh->Draw();
 	}
 
-	void Rectangle::Draw(Material* material) const
+	void Rectangle::Draw(Ref<Material> material) const
 	{
 		m_Mesh->Draw(material);
 	}

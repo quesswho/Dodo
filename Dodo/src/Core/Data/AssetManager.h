@@ -18,7 +18,7 @@ namespace Dodo {
 	private:
 		std::unordered_map<ShaderBuilderFlags, Ref<Shader>> m_ShaderBuilderShaders;  // Stores all shaders created by shaderbuilder
 
-		std::unordered_map<uint, Material*> m_Materials;
+		std::unordered_map<uint, Ref<Material>> m_Materials;
 		std::unordered_map<std::string, uint> m_MaterialID;
 
 		std::unordered_map<uint, Model*> m_Models;		 // Stores id as key and model pointer as value
@@ -28,7 +28,7 @@ namespace Dodo {
 		~AssetManager();
 
 		Ref<Shader> GetShader(ShaderBuilderFlags flags);
-		Material* GetMaterial(const char* path);
+		Ref<Material> GetMaterial(const char* path);
 		Model* GetModel(const char* path);
 
 		Model* CreateModel(const char* path, uint id);

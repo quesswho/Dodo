@@ -9,7 +9,7 @@ namespace Dodo {
 	private:
 		Mesh* m_Mesh;
 	public:
-		Rectangle(Material* material);
+		Rectangle(Ref<Material> material);
 		~Rectangle();
 
 
@@ -17,6 +17,6 @@ namespace Dodo {
 		inline void SetUniform(const char* location, T value) { m_Mesh->SetUniform(location, value); }
 
 		void Draw() const;
-		void Draw(Material* material) const;
+		void Draw(Ref<Material> material) const;
 	};
 }

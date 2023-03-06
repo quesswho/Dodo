@@ -29,7 +29,7 @@ namespace Dodo {
 
 		void Draw();
 
-		void Draw(const Math::Mat4& lightCamera, Material* material);
+		void Draw(const Math::Mat4& lightCamera, Ref<Material> material);
 
 		void CreateEntity(uint id, const std::string& name);
 		uint CreateEntity(const std::string& name = "Unnamed");

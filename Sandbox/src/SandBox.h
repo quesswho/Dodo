@@ -26,7 +26,7 @@ private:
 
 	// Shader should be in shadowmap
 	ShadowMap* m_ShadowMap;
-	Material* m_ShadowMapMaterial;
+	Ref<Material> m_ShadowMapMaterial;
 
 	Math::Mat4 m_LightProjection;
 	Math::Mat4 m_LightView;

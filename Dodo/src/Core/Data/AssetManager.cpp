@@ -11,7 +11,7 @@ namespace Dodo {
 
 	AssetManager::~AssetManager()
 	{
-		for (auto model : m_Models)
+		for (auto& model : m_Models)
 			delete model.second;
 	}
 
@@ -48,11 +48,11 @@ namespace Dodo {
 		return model;
 	}
 
-	Material* AssetManager::GetMaterial(const char* path)
+	Ref<Material> AssetManager::GetMaterial(const char* path)
 	{
 		if (m_MaterialID.find(path) != m_MaterialID.end())
 			return m_Materials[m_MaterialID.at(path)];
-		Material* mat = m_MaterialLoader->LoadMaterial(path);
+		Ref<Material> mat = m_MaterialLoader->LoadMaterial(path);
 		m_MaterialID.emplace(path, m_Models.size());
 		m_Materials.emplace(m_Models.size(), mat);
 		return mat;

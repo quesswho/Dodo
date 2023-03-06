@@ -60,13 +60,13 @@ namespace Dodo {
 			// Vector math //
 
 			// Return the sum of all the components squared
-			constexpr float SquareSum() const
+			inline constexpr float SquareSum() const
 			{
 				return (float)(this->x * this->x + this->y * this->y);
 			}
 
 			// Return the magnitude of the vector
-			constexpr float Magnitude() const 
+			inline constexpr float Magnitude() const
 			{
 				return sqrt(SquareSum());
 			}
@@ -74,13 +74,20 @@ namespace Dodo {
 			// Return normalized vector
 			inline TVec2 Normalize() const
 			{
-				return *this * fast_isqrt(SquareSum());
+				float mag = Magnitude();
+				if (mag > 0) {
+					return *this / mag;
+				}
+				return *this;
 			}
 
 			// Normalize this vector
 			inline void NormalizeVector()
 			{
-				*this *= fast_isqrt(SquareSum());
+				float mag = Magnitude();
+				if (mag > 0) {
+					*this /= mag;
+				}
 			}
 
 			// Return a vector with a magnitude of limit
@@ -316,7 +323,7 @@ namespace Dodo {
 
 			constexpr TVec2& operator/=(const double other)
 			{
-				const float temp = 1.0f / other;
+				const double temp = 1.0 / other;
 				this->x *= temp;
 				this->y *= temp;
 				return *this;

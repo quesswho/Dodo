@@ -73,7 +73,7 @@ namespace Dodo {
 		if (m_SkyBox) m_SkyBox->Draw(m_Camera->GetViewMatrix());
 	}
 
-	void Scene::Draw(const Math::Mat4& lightCamera, Material* material) {
+	void Scene::Draw(const Math::Mat4& lightCamera, Ref<Material> material) {
 		Application::s_Application->m_RenderAPI->Culling(true, false);
 		material->SetUniform("u_LightCamera", lightCamera);
 		for (auto& ent : m_Entities)

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Application.h"
+
 #include "Core/System/Timer.h"
 
 namespace Dodo {

@@ -2,7 +2,7 @@
 
 #ifdef DD_API_OPENGL
 #include "Platform/GraphicAPI/OpenGL/OpenGLShaderBuilder.h"
-namespace Dodo { typedef Platform::OpenGLShaderBuilder ShaderBuilder; }
+namespace Dodo { using ShaderBuilder = Platform::OpenGLShaderBuilder; }
 #elif DD_API_DX11
 
 #endif

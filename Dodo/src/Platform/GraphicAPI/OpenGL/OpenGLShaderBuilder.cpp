@@ -1,7 +1,9 @@
 #include "pch.h"
-#include <glad/gl.h>
 #include "OpenGLShaderBuilder.h"
+
 #include "Core/Application/Application.h"
+
+#include <glad/gl.h>
 
 namespace Dodo {
 	namespace Platform {

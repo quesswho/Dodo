@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "ModelLoader.h"
 
+#include "Core/Application/Application.h"
+
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
-
-#include "Core/Application/Application.h"
 
 namespace Dodo {
 

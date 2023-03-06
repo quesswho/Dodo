@@ -1,8 +1,9 @@
 #pragma once
 
+#include "Core/Graphics/Material/TextureProperties.h"
+
 #include <vector>
 #include <string>
-#include "Core/Graphics/Material/TextureProperties.h"
 
 namespace Dodo {
 

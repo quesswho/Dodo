@@ -1,4 +1,7 @@
 #pragma once
+
+#include <Core/Common.h>
+
 #include <cmath>
 
 #define MATH_PI 3.1415926535897932f

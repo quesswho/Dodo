@@ -2,5 +2,5 @@
 
 #ifdef DD_API_WIN32
 #include "Platform/WindowAPI/Win32/Win32Window.h"
-namespace Dodo { typedef Platform::Win32Window Window; }
+namespace Dodo { using Window = Platform::Win32Window; }
 #endif

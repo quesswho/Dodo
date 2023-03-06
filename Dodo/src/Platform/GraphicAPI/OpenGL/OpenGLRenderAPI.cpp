@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "OpenGLRenderAPI.h"
+
 #include "Core/Application/Application.h"
+
 #include <imgui_impl_opengl3.h>
 
 namespace Dodo {

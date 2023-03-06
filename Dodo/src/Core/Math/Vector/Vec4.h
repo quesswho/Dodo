@@ -5,9 +5,6 @@
 namespace Dodo {
 	namespace Math {
 
-		//template<typename T>
-		//struct Mat4x4;
-
 		template<typename T = float>
 		struct TVec4
 		{

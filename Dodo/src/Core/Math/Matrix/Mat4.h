@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Common.h"
+#include <Core/Common.h>
 
 #ifdef DD_MATH_CRH
 #include "Platform/Math/CRH/CRHMat4.h"

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Scene.h"
+
 #include "Core/Application/Application.h"
 
 namespace Dodo {
@@ -95,6 +96,5 @@ namespace Dodo {
 			}
 		}
 		Application::s_Application->m_RenderAPI->Culling(Application::s_Application->m_RenderAPI->m_CullingDefault, true);
-		//if (m_SkyBox) m_SkyBox->Draw(m_Camera->GetViewMatrix());
 	}
 }

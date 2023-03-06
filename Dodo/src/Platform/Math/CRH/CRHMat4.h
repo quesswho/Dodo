@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #include "Core/Math/Matrix/Mat3.h"
 #include "Core/Math/Vector/Vec4.h"
 #include "Core/Math/MathFunc.h"

@@ -1,6 +1,6 @@
 #include "pch.h"
-
 #include "Rectangle2DComponent.h"
+
 #include "Core/Application/Application.h"
 
 namespace Dodo {

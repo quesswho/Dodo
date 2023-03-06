@@ -1,9 +1,11 @@
 #pragma once
-#include "Core/Common.h"
+
+#include <Core/Common.h>
 
 #include "OpenGLBuffer.h"
 
 #include "Core/Math/Maths.h"
+
 #include <unordered_map>
 
 namespace Dodo {

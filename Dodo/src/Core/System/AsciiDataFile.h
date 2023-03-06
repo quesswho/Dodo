@@ -1,9 +1,12 @@
 #pragma once
-#include "Core/Common.h"
-#include <string>
-#include <vector>
+
+#include <Core/Common.h>
+
 #include "Core/Math/Matrix/Transformation.h"
 #include "Core/System/FileUtils.h"
+
+#include <string>
+#include <vector>
 
 namespace Dodo {
 

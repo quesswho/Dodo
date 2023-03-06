@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Core/Common.h"
+#include <Core/Common.h>
+
 #include "Core/Application/Application.h"
 
 #include "Core/Graphics/FrameBuffer.h"

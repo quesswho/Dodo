@@ -1,9 +1,10 @@
 #pragma once
 
-#include <vector>
-#include <string_view>
 #include "Core/Graphics/Scene/Scene.h"
 #include "Core/System/AsciiDataFile.h"
+
+#include <vector>
+#include <string_view>
 
 namespace Dodo {
 

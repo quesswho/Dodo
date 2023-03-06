@@ -1,6 +1,6 @@
 #include "pch.h"
-
 #include "ModelComponent.h"
+
 #include "Core/Application/Application.h"
 
 namespace Dodo {

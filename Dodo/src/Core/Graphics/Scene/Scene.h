@@ -1,15 +1,17 @@
 #pragma once
 
-#include "Core/Common.h"
-#include <unordered_map>
+#include <Core/Common.h>
+
 #include "Entity.h"
+#include "Light.h"
 
 #include "Component/ModelComponent.h"
 #include "Component/Rectangle2DComponent.h"
 
 #include "Core/Graphics/Skybox.h"
 #include "Core/Math/Camera/FreeCamera.h"
-#include "Light.h"
+
+#include <unordered_map>
 
 namespace Dodo {
 

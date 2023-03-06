@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "AssetManager.h"
+
 #include "Core/Application/Application.h"
 
 namespace Dodo {

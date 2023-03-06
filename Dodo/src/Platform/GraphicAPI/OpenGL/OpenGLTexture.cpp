@@ -1,9 +1,10 @@
 #include "pch.h"
 #include "OpenGLTexture.h"
 
+#include "Core/Math/MathFunc.h"
+
 #include <glad/gl.h>
 #include <stb_image.h>
-#include "Core/Math/MathFunc.h"
 
 namespace Dodo {
 

@@ -4,7 +4,7 @@
 
 namespace Dodo {
 
-	// Essentially a wrapper of framebuffer. Implementing point lights will give this class a purpose
+	// Essentially a wrapper of framebuffer. Implementing point lights will give this class a distinction
 	class ShadowMap {
 	private:
 		FrameBuffer* m_FrameBuffer;

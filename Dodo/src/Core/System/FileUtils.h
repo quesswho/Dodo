@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Core/Common.h"
+#include <Core/Common.h>
+
 #include "Core/Utilities/Logger.h"
 
 #include <string>

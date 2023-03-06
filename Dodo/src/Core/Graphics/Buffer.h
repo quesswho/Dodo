@@ -3,8 +3,8 @@
 #ifdef DD_API_OPENGL
 #include "Platform/GraphicAPI/OpenGL/OpenGLBuffer.h"
 namespace Dodo { 
-	typedef Platform::OpenGLVertexBuffer VertexBuffer;
-	typedef Platform::OpenGLIndexBuffer IndexBuffer;
+	using VertexBuffer = Platform::OpenGLVertexBuffer;
+	using IndexBuffer = Platform::OpenGLIndexBuffer;
 }
 #elif DD_API_DX11
 

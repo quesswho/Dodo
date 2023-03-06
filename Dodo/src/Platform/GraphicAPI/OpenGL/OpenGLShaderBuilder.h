@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Core/Common.h"
+#include <Core/Common.h>
+
 #include "Core/Graphics/Material/Shader.h"
 
 namespace Dodo {

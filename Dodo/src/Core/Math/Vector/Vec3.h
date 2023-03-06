@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Vec2.h"
 
 namespace Dodo {
@@ -473,6 +474,6 @@ namespace Dodo {
 				return (this->x >= other.x && this.y >= other.y && this.z >= other.z);
 			}
 		};
-		typedef TVec3<float> Vec3;
+		using Vec3 = TVec3<float>;
 	}
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "pch.h"
-#include "Core/System/ThreadManager.h"
 
 #include "Window.h"
 #include "Layer.h"
@@ -10,6 +9,7 @@
 
 #include "Core/Graphics/RenderAPI.h"
 #include "Core/Data/AssetManager.h"
+#include "Core/System/ThreadManager.h"
 
 namespace Dodo {
 

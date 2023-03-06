@@ -416,6 +416,6 @@ namespace Dodo {
 				return (this->x >= other.x&& this.y >= other.y);
 			}
 		};
-		typedef TVec2<float> Vec2;
+		using Vec2 = TVec2<float>;
 	}
 }

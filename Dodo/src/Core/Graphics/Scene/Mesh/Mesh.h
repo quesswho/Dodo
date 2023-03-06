@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Common.h"
+#include <Core/Common.h>
 #include "Core/Graphics/Buffer.h"
 #include "Core/Math/Vector/Vec3.h"
 #include "Core/Graphics/Material/Material.h"

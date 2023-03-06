@@ -1,9 +1,11 @@
 #pragma once
+
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/CubeMap.h"
 #include "Core/Graphics/Material/Shader.h"
-#include "Core/Math/Matrix/Mat4.h"
 #include "Core/Graphics/Material/Texture.h"
+
+#include "Core/Math/Matrix/Mat4.h"
 
 namespace Dodo {
 

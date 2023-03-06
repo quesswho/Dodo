@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Core/Common.h>
 
 #if defined(DODO_NO_LOGGER)

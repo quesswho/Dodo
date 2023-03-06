@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 using uchar = unsigned char; // 0 - 255
 using ushort = unsigned short int; // 0 - 65 535
 using uint = unsigned int;   // 0 - 4 294 967 295

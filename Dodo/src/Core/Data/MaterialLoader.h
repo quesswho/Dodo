@@ -7,6 +7,6 @@ namespace Dodo {
 	class MaterialLoader
 	{
 	public:
-		Material* LoadMaterial(const char* texture);
+		Ref<Material> LoadMaterial(const char* texture);
 	};
 }

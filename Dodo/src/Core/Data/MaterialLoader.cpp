@@ -6,8 +6,8 @@
 namespace Dodo
 {
 	// TODO: Move code from Modelloader
-	Material* MaterialLoader::LoadMaterial(const char* path)
+	Ref<Material> MaterialLoader::LoadMaterial(const char* path)
 	{
-		return new Material(Application::s_Application->m_AssetManager->GetShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture), std::make_shared<Texture>(path, 0, TextureSettings(TextureWrapMode::WRAP_CLAMP_TO_EDGE)));
+		return std::make_shared<Material>(Application::s_Application->m_AssetManager->GetShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture), std::make_shared<Texture>(path, 0, TextureSettings(TextureWrapMode::WRAP_CLAMP_TO_EDGE)));
 	}
 }

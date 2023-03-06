@@ -56,6 +56,6 @@ namespace Dodo {
 
 		Model* LoadModel(const char* path);
 	private:
-		Mesh* LoadMesh(aiMesh* mesh, Material* material);
+		Mesh* LoadMesh(aiMesh* mesh, Ref<Material> material);
 	};
 }

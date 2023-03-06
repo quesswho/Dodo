@@ -29,7 +29,7 @@ GameLayer::GameLayer()
 		Vec3(0.0, 1.0, 0.0));
 	
 	m_ShadowMap = new ShadowMap();
-	m_ShadowMapMaterial = new Material(Shader::CreateFromPath("Shadow", "res/shader/shadow.glsl"));
+	m_ShadowMapMaterial = std::make_shared<Material>(Shader::CreateFromPath("Shadow", "res/shader/shadow.glsl"));
 
 	m_Scene = m_File.Read("res/sponza/sponza.das");
 	//m_Scene = m_File.Read("res/knife.das");
@@ -56,7 +56,6 @@ GameLayer::~GameLayer()
 	delete m_Camera;
 	delete m_Scene;
 	delete m_ShadowMap;
-	delete m_ShadowMapMaterial;
 }
 
 void GameLayer::Update(float elapsed)

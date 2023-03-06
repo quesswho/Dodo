@@ -29,20 +29,6 @@ namespace Dodo {
 			return input >= ceil ? input % ceil : input;
 		}
 
-		static inline float fast_isqrt(const float x) noexcept
-		{
-			union {
-				float f;
-				uint32_t i;
-			};
-
-			const float x2  = x * 0.5f;
-			f = x;
-			i = 0x5f3759df - (i >> 1);
-			f = f * (1.5f - (x2 * f * f));
-			return f;
-		}
-
 		static constexpr unsigned int floorlog2(unsigned int x)
 		{
 			return x == 1 ? 0 : 1 + floorlog2(x >> 1);

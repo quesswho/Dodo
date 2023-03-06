@@ -16,6 +16,6 @@ namespace Dodo {
 		void SetUniform(const char* location, T value) { for (auto mesh : m_Meshes) { mesh->SetUniform(location, value); }}
 
 		void Draw() const;
-		void Draw(Material* material) const;
+		void Draw(Ref<Material> material) const;
 	};
 }

@@ -9,7 +9,7 @@
 namespace Dodo {
 
 
-	Mesh* ModelLoader::LoadMesh(aiMesh* mesh, Material* material)
+	Mesh* ModelLoader::LoadMesh(aiMesh* mesh, Ref<Material> material)
 	{
 		std::vector<Vertex> vertices;
 		std::vector<uint> indices;
@@ -60,6 +60,7 @@ namespace Dodo {
 	{
 		Assimp::Importer imp;
 
+		// Assimp::Importer has ownership of all the memory allocated from ReadFile()
 		const aiScene* model = imp.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_PreTransformVertices);
 
 		if (!model || model->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !model->mRootNode)
@@ -71,17 +72,17 @@ namespace Dodo {
 		// Change work directory to get the textures
 		Application::s_Application->m_Window->TruncateWorkDirectory(path);
 
-		std::vector<Material*> materials;
+		std::vector<Ref<Material>> materials;
 		materials.reserve(model->mNumMaterials);
 		if (!model->HasMaterials())
 		{
-			materials.push_back(new Material());
+			materials.push_back(std::make_shared<Material>());
 			DD_WARN("No materials found for {}", path);
 		}
 
 		for (int i = 0; i < model->mNumMaterials; i++)
 		{
-			Material* material = nullptr;
+			Ref<Material> material = nullptr;
 			//ShaderBuilderFlags flags = ShaderBuilderFlagNone;
 			ShaderBuilderFlags flags = ShaderBuilderFlagShadowMap;
 			aiMaterial* mat = model->mMaterials[i];
@@ -122,10 +123,10 @@ namespace Dodo {
 				if (!shader) {
 					DD_WARN("Could not create Shader");
 				}
-				material = new Material(Application::s_Application->m_AssetManager->GetShader(flags), textures);
+				material = std::make_shared<Material>(Application::s_Application->m_AssetManager->GetShader(flags), textures);
 			}
 			else {
-				material = new Material(); // Fallback shader
+				material = std::make_shared<Material>(); // Fallback shader
 				DD_WARN("Material {0} does not have any textures: {1}", mat->GetEntryName().C_Str(), path);
 			}
 

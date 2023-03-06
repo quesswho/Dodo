@@ -7,20 +7,20 @@ namespace Dodo {
 
 	class Material {
 	private:
-		std::vector<Texture*> m_Textures;
+		std::vector<Ref<Texture>> m_Textures;
 
-		Shader* m_Shader;
+		Ref<Shader> m_Shader;
 	public:
 		Material();
-		Material(Shader* shader);
-		Material(Shader* shader, Texture* texture);
-		Material(Shader* shader, std::vector<Texture*> textures);
+		Material(Ref<Shader> shader);
+		Material(Ref<Shader> shader, Ref<Texture> texture);
+		Material(Ref<Shader> shader, std::vector<Ref<Texture>> textures);
 
 		~Material();
 
-		void AddTexture(Texture* texture);
+		void AddTexture(Ref<Texture> texture);
 
-		Texture* GetTexture(uint index)
+		Ref<Texture> GetTexture(uint index)
 		{
 			if (m_Textures.size() > index)
 				return m_Textures[index];
@@ -32,6 +32,7 @@ namespace Dodo {
 		void SetUniform(const char* location, T value) {
 			m_Shader->Bind();
 			m_Shader->SetUniformValue(location, value); 
+
 		}
 
 		void Bind();

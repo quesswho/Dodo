@@ -12,7 +12,7 @@ namespace Dodo {
 		private:
 			VertexBuffer* m_Vertexbuffer;
 			FrameBuffer* m_Framebuffer;
-			Shader* m_Shader;
+			Ref<Shader> m_Shader;
 		public:
 			PostEffect(const FrameBufferProperties& framebufferprop, const char* path);
 			~PostEffect();

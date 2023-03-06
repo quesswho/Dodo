@@ -1,4 +1,5 @@
 #pragma once
+#include <Core/Common.h>
 
 #if defined(DODO_NO_LOGGER)
 #define DD_INFO(...)
@@ -14,7 +15,7 @@ namespace Dodo {
 
 	class Logger {
 	public:
-		inline static std::shared_ptr<spdlog::logger> GetLogger() { return m_Logger; }
+		inline static Ref<spdlog::logger> GetLogger() { return m_Logger; }
 
 		template<typename... Args>
 		static void ErrorHandler(const char* file, int line, std::string message, const Args &... args)
@@ -26,7 +27,7 @@ namespace Dodo {
 		Logger();
 	private:
 		
-		static std::shared_ptr<spdlog::logger> m_Logger;
+		static Ref<spdlog::logger> m_Logger;
 	};
 }
 

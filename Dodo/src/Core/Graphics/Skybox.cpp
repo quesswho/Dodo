@@ -57,7 +57,6 @@ namespace Dodo {
 	Skybox::~Skybox()
 	{
         delete m_VertexBuffer;
-        delete m_CubeMapTexture;
     }
 
 	void Skybox::Draw(const Math::Mat4& viewMatrix) const

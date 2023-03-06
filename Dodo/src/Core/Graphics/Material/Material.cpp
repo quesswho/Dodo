@@ -8,17 +8,17 @@ namespace Dodo {
 		: m_Shader(Application::s_Application->m_RenderAPI->m_ShaderBuilder->GetFallbackShader())
 	{}
 
-	Material::Material(Shader* shader)
+	Material::Material(Ref<Shader> shader)
 		: m_Shader(shader)
 	{}
 
-	Material::Material(Shader* shader, Texture* texture)
+	Material::Material(Ref<Shader> shader, Ref<Texture> texture)
 		: m_Shader(shader)
 	{
 		m_Textures.push_back(texture);
 	}
 
-	Material::Material(Shader* shader, std::vector<Texture*> textures)
+	Material::Material(Ref<Shader> shader, std::vector<Ref<Texture>> textures)
 		: m_Shader(shader), m_Textures(textures)
 	{
 		std::vector<uint> index;
@@ -33,12 +33,9 @@ namespace Dodo {
 	}
 
 	Material::~Material()
-	{
-		for (auto tex : m_Textures)
-			delete tex;
-	}
+	{}
 
-	void Material::AddTexture(Texture* texture)
+	void Material::AddTexture(Ref<Texture> texture)
 	{
 		m_Textures.push_back(texture);
 		for (auto& tex : m_Textures)

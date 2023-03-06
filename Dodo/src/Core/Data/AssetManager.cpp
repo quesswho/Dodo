@@ -10,13 +10,11 @@ namespace Dodo {
 
 	AssetManager::~AssetManager()
 	{
-		for (auto shaderbuildershader : m_ShaderBuilderShaders)
-			delete shaderbuildershader.second;
 		for (auto model : m_Models)
 			delete model.second;
 	}
 
-	Shader* AssetManager::GetShader(ShaderBuilderFlags flags)
+	Ref<Shader> AssetManager::GetShader(ShaderBuilderFlags flags)
 	{
 		if (m_ShaderBuilderShaders.find(flags) != m_ShaderBuilderShaders.end())
 			return m_ShaderBuilderShaders[flags];

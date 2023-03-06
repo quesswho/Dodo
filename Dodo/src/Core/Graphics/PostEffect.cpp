@@ -22,7 +22,6 @@ namespace Dodo {
 	}
 
 	PostEffect::~PostEffect() {
-		delete m_Shader;
 		delete m_Framebuffer;
 		delete m_Vertexbuffer;
 	}

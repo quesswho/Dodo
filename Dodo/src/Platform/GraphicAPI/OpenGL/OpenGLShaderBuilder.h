@@ -31,17 +31,17 @@ namespace Dodo {
 	namespace Platform {
 
 		class OpenGLShaderBuilder {
-			Shader* m_FallbackShader;
+			Ref<Shader> m_FallbackShader;
 		public:
 			OpenGLShaderBuilder();
 			~OpenGLShaderBuilder();
 
-			Shader* BuildVertexFragmentShader(const ShaderBuilderFlags flags, const char* name) const;
-			inline Shader* BuildVertexFragmentShader(const ShaderBuilderFlags flags) const { return BuildVertexFragmentShader(flags, std::to_string(flags).c_str()); }
+			Ref<Shader> BuildVertexFragmentShader(const ShaderBuilderFlags flags, const char* name) const;
+			inline Ref<Shader> BuildVertexFragmentShader(const ShaderBuilderFlags flags) const { return BuildVertexFragmentShader(flags, std::to_string(flags).c_str()); }
 
 			uint CompileVertexFragmentShader(const char* vertex, const char* fragment) const;
 
-			inline Shader* GetFallbackShader() const { return m_FallbackShader; }
+			inline Ref<Shader> GetFallbackShader() const { return m_FallbackShader; }
 		private:
 			void InitFallbackShader();
 		};

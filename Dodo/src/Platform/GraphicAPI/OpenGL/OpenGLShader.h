@@ -30,8 +30,8 @@ namespace Dodo {
 
 			~OpenGLShader();
 
-			static OpenGLShader* CreateFromPath(const char* name, const char* path) { return new OpenGLShader(name, path); }
-			static OpenGLShader* CreateFromSource(const char* name, std::string& source) { return new OpenGLShader(name, source); }
+			static Ref<OpenGLShader> CreateFromPath(const char* name, const char* path) { return std::make_shared<OpenGLShader>(name, path); }
+			static Ref<OpenGLShader> CreateFromSource(const char* name, std::string& source) { return std::make_shared<OpenGLShader>(name, source); }
 
 			void Bind() const;
 			void Unbind() const;

@@ -85,14 +85,14 @@ namespace Dodo {
 			//ShaderBuilderFlags flags = ShaderBuilderFlagNone;
 			ShaderBuilderFlags flags = ShaderBuilderFlagShadowMap;
 			aiMaterial* mat = model->mMaterials[i];
-			std::vector<Texture*> textures;
+			std::vector<Ref<Texture>> textures;
 			aiString str;
 			
 			mat->GetTexture(aiTextureType_DIFFUSE, 0, &str);
 			if (str.length > 0)
 			{
 				flags |= ShaderBuilderFlagDiffuseMap;
-				textures.push_back(new Texture(str.C_Str(), 0));
+				textures.push_back(std::make_shared<Texture>(str.C_Str(), 0));
 				DD_INFO("Diffuse map: {0}", str.C_Str());
 			}
 			str = "";
@@ -100,7 +100,7 @@ namespace Dodo {
 			if (str.length > 0)
 			{
 				flags |= ShaderBuilderFlagSpecularMap;
-				textures.push_back(new Texture(str.C_Str(), (uint)textures.size()));
+				textures.push_back(std::make_shared<Texture>(str.C_Str(), (uint)textures.size()));
 				DD_INFO("Specular map: {0}", str.C_Str());
 			}
 
@@ -112,13 +112,13 @@ namespace Dodo {
 			if (str.length > 0)
 			{
 				flags |= ShaderBuilderFlagNormalMap;
-				textures.push_back(new Texture(str.C_Str(), (uint)textures.size()));
+				textures.push_back(std::make_shared<Texture>(str.C_Str(), (uint)textures.size()));
 				DD_INFO("Normal map: {0}", str.C_Str());
 			}
 
 
 			if (textures.size() > 0) {
-				Shader* shader = Application::s_Application->m_AssetManager->GetShader(flags);
+				Ref<Shader> shader = Application::s_Application->m_AssetManager->GetShader(flags);
 				if (!shader) {
 					DD_WARN("Could not create Shader");
 				}

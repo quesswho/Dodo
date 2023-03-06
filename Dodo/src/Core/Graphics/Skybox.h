@@ -10,8 +10,8 @@ namespace Dodo {
 	class Skybox {
 	private:
 		VertexBuffer* m_VertexBuffer;
-		CubeMapTexture* m_CubeMapTexture;
-		Shader* m_Shader;
+		Ref<CubeMapTexture> m_CubeMapTexture;
+		Ref<Shader> m_Shader;
 	public:
 		Math::Mat4 m_Projection;
 		Skybox(const Math::Mat4& projection, std::vector<std::string> paths);

@@ -41,15 +41,13 @@ namespace Dodo {
 				"   pixel = vec4(res, res * 0.1f, res * 0.1f, 1.0);\n"
 				"}\0";
 
-			m_FallbackShader = new Shader("FallbackShader", CompileVertexFragmentShader(vertex, fragment));
+			m_FallbackShader = std::make_shared<Shader>("FallbackShader", CompileVertexFragmentShader(vertex, fragment));
 		}
 
 		OpenGLShaderBuilder::~OpenGLShaderBuilder()
-		{
-			delete m_FallbackShader;
-		}
+		{}
 
-		Shader* OpenGLShaderBuilder::BuildVertexFragmentShader(const ShaderBuilderFlags flags, const char* name) const
+		Ref<Shader> OpenGLShaderBuilder::BuildVertexFragmentShader(const ShaderBuilderFlags flags, const char* name) const
 		{
 			////////////
 			// Vertex //
@@ -399,7 +397,7 @@ namespace Dodo {
 				return m_FallbackShader;
 			}
 
-			Shader* shader = new Shader(std::to_string(flags).c_str(), shaderid);
+			Ref<Shader> shader = std::make_shared<Shader>(std::to_string(flags).c_str(), shaderid);
 			shader->Bind();
 			int i = 0;
 			if (flags & ShaderBuilderFlagCubeMap)

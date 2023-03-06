@@ -5,7 +5,7 @@
 
 namespace Dodo {
 
-	std::shared_ptr<spdlog::logger> Logger::m_Logger;
+	Ref<spdlog::logger> Logger::m_Logger;
 
 	Logger::Logger()
 	{

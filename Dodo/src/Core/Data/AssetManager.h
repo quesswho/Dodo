@@ -36,7 +36,6 @@ namespace Dodo {
 		ModelLoader* m_ModelLoader;
 		MaterialLoader* m_MaterialLoader;
 		MeshFactory* m_MeshFactory;
-
 	private:
 		bool m_Serialization;
 	};

@@ -76,7 +76,7 @@ namespace Dodo {
 				(first.z - second.z) * (first.z - second.z));
 		}
 
-		// Use when values are above 1.0f
+		// Normalize a Vec3
 		static inline const TVec3<float> Normalize(const TVec3<float>& vec)
 		{
 			return vec.Normalize();

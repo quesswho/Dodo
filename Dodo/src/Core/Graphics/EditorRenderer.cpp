@@ -5,22 +5,6 @@
 
 namespace Dodo {
 
-	void EditorRenderer::Begin() {}
-
-	void EditorRenderer::Flush() {}
-
-	void EditorRenderer::DrawModel(ModelComponent* model) {
-		//model->Draw(m_Camera, m_LightSystem);
-	}
-
-	void EditorRenderer::DrawRectangle(Rectangle2DComponent* rectangle) {
-		//rectangle->Draw(m_Camera, m_LightSystem);
-	}
-
-	void EditorRenderer::DrawSkybox(Skybox* skybox) {
-		skybox->Draw(m_Camera->GetViewMatrix());
-	}
-
 	void EditorRenderer::DrawScene(Scene* scene) {
 		for (auto& ent : scene->m_Entities)
 		{

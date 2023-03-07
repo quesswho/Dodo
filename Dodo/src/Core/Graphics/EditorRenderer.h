@@ -20,12 +20,6 @@ namespace Dodo {
 
 		~EditorRenderer() {}
 
-		void Begin();
-		void Flush();
-
-		void DrawModel(ModelComponent* model);
-		void DrawRectangle(Rectangle2DComponent* rectangle);
-		void DrawSkybox(Skybox* skybox);
 		void DrawScene(Scene* scene);
 
 		void UpdateCamera(Math::FreeCamera* camera) {

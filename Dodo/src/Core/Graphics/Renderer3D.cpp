@@ -32,22 +32,6 @@ namespace Dodo {
 		m_ShadowMapMaterial(std::make_shared<Material>(Shader::CreateFromSource("Shadow", s_ShadowShader)))
 	{}
 
-	void Renderer3D::Begin() {}
-
-	void Renderer3D::Flush() {}
-
-	void Renderer3D::DrawModel(ModelComponent* model) {
-		//model->Draw(m_Camera, m_LightSystem);
-	}
-
-	void Renderer3D::DrawRectangle(Rectangle2DComponent* rectangle) {
-		//rectangle->Draw(m_Camera, m_LightSystem);
-	}
-
-	void Renderer3D::DrawSkybox(Skybox* skybox) {
-		skybox->Draw(m_Camera->GetViewMatrix());
-	}
-
 	void Renderer3D::DrawScene(Scene* scene) {
 		for (auto& ent : scene->m_Entities)
 		{

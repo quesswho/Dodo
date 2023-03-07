@@ -119,6 +119,13 @@ namespace Dodo {
 			std::string line;
 			while (std::getline(source, line))
 			{
+				// Trim beginning of line
+				const auto strBegin = line.find_first_not_of(" \t");
+				if(strBegin != std::string::npos)
+					line = line.substr(strBegin);
+
+
+				// Check for type
 				if (line == "#shader fragment")
 				{
 					type = ShaderType::FRAGMENT;

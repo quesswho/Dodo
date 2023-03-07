@@ -27,9 +27,9 @@ GameLayer::GameLayer()
 		Vec3(0.0f, 35.0f, 23.0f),
 		m_LightLook,
 		Vec3(0.0, 1.0, 0.0));
-	
-	m_ShadowMap = new ShadowMap();
-	m_ShadowMapMaterial = std::make_shared<Material>(Shader::CreateFromPath("Shadow", "res/shader/shadow.glsl"));
+
+	m_Renderer = new Renderer3D(m_Camera);
+	m_Renderer->SetPostEffect(m_PostEffect);
 
 	m_Scene = m_File.Read("res/sponza/sponza.das");
 	//m_Scene = m_File.Read("res/knife.das");
@@ -55,7 +55,6 @@ GameLayer::~GameLayer()
 	delete m_PostEffect;
 	delete m_Camera;
 	delete m_Scene;
-	delete m_ShadowMap;
 }
 
 void GameLayer::Update(float elapsed)
@@ -113,24 +112,8 @@ void GameLayer::Update(float elapsed)
 
 void GameLayer::Render()
 {
-	// Generate ShadowMap
-	m_ShadowMap->Bind();
-	//Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
-
-	m_Scene->Draw(m_Scene->m_LightSystem.m_Directional.m_LightCamera, m_ShadowMapMaterial);
-
-	
-	// Draw to framebuffer
-	m_PostEffect->Bind();
-
-	m_Scene->UpdateCamera(m_Camera);
-
-	m_ShadowMap->BindTexture(3);
-	m_Scene->Draw();
-	
-	// Draw posteffect on default framebuffer
-	m_PostEffect->Draw();
-	
+	m_Renderer->UpdateCamera(m_Camera);
+	m_Renderer->DrawShadowedScene(m_Scene);
 }
 
 void GameLayer::OnEvent(const Event& event)

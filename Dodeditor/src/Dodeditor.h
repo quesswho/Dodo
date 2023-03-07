@@ -22,6 +22,7 @@ private:
 
 	Math::FreeCamera* m_Camera;
 
+	EditorRenderer* m_Renderer;
 	Scene* m_Scene;
 
 	Interface* m_Interface;

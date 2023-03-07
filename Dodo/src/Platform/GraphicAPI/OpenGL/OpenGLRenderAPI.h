@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Graphics/Material/ShaderBuilder.h"
+#include "Core/Graphics/Shader/ShaderBuilder.h"
 
 #include "Core/Application/Window.h"
 

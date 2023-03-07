@@ -5,7 +5,7 @@
 #include "Core/Application/Application.h"
 
 #include "Core/Graphics/FrameBuffer.h"
-#include "Core/Graphics/Material/Shader.h"
+#include "Core/Graphics/Shader/Shader.h"
 #include "Core/Graphics/Buffer.h"
 
 namespace Dodo { 

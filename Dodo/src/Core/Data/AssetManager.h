@@ -2,7 +2,7 @@
 
 #include <Core/Common.h>
 
-#include "Core/Graphics/Material/ShaderBuilder.h"
+#include "Core/Graphics/Shader/ShaderBuilder.h"
 #include "MaterialLoader.h"
 #include "Core/Graphics/Scene/Model.h"
 #include "Core/Graphics/Scene/Rectangle.h"

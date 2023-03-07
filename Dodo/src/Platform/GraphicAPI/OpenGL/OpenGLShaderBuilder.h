@@ -2,7 +2,7 @@
 
 #include <Core/Common.h>
 
-#include "Core/Graphics/Material/Shader.h"
+#include "Core/Graphics/Shader/Shader.h"
 
 namespace Dodo {
 

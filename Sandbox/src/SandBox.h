@@ -18,15 +18,12 @@ private:
 
 	Math::FreeCamera* m_Camera;
 
+	Renderer3D* m_Renderer;
 	Scene* m_Scene;
 
 	AsciiSceneFile m_File;
 
 	PostEffect* m_PostEffect;
-
-	// Shader should be in shadowmap
-	ShadowMap* m_ShadowMap;
-	Ref<Material> m_ShadowMapMaterial;
 
 	Math::Mat4 m_LightProjection;
 	Math::Mat4 m_LightView;

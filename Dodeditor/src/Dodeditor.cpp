@@ -24,6 +24,7 @@ GameLayer::GameLayer()
 
 	m_FrameBuffer = new FrameBuffer(frameprop);
 
+	m_Renderer = new EditorRenderer(m_Camera);
 	m_Scene = new Scene(m_Camera);
 
 	std::vector<std::string> skyboxPath = {
@@ -64,7 +65,7 @@ void GameLayer::Render()
 {
 	if (m_Interface->BeginDraw())
 	{
-		m_Scene = m_Interface->m_Scene;
+		m_Scene = m_Interface->m_Scene; // Maybe work out something better when changing scene
 	}
 
 	m_Interface->BeginViewport();
@@ -84,8 +85,10 @@ void GameLayer::DrawScene()
 {
 	m_FrameBuffer->Bind();
 
-	m_Scene->UpdateCamera(m_Camera);
-	m_Scene->Draw();
+	m_Renderer->UpdateCamera(m_Camera);
+	m_Renderer->DrawScene(m_Scene);
+	//m_Scene->UpdateCamera(m_Camera);
+	//m_Scene->Draw();
 
 	Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
 }

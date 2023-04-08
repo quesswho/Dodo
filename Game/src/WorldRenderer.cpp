@@ -69,14 +69,14 @@ void WorldRenderer::Draw(World* world) {
         for (int x = 0; x < 16; x++) {
             for (int y = 0; y < 16; y++) {
                 for (int z = 0; z < 16; z++) {
-                    if (chunk->m_VisibleFace[(x << 8) + (y << 4) + z] > 0) {
-                        m_GrassMaterial->SetUniform("u_Camera", m_Camera->GetCameraMatrix());
-                        m_GrassMaterial->SetUniform("u_Model", Dodo::Math::Mat4::Translate(Dodo::Math::Vec3(x+(chunk->m_ChunkPos.x << 4), y, z + (chunk->m_ChunkPos.y << 4))));
-                        m_GrassMaterial->Bind();
-                        m_CubeVBuffer->Bind();
-                        m_CubeIBuffer->Bind();
-                        Dodo::Application::s_Application->m_RenderAPI->DrawIndices(m_CubeIBuffer->GetCount());
-                    }
+                    if (chunk->m_Blocks[(x << 8) + (y << 4) + z]->m_Type == BlockType::AIR) continue;
+                   // if (chunk->m_VisibleFace[(x << 8) + (y << 4) + z] <= 0) continue;
+                    m_GrassMaterial->SetUniform("u_Camera", m_Camera->GetCameraMatrix());
+                    m_GrassMaterial->SetUniform("u_Model", Dodo::Math::Mat4::Translate(Dodo::Math::Vec3(x+(chunk->m_ChunkPos.x << 4), y, z + (chunk->m_ChunkPos.y << 4))));
+                    m_GrassMaterial->Bind();
+                    m_CubeVBuffer->Bind();
+                    m_CubeIBuffer->Bind();
+                    Dodo::Application::s_Application->m_RenderAPI->DrawIndices(m_CubeIBuffer->GetCount());
                 }
             }
         }

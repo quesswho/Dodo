@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Noise.h"
 
 #include <cstdint>
@@ -36,7 +37,7 @@ namespace Dodo {
             return ((h & 1) ? -u : u) + ((h & 2) ? -2.0f * v : 2.0f * v);
         }
 
-		float Simplex(float x, float y) {
+		float Noise::Simplex(float x, float y) {
             float n0, n1, n2;
 
             static const float F2 = 0.366025403f;  // F2 = (sqrt(3) - 1) / 2
@@ -103,7 +104,7 @@ namespace Dodo {
 		}
 
 
-        float SumSimplex(float x, float y, int num_iterations, float persistence, float scale) {
+        float Noise::SumSimplex(float x, float y, int num_iterations, float persistence, float scale) {
             float maxAmp = 0;
             float amp = 1;
             float freq = scale;

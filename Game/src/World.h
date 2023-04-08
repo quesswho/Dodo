@@ -1,15 +1,14 @@
 #pragma once
 
-#include "Block.h"
+#include "Chunk.h"
+#include "WorldGeneration.h"
 #include <memory>
 #include <array>
 
 class World {
 private:
-	Dodo::Math::FreeCamera* m_Camera;
+	Ref<WorldGeneration> m_WorldGen;
 public:
-	World(Dodo::Math::FreeCamera* camera);
-	std::array<std::shared_ptr<Block>, 1024> m_Blocks;
-
-	void Draw();
+	World();
+	std::vector<Ref<Chunk>> m_Chunks;
 };

@@ -49,7 +49,8 @@ GameLayer::GameLayer()
 	m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
 	Application::s_Application->m_Window->SetCursorVisible(false);
 	m_Camera->ResetMouse();
-	m_World = new World(m_Camera);
+	m_World = new World();
+	m_WorldRenderer = std::make_shared<WorldRenderer>(m_Camera);
 }
 GameLayer::~GameLayer()
 {
@@ -115,7 +116,7 @@ void GameLayer::Update(float elapsed)
 void GameLayer::Render()
 {
 	m_PostEffect->Bind();
-	m_World->Draw();
+	m_WorldRenderer->Draw(m_World);
 	m_Scene->m_SkyBox->Draw(m_Camera->GetViewMatrix());
 	m_PostEffect->Draw();
 }

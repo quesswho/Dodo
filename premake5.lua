@@ -155,8 +155,7 @@ workspace "Dodo"
 			defines {
 				"DD_RELEASE"
 			}
-			optimize "On"
-			
+			optimize "On"			
 	project "Dodeditor"
 		location "Dodeditor"
 		language "C++"
@@ -224,3 +223,64 @@ workspace "Dodo"
 				"DD_RELEASE"
 			}
 			optimize "On"
+	project "Game"
+		location "Game"
+		language "C++"
+		cppdialect "C++17"
+		staticruntime "On"
+		characterset "MBCS"
+		
+		filter "configurations:Debug"
+			targetdir ("bin/Debug-%{cfg.architecture}/%{prj.name}/")
+			objdir ("bin/Debug-%{cfg.architecture}/%{prj.name}/intermediates/")
+			filter "configurations:Release"
+			targetdir ("bin/Release-%{cfg.architecture}/%{prj.name}/")
+			objdir ("bin/Release-%{cfg.architecture}/%{prj.name}/intermediates/")
+		filter "*"
+		
+		files { 
+			"%{prj.name}/src/**.h",
+			"%{prj.name}/src/**.cpp" 
+		}
+
+		includedirs { 
+			"Dodo/src"
+		}
+		
+		externalincludedirs {
+			"Dodo/lib/spdlog/include",
+			"Dodo/lib/glad/include",
+			"Dodo/lib/imgui/include",
+			"Dodo/lib/assimp/include"
+		}
+
+		links {
+			"Dodo"
+		}
+		
+		defines
+		{
+			"_CRT_SECURE_NO_WARNINGS"
+		}
+		
+		filter "system:windows"
+			systemversion "latest"
+			defines {
+				"DD_x64",
+				"DD_API_WIN32"
+			}
+		filter "configurations:Debug"
+			kind "ConsoleApp"
+			defines {
+				"DD_DEBUG"
+			}
+			symbols "On"
+	
+		filter "configurations:Release"
+			-- entrypoint "mainCRTStartup"
+			-- kind "WindowedApp"
+			kind "ConsoleApp"
+			defines {
+				"DD_RELEASE"
+			}
+			optimize "On"	

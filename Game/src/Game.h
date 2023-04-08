@@ -1,7 +1,8 @@
 #pragma once
 
 #include <Dodo.h>
-#include "World.h"
+#include "WorldRenderer.h"
+
 using namespace Dodo;
 
 class GameLayer : public Layer {
@@ -17,13 +18,13 @@ public:
 private:
 
 	World* m_World;
+	Ref<WorldRenderer> m_WorldRenderer;
 
 	Math::FreeCamera* m_Camera;
 
 	Renderer3D* m_Renderer;
 	Scene* m_Scene;
 
-	AsciiSceneFile m_File;
 
 	PostEffect* m_PostEffect;
 

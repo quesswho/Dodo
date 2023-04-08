@@ -2,10 +2,16 @@
 
 #include <Dodo.h>
 
+enum BlockType {
+	AIR,
+	GRASS,
+	DIRT
+};
+
 class Block {
 public:
-	Block(Ref<Dodo::Mesh> mesh)
-		: m_Mesh(mesh)
+	Block(BlockType type)
+		: m_Type(type)
 	{}
-	Ref<Dodo::Mesh> m_Mesh;
+	BlockType m_Type;
 };

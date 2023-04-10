@@ -3,16 +3,16 @@
 #include <Dodo.h>
 
 #include "World.h"
+#include "ResourceManager.h"
 
 class WorldRenderer {
 private:
 	Dodo::Math::FreeCamera* m_Camera;
-	Ref<Dodo::VertexBuffer> m_CubeVBuffer;
-	Ref<Dodo::IndexBuffer> m_CubeIBuffer;
-	Ref<Dodo::Material> m_GrassMaterial;
+	ResourceManager* m_ResourceManager;
 
 public:
-	WorldRenderer(Dodo::Math::FreeCamera* camera);
+	WorldRenderer(ResourceManager* m_ResourceManager, Dodo::Math::FreeCamera* camera);
 
 	void Draw(World* world);
+	void RenderChunk(Ref<Chunk> chunk);
 };

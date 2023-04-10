@@ -1,5 +1,7 @@
 #pragma once
 
+#include "BlockPos.h"
+
 #include <Dodo.h>
 
 enum BlockType {
@@ -10,8 +12,9 @@ enum BlockType {
 
 class Block {
 public:
-	Block(BlockType type)
-		: m_Type(type)
+	Block(BlockType type, BlockPos pos)
+		: m_Type(type), m_Pos(pos)
 	{}
 	BlockType m_Type;
+	BlockPos m_Pos;
 };

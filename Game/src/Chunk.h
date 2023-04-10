@@ -10,7 +10,7 @@ private:
 	void SetBlockType(int x, int y, int z, BlockType type);
 public:
 	Chunk(Dodo::Math::TVec2<int> chunkpos);
-	Chunk(Dodo::Math::TVec2<int> chunkpos, std::array<Ref<Block>, 4096> blocks);
+	Chunk(Dodo::Math::TVec2<int> chunkpos, const std::array<Ref<Block>, 4096>& blocks);
 
 
 	Dodo::Math::TVec2<int> m_ChunkPos;

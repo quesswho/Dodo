@@ -15,8 +15,11 @@ in Vertex_Out {
 void main()
 {
     //if(frag_in.Normal.z < 0) discard;
-    pixel = texture(tex, frag_in.TexCoord);
-    //pixel = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    vec3 color = texture(tex, frag_in.TexCoord).xyz;
+    float diff = max(dot(normalize(vec3(0.1,0.8,0.2)), frag_in.Normal), 0.0f);
+    vec3 diffuse = color * diff;
+    pixel = vec4(color*0.8 + diffuse*0.2,1.0f);
+
 }
 
 #shader vertex

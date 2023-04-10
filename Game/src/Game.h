@@ -19,6 +19,8 @@ private:
 
 	World* m_World;
 	Ref<WorldRenderer> m_WorldRenderer;
+	ResourceManager* m_ResourceManager;
+
 
 	Math::FreeCamera* m_Camera;
 

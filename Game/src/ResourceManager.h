@@ -18,4 +18,5 @@ public:
 	Ref<Dodo::VertexBuffer> m_RightVBuffer;
 
 	Ref<Dodo::Material> m_GrassMaterial;
+	Ref<Dodo::Material> m_DirtMaterial;
 };

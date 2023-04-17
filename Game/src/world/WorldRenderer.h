@@ -3,7 +3,7 @@
 #include <Dodo.h>
 
 #include "World.h"
-#include "ResourceManager.h"
+#include "../ResourceManager.h"
 
 class WorldRenderer {
 private:

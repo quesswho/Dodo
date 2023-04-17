@@ -32,8 +32,6 @@ GameLayer::GameLayer()
 	m_Renderer = new Renderer3D(m_Camera);
 	m_Renderer->SetPostEffect(m_PostEffect);
 
-	//m_Scene = m_File.Read("res/sponza/sponza.das");
-	//m_Scene = m_File.Read("res/knife.das");
 	m_Scene = new Scene(m_Camera);
 
 	std::vector<std::string> skyboxPath = {

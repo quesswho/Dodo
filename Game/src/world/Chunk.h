@@ -2,6 +2,8 @@
 
 #include "Block.h"
 
+
+
 class Chunk {
 private:
 	void UpdateVisibleFaces();
@@ -18,4 +20,5 @@ public:
 	// 16x16x16 blocks
 	std::array<Ref<Block>, 4096> m_Blocks;
 	std::array<byte, 4096> m_VisibleFace;
+	std::vector<RenderBlock> m_VisibleBlocks;
 };

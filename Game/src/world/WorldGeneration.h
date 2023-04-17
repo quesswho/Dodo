@@ -14,5 +14,5 @@ public:
 		: m_Seed(seed)
 	{}
 
-	Ref<Chunk> GenerateChunk(TVec2<int> chunpos);
+	Ref<Chunk> GenerateChunk(TVec2<int> chunkpos);
 };

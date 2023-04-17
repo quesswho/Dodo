@@ -2,6 +2,8 @@
 
 #include <Dodo.h>
 
+#include "world/Block.h"
+
 class ResourceManager {
 private:
 
@@ -10,13 +12,16 @@ public:
 
 	Ref<Dodo::IndexBuffer> m_FaceIBuffer;
 
-	Ref<Dodo::VertexBuffer> m_FrontVBuffer;
-	Ref<Dodo::VertexBuffer> m_TopVBuffer;
-	Ref<Dodo::VertexBuffer> m_BackVBuffer;
-	Ref<Dodo::VertexBuffer> m_BottomVBuffer;
-	Ref<Dodo::VertexBuffer> m_LeftVBuffer;
-	Ref<Dodo::VertexBuffer> m_RightVBuffer;
+	// Texture atlas
+	Ref<Dodo::Material> m_TextureAtlas;
 
-	Ref<Dodo::Material> m_GrassMaterial;
-	Ref<Dodo::Material> m_DirtMaterial;
+	uint m_SizeX;
+	uint m_SizeY;
+
+	FaceData GetFrontFace(BlockType type, BlockPos pos);
+	FaceData GetBackFace(BlockType type, BlockPos pos);
+	FaceData GetTopFace(BlockType type, BlockPos pos);
+	FaceData GetBottomFace(BlockType type, BlockPos pos);
+	FaceData GetLeftFace(BlockType type, BlockPos pos);
+	FaceData GetRightFace(BlockType type, BlockPos pos);
 };

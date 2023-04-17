@@ -11,7 +11,7 @@ GameLayer::GameLayer()
 
 
 	// FPS camera containing view matrix
-	m_Camera = new FreeCamera(Vec3(0.0f, 1.0f, 0.0f), (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.04f, 10.0f);
+	m_Camera = new FreeCamera(Vec3(0.0f, 16.0f, 0.0f), (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.04f, 20.0f);
 
 	// Framebuffer initialization data
 	FrameBufferProperties frameprop;
@@ -49,8 +49,7 @@ GameLayer::GameLayer()
 	Application::s_Application->m_Window->SetCursorVisible(false);
 	m_Camera->ResetMouse();
 	m_ResourceManager = new ResourceManager();
-	m_World = new World();
-	m_WorldRenderer = std::make_shared<WorldRenderer>(m_ResourceManager, m_Camera);
+	m_World = new World(m_ResourceManager, m_Camera);
 }
 GameLayer::~GameLayer()
 {
@@ -116,7 +115,7 @@ void GameLayer::Update(float elapsed)
 void GameLayer::Render()
 {
 	m_PostEffect->Bind();
-	m_WorldRenderer->Draw(m_World);
+	m_World->Draw();
 	m_Scene->m_SkyBox->Draw(m_Camera->GetViewMatrix());
 	m_PostEffect->Draw();
 }
@@ -142,6 +141,11 @@ void GameLayer::OnEvent(const Event& event)
 			break;
 		case EventType::MOUSE_POSITION:
 			m_Camera->UpdateRotation();
+			break;
+		case EventType::WINDOW_RESIZE:
+			TVec2<int> screen = static_cast<const WindowResizeEvent&>(event).m_ScreenSize;
+			m_Camera->Resize(screen.x, screen.y);
+			m_Scene->m_SkyBox->m_Projection = m_Camera->GetProjectionMatrix();
 			break;
 	}
 }

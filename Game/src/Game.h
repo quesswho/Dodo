@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Dodo.h>
-#include "WorldRenderer.h"
+#include "World/WorldRenderer.h"
 
 using namespace Dodo;
 

@@ -54,8 +54,13 @@ static uint indices[]{
 ResourceManager::ResourceManager()
 {
     m_FaceIBuffer = std::make_shared<Dodo::IndexBuffer>(indices, 6);
-    Ref<Dodo::Texture> texture = std::make_shared<Dodo::Texture>("res/texture/grass.png", 0, Dodo::TextureSettings(Dodo::TextureFilter::FILTER_MIN_MAG_MIP_NEAREST));
-    m_GrassMaterial = std::make_shared<Dodo::Material>(Dodo::Shader::CreateFromPath("block", "res/shader/block.glsl"), texture);
+    Ref<Dodo::Texture> grass = std::make_shared<Dodo::Texture>("res/texture/grass.png", 0, Dodo::TextureSettings(Dodo::TextureFilter::FILTER_MIN_MAG_MIP_NEAREST));
+    Ref<Dodo::Texture> dirt = std::make_shared<Dodo::Texture>("res/texture/dirt.png", 0, Dodo::TextureSettings(Dodo::TextureFilter::FILTER_MIN_MAG_MIP_NEAREST));
+
+    Ref<Dodo::Shader> shader = Dodo::Shader::CreateFromPath("block", "res/shader/block.glsl");
+
+    m_GrassMaterial = std::make_shared<Dodo::Material>(shader, grass);
+    m_DirtMaterial = std::make_shared<Dodo::Material>(shader, dirt);
 
     m_FrontVBuffer = std::make_shared<Dodo::VertexBuffer>(front_verts, 4 * 8 * 4, Dodo::BufferProperties({ { "POSITION", 3 }, { "TEXCOORD", 2 }, { "NORMAL", 3} }));
     m_TopVBuffer = std::make_shared<Dodo::VertexBuffer>(top_verts, 4 * 8 * 4, Dodo::BufferProperties({ { "POSITION", 3 }, { "TEXCOORD", 2 }, { "NORMAL", 3} }));

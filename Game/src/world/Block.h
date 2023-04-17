@@ -10,11 +10,20 @@ enum BlockType {
 	DIRT
 };
 
-class Block {
-public:
+struct Block {
 	Block(BlockType type, BlockPos pos)
 		: m_Type(type), m_Pos(pos)
 	{}
 	BlockType m_Type;
 	BlockPos m_Pos;
+};
+
+struct RenderBlock {
+	RenderBlock(BlockType type, BlockPos pos, byte face)
+		: m_Type(type), m_Pos(pos), m_Face(face)
+	{}
+
+	BlockType m_Type;
+	BlockPos m_Pos;
+	byte m_Face;
 };

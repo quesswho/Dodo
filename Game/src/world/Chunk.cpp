@@ -22,17 +22,18 @@ void Chunk::UpdateVisibleFaces() {
 		for (int y = 0; y < 16; y++) {
 			for (int z = 0; z < 16; z++) {
 				if (GetBlockType(x, y, z) != BlockType::AIR) {
-					int temp = (GetBlockType(x - 1, y, z) == BlockType::AIR);
 					int index = (x << 8) + (y << 4) + z;
-					m_VisibleFace[(x << 8) + (y << 4) + z] =
+					byte face =
 						(GetBlockType(x - 1, y, z) == BlockType::AIR) |      // back
 						((GetBlockType(x + 1, y, z) == BlockType::AIR) << 1) | // front
 						((GetBlockType(x, y - 1, z) == BlockType::AIR) << 2) | // top
 						((GetBlockType(x, y + 1, z) == BlockType::AIR) << 3) | // bottom
 						((GetBlockType(x, y, z - 1) == BlockType::AIR) << 4) | // left
 						((GetBlockType(x, y, z + 1) == BlockType::AIR) << 5);	 // right
-						
-					//m_VisibleFace[(x << 8) + (y << 4) + z] = 255;
+					if(face > 0) {
+						RenderBlock block = RenderBlock(m_Blocks[index]->m_Type, m_Blocks[index]->m_Pos, face);
+						m_VisibleBlocks.push_back(block);
+					}
 				}
 			}
 		}

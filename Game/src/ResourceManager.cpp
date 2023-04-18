@@ -1,6 +1,5 @@
 #include "ResourceManager.h"
 
-
 float front_verts[] = {
     -0.5, -0.5,  0.5, 0.0, 1.0, 0.0, 0.0, 1.0,
      0.5, -0.5,  0.5, 1.0, 1.0, 0.0, 0.0, 1.0,
@@ -53,6 +52,18 @@ ResourceManager::ResourceManager()
     Ref<Dodo::Shader> shader = Dodo::Shader::CreateFromPath("block", "res/shader/block.glsl");
 
     m_TextureAtlas = std::make_shared<Dodo::Material>(shader, atlas);
+
+    RegisterBlock(AIR);
+    RegisterBlock(DIRT);
+    RegisterBlock(GRASS);
+}
+
+void ResourceManager::RegisterBlock(BlockType type) {
+    m_Blocks.emplace(type, std::make_shared<Block>(type));
+}
+
+Ref<Block> ResourceManager::GetBlock(BlockType type) {
+    return m_Blocks.find(type)->second;
 }
 
 FaceData ResourceManager::GetFrontFace(BlockType type, BlockPos pos) {

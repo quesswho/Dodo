@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Dodo.h>
-#include "World/World.h"
+#include "World/WorldManager.h"
 
 using namespace Dodo;
 
@@ -16,9 +16,9 @@ public:
 	void Render();
 	void OnEvent(const Event& event);
 private:
-	World* m_World;
-	ResourceManager* m_ResourceManager;
-
+	//World* m_World;
+	Ref<ResourceManager> m_ResourceManager;
+	Ref<WorldManager> m_WorldManager;
 
 	Math::FreeCamera* m_Camera;
 

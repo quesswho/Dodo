@@ -7,8 +7,10 @@
 class ResourceManager {
 private:
 
+	std::unordered_map<BlockType, Ref<Block>> m_Blocks;
 public:
 	ResourceManager();
+
 
 	Ref<Dodo::IndexBuffer> m_FaceIBuffer;
 
@@ -24,4 +26,7 @@ public:
 	FaceData GetBottomFace(BlockType type, BlockPos pos);
 	FaceData GetLeftFace(BlockType type, BlockPos pos);
 	FaceData GetRightFace(BlockType type, BlockPos pos);
+
+	void RegisterBlock(BlockType type);
+	Ref<Block> GetBlock(BlockType type);
 };

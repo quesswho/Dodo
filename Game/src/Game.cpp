@@ -48,7 +48,6 @@ GameLayer::GameLayer()
 	Application::s_Application->m_Window->SetCursorVisible(false);
 	m_Camera->ResetMouse();
 	m_ResourceManager = std::make_shared<ResourceManager>();
-	//m_World = new World(m_ResourceManager, m_Camera);
 	m_WorldManager = std::make_shared<WorldManager>(m_ResourceManager, m_Camera);
 }
 GameLayer::~GameLayer()
@@ -115,7 +114,6 @@ void GameLayer::Update(float elapsed)
 void GameLayer::Render()
 {
 	m_PostEffect->Bind();
-	//m_World->Draw();
 	m_WorldManager->Draw();
 	m_Scene->m_SkyBox->Draw(m_Camera->GetViewMatrix());
 	m_PostEffect->Draw();

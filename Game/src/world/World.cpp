@@ -1,7 +1,7 @@
 #include "World.h"
 
 World::World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRenderer)
-	: m_WorldRenderer(worldRenderer)
+	: m_WorldRenderer(worldRenderer), m_ResourceManager(resourceManager)
 {
 	m_WorldGen = std::make_shared<WorldGeneration>(0, resourceManager);
 	for (int x = -10; x <= 40; x++) {

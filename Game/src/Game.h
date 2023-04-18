@@ -16,7 +16,6 @@ public:
 	void Render();
 	void OnEvent(const Event& event);
 private:
-	//World* m_World;
 	Ref<ResourceManager> m_ResourceManager;
 	Ref<WorldManager> m_WorldManager;
 

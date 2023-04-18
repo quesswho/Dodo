@@ -18,7 +18,7 @@ void main()
     vec3 color = texture(tex, frag_in.TexCoord).xyz;
     float diff = max(dot(normalize(vec3(0.1,0.8,0.2)), frag_in.Normal), 0.0f);
     vec3 diffuse = color * diff;
-    pixel = vec4(color*0.7 + diffuse*0.5,1.0f);
+    pixel = vec4(color*0.8 + diffuse,1.0f);
 	
 }
 

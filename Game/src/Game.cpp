@@ -18,7 +18,6 @@ GameLayer::GameLayer()
 	frameprop.m_Width = Application::s_Application->m_WindowProperties.m_Width;
 	frameprop.m_Height = Application::s_Application->m_WindowProperties.m_Height;
 
-	//m_PostEffect = new PostEffect(frameprop, "res/shader/noise.fx");
 	m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.fx");
 	m_Gamma = 1.0f;
 
@@ -48,8 +47,9 @@ GameLayer::GameLayer()
 	m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
 	Application::s_Application->m_Window->SetCursorVisible(false);
 	m_Camera->ResetMouse();
-	m_ResourceManager = new ResourceManager();
-	m_World = new World(m_ResourceManager, m_Camera);
+	m_ResourceManager = std::make_shared<ResourceManager>();
+	//m_World = new World(m_ResourceManager, m_Camera);
+	m_WorldManager = std::make_shared<WorldManager>(m_ResourceManager, m_Camera);
 }
 GameLayer::~GameLayer()
 {
@@ -115,7 +115,8 @@ void GameLayer::Update(float elapsed)
 void GameLayer::Render()
 {
 	m_PostEffect->Bind();
-	m_World->Draw();
+	//m_World->Draw();
+	m_WorldManager->Draw();
 	m_Scene->m_SkyBox->Draw(m_Camera->GetViewMatrix());
 	m_PostEffect->Draw();
 }

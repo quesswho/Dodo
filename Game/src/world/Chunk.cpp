@@ -1,14 +1,14 @@
 #include "Chunk.h"
 
-Chunk::Chunk(Dodo::Math::TVec2<int> chunkpos) 
+Chunk::Chunk(ChunkPos chunkpos)
 	: m_ChunkPos(chunkpos)
 {
 	for (int i = 0; i < 4096; i++) {
-		m_Blocks[i] = std::make_shared<Block>(BlockType::AIR, BlockPos(i/256,i/16 % 16,i%16));
+		m_Blocks[i] = std::make_shared<Block>(BlockType::AIR);
 	}
 }
 
-Chunk::Chunk(Dodo::Math::TVec2<int> chunkpos, const std::array<Ref<Block>, 4096>& blocks)
+Chunk::Chunk(ChunkPos chunkpos, const std::array<Ref<Block>, 4096>& blocks)
 	: m_ChunkPos(chunkpos), m_Blocks(blocks)
 {}
 

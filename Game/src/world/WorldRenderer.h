@@ -7,13 +7,10 @@
 
 class WorldRenderer {
 private:
+	Ref<ResourceManager> m_ResourceManager;
 	Dodo::Math::FreeCamera* m_Camera;
-
 public:
-	WorldRenderer(ResourceManager* resourceManager, Dodo::Math::FreeCamera* camera);
+	WorldRenderer(Ref<ResourceManager> resourceManager, Dodo::Math::FreeCamera* camera);
 
 	void RenderChunk(Ref<Chunk> chunk);
-	void UpdateChunk(Ref<Chunk> chunk);
-
-	ResourceManager* m_ResourceManager;
 };

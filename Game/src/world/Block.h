@@ -2,8 +2,6 @@
 
 #include "BlockPos.h"
 
-#include <Dodo.h>
-
 enum BlockType {
 	AIR,
 	GRASS,
@@ -11,11 +9,10 @@ enum BlockType {
 };
 
 struct Block {
-	Block(BlockType type, BlockPos pos)
-		: m_Type(type), m_Pos(pos)
+	Block(BlockType type)
+		: m_Type(type)
 	{}
 	BlockType m_Type;
-	BlockPos m_Pos;
 };
 
 struct VertexData {

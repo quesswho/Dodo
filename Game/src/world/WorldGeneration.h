@@ -2,17 +2,19 @@
 #include <Dodo.h>
 
 #include "Chunk.h"
+#include "../ResourceManager.h"
 
 using namespace Dodo::Math;
 class WorldGeneration {
 
 private:
+	Ref<ResourceManager> m_ResourceManager;
 	uint m_Seed;
 public:
 
-	WorldGeneration(uint seed)
-		: m_Seed(seed)
+	WorldGeneration(uint seed, Ref<ResourceManager> resourceManager)
+		: m_Seed(seed), m_ResourceManager(resourceManager)
 	{}
 
-	Ref<Chunk> GenerateChunk(TVec2<int> chunkpos);
+	Ref<Chunk> GenerateChunk(ChunkPos chunkpos);
 };

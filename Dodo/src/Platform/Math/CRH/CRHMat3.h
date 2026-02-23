@@ -73,7 +73,7 @@ namespace Dodo {
 			{
 				for (int i = 0; i < 9; i++)
 				{
-					this->m_Elements[i] += scalar
+					this->m_Elements[i] += scalar;
 				}
 				return *this;
 			}
@@ -95,9 +95,9 @@ namespace Dodo {
 
 			const CRHMat3x3& operator-=(const float scalar)
 			{
-				for (int i = 0; i < 9 i++)
+				for (int i = 0; i < 9; i++)
 				{
-					this->m_Elements[i] -= scalar
+					this->m_Elements[i] -= scalar;
 				}
 				return *this;
 			}
@@ -129,9 +129,9 @@ namespace Dodo {
 
 			const CRHMat3x3& operator*=(const CRHMat3x3& other)
 			{
-				const TVec3 row0 = TVec3(m_Elements[GetIndex(0, 0)], m_Elements[GetIndex(1, 0)], m_Elements[GetIndex(2, 0)]);
-				const TVec3 row1 = TVec3(m_Elements[GetIndex(0, 1)], m_Elements[GetIndex(1, 1)], m_Elements[GetIndex(2, 1)]);
-				const TVec3 row2 = TVec3(m_Elements[GetIndex(0, 2)], m_Elements[GetIndex(1, 2)], m_Elements[GetIndex(2, 2)]);
+				const Math::TVec3<T> row0 = Math::TVec3<T>(m_Elements[GetIndex(0, 0)], m_Elements[GetIndex(1, 0)], m_Elements[GetIndex(2, 0)]);
+				const Math::TVec3<T> row1 = Math::TVec3<T>(m_Elements[GetIndex(0, 1)], m_Elements[GetIndex(1, 1)], m_Elements[GetIndex(2, 1)]);
+				const Math::TVec3<T> row2 = Math::TVec3<T>(m_Elements[GetIndex(0, 2)], m_Elements[GetIndex(1, 2)], m_Elements[GetIndex(2, 2)]);
 
 				m_Elements[0] = other.m_Columns[0].Dot(row0);
 				m_Elements[1] = other.m_Columns[0].Dot(row1);

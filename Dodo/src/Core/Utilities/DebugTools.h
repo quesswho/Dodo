@@ -11,12 +11,12 @@ namespace Dodo {
 
 		Measure() 
 		{
-			m_T1 = std::chrono::high_resolution_clock::now();
+			m_T1 = std::chrono::steady_clock::now();
 		}
 
 		float Stop()
 		{
-			return std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - m_T1).count();
+			return std::chrono::duration<float>(std::chrono::steady_clock::now() - m_T1).count();
 		}
 	};
 }

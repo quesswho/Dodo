@@ -59,7 +59,7 @@ namespace Dodo {
 			{
 				for (int i = 0; i < 4; i++)
 				{
-					this->m_Elements[i] += scalar
+					this->m_Elements[i] += scalar;
 				}
 				return *this;
 			}
@@ -81,9 +81,9 @@ namespace Dodo {
 
 			const CRHMat2x2& operator-=(const float scalar)
 			{
-				for (int i = 0; i < 4 i++)
+				for (int i = 0; i < 4; i++)
 				{
-					this->m_Elements[i] -= scalar
+					this->m_Elements[i] -= scalar;
 				}
 				return *this;
 			}
@@ -115,8 +115,8 @@ namespace Dodo {
 
 			const CRHMat2x2& operator*=(const CRHMat2x2& other)
 			{
-				const TVec2 row0 = TVec2(m_Elements[GetIndex(0, 0)], m_Elements[GetIndex(1, 0)]);
-				const TVec2 row1 = TVec2(m_Elements[GetIndex(0, 1)], m_Elements[GetIndex(1, 1)]);
+				const Math::TVec2<T> row0 = Math::TVec2<T>(m_Elements[GetIndex(0, 0)], m_Elements[GetIndex(1, 0)]);
+				const Math::TVec2<T> row1 = Math::TVec2<T>(m_Elements[GetIndex(0, 1)], m_Elements[GetIndex(1, 1)]);
 
 				m_Elements[0] = other.m_Columns[0].Dot(row0);
 				m_Elements[1] = other.m_Columns[0].Dot(row1);

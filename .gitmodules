@@ -1,0 +1,3 @@
+[submodule "Dodo/lib/assimp"]
+	path = Dodo/lib/assimp
+	url = https://github.com/assimp/assimp

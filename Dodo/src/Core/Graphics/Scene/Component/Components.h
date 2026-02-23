@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 namespace Dodo {
 	enum ComponentFlag // Order needs to be the same as in the std::variant<...> inside Entity.h!
 	{
@@ -8,7 +10,13 @@ namespace Dodo {
 		ComponentFlag_Rectangle2DComponent = 2 << 0,
 	};
 
-	DEFINE_ENUM_FLAG_OPERATORS(ComponentFlag);
+	inline ComponentFlag operator|(ComponentFlag a, ComponentFlag b) noexcept {
+        using underlying = std::underlying_type_t<ComponentFlag>;
+        return static_cast<ComponentFlag>(static_cast<underlying>(a) | static_cast<underlying>(b));
+    }
 
-	inline ComponentFlag& operator |= (ComponentFlag& a, int b) throw() { return (ComponentFlag&)(((_ENUM_FLAG_SIZED_INTEGER<ComponentFlag>::type&)a) |= ((_ENUM_FLAG_SIZED_INTEGER<ComponentFlag>::type)b)); }
+	inline ComponentFlag& operator|=(ComponentFlag& a, ComponentFlag b) noexcept {
+        a = a | b;
+        return a;
+    }
 }

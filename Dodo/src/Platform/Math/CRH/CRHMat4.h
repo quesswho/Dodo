@@ -84,8 +84,9 @@ namespace Dodo {
 
 			inline void Identity(float diagonal = 1.0f)
 			{
-				memset(m_Elements, 0, 16 * 4);
-
+				for (int i = 0; i < 16; ++i)
+    				m_Elements[i] = T(0);
+					
 				m_Elements[GetIndex(0, 0)] = (T)diagonal;
 				m_Elements[GetIndex(1, 1)] = (T)diagonal;
 				m_Elements[GetIndex(2, 2)] = (T)diagonal;

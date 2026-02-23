@@ -107,7 +107,7 @@ namespace Dodo {
 		}
 
 
-		void OpenGLShader::CompileInit(std::string& fileSource)
+		void OpenGLShader::CompileInit(const std::string& fileSource)
 		{
 			if (fileSource == "-1") return;
 			ShaderType type = ShaderType::UNKNOWN;

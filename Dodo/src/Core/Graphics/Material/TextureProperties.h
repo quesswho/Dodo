@@ -4,7 +4,7 @@
 
 namespace Dodo {
 
-	enum class TextureFormat : byte
+	enum class TextureFormat : uint8_t
 	{
 		FORMAT_RED,
 		FORMAT_RGB,
@@ -30,7 +30,7 @@ namespace Dodo {
 		TextureFormat m_Format;
 	};
 
-	enum class TextureFilter : uint
+	enum class TextureFilter : uint32_t
 	{
 		FILTER_MIN_MAG_LINEAR_MIP_NEAREST,
 		FILTER_MIN_MAG_MIP_LINEAR,

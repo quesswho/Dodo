@@ -2,7 +2,7 @@
 
 #include "Core/Graphics/Shader/ShaderBuilder.h"
 
-#include "Core/Application/Window.h"
+#include "Core/Application/WindowProperties.h"
 
 #include <glad/gl.h>
 

@@ -20,7 +20,7 @@ endif()
 if(DD_API_OPENGL)
     file(GLOB_RECURSE DODO_OPENGL_CPP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/GraphicAPI/OpenGL/*.cpp)
     list(APPEND DODO_CPP_SOURCES ${DODO_OPENGL_CPP_SOURCES})
-elif(DD_API_VULKAN)
+elseif(DD_API_VULKAN)
     file(GLOB_RECURSE DODO_VULKAN_CPP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/GraphicAPI/Vulkan/*.cpp)
     list(APPEND DODO_CPP_SOURCES ${DODO_VULKAN_CPP_SOURCES})
 endif()
@@ -40,11 +40,11 @@ target_include_directories(Dodo
     PUBLIC
         src
         lib/stb_image
-    PRIVATE
         lib/spdlog/include
         lib/glad/include
         lib/imgui/include
         lib/assimp/include
+    PRIVATE
 )
 
 target_link_libraries(Dodo
@@ -64,9 +64,9 @@ target_precompile_headers(Dodo PRIVATE src/pch.h)
 
 # Platform-specific
 if (WIN32)
-    target_compile_definitions(Dodo PRIVATE DD_x64 DD_API_WIN32)
-else ()
-    target_compile_definitions(Dodo PRIVATE DD_API_GLFW)
+    target_compile_definitions(Dodo PUBLIC DD_x64 DD_API_WIN32)
+else()
+    target_compile_definitions(Dodo PUBLIC DD_API_GLFW)
 endif()
 
 target_compile_definitions(Dodo

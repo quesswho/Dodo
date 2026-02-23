@@ -141,14 +141,12 @@ namespace Dodo {
 			}
 
 			// Return a vector with a magnitude of limit
-			template<typename T>
 			inline constexpr TVec3 Limit(const T limit) const
 			{
 				return this->Normalize() * limit;
 			}
 
 			// Limit the vectors magnitude
-			template<typename T>
 			inline void LimitVector(const T limit)
 			{
 				*this = this->Normalize() * limit;
@@ -159,7 +157,7 @@ namespace Dodo {
 			{
 				return sqrt((this->x - other->x) * (this->x - other->x) +
 					(this->y - other->y) * (this->y - other->y) + 
-					(this->z - other->z) * (this->z - other->z))
+					(this->z - other->z) * (this->z - other->z));
 			}
 
 			// Dot product 

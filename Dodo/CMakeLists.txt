@@ -48,6 +48,9 @@ if (WIN32)
 endif()
 
 target_compile_definitions(Dodo
+    PUBLIC
+        DD_MATH_COLUMN_MAJOR
+        DD_COORDINATE_RIGHT_HANDED
     PRIVATE
         $<$<CONFIG:Debug>:DD_DEBUG>
         $<$<CONFIG:Release>:DD_RELEASE>

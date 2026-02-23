@@ -69,7 +69,6 @@ namespace Dodo {
 
 			CRHMat4x4(const Math::Mat3x3<T>& mat)
 			{
-				IdentityRH(1.0f);
 				m_Elements[GetIndex(0, 0)] = mat.m_Elements[0];
 				m_Elements[GetIndex(0, 1)] = mat.m_Elements[1];
 				m_Elements[GetIndex(0, 2)] = mat.m_Elements[2];
@@ -101,7 +100,7 @@ namespace Dodo {
 			{
 				for (int i = 0; i < 16; i++)
 				{
-					this->m_Elements[i] += scalar
+					this->m_Elements[i] += scalar;
 				}
 				return *this;
 			}
@@ -125,7 +124,7 @@ namespace Dodo {
 			{
 				for (int i = 0; i < 16; i++)
 				{
-					this->m_Elements[i] -= scalar
+					this->m_Elements[i] -= scalar;
 				}
 				return *this;
 			}
@@ -344,7 +343,7 @@ namespace Dodo {
 					| 0,		 2 / (t-b), 0,			-(t+b)/(t-b) |
 					| 0,		 0,			-2 / (f-n), -(f+n)/(f-n) |
 					| 0,		 0,			0,			1			 |
-					¯¯												¯¯
+					ï¿½ï¿½												ï¿½ï¿½
 				*/
 
 				return CRHMat4x4(
@@ -365,7 +364,7 @@ namespace Dodo {
 					| 0,		 s,			0,					        0		|
 					| 0,		 0,			-f / (f - n),		-1		|
 					| 0,		 0,			-f * n / (f - n), 0		|
-					¯¯														   ¯¯
+					ï¿½ï¿½														   ï¿½ï¿½
 				*/
 
 
@@ -380,9 +379,9 @@ namespace Dodo {
 			{
 				CRHMat4x4 result(1.0f);
 
-				const Vec3 f = Normalize(to - eye);
-				const Vec3 r = Normalize(Cross(f, up));
-				const Vec3 u = Cross(r, f);
+				const Math::Vec3 f = Normalize(to - eye);
+				const Math::Vec3 r = Normalize(Cross(f, up));
+				const Math::Vec3 u = Cross(r, f);
 
 				result.m_Elements[GetIndex(0, 0)] = r.x;
 				result.m_Elements[GetIndex(1, 0)] = r.y;

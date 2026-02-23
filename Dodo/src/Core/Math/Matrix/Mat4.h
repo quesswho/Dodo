@@ -2,7 +2,7 @@
 
 #include <Core/Common.h>
 
-#ifdef DD_MATH_CRH
+#if defined(DD_MATH_COLUMN_MAJOR) && defined(DD_COORDINATE_RIGHT_HANDED)
 #include "Platform/Math/CRH/CRHMat4.h"
 namespace Dodo { namespace Math { 
 		template<class T = float>

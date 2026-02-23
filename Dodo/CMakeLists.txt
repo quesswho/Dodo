@@ -1,10 +1,18 @@
 add_library(Dodo STATIC)
 
-target_sources(Dodo
-    PRIVATE
+
+file(GLOB_RECURSE DODO_CPP_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+)
+
+file(GLOB_RECURSE DODO_H_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
+)
+
+target_sources(Dodo PRIVATE
         src/pch.cpp
-        src/**/*.cpp
-        src/**/*.h
+        ${DODO_CPP_SOURCES}
+        ${DODO_H_SOURCES}
         lib/stb_image/stb_image.cpp
 )
 

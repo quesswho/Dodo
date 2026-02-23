@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.25)
 project(Dodo LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Load Opengl and (or) Vulkan
-option(DD_GLAD_OPENGL "Enable OpenGL loader" ON)
-option(DD_GLAD_VULKAN "Enable Vulkan loader" OFF)
+option(DD_API_OPENGL "Enable OpenGL loader" ON)
+option(DD_API_VULKAN "Enable Vulkan loader" OFF)
 
 
 message(STATUS "=== Configuring Dodo ===")

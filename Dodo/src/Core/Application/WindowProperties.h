@@ -15,6 +15,19 @@ namespace Dodo {
 		DodoWindowFlags_SERIALIZESCENE  = 1 << 5,
 	};
 
+	inline WindowFlags operator|(WindowFlags a, WindowFlags b)
+	{
+		return static_cast<WindowFlags>(
+			static_cast<uint32_t>(a) | static_cast<uint32_t>(b)
+		);
+	}
+
+	inline WindowFlags& operator|=(WindowFlags& a, WindowFlags b)
+	{
+		a = a | b;
+		return a;
+	}
+
 	struct WindowProperties {
 		WindowProperties() : m_Width(0), m_Height(0), m_Title("Dodo Engine"), m_Flags(DodoWindowFlags_NONE) {}
 		uint8_t m_Width;

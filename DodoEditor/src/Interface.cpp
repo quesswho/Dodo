@@ -363,12 +363,12 @@ void Interface::DrawHierarchy()
 					ImGui::Indent();
 					if (ImGui::InputText(std::to_string(ent.first).c_str(), s_RenameableHierarchy, IM_ARRAYSIZE(s_RenameableHierarchy), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackCharFilter, ImGuiFilterAz09))
 					{
-						if (s_RenameableHierarchy == '\0')
-							strcpy_s(s_RenameableHierarchy, "Unnamed");
+						if (s_RenameableHierarchy == nullptr || s_RenameableHierarchy[0] == '\0')
+							strncpy(s_RenameableHierarchy, "Unnamed", 256);
 
 						m_Scene->RenameEntity(ent.first, s_RenameableHierarchy);
 						strcpy(m_CurrentInspectorName, s_RenameableHierarchy);
-						strcpy_s(s_RenameableHierarchy, "Unnamed");
+						strncpy(s_RenameableHierarchy, "Unnamed", 256);
 						s_RenamingId = -1;
 						if (!io.KeyCtrl)
 							for (auto& e : m_SelectedEntity)
@@ -437,7 +437,7 @@ void Interface::DrawInspector()
 							std::string name = m_InspectorComponents[i].m_Name;
 							if (ImGui::MenuItem(name.c_str()))
 							{
-								ent.m_ComponentFlags |= ((ComponentFlag)(i+1) << 0);
+								ent.m_ComponentFlags |= static_cast<ComponentFlag>((i+1) << 0);
 								break;
 							}
 						}
@@ -481,7 +481,7 @@ void Interface::DrawInspector()
 						ImGui::Indent();
 						if (ImGui::Button("Browse")) {
 							std::string str = Application::s_Application->m_Window->OpenFileSelector("Model\0*.fbx;*.obj\0");
-							if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
+							if (str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
 							model = new ModelComponent(str.c_str());
 							m_Scene->AddComponent(e.first, model);
 						}
@@ -535,7 +535,7 @@ void Interface::DrawInspector()
 							std::string str = Application::s_Application->m_Window->OpenFileSelector("Model\0*.fbx;*.obj\0");
 							if (str != "")
 							{
-								if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory()))
+								if (str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory()))
 									str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory so erase global directory
 								m_Scene->AddComponent(e.first, new ModelComponent(str.c_str()));
 							}
@@ -568,7 +568,7 @@ void Interface::DrawInspector()
 						ImGui::Indent();
 						if (ImGui::Button("Browse")) {
 							std::string str = Application::s_Application->m_Window->OpenFileSelector("Texture\0*.png;*.jpg;*.tga\0");
-							if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
+							if (str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
 							comp = new Rectangle2DComponent(str.c_str());
 							m_Scene->AddComponent(e.first, comp);
 						}
@@ -622,7 +622,7 @@ void Interface::DrawInspector()
 							std::string str = Application::s_Application->m_Window->OpenFileSelector("Texture\0*.png;*.jpg;*.tga\0");
 							if (str != "")
 							{
-								if (str._Starts_with(Application::s_Application->m_Window->GetMainWorkDirectory()))
+								if (str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory()))
 									str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory so erase global directory
 								m_Scene->AddComponent(e.first, new Rectangle2DComponent(str.c_str()));
 							}

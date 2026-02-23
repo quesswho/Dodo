@@ -26,15 +26,29 @@ namespace Dodo {
 		std::vector<ComponentType> m_Components;
 		std::vector<short> m_Drawable; // Position of all drawables in vector<variant<...>>
 
-		ComponentType FindComponent(int type) // The argument is the same as GetIndex() function inside all the components.
+		ComponentType& FindComponent(int type)
 		{
-			for (int i = 0; i < m_Components.size(); i++)
+			for (auto& comp : m_Components)
 			{
-				ComponentType comp = m_Components[i];
-				if (type == comp.index())
+				if (type == static_cast<int>(comp.index()))
 					return comp;
 			}
-			return std::monostate {}; // Did not find a component.
+
+			static ComponentType empty = std::monostate{};
+			return empty;
+		}
+
+		
+		const ComponentType& FindComponent(int type) const
+		{
+			for (const auto& comp : m_Components)
+			{
+				if (type == static_cast<int>(comp.index()))
+					return comp;
+			}
+
+			static const ComponentType empty = std::monostate{};
+			return empty;
 		}
 
 		std::string m_Name;

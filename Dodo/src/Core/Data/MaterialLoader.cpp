@@ -54,7 +54,12 @@ namespace Dodo
 			return std::make_shared<Material>(Application::s_Application->m_AssetManager->GetShader(flags), textures);
 		}
 		else {
-			DD_WARN("Material {0} does not have any textures!", material->GetEntryName().C_Str());
+			aiString name;
+			if (material->Get(AI_MATKEY_NAME, name) == AI_SUCCESS) {
+				DD_WARN("Material {0} does not have any textures!", name.C_Str());
+			} else {
+				DD_WARN("Material (unnamed) does not have any textures!");
+			}
 			return std::make_shared<Material>(); // Fallback shader
 		}
 	}

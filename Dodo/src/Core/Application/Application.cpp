@@ -88,7 +88,7 @@ namespace Dodo {
 	{
 		m_RenderAPI->Begin();
 		
-		for (auto& it = m_Layers.begin(); it != m_Layers.end(); it++)
+		for (auto it = m_Layers.begin(); it != m_Layers.end(); it++)
 		{
 			(*it)->Update(elapsed);
 			(*it)->Render();
@@ -99,7 +99,7 @@ namespace Dodo {
 
 	void Application::OnEvent(const Event& event)
 	{
-		for (auto& it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
+		for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
 		{
 			if (event.m_Handled)
 				break;

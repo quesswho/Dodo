@@ -106,8 +106,6 @@ namespace Dodo {
 					{
 						break; // No more entities
 					}
-					if (!m_File.GetLine(m_File.m_CurrentLine)._Starts_with("\t"))
-						break;
 				}
 			}
 		}

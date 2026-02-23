@@ -56,7 +56,7 @@ namespace Dodo {
 			void SetUniformValue(const char* location, const Math::Mat4& value);
 		private:
 
-			void CompileInit(std::string& fileSource);
+			void CompileInit(const std::string& fileSource);
 			void CompileVFShader(const char* vertex, const char* fragment);
 
 			int GetLocation(const char* location);

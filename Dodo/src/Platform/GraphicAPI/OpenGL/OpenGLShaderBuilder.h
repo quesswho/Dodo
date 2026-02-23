@@ -6,7 +6,7 @@
 
 namespace Dodo {
 
-	enum ShaderBuilderFlags
+	enum ShaderBuilderFlags : uint32_t
 	{
 		ShaderBuilderFlagNone = 0,
 		ShaderBuilderFlagNoTexcoord = 1 << 0,
@@ -24,10 +24,19 @@ namespace Dodo {
 		ShaderBuilderFlagBasicTexture = 1 << 12,
 		ShaderBuilderFlagShadowMap = 1 << 13,
 	};
-#pragma warning(push)
-#pragma warning(disable : 26812)
-	DEFINE_ENUM_FLAG_OPERATORS(ShaderBuilderFlags);
-#pragma warning(pop)
+
+
+	// TEMPORARY //
+	inline ShaderBuilderFlags operator|(ShaderBuilderFlags a, ShaderBuilderFlags b) noexcept {
+		using U = std::underlying_type_t<ShaderBuilderFlags>;
+		return static_cast<ShaderBuilderFlags>(static_cast<U>(a) | static_cast<U>(b));
+	}
+
+	inline ShaderBuilderFlags& operator|=(ShaderBuilderFlags& a, ShaderBuilderFlags b) noexcept {
+		a = a | b;
+		return a;
+	}
+
 
 	namespace Platform {
 

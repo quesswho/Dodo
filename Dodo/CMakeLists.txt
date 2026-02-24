@@ -44,6 +44,7 @@ target_include_directories(Dodo
         lib/glad/include
         lib/imgui/include
         lib/assimp/include
+        lib/glfw/include
     PRIVATE
 )
 
@@ -52,6 +53,7 @@ target_link_libraries(Dodo
         glad
         imgui
         assimp
+        glfw
 )
 
 target_compile_definitions(Dodo

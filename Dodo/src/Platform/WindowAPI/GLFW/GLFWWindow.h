@@ -55,6 +55,7 @@ namespace Dodo {
 				void FocusConsole() const;
 			private:
 				void Init();
+				static void ErrorCallback(int error, const char* description);
 				std::string m_CurrentDialogDirectory;
 				std::string m_MainWorkDirectory;
 		};

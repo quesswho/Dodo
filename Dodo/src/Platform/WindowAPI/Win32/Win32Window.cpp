@@ -62,8 +62,8 @@ namespace Dodo {
 				DD_WARN("Application resolution is more than the resolution of the screen!");
 			}
 
-			m_WindowProperties.m_Width = m_WindowProperties.m_Width == 0 ? GetSystemMetrics(SM_CXSCREEN) : m_WindowProperties.m_Width;
-			m_WindowProperties.m_Height = m_WindowProperties.m_Height == 0 ? GetSystemMetrics(SM_CYSCREEN) : m_WindowProperties.m_Height;
+			m_WindowProperties.m_Width = m_WindowProperties.m_Width <= 0 ? GetSystemMetrics(SM_CXSCREEN) : m_WindowProperties.m_Width;
+			m_WindowProperties.m_Height = m_WindowProperties.m_Height <= 0 ? GetSystemMetrics(SM_CYSCREEN) : m_WindowProperties.m_Height;
 
 			int posX, posY;
 

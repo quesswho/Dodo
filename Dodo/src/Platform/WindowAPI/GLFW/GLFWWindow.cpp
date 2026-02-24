@@ -5,6 +5,8 @@
 
 #include "Core/Application/Application.h"
 
+#include <GLFW/glfw3.h>
+
 namespace Dodo {
 
 	namespace Platform {
@@ -16,10 +18,39 @@ namespace Dodo {
 		}
 
 		GLFWWindow::~GLFWWindow()
-		{}
+		{
+			glfwTerminate();
+		}
 
 		void GLFWWindow::Init()
-		{}
+		{
+			// Fail if we can not initialize
+			if (!glfwInit())
+			{
+				DD_FATAL("Could not initialize GLFW!");
+				return;
+			}
+
+			// Set glfw error callback. This maps to the logger
+			glfwSetErrorCallback(ErrorCallback);
+
+			GLFWmonitor* primary = glfwGetPrimaryMonitor();
+			int width_mm, height_mm;
+			glfwGetMonitorPhysicalSize(primary, &width_mm, &height_mm);
+
+			m_WindowProperties.m_Width = m_WindowProperties.m_Width <= 0 ? width_mm : m_WindowProperties.m_Width;
+			m_WindowProperties.m_Height = m_WindowProperties.m_Height <= 0 ? height_mm : m_WindowProperties.m_Height;
+
+			GLFWwindow* window = glfwCreateWindow(m_WindowProperties.m_Width, 
+				m_WindowProperties.m_Height, 
+				m_WindowProperties.m_Title, 
+				NULL, NULL);
+			if (!window)
+			{
+				DD_FATAL("Could not create GLFW window!");
+				return;
+			}
+		}
 
 		void GLFWWindow::Update() const
 		{}
@@ -111,5 +142,11 @@ namespace Dodo {
 
 		void GLFWWindow::FocusConsole() const
 		{}
+
+		void GLFWWindow::ErrorCallback(int error, const char* description)
+		{
+			DD_ERR("{0}", description);
+		}
+
 	}
 }

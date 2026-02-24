@@ -30,8 +30,8 @@ namespace Dodo {
 
 	struct WindowProperties {
 		WindowProperties() : m_Width(0), m_Height(0), m_Title("Dodo Engine"), m_Flags(DodoWindowFlags_NONE) {}
-		uint8_t m_Width;
-		uint8_t m_Height;
+		uint32_t m_Width;
+		uint32_t m_Height;
 		const char* m_Title;
 
 		WindowFlags m_Flags;

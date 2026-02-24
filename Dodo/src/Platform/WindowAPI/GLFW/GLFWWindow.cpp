@@ -38,6 +38,11 @@ namespace Dodo {
 			int width_mm, height_mm;
 			glfwGetMonitorPhysicalSize(primary, &width_mm, &height_mm);
 
+			if (width_mm < (int) m_WindowProperties.m_Width || height_mm < (int) m_WindowProperties.m_Height)
+			{
+				DD_WARN("Application resolution is more than the resolution of the screen!");
+			}
+
 			m_WindowProperties.m_Width = m_WindowProperties.m_Width <= 0 ? width_mm : m_WindowProperties.m_Width;
 			m_WindowProperties.m_Height = m_WindowProperties.m_Height <= 0 ? height_mm : m_WindowProperties.m_Height;
 

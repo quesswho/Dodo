@@ -6,14 +6,6 @@
 using namespace Dodo;
 using namespace Math;
 
-static int ImGuiFilterAz09(ImGuiTextEditCallbackData* data)
-{
-	ImWchar c = data->EventChar;
-	if (c >= 'A' && c <= 'Z') return 0;
-	if (c >= 'a' && c <= 'z') return 0;
-	if (c >= '0' && c <= '9') return 0;
-	return 1;
-}
 
 Interface::Interface(Scene* scene)
 	: m_Scene(scene)
@@ -94,8 +86,8 @@ bool Interface::BeginDraw()
 
 	ImGuiWindowFlags dockWindow_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 	ImGuiViewport* viewport = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos(viewport->GetWorkPos());
-	ImGui::SetNextWindowSize(viewport->GetWorkSize());
+	ImGui::SetNextWindowPos(viewport->WorkPos);
+	ImGui::SetNextWindowSize(viewport->WorkSize);
 	ImGui::SetNextWindowViewport(viewport->ID);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -361,7 +353,7 @@ void Interface::DrawHierarchy()
 				{
 					ImGui::SetKeyboardFocusHere(0);
 					ImGui::Indent();
-					if (ImGui::InputText(std::to_string(ent.first).c_str(), s_RenameableHierarchy, IM_ARRAYSIZE(s_RenameableHierarchy), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CallbackCharFilter, ImGuiFilterAz09))
+					if (ImGui::InputText(std::to_string(ent.first).c_str(), s_RenameableHierarchy, IM_ARRAYSIZE(s_RenameableHierarchy), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CharsNoBlank))
 					{
 						if (s_RenameableHierarchy == nullptr || s_RenameableHierarchy[0] == '\0')
 							strncpy(s_RenameableHierarchy, "Unnamed", 256);
@@ -411,7 +403,7 @@ void Interface::DrawInspector()
 		if (e.second)
 		{
 			Entity& ent = m_Scene->m_Entities.at(e.first);
-			if (ImGui::InputText("##label", m_CurrentInspectorName, 32, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCharFilter, ImGuiFilterAz09))
+			if (ImGui::InputText("##label", m_CurrentInspectorName, 32, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank))
 			{
 				if (strcmp(m_CurrentInspectorName, "") != 0)
 				{

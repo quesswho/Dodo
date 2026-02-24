@@ -16,7 +16,6 @@ target_sources(DodoEditor
     PRIVATE
         ${DODOEDITOR_CPP_SOURCES}
         ${DODOEDITOR_H_SOURCES}
-        ${DODOEDITOR_RES}
 )
 
 target_link_libraries(DodoEditor PRIVATE Dodo)

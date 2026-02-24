@@ -33,28 +33,17 @@ namespace Dodo {
 
 			// Set glfw error callback. This maps to the logger
 			glfwSetErrorCallback(ErrorCallback);
-
-			GLFWmonitor* primary = glfwGetPrimaryMonitor();
-			int width_mm, height_mm;
-			glfwGetMonitorPhysicalSize(primary, &width_mm, &height_mm);
-
-			if (width_mm < (int) m_WindowProperties.m_Width || height_mm < (int) m_WindowProperties.m_Height)
-			{
-				DD_WARN("Application resolution is more than the resolution of the screen!");
-			}
-
-			m_WindowProperties.m_Width = m_WindowProperties.m_Width <= 0 ? width_mm : m_WindowProperties.m_Width;
-			m_WindowProperties.m_Height = m_WindowProperties.m_Height <= 0 ? height_mm : m_WindowProperties.m_Height;
-
+			ConfigureMonitor();
 			GLFWwindow* window = glfwCreateWindow(m_WindowProperties.m_Width, 
 				m_WindowProperties.m_Height, 
 				m_WindowProperties.m_Title, 
 				NULL, NULL);
-			if (!window)
+				if (!window)
 			{
 				DD_FATAL("Could not create GLFW window!");
 				return;
 			}
+			CreateDeviceContext();
 		}
 
 		void GLFWWindow::Update() const
@@ -152,6 +141,34 @@ namespace Dodo {
 		{
 			DD_ERR("{0}", description);
 		}
+
+		void GLFWWindow::ConfigureMonitor() {
+			GLFWmonitor* primary = glfwGetPrimaryMonitor();
+			int physical_width_mm, physical_height_mm;
+			glfwGetMonitorPhysicalSize(primary, &physical_width_mm, &physical_height_mm);
+			
+			const GLFWvidmode* mode = glfwGetVideoMode(primary);
+			
+			int width = mode->width;
+			int height = mode->height;
+			
+			if (width < (int) m_WindowProperties.m_Width || height < (int) m_WindowProperties.m_Height)
+			{
+				DD_WARN("Application resolution is more than the resolution of the screen!");
+			}
+
+			const char* name = glfwGetMonitorName(primary);
+			
+			DD_INFO("Monitor: {0} {1}mmx{2}mm {3}x{4}", name, physical_width_mm, physical_height_mm, width, height);
+
+
+			m_WindowProperties.m_Width = m_WindowProperties.m_Width <= 0 ? width : m_WindowProperties.m_Width;
+			m_WindowProperties.m_Height = m_WindowProperties.m_Height <= 0 ? height : m_WindowProperties.m_Height;
+			
+		}
+
+		void GLFWWindow::CreateDeviceContext()
+		{}
 
 	}
 }

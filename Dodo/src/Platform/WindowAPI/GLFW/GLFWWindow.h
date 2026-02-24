@@ -56,6 +56,9 @@ namespace Dodo {
 			private:
 				void Init();
 				static void ErrorCallback(int error, const char* description);
+
+				void ConfigureMonitor();
+				void CreateDeviceContext();
 				std::string m_CurrentDialogDirectory;
 				std::string m_MainWorkDirectory;
 		};

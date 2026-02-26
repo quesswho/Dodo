@@ -8,43 +8,51 @@
 namespace Dodo {
 	namespace Platform {
 
-		OpenGLRenderAPI::OpenGLRenderAPI() 
-			: m_ShaderBuilder(0), m_GPUInfo(""), m_VramKbs(0), m_ViewportWidth(0), m_ViewportHeight(0), m_ViewportPosX(0), m_ViewportPosY(0)
-		{}
+		OpenGLRenderAPI::OpenGLRenderAPI(const NativeWindowHandle& handle) 
+			: m_Handle(handle), m_ShaderBuilder(0), m_GPUInfo(""), m_VramKbs(0), m_ViewportWidth(0), m_ViewportHeight(0), m_ViewportPosX(0), m_ViewportPosY(0)
+		{
+			
+		}
 
 		OpenGLRenderAPI::~OpenGLRenderAPI() 
 		{
 			gladLoaderUnloadGL();
 		}
 
-		int OpenGLRenderAPI::Init(const WindowProperties& winprop)
+		RenderInitError OpenGLRenderAPI::Init(const WindowProperties& winprop)
 		{
-			int res = gladLoaderLoadGL();
-			if (res)
-			{
-				if (GLAD_VERSION_MAJOR(res) > 3)
-				{
-					glFrontFace(GL_CCW);
-					glEnable(GL_MULTISAMPLE);
-					ResizeDefaultViewport(winprop.m_Width, winprop.m_Height);
-					m_CullingDefault = winprop.m_Flags & DodoWindowFlags_BACKFACECULL ? 1 : 0;
-					Culling(m_CullingDefault);
-
-					glGetIntegerv(0x9048, &m_VramKbs);
-					m_GPUInfo = "";
-					m_GPUInfo = ((const char*)glGetString(GL_RENDERER));
-					m_GPUInfo.append(" VRAM: ").append(StringUtils::KiloByte((size_t)m_VramKbs))
-						.append(" : Opengl Version: ").append(std::to_string(GLAD_VERSION_MAJOR(res))).append(".").append(std::to_string(GLAD_VERSION_MINOR(res)));
-
-					if(Application::s_Application->m_WindowProperties.m_Flags & DodoWindowFlags_IMGUI)
-						ImGui_ImplOpenGL3_Init();
-
-					m_ShaderBuilder = new ShaderBuilder();
-					return 1;
-				}
-				return -2;
+			m_Context.CreateContextImpl(m_Handle); // Run glad loader
+			m_Version = m_Context.LoadGlad();
+			std::string versionStr = std::to_string(GLAD_VERSION_MAJOR(m_Version)) + "." + std::to_string(GLAD_VERSION_MINOR(m_Version));
+			DD_INFO("OPENGL: {0}", versionStr);
+			if (GLAD_VERSION_MAJOR(m_Version) <= 3) {
+				return RenderInitError(
+					RenderInitStatus::Failed, 
+					"OpenGL version < 4.0 is not supported!"
+				);
 			}
-			return -1;
+			
+			glFrontFace(GL_CCW);
+			glEnable(GL_MULTISAMPLE);
+			ResizeDefaultViewport(winprop.m_Width, winprop.m_Height);
+			m_CullingDefault = winprop.m_Flags & DodoWindowFlags_BACKFACECULL ? 1 : 0;
+			Culling(m_CullingDefault);
+
+			glGetIntegerv(0x9048, &m_VramKbs);
+			m_GPUInfo = "";
+			m_GPUInfo = ((const char*)glGetString(GL_RENDERER));
+			m_GPUInfo.append(" VRAM: ").append(StringUtils::KiloByte((size_t)m_VramKbs))
+				.append(" : Opengl Version: ").append(versionStr);
+
+			if(Application::s_Application->m_WindowProperties.m_Flags & DodoWindowFlags_IMGUI)
+				ImGui_ImplOpenGL3_Init();
+
+			m_ShaderBuilder = new ShaderBuilder();
+
+			return RenderInitError(
+					RenderInitStatus::Success, 
+					""
+				);
 		}
 
 		void OpenGLRenderAPI::DefaultFrameBuffer() const

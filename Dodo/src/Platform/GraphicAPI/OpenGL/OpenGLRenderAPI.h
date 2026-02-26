@@ -3,8 +3,18 @@
 #include "Core/Graphics/Shader/ShaderBuilder.h"
 
 #include "Core/Application/WindowProperties.h"
+#include "Core/Graphics/RenderInitResult.h"
 
 #include <glad/gl.h>
+
+#include <Platform/WindowAPI/NativeWindowHandle.h>
+#ifdef DD_API_WIN32
+#include "WGLContext.h"
+using OpenGLContext = Dodo::Platform::WGLContext;
+#elif DD_API_GLFW
+#include "GLFWContext.h"
+using OpenGLContext = Dodo::Platform::GLFWContext;
+#endif
 
 namespace Dodo {
 
@@ -25,9 +35,9 @@ namespace Dodo {
 
 		class OpenGLRenderAPI {
 		public:
-			OpenGLRenderAPI();
+			OpenGLRenderAPI(const NativeWindowHandle& NativeWindowHandle);
 			~OpenGLRenderAPI();
-			int Init(const WindowProperties& winprop);
+			RenderInitError Init(const WindowProperties& winprop);
 
 			inline void Begin() const { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); }
 			inline void End() const {}
@@ -57,6 +67,8 @@ namespace Dodo {
 				return m_VramKbs - availKb;
 			}
 
+			OpenGLContext m_Context;
+
 			ShaderBuilder* m_ShaderBuilder;
 
 			std::string m_GPUInfo;
@@ -66,6 +78,8 @@ namespace Dodo {
 
 			bool m_CullingDefault;
 		private:
+			int m_Version;
+			NativeWindowHandle m_Handle;
 		};
 	}
 }

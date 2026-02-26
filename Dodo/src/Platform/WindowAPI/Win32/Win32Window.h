@@ -3,6 +3,7 @@
 #include <Core/Common.h>
 
 #include <Core/Application/WindowProperties.h>
+#include <Platform/WindowAPI/NativeWindowHandle.h>
 
 #include <string>
 
@@ -37,6 +38,7 @@ namespace Dodo {
 			void VSync(bool vsync);
 			void FullScreen(bool fullscreen);
 			void FullScreen() { FullScreen(~m_WindowProperties.m_Flags & DodoWindowFlags_FULLSCREEN); }
+			NativeWindowHandle GetHandle() const;
 			void ImGuiNewFrame() const;
 			void ImGuiEndFrame() const;
 

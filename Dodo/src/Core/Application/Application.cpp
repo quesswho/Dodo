@@ -89,6 +89,7 @@ namespace Dodo {
 		}
 
 		m_Window->Update();
+		m_RenderAPI->End();
 	}
 
 	void Application::OnEvent(const Event& event)

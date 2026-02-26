@@ -40,7 +40,10 @@ namespace Dodo {
 			RenderInitError Init(const WindowProperties& winprop);
 
 			inline void Begin() const { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); }
-			inline void End() const {}
+			inline void End() {
+				m_Context.SwapBuffer();
+			}
+
 			void ImGuiNewFrame() const;
 			void ImGuiEndFrame() const;
 
@@ -51,7 +54,7 @@ namespace Dodo {
 			void DefaultFrameBuffer() const;
 			void ResizeDefaultViewport(uint width, uint height);
 			void ResizeDefaultViewport(uint width, uint height, uint posX, uint posY);
-
+			
 			inline void DepthComparisonFunction(DepthComparisonFunction func) const { glDepthFunc(GL_NEVER + (int)func); }
 			inline void DepthTest(bool depthtest) const { depthtest ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST); }
 			inline void StencilTest(bool stenciltest) const { stenciltest ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST); }

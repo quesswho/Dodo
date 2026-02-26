@@ -5,6 +5,9 @@ using namespace Math;
 
 GameLayer::GameLayer()
 {
+	DD_INFO("Working directory: {}",
+    std::filesystem::current_path().string());
+
 	Application::s_Application->m_RenderAPI->ClearColor(0.2f, 0.2f, 0.9f);
 	Application::s_Application->m_RenderAPI->DepthTest(true);
 	Application::s_Application->m_RenderAPI->Blending(true);
@@ -33,7 +36,9 @@ GameLayer::GameLayer()
 
 	m_Scene = m_File.Read("res/sponza/sponza.das");
 	//m_Scene = m_File.Read("res/knife.das");
-	
+	DD_INFO("Finished loading scene");
+
+
 	std::vector<std::string> skyboxPath = {
 		"res/texture/skybox/right.jpg",
 		"res/texture/skybox/left.jpg",
@@ -44,10 +49,12 @@ GameLayer::GameLayer()
 	};
 
 	m_Scene->m_SkyBox = new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath);
+	DD_INFO("Finished loading skybox");
 	m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(Vec3(0.2f, -0.5f, -0.5f));
 	m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
 	Application::s_Application->m_Window->SetCursorVisible(false);
 	m_Camera->ResetMouse();
+	DD_INFO("Finished game layer init");
 }
 GameLayer::~GameLayer()
 {

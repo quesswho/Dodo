@@ -1,3 +1,5 @@
+#pragma once
+
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
@@ -15,8 +17,8 @@ public:
     }
 
     int LoadGlad() { return gladLoadGL(glfwGetProcAddress); }
-    void SwapBuffersImpl() { glfwSwapBuffers(m_Window); }
-    void SetVSyncImpl(bool enabled) { glfwSwapInterval(enabled ? 1 : 0); }
+    void SwapBuffer() { glfwSwapBuffers(m_Window); }
+    void SetVSync(bool enabled) { glfwSwapInterval(enabled ? 1 : 0); }
 
 private:
     GLFWwindow* m_Window = nullptr;

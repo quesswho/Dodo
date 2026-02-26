@@ -37,6 +37,7 @@ namespace Dodo {
 				void ImGuiNewFrame() const;
 				void ImGuiEndFrame() const;
 
+				// TODO: The working directory stuff should defiently not be here
 				std::string OpenFileSelector(const char* filter = "All\0 * .*\0");
 				std::string OpenFileSaver(const char* filter = "All\0 * .*\0", const char* extension = "\0");
 				void DefaultWorkDirectory() { ChangeWorkDirectory(m_MainWorkDirectory); }
@@ -65,7 +66,6 @@ namespace Dodo {
 				static void ErrorCallback(int error, const char* description);
 
 				void ConfigureMonitor();
-				void CreateDeviceContext();
 				std::string m_CurrentDialogDirectory;
 				std::string m_MainWorkDirectory;
 		};

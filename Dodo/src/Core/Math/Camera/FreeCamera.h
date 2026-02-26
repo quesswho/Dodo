@@ -60,7 +60,7 @@ namespace Dodo {
 			inline const Mat4& GetCameraMatrix() const { return m_CameraMatrix; }
 
 		private:
-			inline void CalculateProjectionViewMatrix();
+			void CalculateProjectionViewMatrix();
 		};
 	}
 }

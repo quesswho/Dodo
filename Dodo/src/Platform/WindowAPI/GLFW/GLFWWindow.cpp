@@ -1,4 +1,5 @@
 #include "pch.h"
+
 #include "GLFWWindow.h"
 
 #include "Core/System/FileUtils.h"
@@ -19,6 +20,7 @@ namespace Dodo {
 
 		GLFWWindow::~GLFWWindow()
 		{
+			glfwDestroyWindow(m_Handle);
 			glfwTerminate();
 		}
 
@@ -38,15 +40,25 @@ namespace Dodo {
 				m_WindowProperties.m_Height, 
 				m_WindowProperties.m_Title, 
 				NULL, NULL);
-				if (!m_Handle)
+			if (!m_Handle)
 			{
 				DD_FATAL("Could not create GLFW window!");
 				return;
 			}
+
+			// TODO: replace with modern C++
+			memset(m_Keys, 0, sizeof(m_Keys));
 		}
 
 		void GLFWWindow::Update() const
-		{}
+		{
+			if(glfwWindowShouldClose(m_Handle)) {
+				DD_INFO("Shutting down!");
+				Application::s_Application->Shutdown();
+				Application::s_Application->OnEvent(WindowCloseEvent());
+			}
+			glfwPollEvents();
+		}
 
 		void GLFWWindow::SetTitle(const char* title)
 		{}
@@ -84,10 +96,13 @@ namespace Dodo {
 		{}
 
 		void GLFWWindow::ChangeWorkDirectory(std::string dir)
-		{}
+		{
+			
+		}
 
 		void GLFWWindow::TruncateWorkDirectory(std::string dir)
-		{}
+		{
+		}
 
 		void GLFWWindow::KeyPressCallback(uint keycode)
 		{

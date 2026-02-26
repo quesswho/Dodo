@@ -70,7 +70,7 @@ namespace Dodo {
 		}
 		
 		// Change work directory to get the textures
-		Application::s_Application->m_Window->TruncateWorkDirectory(path);
+		//Application::s_Application->m_Window->TruncateWorkDirectory(path);
 
 		std::vector<Ref<Material>> materials;
 		materials.reserve(model->mNumMaterials);
@@ -82,10 +82,10 @@ namespace Dodo {
 
 		for (int i = 0; i < model->mNumMaterials; i++)
 		{
-			materials.push_back(Application::s_Application->m_AssetManager->m_MaterialLoader->LoadMaterial(model->mMaterials[i]));
+			materials.push_back(Application::s_Application->m_AssetManager->m_MaterialLoader->LoadMaterial(std::string(path), model->mMaterials[i]));
 		}
 
-		Application::s_Application->m_Window->DefaultWorkDirectory();
+		//Application::s_Application->m_Window->DefaultWorkDirectory();
 		DD_INFO("{} materials loaded", materials.size());
 
 		std::vector<Mesh*> meshes;

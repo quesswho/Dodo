@@ -3,6 +3,10 @@
 #include <Core/Common.h>
 
 #include <Core/Application/WindowProperties.h>
+#include <Platform/WindowAPI/NativeWindowHandle.h>
+
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
 
 #include <string>
 
@@ -14,6 +18,8 @@ namespace Dodo {
 		class GLFWWindow {
 			private:
 				WindowProperties m_WindowProperties;
+
+				GLFWwindow* m_Handle;
 			public:
 				PCSpecifications m_Pcspecs;
 
@@ -27,6 +33,7 @@ namespace Dodo {
 				void VSync(bool vsync);
 				void FullScreen(bool fullscreen);
 				void FullScreen() { FullScreen(~m_WindowProperties.m_Flags & DodoWindowFlags_FULLSCREEN); }
+				NativeWindowHandle GetHandle() const;
 				void ImGuiNewFrame() const;
 				void ImGuiEndFrame() const;
 

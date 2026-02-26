@@ -146,7 +146,6 @@ namespace Dodo {
 			memset(m_Keys, 0, sizeof(m_Keys));
 
 			RegisterRawMouse();
-			CreateDeviceContext();
 			
 			VSync(m_WindowProperties.m_Flags & DodoWindowFlags_VSYNC);
 
@@ -216,23 +215,13 @@ namespace Dodo {
 			return result;
 		}
 
-		short int Win32Window::CreateDeviceContext()
+		NativeWindowHandle Win32Window::GetHandle() const
 		{
-			m_Hdc = GetDC(m_Hwnd);
-
-			PIXELFORMATDESCRIPTOR pfd = GetPixelFormat();
-			int pixelFormat = ChoosePixelFormat(m_Hdc, &pfd);
-			if (pixelFormat)
-				if (!SetPixelFormat(m_Hdc, pixelFormat, &pfd))
-					return -1;
-
-			HGLRC hrc = wglCreateContext(m_Hdc);
-			if (hrc)
-				if (wglMakeCurrent(m_Hdc, hrc))
-					if (!gladLoaderLoadWGL(m_Hdc))
-						DD_ERR("Could not load WGL!");
-					return 1;
-			return -2;
+			return {
+				NativeWindowHandle::WindowBackend::Win32,
+				(void*)m_Hwnd,
+				(void*)m_Hdc
+			};
 		}
 
 

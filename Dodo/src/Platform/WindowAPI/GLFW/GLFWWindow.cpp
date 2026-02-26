@@ -34,16 +34,15 @@ namespace Dodo {
 			// Set glfw error callback. This maps to the logger
 			glfwSetErrorCallback(ErrorCallback);
 			ConfigureMonitor();
-			GLFWwindow* window = glfwCreateWindow(m_WindowProperties.m_Width, 
+			m_Handle = glfwCreateWindow(m_WindowProperties.m_Width, 
 				m_WindowProperties.m_Height, 
 				m_WindowProperties.m_Title, 
 				NULL, NULL);
-				if (!window)
+				if (!m_Handle)
 			{
 				DD_FATAL("Could not create GLFW window!");
 				return;
 			}
-			CreateDeviceContext();
 		}
 
 		void GLFWWindow::Update() const
@@ -63,6 +62,15 @@ namespace Dodo {
 
 		void GLFWWindow::FullScreen(bool fullscreen)
 		{}
+
+		NativeWindowHandle GLFWWindow::GetHandle() const
+		{
+			return {
+				NativeWindowHandle::WindowBackend::GLFW,
+				(void*)m_Handle,  // GLFWwindow*
+				nullptr           // No display needed
+			};
+		}
 
 		void GLFWWindow::ImGuiNewFrame() const
 		{}
@@ -166,9 +174,6 @@ namespace Dodo {
 			m_WindowProperties.m_Height = m_WindowProperties.m_Height <= 0 ? height : m_WindowProperties.m_Height;
 			
 		}
-
-		void GLFWWindow::CreateDeviceContext()
-		{}
 
 	}
 }

@@ -66,17 +66,11 @@ namespace Dodo {
 		m_NumLogicalProcessors = std::thread::hardware_concurrency();
 		m_ThreadManager = ddnew ThreadManager(m_NumLogicalProcessors-1 == 0 ? 1 : m_NumLogicalProcessors - 1);
 
-		m_RenderAPI = ddnew RenderAPI();
-		int res = m_RenderAPI->Init(m_WindowProperties);
-		if(res)
-		{
-			DD_INFO("CPU: {0} {1} Logical Processors", m_CpuBrand, m_NumLogicalProcessors);
-			DD_INFO("GPU: {}", Application::m_RenderAPI->m_GPUInfo);
-			DD_INFO("RAM: {}", StringUtils::GigaByte(m_TotalPhysMemGbs));
-		}
-		else
-		{
-			DD_FATAL("Could not initialize RenderAPI. Error: {}", res);
+		m_RenderAPI = ddnew RenderAPI(m_Window->GetHandle());
+		RenderInitError res = m_RenderAPI->Init(m_WindowProperties);
+		
+		if(res.status == RenderInitStatus::Failed) {
+			DD_FATAL("{0}", res.message);
 		}
 
 		m_AssetManager = ddnew AssetManager(m_WindowProperties.m_Flags & DodoWindowFlags_SERIALIZESCENE);

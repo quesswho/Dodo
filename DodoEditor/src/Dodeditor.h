@@ -28,8 +28,7 @@ private:
 	Interface* m_Interface;
 };
 
-class Dodeditor : public Application
-{
+class Dodeditor : public Application {
 private:
 	WindowProperties PreInit();
 public:

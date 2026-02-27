@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Graphics/Scene/Scene.h"
-#include "Core/System/AsciiDataFile.h"
+#include "Core/System/DataFile/AsciiDataFile.h"
 
 #include <vector>
 #include <string_view>

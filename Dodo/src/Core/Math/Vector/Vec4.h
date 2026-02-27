@@ -6,8 +6,7 @@ namespace Dodo {
 	namespace Math {
 
 		template<typename T = float>
-		struct TVec4
-		{
+		struct TVec4 {
 			TVec4()
 				: x((T)0), y((T)0), z((T)0), w((T)0)
 			{}

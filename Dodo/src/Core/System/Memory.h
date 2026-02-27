@@ -12,15 +12,13 @@ namespace Dodo {
 	};
 
 
-	class MemoryAllocator
-	{
+	class MemoryAllocator {
 	public:
 		static inline void* Alloc(size_t size);
 		static inline void Dealloc(void* block, size_t size);
 	};
 
-	class StringUtils
-	{
+	class StringUtils {
 	private:
 		static const float p;
 		static const float n;

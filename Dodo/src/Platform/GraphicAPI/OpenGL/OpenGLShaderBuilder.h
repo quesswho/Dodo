@@ -6,8 +6,7 @@
 
 namespace Dodo {
 
-	enum ShaderBuilderFlags : uint32_t
-	{
+	enum ShaderBuilderFlags : uint32_t {
 		ShaderBuilderFlagNone = 0,
 		ShaderBuilderFlagNoTexcoord = 1 << 0,
 		ShaderBuilderFlagTangentSpaceNormal = 1 << 1,

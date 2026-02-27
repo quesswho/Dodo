@@ -4,8 +4,7 @@
 
 namespace Dodo {
 
-	class Layer
-	{
+	class Layer {
 	public:
 		Layer() {}
 		virtual ~Layer() {}

@@ -3,8 +3,7 @@
 #include "Mesh.h"
 
 namespace Dodo {
-	class MeshFactory
-	{
+	class MeshFactory {
 	public:
 		MeshFactory();
 

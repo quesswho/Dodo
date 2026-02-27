@@ -5,9 +5,7 @@ namespace Dodo {
 
 	AsciiDataFile::AsciiDataFile()
 		: m_CurrentLine(0), m_CurrentIndent(0), m_Indent({""})
-	{
-		m_CurrentLine = 0;
-	}
+	{}
 
 	void AsciiDataFile::Clear()
 	{

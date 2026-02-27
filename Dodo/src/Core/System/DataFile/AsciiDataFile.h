@@ -2,6 +2,8 @@
 
 #include <Core/Common.h>
 
+#include "IDataFile.h"
+
 #include "Core/Math/Matrix/Transformation.h"
 #include "Core/System/FileUtils.h"
 
@@ -10,14 +12,11 @@
 
 namespace Dodo {
 
-	class AsciiDataFile
-	{
+	class AsciiDataFile : public IDataFile {
 	private:
 		std::vector<std::string> m_Indent;
 		uint m_CurrentIndent;
 	public:
-		AsciiDataFile();
-
 		std::vector<std::string> m_File;
 	
 		void Clear();
@@ -43,15 +42,18 @@ namespace Dodo {
 				+ m_Indent[m_CurrentIndent] + "\t=" + std::to_string(data.m_Rotation.x) + "," + std::to_string(data.m_Rotation.y) + "," + std::to_string(data.m_Rotation.z));
 		}
 
-		inline void BeginWrite() { m_CurrentIndent = 0; Clear(); }
-		inline void EndWrite(const char* path) { FileUtils::WriteTextFile(path, m_File); }
-		void BeginRead(const char* path); // Read line by line
-		inline bool EndRead() { m_CurrentLine = 0; }
+		void BeginRead(const char* path) override; // Read line by line
+		bool EndRead() override { m_CurrentLine = 0; }
+		void BeginWrite() override { m_CurrentIndent = 0; Clear(); }
+		void EndWrite(const char* path) override { FileUtils::WriteTextFile(path, m_File); }
 		
 		inline void NextLine() { m_CurrentLine++; }
 		std::string GetEntryName(uint line) const;
-		inline bool EntryExists(const std::string& entry) const { return m_File[m_CurrentLine].find(entry) != std::string::npos; }
+		inline bool EntryExists(const std::string& entry) const {
+			return m_CurrentLine < m_File.size() && m_File[m_CurrentLine].find(entry) != std::string::npos;
+		}
 		std::string GetSection();
+		
 		std::string GetString();
 		int GetInt();
 		double GetDouble();

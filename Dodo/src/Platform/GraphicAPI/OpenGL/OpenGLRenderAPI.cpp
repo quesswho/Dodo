@@ -34,8 +34,9 @@ namespace Dodo {
 			
 			glFrontFace(GL_CCW);
 			glEnable(GL_MULTISAMPLE);
-			ResizeDefaultViewport(winprop.m_Width, winprop.m_Height);
-			m_CullingDefault = winprop.m_Flags & DodoWindowFlags_BACKFACECULL ? 1 : 0;
+
+			ResizeDefaultViewport(winprop.m_FrameBufferWidth, winprop.m_FrameBufferHeight);
+			m_CullingDefault = winprop.m_Settings.backfaceCull;
 			Culling(m_CullingDefault);
 
 			glGetIntegerv(0x9048, &m_VramKbs);
@@ -44,7 +45,7 @@ namespace Dodo {
 			m_GPUInfo.append(" VRAM: ").append(StringUtils::KiloByte((size_t)m_VramKbs))
 				.append(" : Opengl Version: ").append(versionStr);
 
-			if(Application::s_Application->m_WindowProperties.m_Flags & DodoWindowFlags_IMGUI)
+			if(winprop.m_Settings.imgui)
 				ImGui_ImplOpenGL3_Init();
 
 			m_ShaderBuilder = new ShaderBuilder();

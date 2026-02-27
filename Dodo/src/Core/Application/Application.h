@@ -14,14 +14,18 @@
 
 namespace Dodo {
 
+	struct ApplicationConfig {
+		WindowProperties m_WindowProperties;
+	};
+
 	class Application {
 	public:
 		static Application* s_Application;
 
-		Application(const WindowProperties&);
+		Application(const ApplicationConfig& conf);
 		virtual ~Application();
 
-		void CoreInit();
+		void CoreInit(const ApplicationConfig& conf);
 		void Run(); // Main loop is contained in here
 		void Shutdown();
 
@@ -36,13 +40,11 @@ namespace Dodo {
 		virtual void Init();
 		virtual void Update(float elapsed);
 		
-		const Input& GetInput() const {
-			return m_InputManager.GetInput();
-		}
+		const WindowProperties& GetWindowProperties() const { return m_Window->GetWindowProperties(); }
+		const Input& GetInput() const { return m_InputManager.GetInput(); }
 	public:
 		float m_FrameTimeMs;
 		uint m_FramesPerSecond;
-		WindowProperties m_WindowProperties;
 
 		InputManager m_InputManager;
 		Logger* m_Logger;

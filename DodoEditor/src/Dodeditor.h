@@ -30,7 +30,7 @@ private:
 
 class Dodeditor : public Application {
 private:
-	WindowProperties PreInit();
+	ApplicationConfig PreInit();
 public:
 	Dodeditor();
 

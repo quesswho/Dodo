@@ -32,7 +32,7 @@ namespace Dodo {
 				void SetCursorVisible(bool vis);
 				void VSync(bool vsync);
 				void FullScreen(bool fullscreen);
-				void FullScreen() { FullScreen(~m_WindowProperties.m_Flags & DodoWindowFlags_FULLSCREEN); }
+				void FullScreen() { FullScreen(!m_WindowProperties.m_Settings.fullscreen); }
 				NativeWindowHandle GetHandle() const;
 				void ImGuiNewFrame() const;
 				void ImGuiEndFrame() const;
@@ -47,6 +47,7 @@ namespace Dodo {
 				inline const std::string GetMainWorkDirectory() const { return m_MainWorkDirectory; }
 				bool m_Focused;
 
+				const WindowProperties& GetWindowProperties() { return m_WindowProperties; }
 				void SetWindowProperties(const WindowProperties& winprop);
 
 				void FocusConsole() const;
@@ -57,6 +58,7 @@ namespace Dodo {
 				static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 				static void MouseMovedCallback(GLFWwindow* window, double xpos, double ypos);
 				static void WindowResizeCallback(GLFWwindow* window, int width, int height);
+				static void WindowMovedCallback(GLFWwindow* window, int xpos, int ypos);
 				static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
 				static void WindowFocusCallback(GLFWwindow* window, int focused);
 				static void WindowCloseCallback(GLFWwindow* window);  

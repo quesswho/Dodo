@@ -4,6 +4,9 @@ project(Dodo LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Export compile commands, useful for IntelliSense
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Load Opengl and (or) Vulkan
 option(DD_API_OPENGL "Enable OpenGL loader" ON)
 option(DD_API_VULKAN "Enable Vulkan loader" OFF)

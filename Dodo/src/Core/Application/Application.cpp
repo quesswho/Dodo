@@ -6,12 +6,12 @@
 namespace Dodo {
 
 	Application* Application::s_Application;
-
-	Application::Application(const WindowProperties& prop)
-		: m_WindowProperties(prop), m_Closed(false), m_Initializing(true), m_FramesPerSecond(0), m_FrameTimeMs(0)
+	
+	Application::Application(const ApplicationConfig& conf)
+		: m_Closed(false), m_Initializing(true), m_FramesPerSecond(0), m_FrameTimeMs(0)
 	{
 		s_Application = this;
-		CoreInit();
+		CoreInit(conf);
 	}
 
 	Application::~Application()
@@ -55,12 +55,12 @@ namespace Dodo {
 		}
 	}
 
-	void Application::CoreInit()
+	void Application::CoreInit(const ApplicationConfig& conf)
 	{
 
 		m_Logger = ddnew Logger();
 		
-		m_Window = ddnew Window(m_WindowProperties);
+		m_Window = ddnew Window(conf.m_WindowProperties);
 		m_TotalPhysMemGbs = round(m_Window->m_Pcspecs.m_TotalPhysicalMemory / 1073741824.0f * 100) / 100; // 1024^3
 		m_CpuBrand = m_Window->m_Pcspecs.m_CpuBrand;
 		m_NumLogicalProcessors = std::thread::hardware_concurrency();
@@ -72,13 +72,13 @@ namespace Dodo {
         });
 
 		m_RenderAPI = ddnew RenderAPI(m_Window->GetHandle());
-		RenderInitError res = m_RenderAPI->Init(m_WindowProperties);
+		RenderInitError res = m_RenderAPI->Init(m_Window->GetWindowProperties());
 		
 		if(res.status == RenderInitStatus::Failed) {
 			DD_FATAL("{0}", res.message);
 		}
 
-		m_AssetManager = ddnew AssetManager(m_WindowProperties.m_Flags & DodoWindowFlags_SERIALIZESCENE);
+		m_AssetManager = ddnew AssetManager(conf.m_WindowProperties.m_Settings.serializeScene);
 	}
 
 	void Application::Init() {}

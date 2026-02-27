@@ -16,11 +16,11 @@ GameLayer::GameLayer()
 		{ "TANGENT", 3 }
 	};
 	
-	m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 20.0f), (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.04f, 10.0f);
+	m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 20.0f), (float)Application::s_Application->m_Window->GetWindowProperties().m_Width / (float)Application::s_Application->m_Window->GetWindowProperties().m_Height, 0.04f, 10.0f);
 
 	FrameBufferProperties frameprop;
-	frameprop.m_Width = Application::s_Application->m_WindowProperties.m_Width;
-	frameprop.m_Height = Application::s_Application->m_WindowProperties.m_Height;
+	frameprop.m_Width = Application::s_Application->m_Window->GetWindowProperties().m_Width;
+	frameprop.m_Height = Application::s_Application->m_Window->GetWindowProperties().m_Height;
 
 	m_FrameBuffer = new FrameBuffer(frameprop);
 
@@ -149,14 +149,18 @@ Dodeditor::Dodeditor()
 		: Application(PreInit())
 	{}
 
-WindowProperties Dodeditor::PreInit()
+ApplicationConfig Dodeditor::PreInit()
 {
 	WindowProperties props;
 	props.m_Title = "Dodeditor";
 	props.m_Width = 1600;
 	props.m_Height = 960;
-	props.m_Flags = DodoWindowFlags_IMGUI | DodoWindowFlags_IMGUIDOCKING;
-	return props;
+	props.m_Settings.imgui = true;
+	props.m_Settings.imguiDocking = true;
+
+	ApplicationConfig conf;
+	conf.m_WindowProperties = props;
+	return conf;
 }
 
 void Dodeditor::Init()

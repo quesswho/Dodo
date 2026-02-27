@@ -45,15 +45,28 @@ namespace Dodo {
 				DD_FATAL("Could not create GLFW window!");
 				return;
 			}
+
+			VSync(m_WindowProperties.m_Settings.vsync);
+
+			int xpos, ypos;
+			glfwGetWindowPos(m_Handle, &xpos, &ypos);
+			DD_INFO("Window pos: ({}, {})", xpos,ypos);
+			m_WindowProperties.m_PosX = xpos;
+			m_WindowProperties.m_PosY = ypos;
+
+
 			int winW, winH, fbW, fbH;
 			glfwGetWindowSize(m_Handle, &winW, &winH);
 			glfwGetFramebufferSize(m_Handle, &fbW, &fbH);
+			m_WindowProperties.m_FrameBufferWidth = fbW;
+			m_WindowProperties.m_FrameBufferHeight = fbH;
+			m_WindowProperties.m_Width = winW;
+			m_WindowProperties.m_Height = winH;
 			DD_INFO("Window: {}x{}, Framebuffer: {}x{}", winW, winH, fbW, fbH);
 			
 			glfwSetWindowUserPointer(m_Handle, this);
 			glfwSetKeyCallback(m_Handle, KeyCallback);
 			glfwSetMouseButtonCallback(m_Handle, MouseButtonCallback);
-			// TODO: Raw mouse https://www.glfw.org/docs/latest/input_guide.html
 			glfwSetCursorPosCallback(m_Handle, MouseMovedCallback);
 			glfwSetWindowSizeCallback(m_Handle, WindowResizeCallback);
 			glfwSetFramebufferSizeCallback(m_Handle, FramebufferResizeCallback);
@@ -92,10 +105,30 @@ namespace Dodo {
 		}
 
 		void GLFWWindow::VSync(bool vsync)
-		{}
+		{
+			glfwSwapInterval(vsync ? 1 : 0);
+		}
 
 		void GLFWWindow::FullScreen(bool fullscreen)
-		{}
+		{
+			m_WindowProperties.m_Settings.fullscreen = fullscreen;
+			if(fullscreen) {
+				GLFWmonitor* primary = glfwGetWindowMonitor(m_Handle);
+				const GLFWvidmode* mode = glfwGetVideoMode(primary);
+				int xpos, ypos;
+				glfwGetWindowPos(m_Handle, &xpos, &ypos);
+				m_WindowProperties.m_PosX = xpos;
+				m_WindowProperties.m_PosY = ypos;
+
+				glfwSetWindowMonitor(m_Handle, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
+			} else {
+				GLFWmonitor* primary = glfwGetWindowMonitor(m_Handle);
+				const GLFWvidmode* mode = glfwGetVideoMode(primary);
+
+				glfwSetWindowMonitor(m_Handle, NULL, m_WindowProperties.m_PosX, m_WindowProperties.m_PosY, m_WindowProperties.m_Width, m_WindowProperties.m_Height, 0);
+			}
+
+		}
 
 		NativeWindowHandle GLFWWindow::GetHandle() const
 		{
@@ -168,14 +201,35 @@ namespace Dodo {
 	
 		void GLFWWindow::WindowResizeCallback(GLFWwindow* window, int width, int height)
 		{
+			GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+			if(!self) return;
+			
+			self->m_WindowProperties.m_Width = width;
+			self->m_WindowProperties.m_Height = height;
 			DD_INFO("Window resize: {0}x{1}", width, height);
 			Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
 		}
 
+		void GLFWWindow::WindowMovedCallback(GLFWwindow* window, int xpos, int ypos) 
+		{
+			GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+			if(!self) return;
+			
+			self->m_WindowProperties.m_PosX = xpos;
+			self->m_WindowProperties.m_PosY = ypos;
+			DD_INFO("Window moved to: ({0}, {1})", xpos, ypos);
+			//Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
+		}
+
 		void GLFWWindow::FramebufferResizeCallback(GLFWwindow* window, int width, int height)
 		{
+			GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+			if(!self) return;
+			
+			self->m_WindowProperties.m_FrameBufferWidth = width;
+			self->m_WindowProperties.m_FrameBufferHeight = height;
 			DD_INFO("Framebuffer resize: {0}x{1}", width, height);
-			//Application::s_Application->m_RenderAPI->Viewport(width, height);
+			Application::s_Application->m_RenderAPI->ResizeDefaultViewport(width, height);
 		}
 	
 		void GLFWWindow::WindowFocusCallback(GLFWwindow* window, int focus)

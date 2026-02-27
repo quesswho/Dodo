@@ -23,7 +23,7 @@ namespace Dodo {
 
 		Win32Window::~Win32Window()
 		{
-			if (m_WindowProperties.m_Flags & DodoWindowFlags_IMGUI)
+			if (m_WindowProperties.m_Settings.imgui)
 			{
 				ImGui_ImplWin32_Shutdown();
 				ImGui::DestroyContext();
@@ -67,7 +67,7 @@ namespace Dodo {
 
 			int posX, posY;
 
-			if (m_WindowProperties.m_Flags & DodoWindowFlags_FULLSCREEN)
+			if (m_WindowProperties.m_Settings.fullscreen)
 			{
 				m_Hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, wc.lpszClassName, "", WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP,
 					0, 0, m_WindowProperties.m_Width, m_WindowProperties.m_Height, NULL, NULL, m_HInstance, NULL);
@@ -147,7 +147,7 @@ namespace Dodo {
 
 			RegisterRawMouse();
 			
-			VSync(m_WindowProperties.m_Flags & DodoWindowFlags_VSYNC);
+			VSync(m_WindowProperties.m_Settings.vsync);
 
 			SetWindowTextA(m_Hwnd, m_WindowProperties.m_Title);
 
@@ -159,14 +159,14 @@ namespace Dodo {
 			GetCursorPos(&p);
 			m_MousePos = Math::TVec2<long>(p.x, p.y);
 
-			if (m_WindowProperties.m_Flags & DodoWindowFlags_IMGUI || m_WindowProperties.m_Flags & DodoWindowFlags_IMGUIDOCKING)
+			if (m_WindowProperties.m_Settings.imgui || m_WindowProperties.m_Settings.imguiDocking)
 			{
-				m_WindowProperties.m_Flags |= DodoWindowFlags_IMGUI;
+				m_WindowProperties.m_Settings.imgui = true;
 				IMGUI_CHECKVERSION();
 				ImGui::CreateContext();
 				ImGui_ImplWin32_Init(m_Hwnd);
 				ImGui_ImplWin32_EnableDpiAwareness();
-				if (m_WindowProperties.m_Flags & DodoWindowFlags_IMGUIDOCKING)
+				if (m_WindowProperties.m_Settings.imguiDocking)
 				{
 					ImGuiIO& io = ImGui::GetIO(); (void)io;
 					io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -364,8 +364,8 @@ namespace Dodo {
 				Application::s_Application->m_RenderAPI->ResizeDefaultViewport(Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height);
 				DD_INFO("{0}, {1}", GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 
-				m_WindowProperties.m_Flags |= DodoWindowFlags_FULLSCREEN;
-				Application::s_Application->m_WindowProperties.m_Flags |= DodoWindowFlags_FULLSCREEN;
+				m_WindowProperties.m_Settings.fullscreen = true;
+				Application::s_Application->m_WindowProperties.m_Settings = true;
 			}
 			else
 			{
@@ -387,8 +387,8 @@ namespace Dodo {
 
 				Application::s_Application->m_RenderAPI->ResizeDefaultViewport(Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height);
 
-				m_WindowProperties.m_Flags &= ~DodoWindowFlags_FULLSCREEN;
-				Application::s_Application->m_WindowProperties.m_Flags &= ~DodoWindowFlags_FULLSCREEN;
+				m_WindowProperties.m_Settings.fullscreen = false;
+				Application::s_Application->m_WindowProperties.m_Settings.fullscreen = false;
 			}
 
 			ShowWindow(m_Hwnd, SW_SHOW);

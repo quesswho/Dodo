@@ -37,7 +37,7 @@ namespace Dodo {
 			void SetCursorVisible(bool vis);
 			void VSync(bool vsync);
 			void FullScreen(bool fullscreen);
-			void FullScreen() { FullScreen(~m_WindowProperties.m_Flags & DodoWindowFlags_FULLSCREEN); }
+			void FullScreen() { FullScreen(!m_WindowProperties.m_Settings.fullscreen); }
 			NativeWindowHandle GetHandle() const;
 			void ImGuiNewFrame() const;
 			void ImGuiEndFrame() const;

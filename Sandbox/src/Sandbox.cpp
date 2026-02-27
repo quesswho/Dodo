@@ -14,12 +14,12 @@ GameLayer::GameLayer()
 
 
 	// FPS camera containing view matrix
-	m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 0.0f), (float)Application::s_Application->m_WindowProperties.m_Width / (float)Application::s_Application->m_WindowProperties.m_Height, 0.04f, 10.0f);
+	m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 0.0f), (float)Application::s_Application->m_Window->GetWindowProperties().m_Width / (float)Application::s_Application->m_Window->GetWindowProperties().m_Height, 0.04f, 10.0f);
 
 	// Framebuffer initialization data
 	FrameBufferProperties frameprop;
-	frameprop.m_Width = Application::s_Application->m_WindowProperties.m_Width;
-	frameprop.m_Height = Application::s_Application->m_WindowProperties.m_Height;
+	frameprop.m_Width = Application::s_Application->m_Window->GetWindowProperties().m_Width;
+	frameprop.m_Height = Application::s_Application->m_Window->GetWindowProperties().m_Height;
 
 	m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.fx");
 	m_Gamma = 1.0f;
@@ -131,8 +131,8 @@ void GameLayer::OnEvent(const Event& event)
 			if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_F11) 
 			{
 				Application::s_Application->m_Window->FullScreen();
-				m_Camera->Resize(Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height);
-				m_PostEffect->Resize(Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height);
+				m_Camera->Resize(Application::s_Application->m_Window->GetWindowProperties().m_Width, Application::s_Application->m_Window->GetWindowProperties().m_Height);
+				m_PostEffect->Resize(Application::s_Application->m_Window->GetWindowProperties().m_Width, Application::s_Application->m_Window->GetWindowProperties().m_Height);
 			}
 				
 			if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_ESCAPE) 
@@ -158,14 +158,18 @@ public:
 		: Application(PreInit())
 	{}
 
-	WindowProperties PreInit()
+	ApplicationConfig PreInit()
 	{
 		WindowProperties props;
 		props.m_Title = "SandBox";
 		props.m_Width = 1080;
 		props.m_Height = 720;
-		props.m_Flags = DodoWindowFlags_BACKFACECULL;
-		return props;
+		props.m_Settings.backfaceCull = true;
+
+		ApplicationConfig conf;
+		conf.m_WindowProperties = props;
+		
+		return conf;
 	}
 
 	void Init()

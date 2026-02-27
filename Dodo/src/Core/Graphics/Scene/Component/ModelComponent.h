@@ -40,7 +40,7 @@ namespace Dodo {
 		}
 
 		static inline bool IsDrawable() { return true; }
-		static inline const std::string& GetName() { return std::string("ModelComponent"); }
+		static inline std::string GetName() { return std::string("ModelComponent"); }
 		static constexpr ComponentFlag GetFlagType() { return ComponentFlag::ComponentFlag_ModelComponent; }
 		static constexpr int GetIndex() { return Math::floorlog2(GetFlagType()); }
 

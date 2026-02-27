@@ -3,235 +3,234 @@
 
 namespace Dodo {
 
-	AsciiDataFile::AsciiDataFile()
-		: m_CurrentLine(0), m_CurrentIndent(0), m_Indent({""})
-	{}
-
-	void AsciiDataFile::Clear()
+	bool AsciiDataFile::BeginRead(const std::string& path, bool throwOnFail)
 	{
 		m_File.clear();
-		m_CurrentIndent = 0;
-	}
-
-	void AsciiDataFile::Indent()
-	{ 
-		m_CurrentIndent++;
-		if (m_Indent.size()-1 < m_CurrentIndent)
-		{
-			std::string indent = "\t";
-			for (int i = 0; i < m_Indent.size() - 1; i++)
-				indent.append("\t");
-			m_Indent.push_back(indent);
+		std::ifstream in(path);
+		if (!in) {
+			if (throwOnFail) throw std::runtime_error("Failed to open ASCII file: " + path);
+			return false;
 		}
+
+		std::string line;
+		while (std::getline(in, line)) m_File.push_back(std::move(line));
+		m_Offset = 0;
+		return true;
 	}
 
-	void AsciiDataFile::UnIndent()
-	{
-		if(m_CurrentIndent > 0)
-			m_CurrentIndent--;
-	}
-
-
-	void AsciiDataFile::BeginRead(const char* path)
+	void AsciiDataFile::EndRead()
 	{
 		m_File.clear();
-
-		std::string temp;
-		std::stringstream ss(FileUtils::ReadTextFile(path));
-
-		while (std::getline(ss, temp, '\n'))
-			m_File.push_back(temp);
-		m_CurrentLine = 0;
+		m_Offset = 0;
 	}
 
-	std::string AsciiDataFile::GetEntryName(uint lineindex) const
+	void AsciiDataFile::BeginWrite()
 	{
-		std::string line = m_File[lineindex];
-		size_t index = line.find(':');
-		if (index == std::string::npos)
-			if (index = line.find('=') != std::string::npos)
-				return "";
-
-		line.erase(index);
-
-		if (line.find('\t') != std::string::npos)
-			return line.substr(line.find_last_of('\t') + 1, line.size());
-		else
-			return line.substr(0, line.size());
+		m_File.clear();
+		m_Offset = 0;
 	}
 
-	std::string AsciiDataFile::GetSection()
+	void AsciiDataFile::EndWrite(const std::string& path)
 	{
-		std::string line = m_File[m_CurrentLine];
-		m_CurrentLine++;
-		size_t index = line.find(':');
-		if (index == std::string::npos)
-			if(index = line.find('=') != std::string::npos)
-				return "";
+		std::ofstream out(path);
+		for (auto& line : m_File) out << line << "\n";
+	}
+
+	std::size_t AsciiDataFile::GetCurrentOffset() const
+	{
+		return m_Offset;
+	}
+
+	// Section handling
+	void AsciiDataFile::WriteSection(const std::string& name)
+	{
+		m_File.push_back("[" + name + "]");
+	}
+
+	std::string AsciiDataFile::ReadSection()
+	{
+		if (m_Offset >= m_File.size()) return "";
 		
-		line.erase(index);
-
-		if(line.find('\t') != std::string::npos)
-			return line.substr(line.find_last_of('\t') + 1, line.size());
-		else
-			return line.substr(0, line.size());
+		const std::string& line = m_File[m_Offset];
+		if (line.empty() || line[0] != '[') return "";
+		
+		size_t end = line.find(']');
+		if (end == std::string::npos) return "";
+		
+		++m_Offset;
+		return line.substr(1, end - 1);
 	}
 
-	std::string AsciiDataFile::GetString()
+	bool AsciiDataFile::IsSection() const
 	{
-		std::string line = m_File[m_CurrentLine];
-		m_CurrentLine++;
+		if (m_Offset >= m_File.size()) return false;
+		const std::string& line = m_File[m_Offset];
+		return !line.empty() && line[0] == '[';
+	}
+
+	// Value writing
+	void AsciiDataFile::WriteString(const std::string& key, const std::string& val)
+	{
+		m_File.push_back(key + "=\"" + val + "\"");
+	}
+
+	void AsciiDataFile::WriteInt(const std::string& key, int val)
+	{
+		m_File.push_back(key + "=" + std::to_string(val));
+	}
+
+	void AsciiDataFile::WriteVec3(const std::string& key, const Math::Vec3& v)
+	{
+		m_File.push_back(key + "=" + std::to_string(v.x) + "," + std::to_string(v.y) + "," + std::to_string(v.z));
+	}
+
+	void AsciiDataFile::WriteFloat(const std::string& key, float val)
+	{
+		m_File.push_back(key + "=" + std::to_string(val));
+	}
+
+	void AsciiDataFile::WriteVec2(const std::string& key, const Math::Vec2& v)
+	{
+		m_File.push_back(key + "=" + std::to_string(v.x) + "," + std::to_string(v.y));
+	}
+
+	void AsciiDataFile::WriteVec4(const std::string& key, const Math::Vec4& v)
+	{
+		m_File.push_back(key + "=" + std::to_string(v.x) + "," + std::to_string(v.y) + "," + std::to_string(v.z) + "," + std::to_string(v.w));
+	}
+
+	// Value reading
+	std::string AsciiDataFile::ReadString()
+	{
+		if (m_Offset >= m_File.size()) {
+			DD_WARN("No more lines in this file!");
+			return "";
+		}
+		std::string line = m_File[m_Offset++];
 		size_t quote = line.find('"');
-		if (line[quote - 1] == '=')
-		{
-			line = line.substr(quote + 1);
-			line.erase(line.end() - 1);
-			return line;
+		if (quote == std::string::npos || quote == 0 || line[quote - 1] != '=') {
+			DD_WARN("Not able to retrieve string at line: {}", m_Offset - 1);
+			return "";
 		}
 
-		DD_WARN("Not able to retrieve string at line: {}", m_CurrentLine-1);
-		return "";
+		std::string s = line.substr(quote + 1);
+		if (!s.empty() && s.back() == '"') s.pop_back();
+		return s;
 	}
 
-	int AsciiDataFile::GetInt()
+	int AsciiDataFile::ReadInt()
 	{
-		std::string str = m_File[m_CurrentLine];
-		m_CurrentLine++;
-		try
-		{
-			size_t loc = str.find('=');
-			if(loc != std::string::npos)
-				return std::stoi(str.substr(loc + 1));
-		}
-		catch (...)
-		{}
-		DD_WARN("Not able to retrieve int at line: {}", m_CurrentLine-1);
-		return 0;
+		if (m_Offset >= m_File.size()) return 0;
+		std::string line = m_File[m_Offset++];
+		size_t eq = line.find('=');
+		if (eq == std::string::npos) return 0;
+		return std::stoi(line.substr(eq + 1));
 	}
 
-	double AsciiDataFile::GetDouble()
+	float AsciiDataFile::ReadFloat()
 	{
-		std::string str = m_File[m_CurrentLine];
-		m_CurrentLine++;
-		try
-		{
-			size_t loc = str.find('=');
-			if (loc != std::string::npos)
-				return std::stod(str.substr(loc + 1));
-		}
-		catch (...)
-		{
-		}
-		DD_WARN("Not able to retrieve double at line: {}", m_CurrentLine-1);
-		return 0.0;
+		if (m_Offset >= m_File.size()) return 0.0f;
+		std::string line = m_File[m_Offset++];
+		size_t eq = line.find('=');
+		if (eq == std::string::npos) return 0.0f;
+		return std::stof(line.substr(eq + 1));
 	}
 
-	float AsciiDataFile::GetFloat()
+	Math::Vec2 AsciiDataFile::ReadVec2()
 	{
-		std::string str = m_File[m_CurrentLine];
-		m_CurrentLine++;
-		try
-		{
-			size_t loc = str.find('=');
-			if (loc != std::string::npos)
-				return std::stof(str.substr(loc + 1));
+		if (m_Offset >= m_File.size()) {
+			DD_WARN("No more lines in this file!");
+			return Math::Vec2(0.0f);
 		}
-		catch (...)
-		{
+
+		std::string line = m_File[m_Offset++];
+		size_t eq = line.find('=');
+		size_t comma1 = line.find(',', eq + 1);
+		if (eq == std::string::npos || comma1 == std::string::npos) {
+			DD_ERR("Trying to read invalid Vec2!");
+			return Math::Vec2(0.0f);
 		}
-		DD_WARN("Not able to retrieve float at line: {}", m_CurrentLine-1);
-		return 0.0f;
+		float x = std::stof(line.substr(eq + 1, comma1 - eq - 1));
+		float y = std::stof(line.substr(comma1 + 1));
+		return { x, y };
 	}
 
-	Math::Vec2 AsciiDataFile::GetVec2()
+	Math::Vec3 AsciiDataFile::ReadVec3()
 	{
-		std::string str = m_File[m_CurrentLine];
-		m_CurrentLine++;
-		try
-		{
-			size_t loc = str.find(',');
-			return Math::Vec2(std::stof(str.substr(str.find('=') + 1, loc - 1)), std::stof(str.substr(loc + 1, str.size())));
+		if (m_Offset >= m_File.size()) {
+			DD_WARN("No more lines in this file!");
+			return Math::Vec3(0.0f);
 		}
-		catch (...)
-		{
+
+		std::string line = m_File[m_Offset++];
+		size_t eq = line.find('=');
+		size_t comma1 = line.find(',', eq + 1);
+		size_t comma2 = line.find(',', comma1 + 1);
+		if (eq == std::string::npos || comma1 == std::string::npos || comma2 == std::string::npos) {
+			DD_ERR("Trying to read invalid Vec3!");
+			return Math::Vec3(0.0f);
 		}
-		DD_WARN("Not able to retrieve vec2 at line: {}", m_CurrentLine-1);
-		return Math::Vec2(0.0f);
+		float x = std::stof(line.substr(eq + 1, comma1 - eq - 1));
+		float y = std::stof(line.substr(comma1 + 1, comma2 - comma1 - 1));
+		float z = std::stof(line.substr(comma2 + 1));
+		return { x, y, z };
 	}
 
-	Math::Vec3 AsciiDataFile::GetVec3()
+	Math::Vec4 AsciiDataFile::ReadVec4()
 	{
-		std::string str = m_File[m_CurrentLine];
-		m_CurrentLine++;
-		try
-		{
-			size_t loc = str.find(',');
-			float x = std::stof(str.substr(str.find('=') + 1, loc - 1));
-			size_t loc2 = str.find(',', loc + 1);
-			float y = std::stof(str.substr(loc + 1, loc2 - 1));
-			float z = std::stof(str.substr(loc2 + 1, str.size()));
-			return Math::Vec3(x, y, z);
+		if (m_Offset >= m_File.size()) {
+			DD_ERR("No more lines in this file!");
+			return Math::Vec4(0.0f);
 		}
-		catch (...)
-		{
+
+		std::string line = m_File[m_Offset++];
+		size_t eq = line.find('=');
+		size_t comma1 = line.find(',', eq + 1);
+		size_t comma2 = line.find(',', comma1 + 1);
+		size_t comma3 = line.find(',', comma2 + 1);
+		if (eq == std::string::npos || comma1 == std::string::npos || comma2 == std::string::npos || comma3 == std::string::npos) {
+			DD_ERR("Trying to read invalid Vec4!");
+			return Math::Vec4(0.0f);
 		}
-		DD_WARN("Not able to retrieve vec3 at line: {}", m_CurrentLine-1);
-		return Math::Vec3(0.0f);
+		float x = std::stof(line.substr(eq + 1, comma1 - eq - 1));
+		float y = std::stof(line.substr(comma1 + 1, comma2 - comma1 - 1));
+		float z = std::stof(line.substr(comma2 + 1, comma3 - comma2 - 1));
+		float w = std::stof(line.substr(comma3 + 1));
+		return { x, y, z, w };
 	}
 
-	Math::Vec4 AsciiDataFile::GetVec4()
+	// Utility
+	void AsciiDataFile::WriteComment(const std::string& comment)
 	{
-		std::string str = m_File[m_CurrentLine];
-		m_CurrentLine++;
-		try
-		{
-			size_t loc = str.find(',');
-			float x = std::stof(str.substr(str.find('=') + 1, loc - 1));
-			size_t loc2 = str.find(',', loc + 1);
-			float y = std::stof(str.substr(loc + 1, loc2 - 1));
-			loc = str.find(',', loc2 + 1);
-			float z = std::stof(str.substr(loc2 + 1, loc - 1));
-			float w = std::stof(str.substr(loc + 1, str.size()));
-			return Math::Vec4(x, y, z, w);
-		}
-		catch (...)
-		{
-		}
-		DD_WARN("Not able to retrieve vec4 at line: {}", m_CurrentLine-1);
-		return Math::Vec4(0.0f);
+		m_File.push_back("# " + comment);
 	}
 
+	void AsciiDataFile::WriteBlankLine()
+	{
+		m_File.push_back("");
+	}
+
+	void AsciiDataFile::SkipLine()
+	{
+		if (m_Offset < m_File.size()) ++m_Offset;
+	}
+
+	// Additional ASCII-specific helpers
 	Math::Transformation AsciiDataFile::GetTransformation()
 	{
-		try
-		{
-			std::string str = m_File[m_CurrentLine];
-			size_t loc = str.find(',');
-			float posX = std::stof(str.substr(str.find('=') + 1, loc - 1));
-			size_t loc2 = str.find(',', loc + 1);
-			float posY = std::stof(str.substr(loc + 1 , loc2 - 1));
-			float posZ = std::stof(str.substr(loc2 + 1, str.size()));
-			str = m_File[m_CurrentLine + 1];
-			loc = str.find(',');
-			float scaleX = std::stof(str.substr(str.find('=') + 1, loc - 1));
-			loc2 = str.find(',', loc + 1);
-			float scaleY = std::stof(str.substr(loc + 1, loc2 - 1));
-			float scaleZ = std::stof(str.substr(loc2 + 1, str.size()));
-			str = m_File[m_CurrentLine + 2];
-			loc = str.find(',');
-			float rotateX = std::stof(str.substr(str.find('=') + 1, loc - 1));
-			loc2 = str.find(',', loc + 1);
-			float rotateY = std::stof(str.substr(loc + 1, loc2 - 1));
-			float rotateZ = std::stof(str.substr(loc2 + 1, str.size()));
-
-			m_CurrentLine+=3;
-			return Math::Transformation(posX, posY, posZ, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ);
-		}
-		catch (...)
-		{}
-
-		m_CurrentLine += 3;
-		DD_WARN("Not able to retrieve transformation at line: {}", m_CurrentLine-3);
-		return Math::Transformation();
+		Math::Transformation t;
+		if (m_Offset + 2 >= m_File.size()) return t;
+		t.m_Position = ReadVec3();
+		t.m_Scale = ReadVec3();
+		t.m_Rotation = ReadVec3();
+		return t;
 	}
+
+	void AsciiDataFile::AddValue(const std::string& name, const Math::Transformation& t)
+	{
+		WriteVec3(name + "_pos", t.m_Position);
+		WriteVec3(name + "_scale", t.m_Scale);
+		WriteVec3(name + "_rot", t.m_Rotation);
+	}
+
 }

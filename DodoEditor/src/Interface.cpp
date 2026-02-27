@@ -132,7 +132,7 @@ bool Interface::BeginDraw()
 					std::string path = Application::s_Application->m_Window->OpenFileSelector("Dodo Ascii Scene File\0*.das\0");
 					if (path != "")
 					{
-						Scene* scene = m_File.Read(path.c_str());
+						Scene* scene = m_File.Read(path);
 						scene->m_SkyBox = m_Scene->m_SkyBox;
 						delete m_Scene;
 						ChangeScene(scene);
@@ -154,7 +154,7 @@ bool Interface::BeginDraw()
 				std::string path = Application::s_Application->m_Window->OpenFileSaver("Dodo Ascii Scene File\0*.das\0", ".das");
 				if (path != "")
 				{
-					m_File.Write(path.c_str(), m_Scene);
+					m_File.WriteAs(path, m_Scene);
 				}
 
 			}

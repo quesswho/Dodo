@@ -13,58 +13,49 @@
 namespace Dodo {
 
 	class AsciiDataFile : public IDataFile {
-	private:
-		std::vector<std::string> m_Indent;
-		uint m_CurrentIndent;
 	public:
-		std::vector<std::string> m_File;
-	
-		void Clear();
+		// IDataFile interface
+		bool BeginRead(const std::string& path, bool throwOnFail = false) override;
+		void EndRead() override;
+		void BeginWrite() override;
+		void EndWrite(const std::string& path) override;
 
-		void Indent();
-		void UnIndent();
+		std::size_t GetCurrentOffset() const override;
+		bool HasMore() const override { return m_Offset < m_File.size(); }
 
-		// Call UnIndent to get out of the scope
-		inline void CreateSection(std::string name) { m_File.emplace_back(m_Indent[m_CurrentIndent] + name + ":"); Indent(); }
+		// Section handling
+		void WriteSection(const std::string& name) override;
+		std::string ReadSection() override;
+		bool IsSection() const override;
 
-		inline void AddValue(std::string name, std::string data) { m_File.emplace_back(m_Indent[m_CurrentIndent] + name + "=\"" + data + "\""); }
-		inline void AddValue(std::string name, int data) { m_File.emplace_back(m_Indent[m_CurrentIndent] + name + "=" + std::to_string(data)); }
-		inline void AddValue(std::string name, double data) { m_File.emplace_back(m_Indent[m_CurrentIndent] + name + "=" + std::to_string(data)); }
-		inline void AddValue(std::string name, float data) { m_File.emplace_back(m_Indent[m_CurrentIndent] + name + "=" + std::to_string(data)); }
-		inline void AddValue(std::string name, Math::Vec2 data) { m_File.emplace_back(m_Indent[m_CurrentIndent] + name + "=" + std::to_string(data.x) + "," + std::to_string(data.y)); }
-		inline void AddValue(std::string name, Math::Vec3 data) { m_File.emplace_back(m_Indent[m_CurrentIndent] + name + "=" + std::to_string(data.x) + "," + std::to_string(data.y) + "," + std::to_string(data.z)); }
-		inline void AddValue(std::string name, Math::Vec4 data) { m_File.emplace_back(m_Indent[m_CurrentIndent] + name + "=" + std::to_string(data.x) + "," + std::to_string(data.y) + "," + std::to_string(data.z) + "," + std::to_string(data.w)); }
-		inline void AddValue(std::string name, Math::Transformation data)
-		{
-			m_File.emplace_back(
-				m_Indent[m_CurrentIndent] + name + "=" + std::to_string(data.m_Position.x) + "," + std::to_string(data.m_Position.y) + "," + std::to_string(data.m_Position.z) + "\n"
-				+ m_Indent[m_CurrentIndent] + "\t=" + std::to_string(data.m_Scale.x) + "," + std::to_string(data.m_Scale.y) + "," + std::to_string(data.m_Scale.z) + "\n"
-				+ m_Indent[m_CurrentIndent] + "\t=" + std::to_string(data.m_Rotation.x) + "," + std::to_string(data.m_Rotation.y) + "," + std::to_string(data.m_Rotation.z));
-		}
+		// Value writing
+		void WriteString(const std::string& key, const std::string& val) override;
+		void WriteInt(const std::string& key, int val) override;
+		void WriteFloat(const std::string& key, float val) override;
+		void WriteVec2(const std::string& key, const Math::Vec2& v) override;
+		void WriteVec3(const std::string& key, const Math::Vec3& v) override;
+		void WriteVec4(const std::string& key, const Math::Vec4& v) override;
 
-		void BeginRead(const char* path) override; // Read line by line
-		bool EndRead() override { m_CurrentLine = 0; }
-		void BeginWrite() override { m_CurrentIndent = 0; Clear(); }
-		void EndWrite(const char* path) override { FileUtils::WriteTextFile(path, m_File); }
-		
-		inline void NextLine() { m_CurrentLine++; }
-		std::string GetEntryName(uint line) const;
-		inline bool EntryExists(const std::string& entry) const {
-			return m_CurrentLine < m_File.size() && m_File[m_CurrentLine].find(entry) != std::string::npos;
-		}
-		std::string GetSection();
-		
-		std::string GetString();
-		int GetInt();
-		double GetDouble();
-		float GetFloat();
-		Math::Vec2 GetVec2();
-		Math::Vec3 GetVec3();
-		Math::Vec4 GetVec4();
+		// Value reading
+		std::string ReadString() override;
+		int ReadInt() override;
+		float ReadFloat() override;
+		Math::Vec2 ReadVec2() override;
+		Math::Vec3 ReadVec3() override;
+		Math::Vec4 ReadVec4() override;
+
+		// Utility
+		void WriteComment(const std::string& comment) override;
+		void WriteBlankLine() override;
+		void SkipLine() override;
+
+		// Additional ASCII-specific helpers (not in interface)
 		Math::Transformation GetTransformation();
+		void AddValue(const std::string& name, const Math::Transformation& t);
 
-		inline std::string GetLine(const uint line) const { return m_File[line]; }
-	public:
-		uint m_CurrentLine;
+	private:
+		std::vector<std::string> m_File;
+		std::size_t m_Offset{0};
 	};
+
 }

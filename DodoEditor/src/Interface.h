@@ -72,7 +72,7 @@ private:
 
 	bool m_ChangeScene;
 
-	AsciiSceneFile m_File;
+	SceneFile m_File;
 
 	void (*m_ChangeSceneFunc)(Scene*);
 };

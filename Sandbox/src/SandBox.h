@@ -21,7 +21,7 @@ private:
 	Renderer3D* m_Renderer;
 	Scene* m_Scene;
 
-	AsciiSceneFile m_File;
+	SceneFile m_File;
 
 	PostEffect* m_PostEffect;
 

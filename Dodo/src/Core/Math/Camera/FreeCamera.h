@@ -23,8 +23,8 @@ namespace Dodo {
 			float m_Speed;
 			float m_Sensitivity;
 
-			TVec2<long> m_LastMousePos;
-			TVec4<int> m_MouseRect;
+			TVec2<double> m_LastMousePos;
+			TVec4<double> m_MouseRect;
 
 		public:
 			FreeCamera(const Vec3& pos, const Vec3& viewDir, float aspectRatio, float sensitivity, float speed);

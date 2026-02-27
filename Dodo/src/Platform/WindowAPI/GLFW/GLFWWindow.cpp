@@ -45,6 +45,10 @@ namespace Dodo {
 				DD_FATAL("Could not create GLFW window!");
 				return;
 			}
+			int winW, winH, fbW, fbH;
+			glfwGetWindowSize(m_Handle, &winW, &winH);
+			glfwGetFramebufferSize(m_Handle, &fbW, &fbH);
+			DD_INFO("Window: {}x{}, Framebuffer: {}x{}", winW, winH, fbW, fbH);
 			
 			glfwSetWindowUserPointer(m_Handle, this);
 			glfwSetKeyCallback(m_Handle, KeyCallback);
@@ -52,6 +56,7 @@ namespace Dodo {
 			// TODO: Raw mouse https://www.glfw.org/docs/latest/input_guide.html
 			glfwSetCursorPosCallback(m_Handle, MouseMovedCallback);
 			glfwSetWindowSizeCallback(m_Handle, WindowResizeCallback);
+			glfwSetFramebufferSizeCallback(m_Handle, FramebufferResizeCallback);
 			glfwSetWindowFocusCallback(m_Handle, WindowFocusCallback);
 			glfwSetWindowCloseCallback(m_Handle, WindowCloseCallback);
 		}
@@ -68,12 +73,23 @@ namespace Dodo {
 
 		void GLFWWindow::SetCursorVisible(bool vis)
 		{
-			int status = vis ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN;
-			//glfwSetInputMode(m_Handle, GLFW_CURSOR, status);
+			if (vis) {
+				glfwSetInputMode(m_Handle, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
+				glfwSetInputMode(m_Handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			} else {
+				glfwSetInputMode(m_Handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+				if (glfwRawMouseMotionSupported()) {
+					glfwSetInputMode(m_Handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+				} else {
+					DD_WARN("Raw Mouse is not supported!");
+				}
+			}
 		}
 
-		void GLFWWindow::SetCursorPosition(Math::TVec2<long> pos)
-		{}
+		void GLFWWindow::SetCursorPosition(Math::TVec2<double> pos)
+		{
+			glfwSetCursorPos(m_Handle, pos.x, pos.y);
+		}
 
 		void GLFWWindow::VSync(bool vsync)
 		{}
@@ -152,8 +168,14 @@ namespace Dodo {
 	
 		void GLFWWindow::WindowResizeCallback(GLFWwindow* window, int width, int height)
 		{
-			Application::s_Application->m_RenderAPI->Viewport(width, height);
+			DD_INFO("Window resize: {0}x{1}", width, height);
 			Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
+		}
+
+		void GLFWWindow::FramebufferResizeCallback(GLFWwindow* window, int width, int height)
+		{
+			DD_INFO("Framebuffer resize: {0}x{1}", width, height);
+			//Application::s_Application->m_RenderAPI->Viewport(width, height);
 		}
 	
 		void GLFWWindow::WindowFocusCallback(GLFWwindow* window, int focus)

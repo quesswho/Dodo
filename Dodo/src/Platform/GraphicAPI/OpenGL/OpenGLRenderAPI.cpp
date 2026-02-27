@@ -58,7 +58,7 @@ namespace Dodo {
 		void OpenGLRenderAPI::DefaultFrameBuffer() const
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glViewport(0, 0, Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height);
+			glViewport(0, 0, m_ViewportWidth, m_ViewportHeight);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
 

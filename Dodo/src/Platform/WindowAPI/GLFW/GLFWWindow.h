@@ -28,7 +28,7 @@ namespace Dodo {
 
 				void Update() const;
 				void SetTitle(const char* title);
-				void SetCursorPosition(Math::TVec2<long> pos);
+				void SetCursorPosition(Math::TVec2<double> pos);
 				void SetCursorVisible(bool vis);
 				void VSync(bool vsync);
 				void FullScreen(bool fullscreen);
@@ -45,10 +45,7 @@ namespace Dodo {
 				void ChangeWorkDirectory(std::string dir);
 				void TruncateWorkDirectory(std::string dir);
 				inline const std::string GetMainWorkDirectory() const { return m_MainWorkDirectory; }
-				Math::TVec2<long> m_MousePos;
 				bool m_Focused;
-
-				    
 
 				void SetWindowProperties(const WindowProperties& winprop);
 
@@ -60,6 +57,7 @@ namespace Dodo {
 				static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 				static void MouseMovedCallback(GLFWwindow* window, double xpos, double ypos);
 				static void WindowResizeCallback(GLFWwindow* window, int width, int height);
+				static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
 				static void WindowFocusCallback(GLFWwindow* window, int focused);
 				static void WindowCloseCallback(GLFWwindow* window);  
 

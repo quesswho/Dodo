@@ -31,13 +31,13 @@ namespace Dodo {
 		void FreeCamera::Update(float elapsed)
 		{
 			m_MoveDirection = Vec3();
-			if (Application::s_Application->m_Window->m_Keys[DODO_KEY_W])
+			if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_W))
 				m_MoveDirection.x += 1.0f;
-			if (Application::s_Application->m_Window->m_Keys[DODO_KEY_S])
+			if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_S))
 				m_MoveDirection.x -= 1.0f;
-			if (Application::s_Application->m_Window->m_Keys[DODO_KEY_D])
+			if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_D))
 				m_MoveDirection.y += 1.0f;
-			if (Application::s_Application->m_Window->m_Keys[DODO_KEY_A])
+			if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_A))
 				m_MoveDirection.y -= 1.0f;
 			
 			m_MoveDirection.NormalizeVector();
@@ -45,9 +45,9 @@ namespace Dodo {
 			m_CameraPos += m_MoveDirection.x * m_Forward * m_Speed * elapsed;
 			m_CameraPos += m_MoveDirection.y * m_Right * m_Speed * elapsed;
 
-			if (Application::s_Application->m_Window->m_Keys[DODO_KEY_SPACE])
+			if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_SPACE))
 				m_CameraPos += m_Up * m_Speed * elapsed;
-			if (Application::s_Application->m_Window->m_Keys[DODO_KEY_CONTROL])
+			if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_LEFT_CONTROL))
 				m_CameraPos -= m_Up * m_Speed * elapsed;
 
 			CalculateProjectionViewMatrix();

@@ -60,7 +60,6 @@ namespace Dodo {
 
 	Scene* AsciiSceneFile::Read(const char* path)
 	{
-		Application::s_Application->m_Window->DefaultWorkDirectory();
 		Scene* result = new Scene(new Math::FreeCamera(Math::Vec3(0.0f, 0.0f, 20.0f), (float)Application::s_Application->m_RenderAPI->m_ViewportWidth / (float)Application::s_Application->m_RenderAPI->m_ViewportWidth, 0.04f, 10.0f));
 		m_File.BeginRead(path);
 		while (m_File.m_File.size() > m_File.m_CurrentLine)

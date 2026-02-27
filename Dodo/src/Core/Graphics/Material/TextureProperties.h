@@ -4,8 +4,7 @@
 
 namespace Dodo {
 
-	enum class TextureFormat : uint8_t
-	{
+	enum class TextureFormat : uint8_t {
 		FORMAT_RED,
 		FORMAT_RGB,
 		FORMAT_RGBA
@@ -30,8 +29,7 @@ namespace Dodo {
 		TextureFormat m_Format;
 	};
 
-	enum class TextureFilter : uint32_t
-	{
+	enum class TextureFilter : uint32_t {
 		FILTER_MIN_MAG_LINEAR_MIP_NEAREST,
 		FILTER_MIN_MAG_MIP_LINEAR,
 		FILTER_MIN_NEAREST_MAG_LINEAR_MIP_NEAREST,
@@ -43,8 +41,7 @@ namespace Dodo {
 		FILTER_MIN_LINEAR_MAG_MIP_LINEAR
 	};
 
-	enum class TextureWrapMode
-	{
+	enum class TextureWrapMode {
 		WRAP_REPEAT,
 		WRAP_CLAMP_TO_BORDER,
 		WRAP_CLAMP_TO_EDGE,

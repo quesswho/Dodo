@@ -7,7 +7,7 @@
 #include <Windows.h>
 
 namespace Dodo::Platform {
-    class WGLContext{
+    class WGLContext {
         public:
             explicit WGLContext() {}
 

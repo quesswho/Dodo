@@ -3,8 +3,7 @@
 #include <type_traits>
 
 namespace Dodo {
-	enum ComponentFlag // Order needs to be the same as in the std::variant<...> inside Entity.h!
-	{
+	enum ComponentFlag { // Order needs to be the same as in the std::variant<...> inside Entity.h!
 		ComponentFlag_None = 0,
 		ComponentFlag_ModelComponent = 1 << 0,
 		ComponentFlag_Rectangle2DComponent = 2 << 0,

@@ -17,8 +17,7 @@ struct Component {
 	bool m_Selected;
 };
 
-struct EditorProperties
-{
+struct EditorProperties {
 	bool m_ShowViewport;
 	bool m_ShowHierarchy;
 	bool m_ShowInspector;
@@ -31,8 +30,7 @@ struct EditorProperties
 	const char* m_InspectorName;
 };
 
-class Interface
-{
+class Interface {
 public:
 	uint m_ViewportWidth = 0;
 	uint m_ViewportHeight = 0;

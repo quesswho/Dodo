@@ -24,8 +24,7 @@ namespace Dodo {
 
 	};
 
-	struct BufferProperties
-	{
+	struct BufferProperties {
 		BufferProperties()
 			: m_Stride(0)
 		{}

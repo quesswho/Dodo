@@ -4,8 +4,7 @@
 #include <string>
 
 namespace Dodo {
-    enum WindowFlags
-	{
+    enum WindowFlags {
 		DodoWindowFlags_NONE			= 0,
 		DodoWindowFlags_FULLSCREEN		= 1 << 0,
 		DodoWindowFlags_VSYNC			= 1 << 1,

@@ -8,8 +8,7 @@
 
 namespace Dodo {
 	
-	class MaterialLoader
-	{
+	class MaterialLoader {
 	public:
 		Ref<Material> LoadMaterial(const char* texture);
 		Ref<Material> LoadMaterial(const std::string& path, aiMaterial* material);

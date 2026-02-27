@@ -7,6 +7,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Export compile commands, useful for IntelliSense
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+endif()
+
+
 # Load Opengl and (or) Vulkan
 option(DD_API_OPENGL "Enable OpenGL loader" ON)
 option(DD_API_VULKAN "Enable Vulkan loader" OFF)
@@ -17,8 +22,8 @@ message(STATUS "CMake version: ${CMAKE_VERSION}")
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
 
-message(STATUS "DD_GLAD_OPENGL=${DD_GLAD_OPENGL}")
-message(STATUS "DD_GLAD_VULKAN=${DD_GLAD_VULKAN}")
+message(STATUS "DD_GLAD_OPENGL=${DD_API_OPENGL}")
+message(STATUS "DD_GLAD_VULKAN=${DD_API_VULKAN}")
 
 
 # Output dirs

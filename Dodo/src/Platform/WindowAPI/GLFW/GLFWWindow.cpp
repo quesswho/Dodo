@@ -45,26 +45,32 @@ namespace Dodo {
 				DD_FATAL("Could not create GLFW window!");
 				return;
 			}
-
-			// TODO: replace with modern C++
-			memset(m_Keys, 0, sizeof(m_Keys));
+			
+			glfwSetWindowUserPointer(m_Handle, this);
+			glfwSetKeyCallback(m_Handle, KeyCallback);
+			glfwSetMouseButtonCallback(m_Handle, MouseButtonCallback);
+			// TODO: Raw mouse https://www.glfw.org/docs/latest/input_guide.html
+			glfwSetCursorPosCallback(m_Handle, MouseMovedCallback);
+			glfwSetWindowSizeCallback(m_Handle, WindowResizeCallback);
+			glfwSetWindowFocusCallback(m_Handle, WindowFocusCallback);
+			glfwSetWindowCloseCallback(m_Handle, WindowCloseCallback);
 		}
 
 		void GLFWWindow::Update() const
 		{
-			if(glfwWindowShouldClose(m_Handle)) {
-				DD_INFO("Shutting down!");
-				Application::s_Application->Shutdown();
-				Application::s_Application->OnEvent(WindowCloseEvent());
-			}
 			glfwPollEvents();
 		}
 
 		void GLFWWindow::SetTitle(const char* title)
-		{}
+		{
+			glfwSetWindowTitle(m_Handle, title);
+		}
 
 		void GLFWWindow::SetCursorVisible(bool vis)
-		{}
+		{
+			int status = vis ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_HIDDEN;
+			//glfwSetInputMode(m_Handle, GLFW_CURSOR, status);
+		}
 
 		void GLFWWindow::SetCursorPosition(Math::TVec2<long> pos)
 		{}
@@ -104,49 +110,61 @@ namespace Dodo {
 		{
 		}
 
-		void GLFWWindow::KeyPressCallback(uint keycode)
+		void GLFWWindow::ErrorCallback(int error, const char* description)
 		{
-			m_Keys[keycode] = true;
-			Application::s_Application->OnEvent(KeyPressEvent(keycode));
+			DD_ERR("{0}", description);
 		}
 
-		void GLFWWindow::KeyReleaseCallback(uint keycode)
+		
+		void GLFWWindow::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
-			m_Keys[keycode] = false;
-			Application::s_Application->OnEvent(KeyReleaseEvent(keycode));
+			switch(action) {
+				case GLFW_PRESS:
+				case GLFW_REPEAT:
+					Application::s_Application->m_InputManager.KeyPressed(key);
+					break;
+				case GLFW_RELEASE:
+					Application::s_Application->m_InputManager.KeyReleased(key);
+					break;
+			}
 		}
-	
-		void GLFWWindow::MousePressCallback(uint keycode)
+
+		
+		void GLFWWindow::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 		{
-			m_Keys[keycode] = true;
-			Application::s_Application->OnEvent(MousePressEvent(keycode));
+			switch(action) {
+				case GLFW_PRESS:
+					Application::s_Application->m_InputManager.MousePressed(button);
+					break;
+				case GLFW_RELEASE:
+					Application::s_Application->m_InputManager.MouseReleased(button);
+					break;
+			}
 		}
 		
-		void GLFWWindow::MouseReleaseCallback(uint keycode)
+		
+	
+		void GLFWWindow::MouseMovedCallback(GLFWwindow* window, double xpos, double ypos)
 		{
-			m_Keys[keycode] = false;
-			Application::s_Application->OnEvent(MouseReleaseEvent(keycode));
+			// TODO: support subpixel mouse
+			Application::s_Application->m_InputManager.MouseMoved(Math::TVec2<double>(xpos, ypos));
 		}
 	
-		void GLFWWindow::MouseMoveCallback(Math::TVec2<long> pos)
+		void GLFWWindow::WindowResizeCallback(GLFWwindow* window, int width, int height)
 		{
-			m_MousePos += pos;
-			Application::s_Application->OnEvent(MouseMoveEvent(m_MousePos));
+			Application::s_Application->m_RenderAPI->Viewport(width, height);
+			Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
 		}
 	
-		void GLFWWindow::WindowResizeCallback(Math::TVec2<int> size)
+		void GLFWWindow::WindowFocusCallback(GLFWwindow* window, int focus)
 		{
-			Application::s_Application->m_RenderAPI->Viewport(size.x, size.y);
-			Application::s_Application->OnEvent(WindowResizeEvent(size));
-		}
-	
-		void GLFWWindow::WindowFocusCallback(bool focus)
-		{
-			m_Focused = focus;
-			Application::s_Application->OnEvent(WindowFocusEvent(focus));
+			GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+			if(!self) return;
+			self->m_Focused = focus > 0;
+			Application::s_Application->OnEvent(WindowFocusEvent(self->m_Focused));
 		}
 
-		void GLFWWindow::WindowCloseCallback()
+		void GLFWWindow::WindowCloseCallback(GLFWwindow* window)
 		{
 			Application::s_Application->Shutdown();
 			Application::s_Application->OnEvent(WindowCloseEvent());
@@ -159,11 +177,6 @@ namespace Dodo {
 
 		void GLFWWindow::FocusConsole() const
 		{}
-
-		void GLFWWindow::ErrorCallback(int error, const char* description)
-		{
-			DD_ERR("{0}", description);
-		}
 
 		void GLFWWindow::ConfigureMonitor() {
 			GLFWmonitor* primary = glfwGetPrimaryMonitor();
@@ -187,8 +200,6 @@ namespace Dodo {
 
 			m_WindowProperties.m_Width = m_WindowProperties.m_Width <= 0 ? width : m_WindowProperties.m_Width;
 			m_WindowProperties.m_Height = m_WindowProperties.m_Height <= 0 ? height : m_WindowProperties.m_Height;
-			
 		}
-
 	}
 }

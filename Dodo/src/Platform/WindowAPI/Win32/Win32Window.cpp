@@ -267,11 +267,11 @@ namespace Dodo {
 					break;
 				case WM_SYSKEYDOWN:
 				case WM_KEYDOWN:
-					Application::s_Application->m_Window->KeyPressCallback((uint)wParam);
+					Application::s_Application->m_InputManager.KeyPressed((uint)wParam);
 					break;
 				case WM_SYSKEYUP:
 				case WM_KEYUP:
-					Application::s_Application->m_Window->KeyReleaseCallback((uint)wParam);
+					Application::s_Application->m_InputManager.KeyReleased((uint)wParam);
 					break;
 				case WM_MOUSEMOVE:
 					break;
@@ -293,7 +293,7 @@ namespace Dodo {
 
 					if (raw->header.dwType == RIM_TYPEMOUSE)
 					{
-						Application::s_Application->m_Window->MouseMoveCallback(Math::TVec2<long>(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
+						Application::s_Application->m_InputManager.MouseMoved(Math::TVec2<double>(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
 					}
 					delete raw;
 					break;
@@ -301,12 +301,12 @@ namespace Dodo {
 				case WM_LBUTTONDOWN:
 				case WM_RBUTTONDOWN:
 				case WM_MBUTTONDOWN:
-					Application::s_Application->m_Window->MousePressCallback((uint)wParam);
+					Application::s_Application->m_InputManager.MousePressed((uint)wParam);
 					break;
 				case WM_LBUTTONUP:
 				case WM_RBUTTONUP:
 				case WM_MBUTTONUP:
-					Application::s_Application->m_Window->MouseReleaseCallback((uint)wParam);
+					Application::s_Application->m_InputManager.MouseReleaseCallback((uint)wParam);
 					break;
 				case WM_SIZE:
 					if (!Application::s_Application->m_Initializing)

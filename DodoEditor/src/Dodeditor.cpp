@@ -117,7 +117,7 @@ void GameLayer::OnEvent(const Event& event)
 					}
 					break;
 				case DODO_KEY_DELETE:
-					if (!Application::s_Application->m_Window->m_Keys[DODO_KEY_LEFT_CONTROL]) {
+					if (!Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_LEFT_CONTROL)) {
 						break;
 					}
 					std::vector<decltype(m_Interface->m_SelectedEntity)::key_type> toDelete;

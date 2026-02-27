@@ -3,6 +3,7 @@
 #include "pch.h"
 
 #include "Window.h"
+#include "Input/InputManager.h"
 #include "Layer.h"
 
 #include "Event.h"
@@ -34,11 +35,16 @@ namespace Dodo {
 
 		virtual void Init();
 		virtual void Update(float elapsed);
+		
+		const Input& GetInput() const {
+			return m_InputManager.GetInput();
+		}
 	public:
 		float m_FrameTimeMs;
 		uint m_FramesPerSecond;
 		WindowProperties m_WindowProperties;
 
+		InputManager m_InputManager;
 		Logger* m_Logger;
 		Window* m_Window;
 		RenderAPI* m_RenderAPI;

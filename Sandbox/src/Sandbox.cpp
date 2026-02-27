@@ -66,38 +66,38 @@ GameLayer::~GameLayer()
 
 void GameLayer::Update(float elapsed)
 {
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_9])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_9))
 		m_Gamma += 1.0f * elapsed;
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_8])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_8))
 		m_Gamma -= 1.0f * elapsed;
 
 	// Change directional light
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_1])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_1))
 		m_Scene->m_LightSystem.m_Directional.m_Direction += elapsed * Vec3(1.0f, 0, 0);
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_2])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_2))
 		m_Scene->m_LightSystem.m_Directional.m_Direction -= elapsed * Vec3(1.0f, 0, 0);
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_3])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_3))
 		m_Scene->m_LightSystem.m_Directional.m_Direction += elapsed * Vec3(0, 1.0f, 0);
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_4])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_4))
 		m_Scene->m_LightSystem.m_Directional.m_Direction -= elapsed * Vec3(0, 1.0f, 0);
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_5])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_5))
 		m_Scene->m_LightSystem.m_Directional.m_Direction += elapsed * Vec3(0, 0, 1.0f);
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_6])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_6))
 		m_Scene->m_LightSystem.m_Directional.m_Direction -= elapsed * Vec3(0, 0, 1.0f);
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_0])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_0))
 		m_Scene->m_LightSystem.m_Directional.m_Direction = Vec3(0.0f, -1.0f, 1.0f);
 	m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(m_Scene->m_LightSystem.m_Directional.m_Direction);
 
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_0])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_0))
 		m_Scene->m_LightSystem.m_Directional.m_Direction = Vec3(0.0f, -1.0f, 1.0f);
 
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_UP])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_UP))
 		m_LightLook += elapsed * Vec3(1.0f, 0.0f, 0.0f) * 10.0f;
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_DOWN])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_DOWN))
 		m_LightLook -= elapsed * Vec3(1.0f, 0.0f, 0.0f) * 10.0f;
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_RIGHT])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_RIGHT))
 		m_LightLook += elapsed * Vec3(0.0f, 0.0f, 1.0f) * 10.0f;
-	if (Application::s_Application->m_Window->m_Keys[DODO_KEY_LEFT])
+	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_LEFT))
 		m_LightLook -= elapsed * Vec3(0.0f, 0.0f, 1.0f) * 10.0f;
 	m_LightView = Mat4::LookAt(
 		Vec3(-8.0f, 35.0f, 23.0f),

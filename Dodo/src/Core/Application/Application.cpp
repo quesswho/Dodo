@@ -66,6 +66,11 @@ namespace Dodo {
 		m_NumLogicalProcessors = std::thread::hardware_concurrency();
 		m_ThreadManager = ddnew ThreadManager(m_NumLogicalProcessors-1 == 0 ? 1 : m_NumLogicalProcessors - 1);
 
+		// Set event callback in input manager
+        m_InputManager.SetEventCallback([this](const Event& e) {
+            OnEvent(e);
+        });
+
 		m_RenderAPI = ddnew RenderAPI(m_Window->GetHandle());
 		RenderInitError res = m_RenderAPI->Init(m_WindowProperties);
 		

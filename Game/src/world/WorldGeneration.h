@@ -17,4 +17,6 @@ public:
 	{}
 
 	Ref<Chunk> GenerateChunk(ChunkPos chunkpos);
+
+	//void BuildBlock()
 };

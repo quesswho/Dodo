@@ -19,9 +19,16 @@ namespace Dodo {
 			mesh->Draw();
 	}
 
-	void Model::Draw(Ref<Material> material) const
+	void Model::DrawGeometry() const
 	{
 		for (auto mesh : m_Meshes)
-			mesh->Draw(material);
+			mesh->DrawGeometry();
+	}
+
+	void Model::Draw(Ref<Material> material) const
+	{
+        material->Bind();
+		for (auto mesh : m_Meshes)
+			mesh->DrawGeometry();
 	}
 }

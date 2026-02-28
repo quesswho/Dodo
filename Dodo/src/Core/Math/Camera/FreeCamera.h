@@ -11,7 +11,7 @@ namespace Dodo {
 			Mat4 m_ProjectionMatrix;
 			Mat4 m_CameraMatrix;
 
-			Vec3 m_CameraPos;
+			Vec3 m_CameraPos; // z-component should be up
 			Vec3 m_ViewDir;
 			Vec3 m_Forward;
 			Vec3 m_Right;

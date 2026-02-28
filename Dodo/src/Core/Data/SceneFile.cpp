@@ -32,40 +32,27 @@ namespace Dodo {
 		m_File.WriteComment("Scene v" + std::to_string(CURRENT_VERSION));
 		m_File.WriteBlankLine();
 
-		for (auto& [id, entity] : scene->GetWorld().m_Entities)
+		World& world = scene->GetWorld();
+		for (EntityID entityId : world.GetAliveEntities())
 		{
-			m_File.WriteSection("Entity:" + std::to_string(id));
-			m_File.WriteString("name", entity.m_Name);
-
-			// Components
-			for (auto& varcomp : entity.m_Components)
-			{
-				switch (varcomp.index())
-				{
-					case 0: // ModelComponent
-					{
-						auto& comp = std::get<0>(varcomp);
-						m_File.WriteSection("ModelComponent");
-						m_File.WriteString("path", comp->m_Path);
-						m_File.WriteVec3("position", comp->m_Transformation.m_Position);
-						m_File.WriteVec3("scale", comp->m_Transformation.m_Scale);
-						m_File.WriteVec3("rotation", comp->m_Transformation.m_Rotation);
-						break;
-					}
-					case 1: // Rectangle2DComponent
-					{
-						auto& comp = std::get<1>(varcomp);
-						m_File.WriteSection("Rectangle2D");
-						m_File.WriteString("path", comp->m_Path);
-						m_File.WriteVec3("position", comp->m_Transformation.m_Position);
-						m_File.WriteVec3("scale", comp->m_Transformation.m_Scale);
-						m_File.WriteVec3("rotation", comp->m_Transformation.m_Rotation);
-						break;
-					}
-					default:
-						DD_ERR("Unknown component type while writing scene file!");
-				}
+			m_File.WriteSection("Entity:" + std::to_string(entityId));
+			
+			// Write entity name
+			if (world.HasComponent<NameComponent>(entityId)) {
+				m_File.WriteString("name", world.GetComponent<NameComponent>(entityId).m_Name);
 			}
+
+			// Write ModelComponent if entity has one
+			if (world.HasComponent<ModelComponent>(entityId)) {
+				auto& comp = world.GetComponent<ModelComponent>(entityId);
+                std::string path = Application::s_Application->m_AssetManager->GetModelPath(comp.m_ModelID);
+				m_File.WriteSection("ModelComponent");
+				m_File.WriteString("path", path);
+				m_File.WriteVec3("position", comp.m_Transformation.m_Position);
+				m_File.WriteVec3("scale", comp.m_Transformation.m_Scale);
+				m_File.WriteVec3("rotation", comp.m_Transformation.m_Rotation);
+			}
+
 			m_File.WriteBlankLine();
 		}
 
@@ -124,12 +111,16 @@ namespace Dodo {
 			{
 				currentEntityId = std::stoi(section.substr(7));
 				std::string name = m_File.ReadString();
-				result->GetWorld().CreateEntity(currentEntityId, name);
+
+				World& world = result->GetWorld();
+				EntityID createdId = world.CreateEntity();
+				currentEntityId = createdId;
+				world.AddComponent<NameComponent>(currentEntityId, NameComponent{name});
 				continue;
 			}
 
 			// Component sections
-			if (section == "ModelComponent")
+			else if (section == "ModelComponent")
 			{
 				if (currentEntityId < 0)
 				{
@@ -141,25 +132,15 @@ namespace Dodo {
 				Math::Vec3 scale = m_File.ReadVec3();
 				Math::Vec3 rotation = m_File.ReadVec3();
 				Math::Transformation transform(position, scale, rotation);
-				result->GetWorld().AddComponent(currentEntityId, new ModelComponent(modelPath.c_str(), transform));
-				continue;
-			}
 
-			if (section == "Rectangle2D")
-			{
-				if (currentEntityId < 0)
-				{
-					SetError(SceneFileError::ParseError, m_File.GetCurrentOffset());
-					return result;
-				}
-				std::string rectPath = m_File.ReadString();
-				Math::Vec3 position = m_File.ReadVec3();
-				Math::Vec3 scale = m_File.ReadVec3();
-				Math::Vec3 rotation = m_File.ReadVec3();
-				Math::Transformation transform(position, scale, rotation);
-				result->GetWorld().AddComponent(currentEntityId, new Rectangle2DComponent(rectPath.c_str(), transform));
+                // This is temporary until we can retrieve ids without loading
+                ModelID id = Application::s_Application->m_AssetManager->LoadModel(modelPath);
+
+				result->GetWorld().AddComponent<ModelComponent>(currentEntityId, ModelComponent(id, transform));
 				continue;
-			}
+			} else {
+                SetError(SceneFileError::UnsupportedComponent, m_File.GetCurrentOffset());
+            }
 		}
 
 		m_File.EndRead();
@@ -194,6 +175,12 @@ namespace Dodo {
 				else
 					DD_ERR("Parse error in scene file: {}", m_Path);
 				break;
+            case SceneFileError::UnsupportedComponent:
+                if (line > 0)
+                    DD_ERR("Unsupported component in scene file '{}' at line {}", m_Path, line);
+                else
+                    DD_ERR("Unsupported component in scene file: {}", m_Path);
+                break;
 		}
 	}
 

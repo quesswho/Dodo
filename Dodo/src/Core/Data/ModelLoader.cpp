@@ -56,7 +56,7 @@ namespace Dodo {
 			material);
 	}
 
-	Model* ModelLoader::LoadModel(const char* path)
+	Model* ModelLoader::LoadModel(const std::string& path)
 	{
 		Assimp::Importer imp;
 
@@ -82,7 +82,7 @@ namespace Dodo {
 
 		for (int i = 0; i < model->mNumMaterials; i++)
 		{
-			materials.push_back(Application::s_Application->m_AssetManager->m_MaterialLoader->LoadMaterial(std::string(path), model->mMaterials[i]));
+			materials.push_back(Application::s_Application->m_AssetManager->m_MaterialLoader->LoadMaterial(path, model->mMaterials[i]));
 		}
 
 		//Application::s_Application->m_Window->DefaultWorkDirectory();

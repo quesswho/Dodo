@@ -5,7 +5,7 @@
 #include <Core/Graphics/Skybox.h>
 #include <Core/Graphics/Scene/Scene.h>
 #include <Core/ECS/Component/ModelComponent.h>
-#include <Core/ECS/Component/Rectangle2DComponent.h>
+#include <Core/Data/AssetManager.h>
 
 #include <Core/Math/Camera/FreeCamera.h>
 
@@ -22,7 +22,7 @@ namespace Dodo {
 
 		void DrawScene(Scene* scene);
 
-		void RenderEntities(World& world, Math::FreeCamera* camera, LightSystem& lightSystem);
+		void RenderEntities(World& world, Math::FreeCamera* camera, LightSystem& lightSystem, AssetManager& assets);
 
 		void UpdateCamera(Math::FreeCamera* camera) {
 			m_Camera = camera;

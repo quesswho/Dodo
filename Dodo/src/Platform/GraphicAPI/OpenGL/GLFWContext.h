@@ -18,7 +18,10 @@ public:
 
     int LoadGlad() { return gladLoadGL(glfwGetProcAddress); }
     void SwapBuffer() { glfwSwapBuffers(m_Window); }
-    void SetVSync(bool enabled) { glfwSwapInterval(enabled ? 1 : 0); }
+    void SetVSync(bool enabled) { 
+        glfwMakeContextCurrent(m_Window);
+        glfwSwapInterval(enabled ? 1 : 0); 
+    }
 
 private:
     GLFWwindow* m_Window = nullptr;

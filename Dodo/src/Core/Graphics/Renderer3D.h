@@ -27,6 +27,9 @@ namespace Dodo {
 		void DrawScene(Scene* scene);
 		void DrawShadowedScene(Scene* scene);
 
+		void RenderEntities(World& world, Math::FreeCamera* camera, LightSystem& lightSystem);
+		void RenderEntitiesWithMaterial(World& world, Ref<Material> material);
+
 		void UpdateCamera(Math::FreeCamera* camera) {
 			m_Camera = camera;
 		}

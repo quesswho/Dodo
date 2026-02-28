@@ -30,8 +30,8 @@ namespace Dodo {
 		m_ShadowMapMaterial(std::make_shared<Material>(Shader::CreateFromSource("Shadow", s_ShadowShader)))
 	{}
 
-	void Renderer3D::DrawScene(Scene* scene) {
-		for (auto& ent : scene->m_Entities)
+	void Renderer3D::RenderEntities(World& world, Math::FreeCamera* camera, LightSystem& lightSystem) {
+		for (auto& ent : world.m_Entities)
 		{
 			for (auto i : ent.second.m_Drawable)
 			{
@@ -39,10 +39,10 @@ namespace Dodo {
 				switch (drawable.index())
 				{
 				case 0:
-					std::get<0>(drawable)->Draw(m_Camera, scene->m_LightSystem);
+					std::get<0>(drawable)->Draw(camera, lightSystem);
 					break;
 				case 1:
-					std::get<1>(drawable)->Draw(m_Camera, scene->m_LightSystem);
+					std::get<1>(drawable)->Draw(camera, lightSystem);
 					break;
 				default:
 					DD_ERR("This should never occurr.");
@@ -50,7 +50,33 @@ namespace Dodo {
 				}
 			}
 		}
+	}
 
+	void Renderer3D::RenderEntitiesWithMaterial(World& world, Ref<Material> material) {
+		for (auto& ent : world.m_Entities)
+		{
+			for (auto i : ent.second.m_Drawable)
+			{
+				auto& drawable = ent.second.m_Components[i];
+				switch (drawable.index())
+				{
+				case 0:
+					std::get<0>(drawable)->Draw(material);
+					break;
+				case 1:
+					std::get<1>(drawable)->Draw(material);
+					break;
+				default:
+					DD_ERR("This should never occurr.");
+					break;
+				}
+			}
+		}
+	}
+
+	void Renderer3D::DrawScene(Scene* scene) {
+        World& world = scene->GetWorld();
+		RenderEntities(world, m_Camera, scene->m_LightSystem);
 		if (scene->m_SkyBox) scene->m_SkyBox->Draw(m_Camera->GetViewMatrix());
 	}
 
@@ -63,25 +89,8 @@ namespace Dodo {
 		Application::s_Application->m_RenderAPI->Culling(true, false);
 		m_ShadowMapMaterial->BindShader();
 		m_ShadowMapMaterial->SetUniform("u_LightCamera", scene->m_LightSystem.m_Directional.m_LightCamera);
-		for (auto& ent : scene->m_Entities)
-		{
-			for (auto i : ent.second.m_Drawable)
-			{
-				auto& drawable = ent.second.m_Components[i];
-				switch (drawable.index())
-				{
-				case 0:
-					std::get<0>(drawable)->Draw(m_ShadowMapMaterial);
-					break;
-				case 1:
-					std::get<1>(drawable)->Draw(m_ShadowMapMaterial);
-					break;
-				default:
-					DD_ERR("This should never occurr.");
-					break;
-				}
-			}
-		}
+		World& world = scene->GetWorld();
+		RenderEntitiesWithMaterial(world, m_ShadowMapMaterial);
 		Application::s_Application->m_RenderAPI->Culling(Application::s_Application->m_RenderAPI->m_CullingDefault, true);
 
 		// Bind postfx render target

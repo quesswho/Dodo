@@ -32,7 +32,7 @@ namespace Dodo {
 		m_File.WriteComment("Scene v" + std::to_string(CURRENT_VERSION));
 		m_File.WriteBlankLine();
 
-		for (auto& [id, entity] : scene->m_Entities)
+		for (auto& [id, entity] : scene->GetWorld().m_Entities)
 		{
 			m_File.WriteSection("Entity:" + std::to_string(id));
 			m_File.WriteString("name", entity.m_Name);
@@ -124,7 +124,7 @@ namespace Dodo {
 			{
 				currentEntityId = std::stoi(section.substr(7));
 				std::string name = m_File.ReadString();
-				result->CreateEntity(currentEntityId, name);
+				result->GetWorld().CreateEntity(currentEntityId, name);
 				continue;
 			}
 
@@ -141,7 +141,7 @@ namespace Dodo {
 				Math::Vec3 scale = m_File.ReadVec3();
 				Math::Vec3 rotation = m_File.ReadVec3();
 				Math::Transformation transform(position, scale, rotation);
-				result->AddComponent(currentEntityId, new ModelComponent(modelPath.c_str(), transform));
+				result->GetWorld().AddComponent(currentEntityId, new ModelComponent(modelPath.c_str(), transform));
 				continue;
 			}
 
@@ -157,7 +157,7 @@ namespace Dodo {
 				Math::Vec3 scale = m_File.ReadVec3();
 				Math::Vec3 rotation = m_File.ReadVec3();
 				Math::Transformation transform(position, scale, rotation);
-				result->AddComponent(currentEntityId, new Rectangle2DComponent(rectPath.c_str(), transform));
+				result->GetWorld().AddComponent(currentEntityId, new Rectangle2DComponent(rectPath.c_str(), transform));
 				continue;
 			}
 		}

@@ -40,6 +40,8 @@ namespace Dodo {
 			m_CullingDefault = winprop.m_Settings.backfaceCull;
 			Culling(m_CullingDefault);
 
+            m_Context.SetVSync(winprop.m_Settings.vsync);
+
 			std::string vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
 			std::string renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 

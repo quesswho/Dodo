@@ -137,10 +137,10 @@ namespace Dodo {
 					return result;
 				}
 				std::string modelPath = m_File.ReadString();
-				Math::Transformation transform;
-				transform.m_Position = m_File.ReadVec3();
-				transform.m_Scale = m_File.ReadVec3();
-				transform.m_Rotation = m_File.ReadVec3();
+				Math::Vec3 position = m_File.ReadVec3();
+				Math::Vec3 scale = m_File.ReadVec3();
+				Math::Vec3 rotation = m_File.ReadVec3();
+				Math::Transformation transform(position, scale, rotation);
 				result->AddComponent(currentEntityId, new ModelComponent(modelPath.c_str(), transform));
 				continue;
 			}
@@ -153,10 +153,10 @@ namespace Dodo {
 					return result;
 				}
 				std::string rectPath = m_File.ReadString();
-				Math::Transformation transform;
-				transform.m_Position = m_File.ReadVec3();
-				transform.m_Scale = m_File.ReadVec3();
-				transform.m_Rotation = m_File.ReadVec3();
+				Math::Vec3 position = m_File.ReadVec3();
+				Math::Vec3 scale = m_File.ReadVec3();
+				Math::Vec3 rotation = m_File.ReadVec3();
+				Math::Transformation transform(position, scale, rotation);
 				result->AddComponent(currentEntityId, new Rectangle2DComponent(rectPath.c_str(), transform));
 				continue;
 			}

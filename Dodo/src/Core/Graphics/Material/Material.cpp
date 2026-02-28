@@ -46,6 +46,11 @@ namespace Dodo {
 		}
 	}
 
+	void Material::BindShader() const
+	{
+		m_Shader->Bind();
+	}
+
 	void Material::Bind()
 	{
 		m_Shader->Bind();

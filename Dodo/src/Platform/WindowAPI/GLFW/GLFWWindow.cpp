@@ -46,7 +46,7 @@ namespace Dodo {
 				return;
 			}
 
-			VSync(m_WindowProperties.m_Settings.vsync);
+			//VSync(m_WindowProperties.m_Settings.vsync);
 
 			int xpos, ypos;
 			glfwGetWindowPos(m_Handle, &xpos, &ypos);
@@ -112,9 +112,10 @@ namespace Dodo {
 		void GLFWWindow::FullScreen(bool fullscreen)
 		{
 			m_WindowProperties.m_Settings.fullscreen = fullscreen;
+			GLFWmonitor* primary = glfwGetPrimaryMonitor();
+			const GLFWvidmode* mode = glfwGetVideoMode(primary);
+
 			if(fullscreen) {
-				GLFWmonitor* primary = glfwGetWindowMonitor(m_Handle);
-				const GLFWvidmode* mode = glfwGetVideoMode(primary);
 				int xpos, ypos;
 				glfwGetWindowPos(m_Handle, &xpos, &ypos);
 				m_WindowProperties.m_PosX = xpos;
@@ -122,12 +123,8 @@ namespace Dodo {
 
 				glfwSetWindowMonitor(m_Handle, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
 			} else {
-				GLFWmonitor* primary = glfwGetWindowMonitor(m_Handle);
-				const GLFWvidmode* mode = glfwGetVideoMode(primary);
-
 				glfwSetWindowMonitor(m_Handle, NULL, m_WindowProperties.m_PosX, m_WindowProperties.m_PosY, m_WindowProperties.m_Width, m_WindowProperties.m_Height, 0);
 			}
-
 		}
 
 		NativeWindowHandle GLFWWindow::GetHandle() const
@@ -207,7 +204,7 @@ namespace Dodo {
 			self->m_WindowProperties.m_Width = width;
 			self->m_WindowProperties.m_Height = height;
 			DD_INFO("Window resize: {0}x{1}", width, height);
-			Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
+			//Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
 		}
 
 		void GLFWWindow::WindowMovedCallback(GLFWwindow* window, int xpos, int ypos) 
@@ -230,6 +227,7 @@ namespace Dodo {
 			self->m_WindowProperties.m_FrameBufferHeight = height;
 			DD_INFO("Framebuffer resize: {0}x{1}", width, height);
 			Application::s_Application->m_RenderAPI->ResizeDefaultViewport(width, height);
+			Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
 		}
 	
 		void GLFWWindow::WindowFocusCallback(GLFWwindow* window, int focus)

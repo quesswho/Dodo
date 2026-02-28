@@ -22,7 +22,10 @@ namespace Dodo {
 		template<typename T>
 		void SetUniform(const char* location, T value) { m_Material->SetUniform(location, value); }
 
+		Ref<Material> GetMaterial() const { return m_Material; }
+
 		void Draw() const;
+		void DrawGeometry() const;
 		void Draw(Ref<Material> material) const;
 	};
 }

@@ -32,11 +32,10 @@ namespace Dodo {
 
 		template<typename T>
 		void SetUniform(const char* location, T value) {
-			m_Shader->Bind();
 			m_Shader->SetUniformValue(location, value); 
-
 		}
 
-		void Bind();
+		void BindShader() const;
+		void Bind() const;
 	};
 }

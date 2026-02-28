@@ -61,6 +61,7 @@ namespace Dodo {
 
 		// Draw to shadowmap
 		Application::s_Application->m_RenderAPI->Culling(true, false);
+		m_ShadowMapMaterial->BindShader();
 		m_ShadowMapMaterial->SetUniform("u_LightCamera", scene->m_LightSystem.m_Directional.m_LightCamera);
 		for (auto& ent : scene->m_Entities)
 		{

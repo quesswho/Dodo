@@ -15,6 +15,7 @@ namespace Dodo {
 		template<typename T>
 		void SetUniform(const char* location, T value) { for (auto mesh : m_Meshes) { mesh->SetUniform(location, value); }}
 
+		const std::vector<Mesh*>& GetMeshes() const { return m_Meshes; }
 		void Draw() const;
 		void Draw(Ref<Material> material) const;
 	};

@@ -125,7 +125,7 @@ void GameLayer::OnEvent(const Event& event)
 					{
 						if (e.second) 
 						{
-							m_Scene->DeleteEntity(e.first);
+							m_Scene->GetWorld().DeleteEntity(e.first);
 							toDelete.emplace_back(e.first); // Cant erase item while looping over map. Therefore erase later
 						}
 					}

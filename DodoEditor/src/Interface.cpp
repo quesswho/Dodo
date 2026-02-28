@@ -26,7 +26,8 @@ void Interface::ChangeScene(Scene* scene)
 
 	m_ChangeScene = true;
 	m_SelectedEntity.clear();
-	for (auto& ent : m_Scene->m_Entities)
+	World& world = m_Scene->GetWorld();
+	for (auto& ent : world.m_Entities)
 		m_SelectedEntity.emplace(ent.first, false);
 }
 
@@ -279,7 +280,7 @@ void Interface::DrawHierarchy()
 	{
 		if (ImGui::MenuItem("Create New"))
 		{
-			s_RenamingId = m_Scene->CreateEntity();
+			s_RenamingId = m_Scene->GetWorld().CreateEntity();
 			m_SelectedEntity.insert(std::make_pair(s_RenamingId, false));
 			s_ClickHandled = true;
 		}
@@ -294,9 +295,10 @@ void Interface::DrawHierarchy()
 
 	if (ImGui::TreeNodeEx("Entities", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		if (m_Scene->m_Entities.size() > 0)
+        World& world = m_Scene->GetWorld();
+		if (world.m_Entities.size() > 0)
 		{
-			for (auto& ent : m_Scene->m_Entities)
+			for (auto& ent : world.m_Entities)
 			{
 				if (ent.first != s_RenamingId || m_EditorProperties.m_ViewportInput)
 				{
@@ -358,7 +360,7 @@ void Interface::DrawHierarchy()
 						if (s_RenameableHierarchy == nullptr || s_RenameableHierarchy[0] == '\0')
 							strncpy(s_RenameableHierarchy, "Unnamed", 256);
 
-						m_Scene->RenameEntity(ent.first, s_RenameableHierarchy);
+						m_Scene->GetWorld().RenameEntity(ent.first, s_RenameableHierarchy);
 						strcpy(m_CurrentInspectorName, s_RenameableHierarchy);
 						strncpy(s_RenameableHierarchy, "Unnamed", 256);
 						s_RenamingId = -1;
@@ -398,16 +400,18 @@ void Interface::DrawInspector()
 	static float scale[3] = { 1.0f, 1.0f, 1.0f };
 	static float rotate[3] = { 0.0f, 0.0f, 0.0f };
 	ImGui::Begin(m_EditorProperties.m_InspectorName);
+    World& world = m_Scene->GetWorld();
 	for (auto& e : m_SelectedEntity)
 	{
 		if (e.second)
 		{
-			Entity& ent = m_Scene->m_Entities.at(e.first);
+            
+			Entity& ent = world.m_Entities.at(e.first);
 			if (ImGui::InputText("##label", m_CurrentInspectorName, 32, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank))
 			{
 				if (strcmp(m_CurrentInspectorName, "") != 0)
 				{
-					m_Scene->RenameEntity(e.first, m_CurrentInspectorName);
+					world.RenameEntity(e.first, m_CurrentInspectorName);
 				}
 				else
 				{
@@ -475,7 +479,7 @@ void Interface::DrawInspector()
 							std::string str = Application::s_Application->m_Window->OpenFileSelector("Model\0*.fbx;*.obj\0");
 							if (str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
 							model = new ModelComponent(str.c_str());
-							m_Scene->AddComponent(e.first, model);
+							world.AddComponent(e.first, model);
 						}
 						ImGui::SameLine();
 						ImGui::Text(model->m_Path.c_str());
@@ -529,7 +533,7 @@ void Interface::DrawInspector()
 							{
 								if (str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory()))
 									str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory so erase global directory
-								m_Scene->AddComponent(e.first, new ModelComponent(str.c_str()));
+								world.AddComponent(e.first, new ModelComponent(str.c_str()));
 							}
 						}
 						ImGui::SameLine();
@@ -562,7 +566,7 @@ void Interface::DrawInspector()
 							std::string str = Application::s_Application->m_Window->OpenFileSelector("Texture\0*.png;*.jpg;*.tga\0");
 							if (str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
 							comp = new Rectangle2DComponent(str.c_str());
-							m_Scene->AddComponent(e.first, comp);
+							world.AddComponent(e.first, comp);
 						}
 						ImGui::SameLine();
 						ImGui::Text(comp->m_Path.c_str());
@@ -616,7 +620,7 @@ void Interface::DrawInspector()
 							{
 								if (str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory()))
 									str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory so erase global directory
-								m_Scene->AddComponent(e.first, new Rectangle2DComponent(str.c_str()));
+								world.AddComponent(e.first, new Rectangle2DComponent(str.c_str()));
 							}
 						}
 						ImGui::SameLine();

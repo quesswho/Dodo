@@ -15,6 +15,7 @@ namespace Dodo {
 		CorruptedData,
 		IOError,
 		ParseError,
+        UnsupportedComponent,
 	};
 
 	class SceneFile {

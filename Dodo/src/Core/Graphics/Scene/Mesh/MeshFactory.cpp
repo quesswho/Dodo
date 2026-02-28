@@ -8,9 +8,7 @@ namespace Dodo
 	{}
 
 	Mesh* MeshFactory::GetRectangleMesh(Ref<Material> material) {
-		if (!m_RectangleMesh)
-		{
-
+		if (!m_RectangleMesh) {
 			float vertices[] = {
 				0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
 				0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
@@ -20,10 +18,9 @@ namespace Dodo
 			uint indices[] = {
 				0,1,2,3,2,1
 			};
-			return new Mesh(new VertexBuffer(vertices, sizeof(vertices), m_BasicProperties), new IndexBuffer(indices, sizeof(indices) / sizeof(indices[0])), material);
+			m_RectangleMesh = new Mesh(new VertexBuffer(vertices, sizeof(vertices), m_BasicProperties), new IndexBuffer(indices, sizeof(indices) / sizeof(indices[0])), material);
 		}
-		else
-			return m_RectangleMesh;
-		
+
+		return m_RectangleMesh;
 	}
 }

@@ -19,6 +19,7 @@ namespace Dodo {
 		Mesh* GetMesh() const { return m_Mesh; }
 
 		void Draw() const;
+        void DrawGeometry() const;
 		void Draw(Ref<Material> material) const;
 	};
 }

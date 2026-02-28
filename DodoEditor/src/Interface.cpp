@@ -27,8 +27,9 @@ void Interface::ChangeScene(Scene* scene)
 	m_ChangeScene = true;
 	m_SelectedEntity.clear();
 	World& world = m_Scene->GetWorld();
-	for (auto& ent : world.m_Entities)
-		m_SelectedEntity.emplace(ent.first, false);
+	for (EntityID entityId : world.GetAliveEntities()) {
+		m_SelectedEntity.emplace(entityId, false);
+	}
 }
 
 void Interface::InitInterface()
@@ -71,7 +72,6 @@ void Interface::InitInterface()
 
 	// Hierarchy
 	m_HierarchyComponents.push_back(Component("ModelComponent"));
-	m_HierarchyComponents.push_back(Component("Rectangle2D"));
 
 	// Inspector
 	m_InspectorComponents = m_HierarchyComponents;
@@ -296,21 +296,23 @@ void Interface::DrawHierarchy()
 	if (ImGui::TreeNodeEx("Entities", ImGuiTreeNodeFlags_DefaultOpen))
 	{
         World& world = m_Scene->GetWorld();
-		if (world.m_Entities.size() > 0)
+		if (!world.GetAliveEntities().empty())
 		{
-			for (auto& ent : world.m_Entities)
+			for (EntityID entityId : world.GetAliveEntities())
 			{
-				if (ent.first != s_RenamingId || m_EditorProperties.m_ViewportInput)
+				if (entityId != s_RenamingId || m_EditorProperties.m_ViewportInput)
 				{
 					ImGui::ColorButton("", ImColor(120, 50, 0), ImGuiColorEditFlags_NoTooltip);
 					ImGui::SameLine();
-					ImGui::PushID((int)ent.first);
-					bool open = ImGui::TreeNodeEx(ent.second.m_Name.c_str(), (m_SelectedEntity.at(ent.first) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
+					ImGui::PushID((int)entityId);
+					std::string entityName = world.HasComponent<NameComponent>(entityId) ? 
+						world.GetComponent<NameComponent>(entityId).m_Name : "Entity_" + std::to_string(entityId);
+					bool open = ImGui::TreeNodeEx(entityName.c_str(), (m_SelectedEntity.at(entityId) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
 					ImGui::PopID();
-					if (m_SelectedEntity.at(ent.first))
+					if (m_SelectedEntity.at(entityId))
 					{
 						ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 40); // Move text to right side
-						ImGui::Text("%i", ent.first);
+						ImGui::Text("%i", entityId);
 					}
 					if (ImGui::IsItemClicked())
 					{
@@ -318,10 +320,12 @@ void Interface::DrawHierarchy()
 							for (auto& e : m_SelectedEntity)
 								e.second = false;
 
-						m_SelectedEntity.at(ent.first) = !m_SelectedEntity.at(ent.first);
-						strcpy(m_CurrentInspectorName, ent.second.m_Name.c_str());
+						m_SelectedEntity.at(entityId) = !m_SelectedEntity.at(entityId);
+						if (world.HasComponent<NameComponent>(entityId)) {
+							strcpy(m_CurrentInspectorName, world.GetComponent<NameComponent>(entityId).m_Name.c_str());
+						}
 						s_ClickHandled = true;
-						if (m_SelectedEntity.at(ent.first))
+						if (m_SelectedEntity.at(entityId))
 						{
 							m_InspectorSelectNew = true;
 							m_EditorProperties.m_ShowInspector = true;
@@ -332,17 +336,15 @@ void Interface::DrawHierarchy()
 					{
 						ImGui::Separator();
 
-						if (ent.second.m_ComponentFlags != ComponentFlag_None)
+						// Check what components this entity has
+						bool hasComponents = world.HasAnyComponent(entityId);
+						if (hasComponents)
 						{
 							ImGui::Text("Components:");
 							ImGui::Indent();
-							if (ent.second.m_ComponentFlags & ComponentFlag_ModelComponent)
+							if (world.HasComponent<ModelComponent>(entityId))
 							{
 								ImGui::BulletText("ModelComponent");
-							}
-							if (ent.second.m_ComponentFlags & ComponentFlag_Rectangle2DComponent)
-							{
-								ImGui::BulletText("Rectangle2DComponent");
 							}
 							ImGui::Unindent();
 						}
@@ -355,19 +357,23 @@ void Interface::DrawHierarchy()
 				{
 					ImGui::SetKeyboardFocusHere(0);
 					ImGui::Indent();
-					if (ImGui::InputText(std::to_string(ent.first).c_str(), s_RenameableHierarchy, IM_ARRAYSIZE(s_RenameableHierarchy), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CharsNoBlank))
+					if (ImGui::InputText(std::to_string(entityId).c_str(), s_RenameableHierarchy, IM_ARRAYSIZE(s_RenameableHierarchy), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CharsNoBlank))
 					{
 						if (s_RenameableHierarchy == nullptr || s_RenameableHierarchy[0] == '\0')
 							strncpy(s_RenameableHierarchy, "Unnamed", 256);
 
-						m_Scene->GetWorld().RenameEntity(ent.first, s_RenameableHierarchy);
+						if (world.HasComponent<NameComponent>(entityId)) {
+							world.GetComponent<NameComponent>(entityId).m_Name = std::string(s_RenameableHierarchy);
+						} else {
+							world.AddComponent<NameComponent>(entityId, NameComponent{std::string(s_RenameableHierarchy)});
+						}
 						strcpy(m_CurrentInspectorName, s_RenameableHierarchy);
 						strncpy(s_RenameableHierarchy, "Unnamed", 256);
 						s_RenamingId = -1;
 						if (!io.KeyCtrl)
 							for (auto& e : m_SelectedEntity)
 								e.second = false;
-						m_SelectedEntity.at(ent.first) = true;
+						m_SelectedEntity.at(entityId) = true;
 						m_InspectorSelectNew = true;
 					}
 					ImGui::Unindent();
@@ -406,16 +412,21 @@ void Interface::DrawInspector()
 		if (e.second)
 		{
             
-			Entity& ent = world.m_Entities.at(e.first);
 			if (ImGui::InputText("##label", m_CurrentInspectorName, 32, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank))
 			{
 				if (strcmp(m_CurrentInspectorName, "") != 0)
 				{
-					world.RenameEntity(e.first, m_CurrentInspectorName);
+					if (world.HasComponent<NameComponent>(e.first)) {
+						world.GetComponent<NameComponent>(e.first).m_Name = std::string(m_CurrentInspectorName);
+					} else {
+						world.AddComponent<NameComponent>(e.first, NameComponent{std::string(m_CurrentInspectorName)});
+					}
 				}
 				else
 				{
-					strcpy(m_CurrentInspectorName, ent.m_Name.c_str());
+					if (world.HasComponent<NameComponent>(e.first)) {
+						strcpy(m_CurrentInspectorName, world.GetComponent<NameComponent>(e.first).m_Name.c_str());
+					}
 				}
 			}
 
@@ -428,13 +439,11 @@ void Interface::DrawInspector()
 				{
 					if (ImGui::BeginMenu("Geometry"))
 					{
-						for (int i = 0; i < m_InspectorComponents.size(); i++)
+						if (ImGui::MenuItem("ModelComponent"))
 						{
-							std::string name = m_InspectorComponents[i].m_Name;
-							if (ImGui::MenuItem(name.c_str()))
-							{
-								ent.m_ComponentFlags |= static_cast<ComponentFlag>((i+1) << 0);
-								break;
+							if (!world.HasComponent<ModelComponent>(e.first)) {
+								// Add empty ModelComponent for user to configure
+								//world.AddComponent<ModelComponent>(e.first, Application::s_Application->m_AssetManager->m_MeshFactory->GetRectangleMesh());
 							}
 						}
 						ImGui::EndMenu();
@@ -456,180 +465,81 @@ void Interface::DrawInspector()
 				ImGui::EndPopup();
 			}
 
-			if (ent.m_ComponentFlags & ComponentFlag_ModelComponent) // ModelComponent //
+			// ModelComponent
+			if (world.HasComponent<ModelComponent>(e.first))
 			{
 				if (ImGui::TreeNodeEx("ModelComponent", ImGuiTreeNodeFlags_DefaultOpen))
 				{
-					auto& compvar = ent.FindComponent(ModelComponent::GetIndex());
-					if (compvar.index() == ModelComponent::GetIndex())
+					ModelComponent& model = world.GetComponent<ModelComponent>(e.first);
+					if (m_InspectorSelectNew)
 					{
-						ModelComponent* model = std::get<ModelComponent::GetIndex()>(compvar);
-						if (m_InspectorSelectNew)
-						{
-							memcpy(translate, (float*)&model->m_Transformation.m_Position, 3 * sizeof(float));
-							memcpy(scale, (float*)&model->m_Transformation.m_Scale, 3 * sizeof(float));
-							memcpy(rotate, (float*)&model->m_Transformation.m_Rotation, 3 * sizeof(float));
-							rotate[0] = Math::ToDegrees(rotate[0]);
-							rotate[1] = Math::ToDegrees(rotate[1]);
-							rotate[2] = Math::ToDegrees(rotate[2]);
-							m_InspectorSelectNew = false;
-						}
-						ImGui::Indent();
-						if (ImGui::Button("Browse")) {
-							std::string str = Application::s_Application->m_Window->OpenFileSelector("Model\0*.fbx;*.obj\0");
-							if (str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
-							model = new ModelComponent(str.c_str());
-							world.AddComponent(e.first, model);
-						}
-						ImGui::SameLine();
-						ImGui::Text(model->m_Path.c_str());
-
-						if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-						{
-							ImGui::Text("Translate:");
-							if (ImGui::DragFloat3("##translate", translate, 0.05f))
-							{
-								model->m_Transformation.Move(Vec3(translate[0], translate[1], translate[2]));
-							}
-
-							ImGui::Text("Scale:");
-							static bool sync = true;
-							bool dragscale = false;
-							dragscale = ImGui::DragFloat3("##scale", scale, 0.0001f, -100000.0f, 100000.0f, "%.4f", 1.001f);
-							ImGui::Checkbox("Sync", &sync);
-							if (dragscale)
-							{
-								if (sync)
-								{
-									Vec3 temp = ((Vec3)scale) - model->m_Transformation.m_Scale;
-
-									model->m_Transformation.m_Scale += temp.x;
-									model->m_Transformation.m_Scale += temp.y;
-									model->m_Transformation.m_Scale += temp.z;
-									memcpy(scale, (float*)&model->m_Transformation.m_Scale, sizeof(Vec3));
-									model->m_Transformation.Calculate();
-								}
-								else
-									model->m_Transformation.Scale(Vec3(scale[0], scale[1], scale[2]));
-							}
-
-							ImGui::Text("Rotate:");
-							if (ImGui::DragFloat3("##rotate", rotate, 0.5f))
-							{
-								Vec3 temp = ((Vec3)rotate);
-								temp = Vec3(std::fmod(temp.x, 360.0f), std::fmod(temp.y, 360.0f), std::fmod(temp.z, 360.0f));
-								memcpy(rotate, (float*)&temp, sizeof(Vec3));
-								model->m_Transformation.Rotate(temp);
-							}
-
-							ImGui::TreePop();
+						memcpy(translate, (float*)&model.m_Transformation.m_Position, 3 * sizeof(float));
+						memcpy(scale, (float*)&model.m_Transformation.m_Scale, 3 * sizeof(float));
+						memcpy(rotate, (float*)&model.m_Transformation.m_Rotation, 3 * sizeof(float));
+						rotate[0] = Math::ToDegrees(rotate[0]);
+						rotate[1] = Math::ToDegrees(rotate[1]);
+						rotate[2] = Math::ToDegrees(rotate[2]);
+						m_InspectorSelectNew = false;
+					}
+					ImGui::Indent();
+					if (ImGui::Button("Browse")) {
+						std::string str = Application::s_Application->m_Window->OpenFileSelector("Model\0*.fbx;*.obj\0");
+						if (str != "" && str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) {
+							str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
+							// Replace the component with new model
+                            ModelID id = Application::s_Application->m_AssetManager->LoadModel(str);
+							world.GetComponent<ModelComponent>(e.first) = ModelComponent(id, model.m_Transformation);
 						}
 					}
-					else
+					ImGui::SameLine();
+					ImGui::Text(Application::s_Application->m_AssetManager->GetModelPath(model.m_ModelID).c_str());
+
+					if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 					{
-						if (ImGui::Button("Browse")) {
-							std::string str = Application::s_Application->m_Window->OpenFileSelector("Model\0*.fbx;*.obj\0");
-							if (str != "")
-							{
-								if (str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory()))
-									str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory so erase global directory
-								world.AddComponent(e.first, new ModelComponent(str.c_str()));
-							}
+						ImGui::Text("Translate:");
+						if (ImGui::DragFloat3("##translate", translate, 0.05f))
+						{
+							model.m_Transformation.Move(Vec3(translate[0], translate[1], translate[2]));
 						}
-						ImGui::SameLine();
-						ImGui::Text("...");
+
+						ImGui::Text("Scale:");
+						static bool sync = true;
+						bool dragscale = false;
+						dragscale = ImGui::DragFloat3("##scale", scale, 0.0001f, -100000.0f, 100000.0f, "%.4f", 1.001f);
+						ImGui::Checkbox("Sync", &sync);
+						if (dragscale)
+						{
+							if (sync)
+							{
+								Vec3 temp = ((Vec3)scale) - model.m_Transformation.m_Scale;
+								model.m_Transformation.m_Scale += temp.x;
+								model.m_Transformation.m_Scale += temp.y;
+								model.m_Transformation.m_Scale += temp.z;
+								memcpy(scale, (float*)&model.m_Transformation.m_Scale, sizeof(Vec3));
+								model.m_Transformation.Calculate();
+							}
+							else
+								model.m_Transformation.Scale(Vec3(scale[0], scale[1], scale[2]));
+						}
+
+						ImGui::Text("Rotate:");
+						if (ImGui::DragFloat3("##rotate", rotate, 0.5f))
+						{
+							Vec3 temp = ((Vec3)rotate);
+							temp = Vec3(std::fmod(temp.x, 360.0f), std::fmod(temp.y, 360.0f), std::fmod(temp.z, 360.0f));
+							memcpy(rotate, (float*)&temp, sizeof(Vec3));
+							model.m_Transformation.Rotate(temp);
+						}
+
+						ImGui::TreePop();
 					}
+					ImGui::Unindent();
 					ImGui::TreePop();
 				}
 			}
 
-			if (ent.m_ComponentFlags & ComponentFlag_Rectangle2DComponent) // Rectangle2D
-			{
-				if (ImGui::TreeNodeEx("Rectangle2D", ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					auto& compvar = ent.FindComponent(Rectangle2DComponent::GetIndex());
-					if (compvar.index() == Rectangle2DComponent::GetIndex())
-					{
-						Rectangle2DComponent* comp = std::get<Rectangle2DComponent::GetIndex()>(compvar);
-						if (m_InspectorSelectNew)
-						{
-							memcpy(translate, (float*)&comp->m_Transformation.m_Position, 3 * sizeof(float));
-							memcpy(scale, (float*)&comp->m_Transformation.m_Scale, 3 * sizeof(float));
-							memcpy(rotate, (float*)&comp->m_Transformation.m_Rotation, 3 * sizeof(float));
-							rotate[0] = Math::ToDegrees(rotate[0]);
-							rotate[1] = Math::ToDegrees(rotate[1]);
-							rotate[2] = Math::ToDegrees(rotate[2]);
-							m_InspectorSelectNew = false;
-						}
-						ImGui::Indent();
-						if (ImGui::Button("Browse")) {
-							std::string str = Application::s_Application->m_Window->OpenFileSelector("Texture\0*.png;*.jpg;*.tga\0");
-							if (str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
-							comp = new Rectangle2DComponent(str.c_str());
-							world.AddComponent(e.first, comp);
-						}
-						ImGui::SameLine();
-						ImGui::Text(comp->m_Path.c_str());
-
-						if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-						{
-							ImGui::Text("Translate:");
-							if (ImGui::DragFloat3("##translate", translate, 0.05f))
-							{
-								comp->m_Transformation.Move(Vec3(translate[0], translate[1], translate[2]));
-							}
-
-							ImGui::Text("Scale:");
-							static bool sync = true;
-							bool dragscale = false;
-							dragscale = ImGui::DragFloat3("##scale", scale, 0.0001f, -100000.0f, 100000.0f, "%.4f", 1.001f);
-							ImGui::Checkbox("Sync", &sync);
-							if (dragscale)
-							{
-								if (sync)
-								{
-									Vec3 temp = ((Vec3)scale) - comp->m_Transformation.m_Scale;
-
-									comp->m_Transformation.m_Scale += temp.x;
-									comp->m_Transformation.m_Scale += temp.y;
-									comp->m_Transformation.m_Scale += temp.z;
-									memcpy(scale, (float*)&comp->m_Transformation.m_Scale, sizeof(Vec3));
-									comp->m_Transformation.Calculate();
-								}
-								else
-									comp->m_Transformation.Scale(Vec3(scale[0], scale[1], scale[2]));
-							}
-
-							ImGui::Text("Rotate:");
-							if (ImGui::DragFloat3("##rotate", rotate, 0.5f))
-							{
-								Vec3 temp = ((Vec3)rotate);
-								temp = Vec3(std::fmod(temp.x, 360.0f), std::fmod(temp.y, 360.0f), std::fmod(temp.z, 360.0f));
-								memcpy(rotate, (float*)&temp, sizeof(Vec3));
-								comp->m_Transformation.Rotate(temp);
-							}
-
-							ImGui::TreePop();
-						}
-					}
-					else
-					{
-						if (ImGui::Button("Browse")) {
-							std::string str = Application::s_Application->m_Window->OpenFileSelector("Texture\0*.png;*.jpg;*.tga\0");
-							if (str != "")
-							{
-								if (str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory()))
-									str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory so erase global directory
-								world.AddComponent(e.first, new Rectangle2DComponent(str.c_str()));
-							}
-						}
-						ImGui::SameLine();
-						ImGui::Text("...");
-					}
-					ImGui::TreePop();
-				}
-			}
-			if (ent.m_ComponentFlags == 0)
+			// Show message if no components
+			if (!world.HasAnyComponent(e.first))
 			{
 				ImGui::Separator();
 				ImGui::TextColored(ImVec4(0.34f, 129.0f, 0, 255), "Right click here!");

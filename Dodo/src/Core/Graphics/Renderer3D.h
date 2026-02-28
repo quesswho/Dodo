@@ -6,8 +6,7 @@
 #include <Core/Graphics/ShadowMap.h>
 #include <Core/Graphics/PostEffect.h>
 #include <Core/Graphics/Scene/Scene.h>
-#include <Core/ECS/Component/ModelComponent.h>
-#include <Core/ECS/Component/Rectangle2DComponent.h>
+#include <Core/Data/AssetManager.h>
 
 #include <Core/Math/Camera/FreeCamera.h>
 
@@ -27,8 +26,8 @@ namespace Dodo {
 		void DrawScene(Scene* scene);
 		void DrawShadowedScene(Scene* scene);
 
-		void RenderEntities(World& world, Math::FreeCamera* camera, LightSystem& lightSystem);
-		void RenderEntitiesWithMaterial(World& world, Ref<Material> material);
+		void RenderEntities(World& world, Math::FreeCamera* camera, LightSystem& lightSystem, AssetManager& assets);
+		void RenderEntitiesWithMaterial(World& world, Ref<Material> material, AssetManager& assets);
 
 		void UpdateCamera(Math::FreeCamera* camera) {
 			m_Camera = camera;

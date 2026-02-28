@@ -1,45 +1,71 @@
 #pragma once
 
 #include <Core/ECS/Entity.h>
+#include <Core/ECS/ComponentPool.h>
+#include <Core/ECS/Component/NameComponent.h>
 #include <Core/ECS/Component/ModelComponent.h>
-#include <Core/ECS/Component/Rectangle2DComponent.h>
 
-#include <unordered_map>
+#include <tuple>
+#include <unordered_set>
 
 namespace Dodo {
-    class World {
+    template<typename... ComponentTypes>
+    class BasicWorld {
     public:
-        std::unordered_map<uint, Entity> m_Entities;
+        EntityID CreateEntity() {
+            EntityID id = m_NextEntity++;
+            m_AliveEntities.insert(id);
+            return id;
+        }
 
-        World() = default;
-        ~World() = default;
+        void DeleteEntity(EntityID entity) {
+            m_AliveEntities.erase(entity);
+            (std::get<ComponentPool<ComponentTypes>>(m_Pools).RemoveComponent(entity), ...); // remove from all pools
+        }
 
-        void CreateEntity(uint id, const std::string& name);
-		uint CreateEntity(const std::string& name = "Unnamed");
-		bool RenameEntity(uint id, const std::string& name); // true ? Success : No entity with specified id
-		bool DeleteEntity(uint id);
+        template<typename T>
+        void AddComponent(EntityID entity, T&& component) {
+            static_assert((std::is_same_v<T, ComponentTypes> || ...));
+            GetPool<T>().AddComponent(entity, std::forward<T>(component));
+        }
 
-		template<typename T>
-		void AddComponent(uint id, T comp)
-		{
-			auto it = m_Entities.find(id);
-			if (it != m_Entities.end())
-			{
-				int i = 0;
-				for (auto& c : (*it).second.m_Components)
-				{
-					if (c.index() == comp->GetIndex())
-					{
-						(*it).second.m_Components.erase((*it).second.m_Components.begin() + i);
-						delete std::get<T>(c);
-						break;
-					}
-					i++;
-				}
-				(*it).second.m_ComponentFlags |= comp->GetFlagType();
-				(*it).second.m_Components.emplace_back(comp);
-				if (comp->IsDrawable()) (*it).second.m_Drawable.emplace_back((*it).second.m_Components.size()-1); // Add the component to the drawable list
-			}
-		}
+        template<typename T>
+        bool HasComponent(EntityID entity) const {
+            static_assert((std::is_same_v<T, ComponentTypes> || ...));
+            return GetPool<T>().Exists(entity);
+        }
+
+        template<typename T>
+        T& GetComponent(EntityID entity) {
+            static_assert((std::is_same_v<T, ComponentTypes> || ...));
+            return GetPool<T>().Get(entity);
+        }
+
+        template<typename T>
+        ComponentPool<T>& GetPool() {
+            static_assert((std::is_same_v<T, ComponentTypes> || ...));
+            return std::get<ComponentPool<T>>(m_Pools);
+        }
+
+        template<typename T>
+        const ComponentPool<T>& GetPool() const {
+            static_assert((std::is_same_v<T, ComponentTypes> || ...));
+            return std::get<ComponentPool<T>>(m_Pools);
+        }
+
+        const std::unordered_set<EntityID>& GetAliveEntities() const {
+            return m_AliveEntities;
+        }
+
+        bool HasAnyComponent(EntityID entity) const {
+            return (std::get<ComponentPool<ComponentTypes>>(m_Pools).Exists(entity) || ...);
+        }
+
+    private:
+        EntityID m_NextEntity = 1; // Used for generating new unique ids.
+        std::tuple<ComponentPool<ComponentTypes>...> m_Pools;
+        std::unordered_set<EntityID> m_AliveEntities;
     };
+
+    using World = BasicWorld<NameComponent, ModelComponent>;
 }

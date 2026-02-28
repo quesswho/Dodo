@@ -74,9 +74,6 @@ namespace Dodo {
 
 				posX = (GetSystemMetrics(SM_CXSCREEN) - m_WindowProperties.m_Width) / 2;
 				posY = (GetSystemMetrics(SM_CYSCREEN) - m_WindowProperties.m_Height) / 2;
-				
-
-				//
 			}
 			else
 			{
@@ -143,11 +140,7 @@ namespace Dodo {
 
 			FileUtils::RemoveDoubleBackslash(m_MainWorkDirectory);
 
-			memset(m_Keys, 0, sizeof(m_Keys));
-
 			RegisterRawMouse();
-			
-			VSync(m_WindowProperties.m_Settings.vsync);
 
 			SetWindowTextA(m_Hwnd, m_WindowProperties.m_Title);
 
@@ -157,7 +150,7 @@ namespace Dodo {
 
 			POINT p;
 			GetCursorPos(&p);
-			m_MousePos = Math::TVec2<long>(p.x, p.y);
+			Application::s_Application->m_InputManager.MouseMoved(Math::TVec2<long>(p.x, p.y));
 
 			if (m_WindowProperties.m_Settings.imgui || m_WindowProperties.m_Settings.imguiDocking)
 			{

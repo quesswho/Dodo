@@ -16,14 +16,15 @@ endif()
 option(DD_API_OPENGL "Enable OpenGL loader" ON)
 option(DD_API_VULKAN "Enable Vulkan loader" OFF)
 
+option(DD_API_WIN32 "Enable Win32" OFF)
 
 message(STATUS "=== Configuring Dodo ===")
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
 
-message(STATUS "DD_GLAD_OPENGL=${DD_API_OPENGL}")
-message(STATUS "DD_GLAD_VULKAN=${DD_API_VULKAN}")
+message(STATUS "DD_API_OPENGL=${DD_API_OPENGL}")
+message(STATUS "DD_API_VULKAN=${DD_API_VULKAN}")
 
 
 # Output dirs

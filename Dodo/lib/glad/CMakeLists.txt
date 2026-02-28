@@ -11,8 +11,8 @@ if (DODO_API_VULKAN)
 endif()
 
 # Windows OpenGL (WGL) API
-if (WIN32)
-    list(APPEND GLAD_SOURCES src/glad/wgl.c)
+if (DD_API_WIN32)
+    list(APPEND GLAD_SOURCES src/wgl.c)
 endif()
 
 target_sources(glad PRIVATE ${GLAD_SOURCES})

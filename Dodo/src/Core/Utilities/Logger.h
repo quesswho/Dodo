@@ -33,7 +33,7 @@ namespace Dodo {
 }
 
 
-#ifdef _MSC_VER
+#if defined(_WIN32)
     #define DD_BREAK() __debugbreak()
 #else
     #include <csignal>

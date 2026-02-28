@@ -14,12 +14,12 @@ GameLayer::GameLayer()
 
 
 	// FPS camera containing view matrix
-	m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 0.0f), (float)Application::s_Application->m_Window->GetWindowProperties().m_Width / (float)Application::s_Application->m_Window->GetWindowProperties().m_Height, 0.04f, 10.0f);
+	m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 0.0f), (float)Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferWidth / (float)Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferHeight, 0.04f, 10.0f);
 
 	// Framebuffer initialization data
 	FrameBufferProperties frameprop;
-	frameprop.m_Width = Application::s_Application->m_Window->GetWindowProperties().m_Width;
-	frameprop.m_Height = Application::s_Application->m_Window->GetWindowProperties().m_Height;
+	frameprop.m_Width = Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferWidth;
+	frameprop.m_Height = Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferHeight;
 
 	m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.fx");
 	m_Gamma = 1.0f;
@@ -99,12 +99,14 @@ void GameLayer::Update(float elapsed)
 		m_LightLook += elapsed * Vec3(0.0f, 0.0f, 1.0f) * 10.0f;
 	if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_LEFT))
 		m_LightLook -= elapsed * Vec3(0.0f, 0.0f, 1.0f) * 10.0f;
+
+	Vec3 lightPos = Vec3(-8.0f, 35.0f, 23.0f);
 	m_LightView = Mat4::LookAt(
-		Vec3(-8.0f, 35.0f, 23.0f),
+		lightPos,
 		m_LightLook,
 		Vec3(0.0, 1.0, 0.0));
 
-
+	m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(m_LightLook - lightPos);
 	m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
 
 	m_PostEffect->SetUniformValue("u_Gamma", m_Gamma);
@@ -131,8 +133,6 @@ void GameLayer::OnEvent(const Event& event)
 			if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_F11) 
 			{
 				Application::s_Application->m_Window->FullScreen();
-				m_Camera->Resize(Application::s_Application->m_Window->GetWindowProperties().m_Width, Application::s_Application->m_Window->GetWindowProperties().m_Height);
-				m_PostEffect->Resize(Application::s_Application->m_Window->GetWindowProperties().m_Width, Application::s_Application->m_Window->GetWindowProperties().m_Height);
 			}
 				
 			if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_ESCAPE) 
@@ -144,6 +144,10 @@ void GameLayer::OnEvent(const Event& event)
 			break;
 		case EventType::MOUSE_POSITION:
 			m_Camera->UpdateRotation();
+			break;
+		case EventType::WINDOW_RESIZE:
+			m_Camera->Resize(Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferWidth, Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferHeight);
+			m_PostEffect->Resize(Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferWidth, Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferHeight);
 			break;
 	}
 }

@@ -75,6 +75,7 @@ namespace Dodo {
 
 	void Scene::Draw(const Math::Mat4& lightCamera, Ref<Material> material) {
 		Application::s_Application->m_RenderAPI->Culling(true, false);
+		material->BindShader();
 		material->SetUniform("u_LightCamera", lightCamera);
 		for (auto& ent : m_Entities)
 		{

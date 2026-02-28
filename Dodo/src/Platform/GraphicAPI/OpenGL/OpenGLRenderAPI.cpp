@@ -23,7 +23,8 @@ namespace Dodo {
 		{
 			m_Context.CreateContextImpl(m_Handle); // Run glad loader
 			m_Version = m_Context.LoadGlad();
-			std::string versionStr = std::to_string(GLAD_VERSION_MAJOR(m_Version)) + "." + std::to_string(GLAD_VERSION_MINOR(m_Version));
+			//std::string versionStr = std::to_string(GLAD_VERSION_MAJOR(m_Version)) + "." + std::to_string(GLAD_VERSION_MINOR(m_Version));
+			std::string versionStr = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 			DD_INFO("OPENGL: {0}", versionStr);
 			if (GLAD_VERSION_MAJOR(m_Version) <= 3) {
 				return RenderInitError(
@@ -39,11 +40,15 @@ namespace Dodo {
 			m_CullingDefault = winprop.m_Settings.backfaceCull;
 			Culling(m_CullingDefault);
 
+			std::string vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+			std::string renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+
 			glGetIntegerv(0x9048, &m_VramKbs);
-			m_GPUInfo = "";
-			m_GPUInfo = ((const char*)glGetString(GL_RENDERER));
+			m_GPUInfo = "Vendor: " + vendor + " Renderer: " + renderer;
 			m_GPUInfo.append(" VRAM: ").append(StringUtils::KiloByte((size_t)m_VramKbs))
 				.append(" : Opengl Version: ").append(versionStr);
+
+			DD_INFO("{}", m_GPUInfo);
 
 			if(winprop.m_Settings.imgui)
 				ImGui_ImplOpenGL3_Init();

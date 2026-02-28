@@ -79,9 +79,19 @@ namespace Dodo {
 		m_File.push_back(key + "=" + std::to_string(val));
 	}
 
+	void AsciiDataFile::WriteVec2(const std::string& key, const Math::Vec2& v)
+	{
+		m_File.push_back(key + "=" + std::to_string(v.x) + "," + std::to_string(v.y));
+	}
+	
 	void AsciiDataFile::WriteVec3(const std::string& key, const Math::Vec3& v)
 	{
 		m_File.push_back(key + "=" + std::to_string(v.x) + "," + std::to_string(v.y) + "," + std::to_string(v.z));
+	}
+
+	void AsciiDataFile::WriteVec4(const std::string& key, const Math::Vec4& v)
+	{
+		m_File.push_back(key + "=" + std::to_string(v.x) + "," + std::to_string(v.y) + "," + std::to_string(v.z) + "," + std::to_string(v.w));
 	}
 
 	void AsciiDataFile::WriteFloat(const std::string& key, float val)
@@ -89,15 +99,6 @@ namespace Dodo {
 		m_File.push_back(key + "=" + std::to_string(val));
 	}
 
-	void AsciiDataFile::WriteVec2(const std::string& key, const Math::Vec2& v)
-	{
-		m_File.push_back(key + "=" + std::to_string(v.x) + "," + std::to_string(v.y));
-	}
-
-	void AsciiDataFile::WriteVec4(const std::string& key, const Math::Vec4& v)
-	{
-		m_File.push_back(key + "=" + std::to_string(v.x) + "," + std::to_string(v.y) + "," + std::to_string(v.z) + "," + std::to_string(v.w));
-	}
 
 	// Value reading
 	std::string AsciiDataFile::ReadString()

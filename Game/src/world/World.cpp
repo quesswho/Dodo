@@ -4,8 +4,8 @@ World::World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRende
 	: m_WorldRenderer(worldRenderer), m_ResourceManager(resourceManager)
 {
 	m_WorldGen = std::make_shared<WorldGeneration>(0, resourceManager);
-	for (int x = -10; x <= 40; x++) {
-		for (int y = -10; y <= 40; y++) {
+	for (int x = -20; x <= 20; x++) {
+		for (int y = -20; y <= 20; y++) {
 			ChunkPos pos = ChunkPos(x, y);
 			Ref<Chunk> chunk = m_WorldGen->GenerateChunk(pos);
 			m_Chunks.emplace(pos, chunk);
@@ -13,8 +13,8 @@ World::World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRende
 	}
 
     // Update chunks
-    for (int x = -10; x <= 40; x++) {
-        for (int y = -10; y <= 40; y++) {
+    for (int x = -20; x <= 20; x++) {
+        for (int y = -20; y <= 20; y++) {
             UpdateChunk(ChunkPos(x, y));
         }
     }
@@ -73,12 +73,14 @@ void World::UpdateChunk(ChunkPos chunkpos) {
 }
 
 BlockType World::GetBlockType(int x, int y, int z) {
-    auto temp = m_Chunks.find(ChunkPos(floor(x / 16.0f), floor(z / 16.0f)));
-    if (temp != m_Chunks.end()) {
-        x = (x % 16 + 16) % 16;
-        z = (z % 16 + 16) % 16;
-        if (x >= 0 && x < 16 && y >= 0 && y < 16 && z >= 0 && z < 16) {
-            return temp->second->m_Blocks[(x << 8) + (y << 4) + z]->m_Type;
+    auto chunk = m_Chunks.find(ChunkPos(floor(x / 16.0f), floor(z / 16.0f)));
+    if (chunk != m_Chunks.end()) {
+        auto& subchunk = chunk->second->m_Blocks.find(floor(y / 16.0f));
+        if (subchunk != chunk->second->m_Blocks.end()) {
+            x = (x % 16 + 16) % 16;
+            y = (y % 16 + 16) % 16;
+            z = (z % 16 + 16) % 16;
+            return subchunk->second[(x << 8) + (y << 4) + z]->m_Type;
         }
     }
     return BlockType::AIR;

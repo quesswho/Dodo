@@ -2,14 +2,15 @@
 
 #include <Core/Common.h>
 
-#include "Entity.h"
 #include "Light.h"
 
-#include "Component/ModelComponent.h"
-#include "Component/Rectangle2DComponent.h"
+#include <Core/ECS/World.h>
+#include <Core/ECS/Entity.h>
+#include <Core/ECS/Component/ModelComponent.h>
+#include <Core/ECS/Component/Rectangle2DComponent.h>
 
-#include "Core/Graphics/Skybox.h"
-#include "Core/Math/Camera/FreeCamera.h"
+#include <Core/Graphics/Skybox.h>
+#include <Core/Math/Camera/FreeCamera.h>
 
 #include <unordered_map>
 

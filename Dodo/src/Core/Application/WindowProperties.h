@@ -6,7 +6,7 @@
 namespace Dodo {
     struct WindowSettings {
 		bool fullscreen     = false;
-		bool vsync          = true;
+		bool vsync          = false;
 		bool imgui          = false;
 		bool imguiDocking   = false;
 		bool backfaceCull   = true;

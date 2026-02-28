@@ -24,10 +24,6 @@ namespace Dodo {
 		Scene(Math::FreeCamera* camera, std::string name = "Unnamed");
 		~Scene();
 
-		void Draw();
-
-		void Draw(const Math::Mat4& lightCamera, Ref<Material> material);
-
         World& GetWorld();
 
 		inline void UpdateCamera(Math::FreeCamera* camera) { m_Camera = camera; }

@@ -87,8 +87,6 @@ void GameLayer::DrawScene()
 
 	m_Renderer->UpdateCamera(m_Camera);
 	m_Renderer->DrawScene(m_Scene);
-	//m_Scene->UpdateCamera(m_Camera);
-	//m_Scene->Draw();
 
 	Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
 }

@@ -42,7 +42,7 @@ Dodo uses the following libraries:
 ## Compilation
 
 ### Requirements
-- CMake $\geq 3.25$ (although probably works with older versions)
+- CMake $\geq 3.23$ (although probably works with older versions)
 - Ninja
 - A C++20-compatible compiler
 - OpenGL 3.3-capable GPU
@@ -53,3 +53,4 @@ This project uses **git submodules**. Make sure to clone with:
 
 ```bash
 git clone --recurse-submodules git@github.com:quesswho/Dodo.git
+git submodule update --init --recursive

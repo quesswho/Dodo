@@ -26,7 +26,7 @@ namespace Dodo {
 		void Draw(const T* camera, const LightSystem& lights) const
 		{
 			Mesh* mesh = m_Rectangle->GetMesh();
-			Material* mat = mesh->GetMaterial();
+			Ref<Material> mat = mesh->GetMaterial();
 			mat->Bind();
 			mat->SetUniform("u_LightCamera", lights.m_Directional.m_LightCamera);
 			mat->SetUniform("u_LightDir", lights.m_Directional.m_Direction);

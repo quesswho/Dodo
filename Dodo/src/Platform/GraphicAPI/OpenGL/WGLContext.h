@@ -4,6 +4,7 @@
 #include <Platform/WindowAPI/NativeWindowHandle.h>
 
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <Windows.h>
 
 namespace Dodo::Platform {
@@ -30,12 +31,12 @@ namespace Dodo::Platform {
                 m_Hglrc = wglCreateContext(m_Hdc);
                 wglMakeCurrent(m_Hdc, m_Hglrc);
                 
-                gladLoaderLoadWGL(m_Hdc);
+                
             }
 
-            void MakeCurrentImpl() { wglMakeCurrent(m_Hdc, m_Hglrc); }
-            void SwapBuffersImpl() { ::SwapBuffers(m_Hdc); }
-            void SetVSyncImpl(bool enabled) { wglSwapIntervalEXT(enabled ? 1 : 0); }
+            int LoadGlad() { return gladLoaderLoadWGL(m_Hdc); }
+            void SwapBuffers() { ::SwapBuffers(m_Hdc); }
+            void SetVSync(bool enabled) { wglSwapIntervalEXT(enabled ? 1 : 0); }
 
         private:
             HDC   m_Hdc = nullptr;

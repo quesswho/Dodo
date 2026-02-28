@@ -27,6 +27,6 @@ target_compile_definitions(DodoEditor
         $<$<CONFIG:Release>:DD_RELEASE>
 )
 
-if (WIN32)
+if (DD_API_WIN32)
     target_compile_definitions(DodoEditor PRIVATE DD_x64 DD_API_WIN32)
 endif()

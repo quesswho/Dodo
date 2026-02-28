@@ -30,7 +30,6 @@ namespace Dodo {
 				void SetTitle(const char* title);
 				void SetCursorPosition(Math::TVec2<double> pos);
 				void SetCursorVisible(bool vis);
-				void VSync(bool vsync);
 				void FullScreen(bool fullscreen);
 				void FullScreen() { FullScreen(!m_WindowProperties.m_Settings.fullscreen); }
 				NativeWindowHandle GetHandle() const;

@@ -46,8 +46,6 @@ namespace Dodo {
 				return;
 			}
 
-			//VSync(m_WindowProperties.m_Settings.vsync);
-
 			int xpos, ypos;
 			glfwGetWindowPos(m_Handle, &xpos, &ypos);
 			DD_INFO("Window pos: ({}, {})", xpos,ypos);
@@ -102,11 +100,6 @@ namespace Dodo {
 		void GLFWWindow::SetCursorPosition(Math::TVec2<double> pos)
 		{
 			glfwSetCursorPos(m_Handle, pos.x, pos.y);
-		}
-
-		void GLFWWindow::VSync(bool vsync)
-		{
-			glfwSwapInterval(vsync ? 1 : 0);
 		}
 
 		void GLFWWindow::FullScreen(bool fullscreen)

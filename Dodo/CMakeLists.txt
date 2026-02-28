@@ -7,7 +7,7 @@ file(GLOB_RECURSE DODO_CPP_SOURCES
 )
 
 # Add window api sources
-if(WIN32)
+if(DD_API_WIN32)
     message(STATUS "Adding Windows-specific sources")
     file(GLOB_RECURSE DODO_WIN32_CPP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/WindowAPI/Win32/*.cpp)
     list(APPEND DODO_CPP_SOURCES ${DODO_WIN32_CPP_SOURCES})
@@ -65,7 +65,7 @@ target_compile_definitions(Dodo
 target_precompile_headers(Dodo PRIVATE src/pch.h)
 
 # Platform-specific
-if (WIN32)
+if (DD_API_WIN32)
     target_compile_definitions(Dodo PUBLIC DD_x64 DD_API_WIN32)
 else()
     target_compile_definitions(Dodo PUBLIC DD_API_GLFW)

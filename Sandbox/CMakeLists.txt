@@ -29,6 +29,6 @@ target_compile_definitions(Sandbox PRIVATE
         $<$<CONFIG:Release>:DD_RELEASE>
 )
 
-if (WIN32)
+if (DD_API_WIN32)
     target_compile_definitions(Sandbox PRIVATE DD_x64 DD_API_WIN32)
 endif()

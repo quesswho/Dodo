@@ -51,7 +51,7 @@ namespace Dodo {
 		m_Shader->Bind();
 	}
 
-	void Material::Bind()
+	void Material::Bind() const
 	{
 		m_Shader->Bind();
 		for (auto& tex : m_Textures)

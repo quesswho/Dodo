@@ -17,6 +17,23 @@
           "ignoreFailures": true
         }
       ]
+    },
+    {
+      "name": "Debug DodoEditor",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/Debug/bin/DodoEditor",
+      "args": [],
+      "cwd": "${workspaceFolder}/build/Debug/bin",
+      "stopAtEntry": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for STL",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     }
   ]
 }

@@ -2,6 +2,8 @@
 
 #include <Core/Common.h>
 
+#include "Win32ImGuiBackend.h"
+
 #include <Core/Application/WindowProperties.h>
 #include <Platform/WindowAPI/NativeWindowHandle.h>
 
@@ -14,62 +16,59 @@
 #define NOGDI
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
-namespace Dodo {
-	namespace Platform {
+namespace Dodo::Platform {
+    class Win32Window {
+    private:
+        WindowProperties m_WindowProperties;
 
+        HINSTANCE m_HInstance;
+        HWND m_Hwnd;
+        HDC m_Hdc;
+    public:
+        PCSpecifications m_Pcspecs;
 
-		class Win32Window {
-		private:
-			WindowProperties m_WindowProperties;
+        Win32Window(const WindowProperties&);
+        ~Win32Window();
 
-			HINSTANCE m_HInstance;
-			HWND m_Hwnd;
-			HDC m_Hdc;
-		public:
-			PCSpecifications m_Pcspecs;
+        void Update() const;
+        void SetTitle(const char* title);
+        void SetCursorPosition(Math::TVec2<long> pos);
+        void SetCursorVisible(bool vis);
+        void FullScreen(bool fullscreen);
+        void FullScreen() { FullScreen(!m_WindowProperties.m_Settings.fullscreen); }
+        NativeWindowHandle GetHandle() const;
+        void ImGuiNewFrame() const;
+        void ImGuiEndFrame() const;
 
-			Win32Window(const WindowProperties&);
-			~Win32Window();
+        std::string OpenFileSelector(const char* filter = "All\0 * .*\0");
+        std::string OpenFileSaver(const char* filter = "All\0 * .*\0", const char* extension = "\0");
+        void DefaultWorkDirectory() { ChangeWorkDirectory(m_MainWorkDirectory); }
+        void CurrentDialogDirectory() { ChangeWorkDirectory(m_CurrentDialogDirectory); }
+        void ChangeWorkDirectory(std::string dir);
+        void TruncateWorkDirectory(std::string dir);
+        inline const std::string GetMainWorkDirectory() const { return m_MainWorkDirectory; }
+        bool m_Focused;
 
-			void Update() const;
-			void SetTitle(const char* title);
-			void SetCursorPosition(Math::TVec2<long> pos);
-			void SetCursorVisible(bool vis);
-			void FullScreen(bool fullscreen);
-			void FullScreen() { FullScreen(!m_WindowProperties.m_Settings.fullscreen); }
-			NativeWindowHandle GetHandle() const;
-			void ImGuiNewFrame() const;
-			void ImGuiEndFrame() const;
+        void WindowResizeCallback(Math::TVec2<int> size);
+        void WindowFocusCallback(bool focused);
+        void WindowCloseCallback();      
 
-			std::string OpenFileSelector(const char* filter = "All\0 * .*\0");
-			std::string OpenFileSaver(const char* filter = "All\0 * .*\0", const char* extension = "\0");
-			void DefaultWorkDirectory() { ChangeWorkDirectory(m_MainWorkDirectory); }
-			void CurrentDialogDirectory() { ChangeWorkDirectory(m_CurrentDialogDirectory); }
-			void ChangeWorkDirectory(std::string dir);
-			void TruncateWorkDirectory(std::string dir);
-			inline const std::string GetMainWorkDirectory() const { return m_MainWorkDirectory; }
-			bool m_Focused;
+        const WindowProperties& GetWindowProperties() { return m_WindowProperties; }
+        void SetWindowProperties(const WindowProperties& winprop);
 
-			void WindowResizeCallback(Math::TVec2<int> size);
-			void WindowFocusCallback(bool focused);
-			void WindowCloseCallback();      
-
-            const WindowProperties& GetWindowProperties() { return m_WindowProperties; }
-			void SetWindowProperties(const WindowProperties& winprop);
-
-			void FocusConsole() const;
-		private:
-			void Init();
-			void RegisterRawMouse() const;
-			PIXELFORMATDESCRIPTOR GetPixelFormat() const;
-			short int CreateDeviceContext();
-			
-			std::string m_CurrentDialogDirectory;
-			std::string m_MainWorkDirectory;
-		};
-		static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-		static Win32Window* s_WindowClass;
-	}
+        void FocusConsole() const;
+    private:
+        void Init();
+        void RegisterRawMouse() const;
+        PIXELFORMATDESCRIPTOR GetPixelFormat() const;
+        short int CreateDeviceContext();
+        
+        std::string m_CurrentDialogDirectory;
+        std::string m_MainWorkDirectory;
+    };
+    static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+    static Win32Window* s_WindowClass;
+}
 
 
 /* Printable keys */

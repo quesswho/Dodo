@@ -28,7 +28,12 @@ if(DD_API_VULKAN)
     )
 endif()
 
-if(WIN32)
+if(DD_API_GLFW)
+	target_sources(imgui PRIVATE
+        imgui/backends/imgui_impl_glfw.cpp
+    )
+    target_link_libraries(imgui PUBLIC glfw)
+elseif(DD_API_WIN32)
     target_sources(imgui PRIVATE
         imgui/backends/imgui_impl_win32.cpp
     )

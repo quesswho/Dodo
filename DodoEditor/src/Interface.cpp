@@ -57,7 +57,11 @@ void Interface::InitInterface()
 	style.TabRounding = 0.0f;
 
 	ImGuiIO& io = ImGui::GetIO();
-	io.Fonts->AddFontFromFileTTF("res/font/opensans/opensans.ttf", 16);
+    if(FileUtils::FileExists("res/font/opensans/opensans.ttf")) {
+        io.Fonts->AddFontFromFileTTF("res/font/opensans/opensans.ttf", 16);
+    } else {
+        DD_WARN("Could not find: res/font/opensans/opensans.ttf, using default font.");
+    }
 
 	m_EditorProperties.m_ViewportName = "Viewport";
 	m_EditorProperties.m_HierarchyName = "Hierarchy";
@@ -289,7 +293,7 @@ void Interface::DrawHierarchy()
 
 	static char s_RenameableHierarchy[32] = "Unnamed";
 
-	ImGui::ColorButton("", ImColor(226, 189, 0), ImGuiColorEditFlags_NoTooltip);
+	ImGui::ColorButton("##EntitiesIcon", ImColor(226, 189, 0), ImGuiColorEditFlags_NoTooltip);
 	ImGui::SameLine();
 
 
@@ -302,7 +306,8 @@ void Interface::DrawHierarchy()
 			{
 				if (entityId != s_RenamingId || m_EditorProperties.m_ViewportInput)
 				{
-					ImGui::ColorButton("", ImColor(120, 50, 0), ImGuiColorEditFlags_NoTooltip);
+					std::string colorButtonId = "##EntityIcon" + std::to_string(entityId);
+					ImGui::ColorButton(colorButtonId.c_str(), ImColor(120, 50, 0), ImGuiColorEditFlags_NoTooltip);
 					ImGui::SameLine();
 					ImGui::PushID((int)entityId);
 					std::string entityName = world.HasComponent<NameComponent>(entityId) ? 

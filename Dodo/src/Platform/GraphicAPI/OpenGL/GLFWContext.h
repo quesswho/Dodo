@@ -5,6 +5,8 @@
 
 #include <Platform/WindowAPI/NativeWindowHandle.h>
 
+#include <backends/imgui_impl_glfw.h>
+
 namespace Dodo::Platform {
 
 class GLFWContext {
@@ -21,6 +23,10 @@ public:
     void SetVSync(bool enabled) { 
         glfwMakeContextCurrent(m_Window);
         glfwSwapInterval(enabled ? 1 : 0); 
+    }
+
+    void InitializeImGui() {
+        ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
     }
 
 private:

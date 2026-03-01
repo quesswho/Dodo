@@ -2,6 +2,8 @@
 
 #include <Core/Common.h>
 
+#include "GLFWImGuiBackend.h"
+
 #include <Core/Application/WindowProperties.h>
 #include <Platform/WindowAPI/NativeWindowHandle.h>
 
@@ -10,63 +12,58 @@
 
 #include <string>
 
-namespace Dodo {
+namespace Dodo::Platform {
+    class GLFWWindow {
+        private:
+            WindowProperties m_WindowProperties;
 
-	namespace Platform {
+            GLFWwindow* m_Handle;
+        public:
+            PCSpecifications m_Pcspecs;
 
+            GLFWWindow(const WindowProperties&);
+            ~GLFWWindow();
 
-		class GLFWWindow {
-			private:
-				WindowProperties m_WindowProperties;
+            void Update() const;
+            void SetTitle(const char* title);
+            void SetCursorPosition(Math::TVec2<double> pos);
+            void SetCursorVisible(bool vis);
+            void FullScreen(bool fullscreen);
+            void FullScreen() { FullScreen(!m_WindowProperties.m_Settings.fullscreen); }
+            NativeWindowHandle GetHandle() const;
+            void ImGuiNewFrame() const;
+            void ImGuiEndFrame() const;
 
-				GLFWwindow* m_Handle;
-			public:
-				PCSpecifications m_Pcspecs;
+            // TODO: The working directory stuff should defiently not be here
+            std::string OpenFileSelector(const char* filter = "All\0 * .*\0");
+            std::string OpenFileSaver(const char* filter = "All\0 * .*\0", const char* extension = "\0");
+            void DefaultWorkDirectory() { ChangeWorkDirectory(m_MainWorkDirectory); }
+            void CurrentDialogDirectory() { ChangeWorkDirectory(m_CurrentDialogDirectory); }
+            void ChangeWorkDirectory(std::string dir);
+            void TruncateWorkDirectory(std::string dir);
+            inline const std::string GetMainWorkDirectory() const { return m_MainWorkDirectory; }
+            bool m_Focused;
 
-				GLFWWindow(const WindowProperties&);
-				~GLFWWindow();
+            const WindowProperties& GetWindowProperties() { return m_WindowProperties; }
+            void SetWindowProperties(const WindowProperties& winprop);
 
-				void Update() const;
-				void SetTitle(const char* title);
-				void SetCursorPosition(Math::TVec2<double> pos);
-				void SetCursorVisible(bool vis);
-				void FullScreen(bool fullscreen);
-				void FullScreen() { FullScreen(!m_WindowProperties.m_Settings.fullscreen); }
-				NativeWindowHandle GetHandle() const;
-				void ImGuiNewFrame() const;
-				void ImGuiEndFrame() const;
+            void FocusConsole() const;
+        private:
+            void Init();
+            static void ErrorCallback(int error, const char* description);
+            static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+            static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+            static void MouseMovedCallback(GLFWwindow* window, double xpos, double ypos);
+            static void WindowResizeCallback(GLFWwindow* window, int width, int height);
+            static void WindowMovedCallback(GLFWwindow* window, int xpos, int ypos);
+            static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
+            static void WindowFocusCallback(GLFWwindow* window, int focused);
+            static void WindowCloseCallback(GLFWwindow* window);  
 
-				// TODO: The working directory stuff should defiently not be here
-				std::string OpenFileSelector(const char* filter = "All\0 * .*\0");
-				std::string OpenFileSaver(const char* filter = "All\0 * .*\0", const char* extension = "\0");
-				void DefaultWorkDirectory() { ChangeWorkDirectory(m_MainWorkDirectory); }
-				void CurrentDialogDirectory() { ChangeWorkDirectory(m_CurrentDialogDirectory); }
-				void ChangeWorkDirectory(std::string dir);
-				void TruncateWorkDirectory(std::string dir);
-				inline const std::string GetMainWorkDirectory() const { return m_MainWorkDirectory; }
-				bool m_Focused;
-
-				const WindowProperties& GetWindowProperties() { return m_WindowProperties; }
-				void SetWindowProperties(const WindowProperties& winprop);
-
-				void FocusConsole() const;
-			private:
-				void Init();
-				static void ErrorCallback(int error, const char* description);
-				static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-				static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-				static void MouseMovedCallback(GLFWwindow* window, double xpos, double ypos);
-				static void WindowResizeCallback(GLFWwindow* window, int width, int height);
-				static void WindowMovedCallback(GLFWwindow* window, int xpos, int ypos);
-				static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
-				static void WindowFocusCallback(GLFWwindow* window, int focused);
-				static void WindowCloseCallback(GLFWwindow* window);  
-
-				void ConfigureMonitor();
-				std::string m_CurrentDialogDirectory;
-				std::string m_MainWorkDirectory;
-		};
-	}
+            void ConfigureMonitor();
+            std::string m_CurrentDialogDirectory;
+            std::string m_MainWorkDirectory;
+    };
 }
 
 /* Printable keys */

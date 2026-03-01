@@ -70,3 +70,6 @@ add_subdirectory(Sandbox)
 
 message(STATUS "=== Configuring DodoEditor ===")
 add_subdirectory(DodoEditor)
+
+message(STATUS "=== Configuring Game ===")
+add_subdirectory(Game)

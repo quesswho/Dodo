@@ -11,14 +11,14 @@ GameLayer::GameLayer()
 
     // FPS camera containing view matrix
     m_Camera = new FreeCamera(Vec3(0.0f, 16.0f, 0.0f),
-                              (float)Application::s_Application->m_WindowProperties.m_Width /
-                                  (float)Application::s_Application->m_WindowProperties.m_Height,
+                              (float)Application::s_Application->GetWindowProperties().m_Width /
+                                  (float)Application::s_Application->GetWindowProperties().m_Height,
                               0.04f, 20.0f);
 
     // Framebuffer initialization data
     FrameBufferProperties frameprop;
-    frameprop.m_Width = Application::s_Application->m_WindowProperties.m_Width;
-    frameprop.m_Height = Application::s_Application->m_WindowProperties.m_Height;
+    frameprop.m_Width = Application::s_Application->GetWindowProperties().m_Width;
+    frameprop.m_Height = Application::s_Application->GetWindowProperties().m_Height;
 
     m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.fx");
     m_Gamma = 1.0f;
@@ -47,7 +47,6 @@ GameLayer::GameLayer()
 }
 GameLayer::~GameLayer()
 {
-    Application::s_Application->m_Window->DefaultWorkDirectory();
     delete m_PostEffect;
     delete m_Camera;
     delete m_Scene;
@@ -55,36 +54,36 @@ GameLayer::~GameLayer()
 
 void GameLayer::Update(float elapsed)
 {
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_9]) m_Gamma += 1.0f * elapsed;
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_8]) m_Gamma -= 1.0f * elapsed;
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_9)) m_Gamma += 1.0f * elapsed;
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_8)) m_Gamma -= 1.0f * elapsed;
 
     // Change directional light
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_1])
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_1))
         m_Scene->m_LightSystem.m_Directional.m_Direction += elapsed * Vec3(1.0f, 0, 0);
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_2])
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_2))
         m_Scene->m_LightSystem.m_Directional.m_Direction -= elapsed * Vec3(1.0f, 0, 0);
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_3])
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_3))
         m_Scene->m_LightSystem.m_Directional.m_Direction += elapsed * Vec3(0, 1.0f, 0);
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_4])
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_4))
         m_Scene->m_LightSystem.m_Directional.m_Direction -= elapsed * Vec3(0, 1.0f, 0);
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_5])
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_5))
         m_Scene->m_LightSystem.m_Directional.m_Direction += elapsed * Vec3(0, 0, 1.0f);
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_6])
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_6))
         m_Scene->m_LightSystem.m_Directional.m_Direction -= elapsed * Vec3(0, 0, 1.0f);
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_0])
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_0))
         m_Scene->m_LightSystem.m_Directional.m_Direction = Vec3(0.0f, -1.0f, 1.0f);
     m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(m_Scene->m_LightSystem.m_Directional.m_Direction);
 
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_0])
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_0))
         m_Scene->m_LightSystem.m_Directional.m_Direction = Vec3(0.0f, -1.0f, 1.0f);
 
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_UP])
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_UP))
         m_LightLook += elapsed * Vec3(1.0f, 0.0f, 0.0f) * 10.0f;
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_DOWN])
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_DOWN))
         m_LightLook -= elapsed * Vec3(1.0f, 0.0f, 0.0f) * 10.0f;
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_RIGHT])
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_RIGHT))
         m_LightLook += elapsed * Vec3(0.0f, 0.0f, 1.0f) * 10.0f;
-    if (Application::s_Application->m_Window->m_Keys[DODO_KEY_LEFT])
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_LEFT))
         m_LightLook -= elapsed * Vec3(0.0f, 0.0f, 1.0f) * 10.0f;
     m_LightView = Mat4::LookAt(Vec3(-8.0f, 35.0f, 23.0f), m_LightLook, Vec3(0.0, 1.0, 0.0));
 
@@ -117,10 +116,10 @@ void GameLayer::OnEvent(const Event &event)
         if (static_cast<const KeyPressEvent &>(event).m_Key == DODO_KEY_F11)
         {
             Application::s_Application->m_Window->FullScreen();
-            m_Camera->Resize(Application::s_Application->m_WindowProperties.m_Width,
-                             Application::s_Application->m_WindowProperties.m_Height);
-            m_PostEffect->Resize(Application::s_Application->m_WindowProperties.m_Width,
-                                 Application::s_Application->m_WindowProperties.m_Height);
+            m_Camera->Resize(Application::s_Application->GetWindowProperties().m_Width,
+                             Application::s_Application->GetWindowProperties().m_Height);
+            m_PostEffect->Resize(Application::s_Application->GetWindowProperties().m_Width,
+                                 Application::s_Application->GetWindowProperties().m_Height);
         }
 
         if (static_cast<const KeyPressEvent &>(event).m_Key == DODO_KEY_ESCAPE)
@@ -145,14 +144,16 @@ class Sandbox : public Application {
   public:
     Sandbox() : Application(PreInit()) {}
 
-    WindowProperties PreInit()
+    ApplicationConfig PreInit()
     {
         WindowProperties props;
         props.m_Title = "SandBox";
         props.m_Width = 1080;
         props.m_Height = 720;
-        props.m_Flags = DodoWindowFlags_BACKFACECULL;
-        return props;
+        props.m_Settings.backfaceCull = true;
+        ApplicationConfig conf;
+        conf.m_WindowProperties = props;
+        return conf;
     }
 
     void Init() { PushLayer(new GameLayer()); }

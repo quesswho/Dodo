@@ -335,13 +335,12 @@ namespace Dodo { namespace Platform {
         static inline const CRHMat4x4<T> Orthographic(float left, float right, float bottom, float top, float zNear,
                                                       float zFar)
         {
-
             /*	__												__
                 | 2 / (r-l), 0,			0,			-(r+l)/(r-l) |
                 | 0,		 2 / (t-b), 0,			-(t+b)/(t-b) |
                 | 0,		 0,			-2 / (f-n), -(f+n)/(f-n) |
                 | 0,		 0,			0,			1			 |
-                ��												��
+                 --                                              --
             */
 
             return CRHMat4x4(2 / (right - left), 0, 0, 0, 0, 2 / (top - bottom), 0, 0, 0, 0, -2 / (zFar - zNear), 0,

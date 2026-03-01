@@ -116,10 +116,7 @@ namespace Dodo { namespace Platform {
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 
-    OpenGLTexture::~OpenGLTexture()
-    {
-        glDeleteTextures(1, &m_TextureID);
-    }
+    OpenGLTexture::~OpenGLTexture() { glDeleteTextures(1, &m_TextureID); }
 
     void OpenGLTexture::Bind() const
     {

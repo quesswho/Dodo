@@ -54,13 +54,9 @@ namespace Dodo { namespace Platform {
         void ReloadFromSource(std::string &source);
         void ReloadFromSource(const char *vertex, const char *fragment);
 
-        void CreateConstantBuffers()
-        {}
+        void CreateConstantBuffers() {}
 
-        const char *GetEntryName() const
-        {
-            return m_Name;
-        }
+        const char *GetEntryName() const { return m_Name; }
 
         void SetUniformValue(const char *location, const int value);
         void SetUniformValue(const char *location, const float value);

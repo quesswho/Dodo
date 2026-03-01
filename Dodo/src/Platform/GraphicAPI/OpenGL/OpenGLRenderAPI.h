@@ -39,34 +39,16 @@ namespace Dodo {
             ~OpenGLRenderAPI();
             RenderInitError Init(const WindowProperties &winprop);
 
-            inline void Begin() const
-            {
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-            }
-            inline void End()
-            {
-                m_Context.SwapBuffer();
-            }
+            inline void Begin() const { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); }
+            inline void End() { m_Context.SwapBuffer(); }
 
             void ImGuiNewFrame() const;
             void ImGuiEndFrame() const;
 
-            inline void ClearColor(float r, float g, float b) const
-            {
-                glClearColor(r, g, b, 1.0f);
-            }
-            inline void Viewport(uint width, uint height) const
-            {
-                glViewport(0, 0, (GLsizei)width, (GLsizei)height);
-            }
-            inline void DrawIndices(uint count) const
-            {
-                glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0);
-            }
-            inline void DrawArray(uint count) const
-            {
-                glDrawArrays(GL_TRIANGLES, 0, count);
-            }
+            inline void ClearColor(float r, float g, float b) const { glClearColor(r, g, b, 1.0f); }
+            inline void Viewport(uint width, uint height) const { glViewport(0, 0, (GLsizei)width, (GLsizei)height); }
+            inline void DrawIndices(uint count) const { glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); }
+            inline void DrawArray(uint count) const { glDrawArrays(GL_TRIANGLES, 0, count); }
             void DefaultFrameBuffer() const;
             void ResizeDefaultViewport(uint width, uint height);
             void ResizeDefaultViewport(uint width, uint height, uint posX, uint posY);
@@ -86,10 +68,7 @@ namespace Dodo {
             void Blending(bool blending) const;
             void Culling(bool cull, bool backface = true);
 
-            inline const char *GetAPIName() const
-            {
-                return "OpenGL";
-            }
+            inline const char *GetAPIName() const { return "OpenGL"; }
             int CurrentVRamUsage() const
             {
                 int availKb;

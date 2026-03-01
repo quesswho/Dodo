@@ -5,11 +5,9 @@
 using namespace Dodo;
 
 struct Component {
-    Component() : m_Name("None"), m_Selected(false)
-    {}
+    Component() : m_Name("None"), m_Selected(false) {}
 
-    Component(const char *name) : m_Name(name), m_Selected(false)
-    {}
+    Component(const char *name) : m_Name(name), m_Selected(false) {}
 
     const char *m_Name;
     bool m_Selected;
@@ -31,18 +29,9 @@ struct EditorProperties {
 struct Selection {
     std::vector<EntityID> entities;
 
-    bool Empty() const
-    {
-        return entities.empty();
-    }
-    bool Single() const
-    {
-        return entities.size() == 1;
-    }
-    bool Contains(EntityID e) const
-    {
-        return std::find(entities.begin(), entities.end(), e) != entities.end();
-    }
+    bool Empty() const { return entities.empty(); }
+    bool Single() const { return entities.size() == 1; }
+    bool Contains(EntityID e) const { return std::find(entities.begin(), entities.end(), e) != entities.end(); }
 };
 
 struct EditorContext {

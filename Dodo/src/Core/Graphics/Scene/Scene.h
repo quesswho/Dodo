@@ -27,10 +27,7 @@ namespace Dodo {
 
         World &GetWorld();
 
-        inline void UpdateCamera(Math::FreeCamera *camera)
-        {
-            m_Camera = camera;
-        }
+        inline void UpdateCamera(Math::FreeCamera *camera) { m_Camera = camera; }
 
       private:
         Math::FreeCamera *m_Camera;

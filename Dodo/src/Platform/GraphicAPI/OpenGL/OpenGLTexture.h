@@ -21,10 +21,7 @@ namespace Dodo { namespace Platform {
 
       public:
         uint m_Index;
-        const TextureProperties &GetTextureProperties() const
-        {
-            return m_TextureProperties;
-        }
+        const TextureProperties &GetTextureProperties() const { return m_TextureProperties; }
 
       private:
         TextureProperties m_TextureProperties;

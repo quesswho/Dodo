@@ -147,8 +147,7 @@ void GameLayer::OnEvent(const Event &event)
 
 class Sandbox : public Application {
   public:
-    Sandbox() : Application(PreInit())
-    {}
+    Sandbox() : Application(PreInit()) {}
 
     ApplicationConfig PreInit()
     {
@@ -164,10 +163,7 @@ class Sandbox : public Application {
         return conf;
     }
 
-    void Init()
-    {
-        PushLayer(new GameLayer());
-    }
+    void Init() { PushLayer(new GameLayer()); }
 };
 
 int main()

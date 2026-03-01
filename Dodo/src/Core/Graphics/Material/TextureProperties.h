@@ -12,8 +12,7 @@ namespace Dodo {
     };
 
     struct TextureProperties {
-        TextureProperties() : m_Width(0), m_Height(0), m_Format(TextureFormat::FORMAT_RGB)
-        {}
+        TextureProperties() : m_Width(0), m_Height(0), m_Format(TextureFormat::FORMAT_RGB) {}
 
         TextureProperties(uint width, uint height)
             : m_Width(width), m_Height(height), m_Format(TextureFormat::FORMAT_RGB)

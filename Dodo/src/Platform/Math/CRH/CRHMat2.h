@@ -12,12 +12,8 @@ namespace Dodo { namespace Platform {
             Math::TVec2<T> m_Columns[2];
         };
 
-        CRHMat2x2() : m_Elements{0}
-        {}
-        CRHMat2x2(float diagonal)
-        {
-            Identity(diagonal);
-        }
+        CRHMat2x2() : m_Elements{0} {}
+        CRHMat2x2(float diagonal) { Identity(diagonal); }
 
         CRHMat2x2(const Math::TVec2<T> &first, const Math::TVec2<T> &second)
         {
@@ -64,10 +60,7 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat2x2 operator+(CRHMat2x2 left, const float right)
-        {
-            return left += right;
-        }
+        friend CRHMat2x2 operator+(CRHMat2x2 left, const float right) { return left += right; }
 
         const CRHMat2x2 &operator+=(const CRHMat2x2 &other)
         {
@@ -78,10 +71,7 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat2x2 operator+(CRHMat2x2 left, const CRHMat2x2 &right)
-        {
-            return left += right;
-        }
+        friend CRHMat2x2 operator+(CRHMat2x2 left, const CRHMat2x2 &right) { return left += right; }
 
         // Subtraction
 
@@ -94,10 +84,7 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat2x2 operator-(CRHMat2x2 left, const float right)
-        {
-            return left -= right;
-        }
+        friend CRHMat2x2 operator-(CRHMat2x2 left, const float right) { return left -= right; }
 
         const CRHMat2x2 &operator-=(const CRHMat2x2 &other)
         {
@@ -108,10 +95,7 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat2x2 operator-(CRHMat2x2 left, const CRHMat2x2 &right)
-        {
-            return left -= right;
-        }
+        friend CRHMat2x2 operator-(CRHMat2x2 left, const CRHMat2x2 &right) { return left -= right; }
 
         // Multiplication
 
@@ -123,10 +107,7 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat2x2 operator*(CRHMat2x2 left, const float right)
-        {
-            return left *= right;
-        }
+        friend CRHMat2x2 operator*(CRHMat2x2 left, const float right) { return left *= right; }
 
         const CRHMat2x2 &operator*=(const CRHMat2x2 &other)
         {
@@ -142,10 +123,7 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat2x2 operator*(CRHMat2x2 left, const CRHMat2x2 &right)
-        {
-            return left *= right;
-        }
+        friend CRHMat2x2 operator*(CRHMat2x2 left, const CRHMat2x2 &right) { return left *= right; }
 
         // Assignment
 
@@ -186,9 +164,6 @@ namespace Dodo { namespace Platform {
         }
 
       private:
-        static constexpr inline int GetIndex(int column, int row)
-        {
-            return (column * 2) + row;
-        }
+        static constexpr inline int GetIndex(int column, int row) { return (column * 2) + row; }
     };
 }} // namespace Dodo::Platform

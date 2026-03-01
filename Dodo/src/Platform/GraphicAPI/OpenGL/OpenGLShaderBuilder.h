@@ -55,10 +55,7 @@ namespace Dodo {
 
             uint CompileVertexFragmentShader(const char *vertex, const char *fragment) const;
 
-            inline Ref<Shader> GetFallbackShader() const
-            {
-                return m_FallbackShader;
-            }
+            inline Ref<Shader> GetFallbackShader() const { return m_FallbackShader; }
 
           private:
             void InitFallbackShader();

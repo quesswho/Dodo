@@ -5,16 +5,11 @@
 
 namespace Dodo {
 
-    Material::Material() : m_Shader(Application::s_Application->m_RenderAPI->m_ShaderBuilder->GetFallbackShader())
-    {}
+    Material::Material() : m_Shader(Application::s_Application->m_RenderAPI->m_ShaderBuilder->GetFallbackShader()) {}
 
-    Material::Material(Ref<Shader> shader) : m_Shader(shader)
-    {}
+    Material::Material(Ref<Shader> shader) : m_Shader(shader) {}
 
-    Material::Material(Ref<Shader> shader, Ref<Texture> texture) : m_Shader(shader)
-    {
-        m_Textures.push_back(texture);
-    }
+    Material::Material(Ref<Shader> shader, Ref<Texture> texture) : m_Shader(shader) { m_Textures.push_back(texture); }
 
     Material::Material(Ref<Shader> shader, std::vector<Ref<Texture>> textures) : m_Shader(shader), m_Textures(textures)
     {
@@ -29,8 +24,7 @@ namespace Dodo {
         }
     }
 
-    Material::~Material()
-    {}
+    Material::~Material() {}
 
     void Material::AddTexture(Ref<Texture> texture)
     {
@@ -42,10 +36,7 @@ namespace Dodo {
         }
     }
 
-    void Material::BindShader() const
-    {
-        m_Shader->Bind();
-    }
+    void Material::BindShader() const { m_Shader->Bind(); }
 
     void Material::Bind() const
     {

@@ -40,16 +40,10 @@ namespace Dodo {
             out << line << "\n";
     }
 
-    std::size_t AsciiDataFile::GetCurrentOffset() const
-    {
-        return m_Offset;
-    }
+    std::size_t AsciiDataFile::GetCurrentOffset() const { return m_Offset; }
 
     // Section handling
-    void AsciiDataFile::WriteSection(const std::string &name)
-    {
-        m_File.push_back("[" + name + "]");
-    }
+    void AsciiDataFile::WriteSection(const std::string &name) { m_File.push_back("[" + name + "]"); }
 
     std::string AsciiDataFile::ReadSection()
     {
@@ -82,10 +76,7 @@ namespace Dodo {
         m_File.push_back(key + "=\"" + val + "\"");
     }
 
-    void AsciiDataFile::WriteInt(const std::string &key, int val)
-    {
-        m_File.push_back(key + "=" + std::to_string(val));
-    }
+    void AsciiDataFile::WriteInt(const std::string &key, int val) { m_File.push_back(key + "=" + std::to_string(val)); }
 
     void AsciiDataFile::WriteVec2(const std::string &key, const Math::Vec2 &v)
     {
@@ -223,15 +214,9 @@ namespace Dodo {
     }
 
     // Utility
-    void AsciiDataFile::WriteComment(const std::string &comment)
-    {
-        m_File.push_back("# " + comment);
-    }
+    void AsciiDataFile::WriteComment(const std::string &comment) { m_File.push_back("# " + comment); }
 
-    void AsciiDataFile::WriteBlankLine()
-    {
-        m_File.push_back("");
-    }
+    void AsciiDataFile::WriteBlankLine() { m_File.push_back(""); }
 
     void AsciiDataFile::SkipLine()
     {

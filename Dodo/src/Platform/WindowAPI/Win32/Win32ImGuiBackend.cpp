@@ -29,10 +29,7 @@ namespace Dodo::Platform {
         ImGui::NewFrame();
     }
 
-    void Win32ImGuiBackend::EndFrame()
-    {
-        ImGui::Render();
-    }
+    void Win32ImGuiBackend::EndFrame() { ImGui::Render(); }
 
     LRESULT Win32ImGuiBackend::WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {

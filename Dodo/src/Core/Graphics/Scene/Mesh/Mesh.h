@@ -25,10 +25,7 @@ namespace Dodo {
             m_Material->SetUniform(location, value);
         }
 
-        Ref<Material> GetMaterial() const
-        {
-            return m_Material;
-        }
+        Ref<Material> GetMaterial() const { return m_Material; }
 
         void Draw() const;
         void DrawGeometry() const;

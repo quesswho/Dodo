@@ -21,10 +21,7 @@ namespace Dodo {
         void EndWrite(const std::string &path) override;
 
         std::size_t GetCurrentOffset() const override;
-        bool HasMore() const override
-        {
-            return m_Offset < m_File.size();
-        }
+        bool HasMore() const override { return m_Offset < m_File.size(); }
 
         // Section handling
         void WriteSection(const std::string &name) override;

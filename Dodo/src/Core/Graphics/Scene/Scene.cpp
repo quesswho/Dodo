@@ -11,13 +11,7 @@ namespace Dodo {
                                // / Application::s_Application->m_WindowProperties.m_Height, 0.01f, 100.0f))
     {}
 
-    Scene::~Scene()
-    {
-        delete m_World;
-    }
+    Scene::~Scene() { delete m_World; }
 
-    World &Scene::GetWorld()
-    {
-        return *m_World;
-    }
+    World &Scene::GetWorld() { return *m_World; }
 } // namespace Dodo

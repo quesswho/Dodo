@@ -3,8 +3,7 @@
 
 namespace Dodo {
 
-    Model::Model(std::vector<Mesh *> meshes) : m_Meshes(meshes)
-    {}
+    Model::Model(std::vector<Mesh *> meshes) : m_Meshes(meshes) {}
 
     Model::~Model()
     {

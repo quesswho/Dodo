@@ -17,13 +17,9 @@ namespace Dodo { namespace Math {
         Xoshiro256Plus m_Generator;
 
       public:
-        Random64(uint64 seed) : m_Generator(GenState(seed))
-        {}
+        Random64(uint64 seed) : m_Generator(GenState(seed)) {}
 
-        inline constexpr uint64 Next()
-        {
-            return m_Generator.Next();
-        }
+        inline constexpr uint64 Next() { return m_Generator.Next(); }
 
       private:
         constexpr uint64 *GenState(uint64 seed)
@@ -48,8 +44,7 @@ namespace Dodo { namespace Math {
 
       public:
         // (uint64 state[4])
-        Xoshiro256Plus(uint64 *state) : m_State(state)
-        {}
+        Xoshiro256Plus(uint64 *state) : m_State(state) {}
 
         // Get next random number
         inline constexpr uint64 Next() noexcept
@@ -67,9 +62,6 @@ namespace Dodo { namespace Math {
 
       private:
         // Rotate left
-        static constexpr uint64 RotL(const uint64 x, const int s) noexcept
-        {
-            return (x << s) | (x >> (64 - s));
-        }
+        static constexpr uint64 RotL(const uint64 x, const int s) noexcept { return (x << s) | (x >> (64 - s)); }
     };
 }} // namespace Dodo::Math

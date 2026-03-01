@@ -19,10 +19,7 @@ namespace Dodo {
         PostEffect(const FrameBufferProperties &framebufferprop, const char *path);
         ~PostEffect();
 
-        inline void Bind() const
-        {
-            m_Framebuffer->Bind();
-        }
+        inline void Bind() const { m_Framebuffer->Bind(); }
 
         template <typename T> void SetUniformValue(const char *location, const T val)
         {
@@ -39,10 +36,7 @@ namespace Dodo {
             Application::s_Application->m_RenderAPI->DrawArray(6);
         }
 
-        void Resize(uint width, uint height)
-        {
-            m_Framebuffer->Resize(width, height);
-        }
+        void Resize(uint width, uint height) { m_Framebuffer->Resize(width, height); }
 
       private:
         void Create();

@@ -40,14 +40,8 @@ namespace Dodo {
         virtual void Init();
         virtual void Update(float elapsed);
 
-        const WindowProperties &GetWindowProperties() const
-        {
-            return m_Window->GetWindowProperties();
-        }
-        const Input &GetInput() const
-        {
-            return m_InputManager.GetInput();
-        }
+        const WindowProperties &GetWindowProperties() const { return m_Window->GetWindowProperties(); }
+        const Input &GetInput() const { return m_InputManager.GetInput(); }
 
       public:
         float m_FrameTimeMs;

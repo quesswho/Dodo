@@ -34,10 +34,7 @@ class ResourceManager {
     FaceData GetLeftFace(BlockType type, BlockPos pos);
     FaceData GetRightFace(BlockType type, BlockPos pos);
 
-    inline void RegisterBlock(BlockType type, ChunkPos pos)
-    {
-        RegisterBlock(type, pos, pos, pos);
-    }
+    inline void RegisterBlock(BlockType type, ChunkPos pos) { RegisterBlock(type, pos, pos, pos); }
 
     inline void RegisterBlock(BlockType type, ChunkPos top, ChunkPos bottom, ChunkPos side)
     {

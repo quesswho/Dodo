@@ -80,8 +80,7 @@ namespace Dodo {
         m_AssetManager = ddnew AssetManager(conf.m_WindowProperties.m_Settings.serializeScene);
     }
 
-    void Application::Init()
-    {}
+    void Application::Init() {}
 
     void Application::Update(float elapsed)
     {
@@ -108,15 +107,9 @@ namespace Dodo {
         }
     }
 
-    void Application::Shutdown()
-    {
-        m_Closed = true;
-    }
+    void Application::Shutdown() { m_Closed = true; }
 
-    void Application::PushLayer(Layer *layer)
-    {
-        m_Layers.push_back(layer);
-    }
+    void Application::PushLayer(Layer *layer) { m_Layers.push_back(layer); }
 
     void Application::PopLayer(Layer *layer)
     {

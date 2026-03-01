@@ -43,8 +43,5 @@ namespace Dodo { namespace Platform {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint), indices, GL_STATIC_DRAW);
     }
 
-    OpenGLIndexBuffer::~OpenGLIndexBuffer()
-    {
-        glDeleteBuffers(1, &m_BufferID);
-    }
+    OpenGLIndexBuffer::~OpenGLIndexBuffer() { glDeleteBuffers(1, &m_BufferID); }
 }} // namespace Dodo::Platform

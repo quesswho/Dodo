@@ -54,10 +54,7 @@ namespace Dodo {
             return std::get<ComponentPool<T>>(m_Pools);
         }
 
-        const std::unordered_set<EntityID> &GetAliveEntities() const
-        {
-            return m_AliveEntities;
-        }
+        const std::unordered_set<EntityID> &GetAliveEntities() const { return m_AliveEntities; }
 
         bool HasAnyComponent(EntityID entity) const
         {

@@ -5,26 +5,19 @@
 namespace Dodo { namespace Math {
 
     template <typename T = float> struct TVec4 {
-        TVec4() : x((T)0), y((T)0), z((T)0), w((T)0)
-        {}
+        TVec4() : x((T)0), y((T)0), z((T)0), w((T)0) {}
 
-        TVec4(T f) : x(f), y(f), z(f), w(f)
-        {}
+        TVec4(T f) : x(f), y(f), z(f), w(f) {}
 
-        TVec4(const TVec2<T> &vec) : x(vec.x), y(vec.y), z((T)0), w((T)0)
-        {}
+        TVec4(const TVec2<T> &vec) : x(vec.x), y(vec.y), z((T)0), w((T)0) {}
 
-        TVec4(const TVec2<T> &vec, T value, T second) : x(vec.x), y(vec.y), z(value), w(second)
-        {}
+        TVec4(const TVec2<T> &vec, T value, T second) : x(vec.x), y(vec.y), z(value), w(second) {}
 
-        TVec4(const TVec3<T> &vec) : x(vec.x), y(vec.y), z((T)vec.z), w((T)0)
-        {}
+        TVec4(const TVec3<T> &vec) : x(vec.x), y(vec.y), z((T)vec.z), w((T)0) {}
 
-        TVec4(const TVec3<T> &vec, T value) : x(vec.x), y(vec.y), z(vec.z), w(value)
-        {}
+        TVec4(const TVec3<T> &vec, T value) : x(vec.x), y(vec.y), z(vec.z), w(value) {}
 
-        TVec4(T first, T second, T third, T forth) : x(first), y(second), z(third), w(forth)
-        {}
+        TVec4(T first, T second, T third, T forth) : x(first), y(second), z(third), w(forth) {}
 
         union {
             T x;
@@ -132,10 +125,7 @@ namespace Dodo { namespace Math {
         }
 
         // Return the magnitude of the vector
-        inline constexpr float Magnitude() const
-        {
-            return sqrt(SquareSum());
-        }
+        inline constexpr float Magnitude() const { return sqrt(SquareSum()); }
 
         // Return normalized vector
         inline TVec4 Normalize() const
@@ -155,16 +145,10 @@ namespace Dodo { namespace Math {
         }
 
         // Return a vector with a magnitude of limit
-        inline constexpr TVec4 Limit(const int limit) const
-        {
-            return this->Normalize() * limit;
-        }
+        inline constexpr TVec4 Limit(const int limit) const { return this->Normalize() * limit; }
 
         // Limit the vectors magnitude
-        inline void LimitVector(const int limit)
-        {
-            *this = this->Normalize() * limit;
-        }
+        inline void LimitVector(const int limit) { *this = this->Normalize() * limit; }
 
         // Get distance between this vector and other vector
         inline float Distance(const TVec4 &other) const
@@ -186,10 +170,7 @@ namespace Dodo { namespace Math {
 
         // Unary operations
 
-        const TVec4 &operator-() const
-        {
-            return TVec4(-this->x, -this->y, -this->z, -this->z);
-        }
+        const TVec4 &operator-() const { return TVec4(-this->x, -this->y, -this->z, -this->z); }
 
         // Assignment //
 
@@ -240,10 +221,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator+(TVec4 left, const int right)
-        {
-            return left += right;
-        }
+        friend TVec4 operator+(TVec4 left, const int right) { return left += right; }
 
         constexpr TVec4 &operator+=(const double other)
         {
@@ -254,10 +232,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator+(TVec4 left, const double right)
-        {
-            return left += right;
-        }
+        friend TVec4 operator+(TVec4 left, const double right) { return left += right; }
 
         constexpr TVec4 &operator+=(const float other)
         {
@@ -268,10 +243,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator+(TVec4 left, const float right)
-        {
-            return left += right;
-        }
+        friend TVec4 operator+(TVec4 left, const float right) { return left += right; }
 
         constexpr TVec4 &operator+=(const TVec4 &other)
         {
@@ -282,10 +254,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator+(TVec4 left, const TVec4 &right)
-        {
-            return left += right;
-        }
+        friend TVec4 operator+(TVec4 left, const TVec4 &right) { return left += right; }
 
         // Subtraction //
 
@@ -298,10 +267,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator-(TVec4 left, const int right)
-        {
-            return left -= right;
-        }
+        friend TVec4 operator-(TVec4 left, const int right) { return left -= right; }
 
         constexpr TVec4 &operator-=(const double other)
         {
@@ -312,10 +278,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator-(TVec4 left, const double right)
-        {
-            return left -= right;
-        }
+        friend TVec4 operator-(TVec4 left, const double right) { return left -= right; }
 
         constexpr TVec4 &operator-=(const float other)
         {
@@ -326,10 +289,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator-(TVec4 left, const float right)
-        {
-            return left -= right;
-        }
+        friend TVec4 operator-(TVec4 left, const float right) { return left -= right; }
 
         constexpr TVec4 &operator-=(const TVec4 &other)
         {
@@ -340,10 +300,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator-(TVec4 left, const TVec4 &right)
-        {
-            return left -= right;
-        }
+        friend TVec4 operator-(TVec4 left, const TVec4 &right) { return left -= right; }
 
         // Multiplication //
 
@@ -356,10 +313,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator*(TVec4 left, const int right)
-        {
-            return left *= right;
-        }
+        friend TVec4 operator*(TVec4 left, const int right) { return left *= right; }
 
         constexpr TVec4 &operator*=(const double other)
         {
@@ -370,10 +324,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator*(TVec4 left, const double right)
-        {
-            return left *= right;
-        }
+        friend TVec4 operator*(TVec4 left, const double right) { return left *= right; }
 
         const TVec4 &operator*=(const float other)
         {
@@ -384,10 +335,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator*(TVec4 left, const float right)
-        {
-            return left *= right;
-        }
+        friend TVec4 operator*(TVec4 left, const float right) { return left *= right; }
 
         constexpr TVec4 &operator*=(const TVec4 &other)
         {
@@ -398,10 +346,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator*(TVec4 left, const TVec4 &right)
-        {
-            return left *= right;
-        }
+        friend TVec4 operator*(TVec4 left, const TVec4 &right) { return left *= right; }
 
         // Division //
 
@@ -415,10 +360,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator/(TVec4 left, const int right)
-        {
-            return left /= right;
-        }
+        friend TVec4 operator/(TVec4 left, const int right) { return left /= right; }
 
         constexpr TVec4 &operator/=(const double other)
         {
@@ -430,10 +372,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator/(TVec4 left, const double right)
-        {
-            return left /= right;
-        }
+        friend TVec4 operator/(TVec4 left, const double right) { return left /= right; }
 
         constexpr TVec4 &operator/=(const float other)
         {
@@ -445,10 +384,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator/(TVec4 left, const float right)
-        {
-            return left /= right;
-        }
+        friend TVec4 operator/(TVec4 left, const float right) { return left /= right; }
 
         constexpr TVec4 &operator/=(const TVec4 &other)
         {
@@ -459,10 +395,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator/(TVec4 left, const TVec4 &right)
-        {
-            return left /= right;
-        }
+        friend TVec4 operator/(TVec4 left, const TVec4 &right) { return left /= right; }
 
         // Modulus //
 
@@ -475,10 +408,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator%(TVec4 left, const int right)
-        {
-            return left %= right;
-        }
+        friend TVec4 operator%(TVec4 left, const int right) { return left %= right; }
 
         constexpr TVec4 &operator%=(const double other)
         {
@@ -489,10 +419,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator%(TVec4 left, const double right)
-        {
-            return left %= right;
-        }
+        friend TVec4 operator%(TVec4 left, const double right) { return left %= right; }
 
         constexpr TVec4 &operator%=(const float other)
         {
@@ -503,10 +430,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator%(TVec4 left, const float right)
-        {
-            return left %= right;
-        }
+        friend TVec4 operator%(TVec4 left, const float right) { return left %= right; }
 
         constexpr TVec4 &operator%=(const TVec4 &other)
         {
@@ -517,10 +441,7 @@ namespace Dodo { namespace Math {
             return *this;
         }
 
-        friend TVec4 operator%(TVec4 left, const TVec4 &right)
-        {
-            return left %= right;
-        }
+        friend TVec4 operator%(TVec4 left, const TVec4 &right) { return left %= right; }
 
         // Test //
 

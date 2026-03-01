@@ -11,8 +11,7 @@ namespace Dodo::Platform {
 
     class GLFWContext {
       public:
-        explicit GLFWContext()
-        {}
+        explicit GLFWContext() {}
 
         void CreateContextImpl(const NativeWindowHandle &handle)
         {
@@ -20,24 +19,15 @@ namespace Dodo::Platform {
             glfwMakeContextCurrent(m_Window);
         }
 
-        int LoadGlad()
-        {
-            return gladLoadGL(glfwGetProcAddress);
-        }
-        void SwapBuffer()
-        {
-            glfwSwapBuffers(m_Window);
-        }
+        int LoadGlad() { return gladLoadGL(glfwGetProcAddress); }
+        void SwapBuffer() { glfwSwapBuffers(m_Window); }
         void SetVSync(bool enabled)
         {
             glfwMakeContextCurrent(m_Window);
             glfwSwapInterval(enabled ? 1 : 0);
         }
 
-        void InitializeImGui()
-        {
-            ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
-        }
+        void InitializeImGui() { ImGui_ImplGlfw_InitForOpenGL(m_Window, true); }
 
       private:
         GLFWwindow *m_Window = nullptr;

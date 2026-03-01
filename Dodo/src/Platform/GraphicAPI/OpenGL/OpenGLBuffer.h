@@ -12,14 +12,8 @@ namespace Dodo {
             : m_Name(name), m_ComponentCount(componentCount), m_Offset(0), m_Index(0)
         {}
 
-        inline const uint GetComponentCount() const
-        {
-            return m_ComponentCount;
-        }
-        inline const char *GetEntryName() const
-        {
-            return m_Name;
-        }
+        inline const uint GetComponentCount() const { return m_ComponentCount; }
+        inline const char *GetEntryName() const { return m_Name; }
 
       public:
         uchar m_Index;
@@ -31,8 +25,7 @@ namespace Dodo {
     };
 
     struct BufferProperties {
-        BufferProperties() : m_Stride(0)
-        {}
+        BufferProperties() : m_Stride(0) {}
 
         BufferProperties(std::initializer_list<BufferElement> elements) : m_Elements(elements), m_Stride(0)
         {
@@ -45,22 +38,10 @@ namespace Dodo {
             }
         }
 
-        std::vector<BufferElement>::iterator begin()
-        {
-            return m_Elements.begin();
-        }
-        std::vector<BufferElement>::iterator end()
-        {
-            return m_Elements.end();
-        }
-        std::vector<BufferElement>::const_iterator begin() const
-        {
-            return m_Elements.begin();
-        }
-        std::vector<BufferElement>::const_iterator end() const
-        {
-            return m_Elements.end();
-        }
+        std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
+        std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
+        std::vector<BufferElement>::const_iterator begin() const { return m_Elements.begin(); }
+        std::vector<BufferElement>::const_iterator end() const { return m_Elements.end(); }
 
         uchar m_Stride;
         std::vector<BufferElement> m_Elements;
@@ -79,15 +60,9 @@ namespace Dodo {
             OpenGLVertexBuffer(const float *vertices, const uint size, const BufferProperties &prop);
             ~OpenGLVertexBuffer();
 
-            const BufferProperties &GetBufferProperties() const
-            {
-                return m_BufferProperties;
-            }
+            const BufferProperties &GetBufferProperties() const { return m_BufferProperties; }
 
-            inline void Bind() const
-            {
-                glBindVertexArray(m_ABufferID);
-            }
+            inline void Bind() const { glBindVertexArray(m_ABufferID); }
 
           private:
             const BufferProperties m_BufferProperties;
@@ -101,15 +76,9 @@ namespace Dodo {
             OpenGLIndexBuffer(const uint *indices, const uint count);
             ~OpenGLIndexBuffer();
 
-            inline void Bind() const
-            {
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
-            }
+            inline void Bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID); }
 
-            inline const uint GetCount() const
-            {
-                return m_Count;
-            }
+            inline const uint GetCount() const { return m_Count; }
 
           private:
             const uint m_Count;

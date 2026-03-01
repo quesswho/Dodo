@@ -12,10 +12,7 @@ namespace Dodo {
             m_WorkThreads[i] = std::thread(&ThreadManager::Loop, this);
     }
 
-    ThreadManager::~ThreadManager()
-    {
-        Terminate();
-    }
+    ThreadManager::~ThreadManager() { Terminate(); }
 
     void ThreadManager::WaitMain()
     {

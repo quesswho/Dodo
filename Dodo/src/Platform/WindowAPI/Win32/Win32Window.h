@@ -36,10 +36,7 @@ namespace Dodo::Platform {
         void SetCursorPosition(Math::TVec2<long> pos);
         void SetCursorVisible(bool vis);
         void FullScreen(bool fullscreen);
-        void FullScreen()
-        {
-            FullScreen(!m_WindowProperties.m_Settings.fullscreen);
-        }
+        void FullScreen() { FullScreen(!m_WindowProperties.m_Settings.fullscreen); }
         NativeWindowHandle GetHandle() const;
         void ImGuiNewFrame() const;
         void ImGuiEndFrame() const;
@@ -49,10 +46,7 @@ namespace Dodo::Platform {
         void WindowFocusCallback(bool focused);
         void WindowCloseCallback();
 
-        const WindowProperties &GetWindowProperties()
-        {
-            return m_WindowProperties;
-        }
+        const WindowProperties &GetWindowProperties() { return m_WindowProperties; }
         void SetWindowProperties(const WindowProperties &winprop);
 
         void FocusConsole() const;

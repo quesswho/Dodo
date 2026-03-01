@@ -10,8 +10,8 @@ using namespace Math;
 
 
 Interface::Interface(Scene* scene)
-	: m_Scene(scene)
 {
+    m_EditorContext.scene = scene;
 	InitInterface();
 }
 
@@ -23,15 +23,12 @@ void Interface::SetChangeSceneCallback(void (*callback)(Scene*))
 void Interface::ChangeScene(Scene* scene)
 {
 	
-	m_Scene = scene;
-	m_Scene->m_LightSystem.m_Directional.m_Direction = Vec3(0.4f, -1.0f, 0.4f).Normalize(); // Temporary because light direction is not stored in scene file
+	m_EditorContext.scene = scene;
+	m_EditorContext.scene->m_LightSystem.m_Directional.m_Direction = Vec3(0.4f, -1.0f, 0.4f).Normalize(); // Temporary because light direction is not stored in scene file
 
 	m_ChangeScene = true;
-	m_SelectedEntity.clear();
-	World& world = m_Scene->GetWorld();
-	for (EntityID entityId : world.GetAliveEntities()) {
-		m_SelectedEntity.emplace(entityId, false);
-	}
+
+	ClearSelection();
 }
 
 void Interface::InitInterface()
@@ -81,8 +78,9 @@ void Interface::InitInterface()
 
 	// Inspector
 	m_InspectorComponents = m_HierarchyComponents;
-	m_CurrentInspectorName = new char[32];
-	m_InspectorSelectNew = false;
+
+	m_EditorContext.inspectorNameBuffer = "";
+	m_EditorContext.inspectorDirty = false;
 }
 
 bool Interface::BeginDraw()
@@ -140,8 +138,8 @@ bool Interface::BeginDraw()
 					if (!path.empty())
 					{
 						Scene* scene = m_File.Read(path.string());
-						scene->m_SkyBox = m_Scene->m_SkyBox;
-						delete m_Scene;
+						scene->m_SkyBox = m_EditorContext.scene->m_SkyBox;
+						delete m_EditorContext.scene;
 						ChangeScene(scene);
 					}
 				}
@@ -150,14 +148,14 @@ bool Interface::BeginDraw()
 
 			/*if (ImGui::MenuItem("Save"))
 			{
-				m_File.Write("test.das", m_Scene);
+				m_File.Write("test.das", m_EditorContext.scene);
 			}*/
 
 			if (ImGui::MenuItem("Save As...")) {
                 std::filesystem::path path = FileDialog::SaveFile("Save As", "Dodo Ascii Scene File\0*.das\0");
 				if (!path.empty())
 				{
-					m_File.WriteAs(path.string(), m_Scene);
+					m_File.WriteAs(path.string(), m_EditorContext.scene);
 				}
 
 			}
@@ -229,14 +227,14 @@ void Interface::ResetDockspace(uint dockspace_id)
 
 bool Interface::ViewportResize()
 {
-	if (m_ViewportWidth != ImGui::GetWindowWidth() || m_ViewportHeight != ImGui::GetWindowHeight() || m_PosX != ImGui::GetWindowPos().x || m_PosY != ImGui::GetWindowPos().y)
+	if (m_ViewportWidth != ImGui::GetWindowWidth() || m_ViewportHeight != ImGui::GetWindowHeight() || m_EditorContext.viewportX != ImGui::GetWindowPos().x || m_EditorContext.viewportY != ImGui::GetWindowPos().y)
 	{
 		m_ViewportWidth = (uint)ImGui::GetWindowWidth();
 		m_ViewportHeight = (uint)ImGui::GetWindowHeight();
-		m_PosX = (uint)ImGui::GetWindowPos().x;
-		m_PosY = (uint)ImGui::GetWindowPos().y;
+		m_EditorContext.viewportX = (uint)ImGui::GetWindowPos().x;
+		m_EditorContext.viewportY = (uint)ImGui::GetWindowPos().y;
 
-		Application::s_Application->m_RenderAPI->ResizeDefaultViewport(m_ViewportWidth, m_ViewportHeight, m_PosX, m_PosY);
+		Application::s_Application->m_RenderAPI->ResizeDefaultViewport(m_EditorContext.viewportWidth, m_EditorContext.viewportHeight, m_EditorContext.viewportX, m_EditorContext.viewportY);
 		return true;
 	}
 	return false;
@@ -245,7 +243,6 @@ bool Interface::BeginViewport()
 {
 	if (m_EditorProperties.m_ShowViewport)
 	{
-
 		static ImGuiWindowFlags s_ViewportWindow = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
 		ImGui::Begin("Viewport", 0, s_ViewportWindow);
 
@@ -282,8 +279,8 @@ void Interface::DrawHierarchy()
 	{
 		if (ImGui::MenuItem("Create New"))
 		{
-			s_RenamingId = m_Scene->GetWorld().CreateEntity();
-			m_SelectedEntity.insert(std::make_pair(s_RenamingId, false));
+			s_RenamingId = m_EditorContext.scene->GetWorld().CreateEntity();
+			SingleSelect(s_RenamingId);
 			s_ClickHandled = true;
 		}
 		ImGui::EndPopup();
@@ -297,7 +294,7 @@ void Interface::DrawHierarchy()
 
 	if (ImGui::TreeNodeEx("Entities", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-        World& world = m_Scene->GetWorld();
+        World& world = m_EditorContext.scene->GetWorld();
 		if (!world.GetAliveEntities().empty())
 		{
 			for (EntityID entityId : world.GetAliveEntities())
@@ -310,27 +307,28 @@ void Interface::DrawHierarchy()
 					ImGui::PushID((int)entityId);
 					std::string entityName = world.HasComponent<NameComponent>(entityId) ? 
 						world.GetComponent<NameComponent>(entityId).m_Name : "Entity_" + std::to_string(entityId);
-					bool open = ImGui::TreeNodeEx(entityName.c_str(), (m_SelectedEntity.at(entityId) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
+					bool open = ImGui::TreeNodeEx(entityName.c_str(), (m_EditorContext.selection.Contains(entityId) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
 					ImGui::PopID();
-					if (m_SelectedEntity.at(entityId))
+					if (m_EditorContext.selection.Contains(entityId))
 					{
 						ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 40); // Move text to right side
 						ImGui::Text("%i", entityId);
 					}
 					if (ImGui::IsItemClicked())
 					{
-						if (!io.KeyCtrl)
-							for (auto& e : m_SelectedEntity)
-								e.second = false;
+						if (io.KeyCtrl)
+							ToggleSelect(entityId);
+                        else
+                            SingleSelect(entityId);
 
-						m_SelectedEntity.at(entityId) = !m_SelectedEntity.at(entityId);
 						if (world.HasComponent<NameComponent>(entityId)) {
-							strcpy(m_CurrentInspectorName, world.GetComponent<NameComponent>(entityId).m_Name.c_str());
+							m_EditorContext.inspectorNameBuffer = world.GetComponent<NameComponent>(entityId).m_Name;
 						}
 						s_ClickHandled = true;
-						if (m_SelectedEntity.at(entityId))
-						{
-							m_InspectorSelectNew = true;
+
+						if (m_EditorContext.selection.Contains(entityId))
+                        {
+							m_EditorContext.inspectorDirty = true;
 							m_EditorProperties.m_ShowInspector = true;
 						}
 					}
@@ -370,14 +368,15 @@ void Interface::DrawHierarchy()
 						} else {
 							world.AddComponent<NameComponent>(entityId, NameComponent{std::string(s_RenameableHierarchy)});
 						}
-						strcpy(m_CurrentInspectorName, s_RenameableHierarchy);
+						m_EditorContext.inspectorNameBuffer = std::string(s_RenameableHierarchy);
 						strncpy(s_RenameableHierarchy, "Unnamed", 256);
 						s_RenamingId = -1;
-						if (!io.KeyCtrl)
-							for (auto& e : m_SelectedEntity)
-								e.second = false;
-						m_SelectedEntity.at(entityId) = true;
-						m_InspectorSelectNew = true;
+						if (io.KeyCtrl)
+							ToggleSelect(entityId);
+                        else
+                            SingleSelect(entityId);
+                        
+						m_EditorContext.inspectorDirty = true;
 					}
 					ImGui::Unindent();
 				}
@@ -390,9 +389,9 @@ void Interface::DrawHierarchy()
 		}
 
 		ImGui::TreePop();
-		if (!s_ClickHandled && ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered() && ImGui::IsWindowHovered())
-			for (auto& e : m_SelectedEntity)
-				e.second = false;
+		if (!s_ClickHandled && ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered() && ImGui::IsWindowHovered()) {
+			ClearSelection();
+        }
 
 		s_ClickHandled = false;
 	}
@@ -409,147 +408,171 @@ void Interface::DrawInspector()
 	static float scale[3] = { 1.0f, 1.0f, 1.0f };
 	static float rotate[3] = { 0.0f, 0.0f, 0.0f };
 	ImGui::Begin(m_EditorProperties.m_InspectorName);
-    World& world = m_Scene->GetWorld();
-	for (auto& e : m_SelectedEntity)
-	{
-		if (e.second)
-		{
+    World& world = m_EditorContext.scene->GetWorld();
+	for (int entityId : m_EditorContext.selection.entities)
+	{ 
+        static char nameBuffer[64] = "";
+        if (m_EditorContext.inspectorDirty) {
+            strncpy(nameBuffer, m_EditorContext.inspectorNameBuffer.c_str(), sizeof(nameBuffer) - 1);
+            nameBuffer[sizeof(nameBuffer) - 1] = '\0';
+        }
+
+        if (ImGui::InputText("##label", nameBuffer, sizeof(nameBuffer), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank))
+        {
+            m_EditorContext.inspectorNameBuffer = std::string(nameBuffer);
             
-			if (ImGui::InputText("##label", m_CurrentInspectorName, 32, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank))
-			{
-				if (strcmp(m_CurrentInspectorName, "") != 0)
-				{
-					if (world.HasComponent<NameComponent>(e.first)) {
-						world.GetComponent<NameComponent>(e.first).m_Name = std::string(m_CurrentInspectorName);
-					} else {
-						world.AddComponent<NameComponent>(e.first, NameComponent{std::string(m_CurrentInspectorName)});
-					}
-				}
-				else
-				{
-					if (world.HasComponent<NameComponent>(e.first)) {
-						strcpy(m_CurrentInspectorName, world.GetComponent<NameComponent>(e.first).m_Name.c_str());
-					}
-				}
-			}
+            if (!m_EditorContext.inspectorNameBuffer.empty())
+            {
+                if (world.HasComponent<NameComponent>(entityId)) {
+                    world.GetComponent<NameComponent>(entityId).m_Name = m_EditorContext.inspectorNameBuffer;
+                } else {
+                    world.AddComponent<NameComponent>(entityId, NameComponent{m_EditorContext.inspectorNameBuffer});
+                }
+            } else {
+                if (world.HasComponent<NameComponent>(entityId)) {
+                    m_EditorContext.inspectorNameBuffer = world.GetComponent<NameComponent>(entityId).m_Name;
+                    strncpy(nameBuffer, m_EditorContext.inspectorNameBuffer.c_str(), sizeof(nameBuffer) - 1);
+                }
+            }
+        }
 
-			ImGui::Separator();
-			ImGui::Text("Components:");
+        ImGui::Separator();
+        ImGui::Text("Components:");
 
-			if (ImGui::BeginPopupContextWindow("Right-Click Inspector", ImGuiPopupFlags_MouseButtonRight))
-			{
-				if (ImGui::BeginMenu("Add.."))
-				{
-					if (ImGui::BeginMenu("Geometry"))
-					{
-						if (ImGui::MenuItem("ModelComponent"))
-						{
-							if (!world.HasComponent<ModelComponent>(e.first)) {
-								// Add empty ModelComponent for user to configure
-								//world.AddComponent<ModelComponent>(e.first, Application::s_Application->m_AssetManager->m_MeshFactory->GetRectangleMesh());
-							}
-						}
-						ImGui::EndMenu();
-					}
-					if (ImGui::BeginMenu("Script"))
-					{
-						ImGui::EndMenu();
-					}
-					if (ImGui::BeginMenu("Audio"))
-					{
-						ImGui::EndMenu();
-					}
-					if (ImGui::BeginMenu("Other"))
-					{
-						ImGui::EndMenu();
-					}
-					ImGui::EndMenu();
-				}
-				ImGui::EndPopup();
-			}
+        if (ImGui::BeginPopupContextWindow("Right-Click Inspector", ImGuiPopupFlags_MouseButtonRight))
+        {
+            if (ImGui::BeginMenu("Add.."))
+            {
+                if (ImGui::BeginMenu("Geometry"))
+                {
+                    if (ImGui::MenuItem("ModelComponent"))
+                    {
+                        if (!world.HasComponent<ModelComponent>(entityId)) {
+                            // Add empty ModelComponent for user to configure
+                            //world.AddComponent<ModelComponent>(entityId, Application::s_Application->m_AssetManager->m_MeshFactory->GetRectangleMesh());
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Script"))
+                {
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Audio"))
+                {
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Other"))
+                {
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndPopup();
+        }
 
-			// ModelComponent
-			if (world.HasComponent<ModelComponent>(e.first))
-			{
-				if (ImGui::TreeNodeEx("ModelComponent", ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ModelComponent& model = world.GetComponent<ModelComponent>(e.first);
-					if (m_InspectorSelectNew)
-					{
-						memcpy(translate, (float*)&model.m_Transformation.m_Position, 3 * sizeof(float));
-						memcpy(scale, (float*)&model.m_Transformation.m_Scale, 3 * sizeof(float));
-						memcpy(rotate, (float*)&model.m_Transformation.m_Rotation, 3 * sizeof(float));
-						rotate[0] = Math::ToDegrees(rotate[0]);
-						rotate[1] = Math::ToDegrees(rotate[1]);
-						rotate[2] = Math::ToDegrees(rotate[2]);
-						m_InspectorSelectNew = false;
-					}
-					ImGui::Indent();
-					if (ImGui::Button("Browse")) {
-						std::filesystem::path path = FileDialog::OpenFile("Open file", "Model\0*.fbx;*.obj\0");
-						if (!path.empty()) {
-							// Replace the component with new model
-                            ModelID id = Application::s_Application->m_AssetManager->LoadModel(path.string());
-							world.GetComponent<ModelComponent>(e.first) = ModelComponent(id, model.m_Transformation);
-						}
-					}
-					ImGui::SameLine();
-					ImGui::Text(Application::s_Application->m_AssetManager->GetModelPath(model.m_ModelID).c_str());
+        // ModelComponent
+        if (world.HasComponent<ModelComponent>(entityId))
+        {
+            if (ImGui::TreeNodeEx("ModelComponent", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ModelComponent& model = world.GetComponent<ModelComponent>(entityId);
+                if (m_EditorContext.inspectorDirty)
+                {
+                    memcpy(translate, (float*)&model.m_Transformation.m_Position, 3 * sizeof(float));
+                    memcpy(scale, (float*)&model.m_Transformation.m_Scale, 3 * sizeof(float));
+                    memcpy(rotate, (float*)&model.m_Transformation.m_Rotation, 3 * sizeof(float));
+                    rotate[0] = Math::ToDegrees(rotate[0]);
+                    rotate[1] = Math::ToDegrees(rotate[1]);
+                    rotate[2] = Math::ToDegrees(rotate[2]);
+                    m_EditorContext.inspectorDirty = false;
+                }
+                ImGui::Indent();
+                if (ImGui::Button("Browse")) {
+                    std::filesystem::path path = FileDialog::OpenFile("Open file", "Model\0*.fbx;*.obj\0");
+                    if (!path.empty()) {
+                        // Replace the component with new model
+                        ModelID id = Application::s_Application->m_AssetManager->LoadModel(path.string());
+                        world.GetComponent<ModelComponent>(entityId) = ModelComponent(id, model.m_Transformation);
+                    }
+                }
+                ImGui::SameLine();
+                ImGui::Text(Application::s_Application->m_AssetManager->GetModelPath(model.m_ModelID).c_str());
 
-					if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-					{
-						ImGui::Text("Translate:");
-						if (ImGui::DragFloat3("##translate", translate, 0.05f))
-						{
-							model.m_Transformation.Move(Vec3(translate[0], translate[1], translate[2]));
-						}
+                if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+                {
+                    ImGui::Text("Translate:");
+                    if (ImGui::DragFloat3("##translate", translate, 0.05f))
+                    {
+                        model.m_Transformation.Move(Vec3(translate[0], translate[1], translate[2]));
+                    }
 
-						ImGui::Text("Scale:");
-						static bool sync = true;
-						bool dragscale = false;
-						dragscale = ImGui::DragFloat3("##scale", scale, 0.0001f, -100000.0f, 100000.0f, "%.4f", 1.001f);
-						ImGui::Checkbox("Sync", &sync);
-						if (dragscale)
-						{
-							if (sync)
-							{
-								Vec3 temp = ((Vec3)scale) - model.m_Transformation.m_Scale;
-								model.m_Transformation.m_Scale += temp.x;
-								model.m_Transformation.m_Scale += temp.y;
-								model.m_Transformation.m_Scale += temp.z;
-								memcpy(scale, (float*)&model.m_Transformation.m_Scale, sizeof(Vec3));
-								model.m_Transformation.Calculate();
-							}
-							else
-								model.m_Transformation.Scale(Vec3(scale[0], scale[1], scale[2]));
-						}
+                    ImGui::Text("Scale:");
+                    static bool sync = true;
+                    bool dragscale = false;
+                    dragscale = ImGui::DragFloat3("##scale", scale, 0.0001f, -100000.0f, 100000.0f, "%.4f", 1.001f);
+                    ImGui::Checkbox("Sync", &sync);
+                    if (dragscale)
+                    {
+                        if (sync)
+                        {
+                            Vec3 temp = ((Vec3)scale) - model.m_Transformation.m_Scale;
+                            model.m_Transformation.m_Scale += temp.x;
+                            model.m_Transformation.m_Scale += temp.y;
+                            model.m_Transformation.m_Scale += temp.z;
+                            memcpy(scale, (float*)&model.m_Transformation.m_Scale, sizeof(Vec3));
+                            model.m_Transformation.Calculate();
+                        }
+                        else
+                            model.m_Transformation.Scale(Vec3(scale[0], scale[1], scale[2]));
+                    }
 
-						ImGui::Text("Rotate:");
-						if (ImGui::DragFloat3("##rotate", rotate, 0.5f))
-						{
-							Vec3 temp = ((Vec3)rotate);
-							temp = Vec3(std::fmod(temp.x, 360.0f), std::fmod(temp.y, 360.0f), std::fmod(temp.z, 360.0f));
-							memcpy(rotate, (float*)&temp, sizeof(Vec3));
-							model.m_Transformation.Rotate(temp);
-						}
+                    ImGui::Text("Rotate:");
+                    if (ImGui::DragFloat3("##rotate", rotate, 0.5f))
+                    {
+                        Vec3 temp = ((Vec3)rotate);
+                        temp = Vec3(std::fmod(temp.x, 360.0f), std::fmod(temp.y, 360.0f), std::fmod(temp.z, 360.0f));
+                        memcpy(rotate, (float*)&temp, sizeof(Vec3));
+                        model.m_Transformation.Rotate(temp);
+                    }
 
-						ImGui::TreePop();
-					}
-					ImGui::Unindent();
-					ImGui::TreePop();
-				}
-			}
+                    ImGui::TreePop();
+                }
+                ImGui::Unindent();
+                ImGui::TreePop();
+            }
+        }
 
-			// Show message if no components
-			if (!world.HasAnyComponent(e.first))
-			{
-				ImGui::Separator();
-				ImGui::TextColored(ImVec4(0.34f, 129.0f, 0, 255), "Right click here!");
-			}
+        // Show message if no components
+        if (!world.HasAnyComponent(entityId))
+        {
+            ImGui::Separator();
+            ImGui::TextColored(ImVec4(0.34f, 129.0f, 0, 255), "Right click here!");
+        }
 
-			if (m_InspectorSelectNew) m_InspectorSelectNew = false;
-			break;
-		}
+        if (m_EditorContext.inspectorDirty) m_EditorContext.inspectorDirty = false;
+        break;
 	}
 	ImGui::End();
+}
+
+void Interface::SingleSelect(EntityID e) {
+	m_EditorContext.selection.entities.clear();
+	m_EditorContext.selection.entities.push_back(e);
+}
+
+void Interface::ToggleSelect(EntityID e) {
+	if (m_EditorContext.selection.Contains(e)) {
+        // We want to keep the order of the entities in the selection, so we can't swap and delete the last element.
+		m_EditorContext.selection.entities.erase(
+			std::remove(m_EditorContext.selection.entities.begin(), m_EditorContext.selection.entities.end(), e),
+			m_EditorContext.selection.entities.end()
+		);
+	} else {
+		m_EditorContext.selection.entities.push_back(e);
+	}
+}
+
+void Interface::ClearSelection() {
+    m_EditorContext.selection.entities.clear();
 }

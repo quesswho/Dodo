@@ -17,9 +17,9 @@ namespace Dodo {
 	Application::~Application()
 	{
 		dddelete m_ThreadManager;
+		dddelete m_RenderAPI;
 		dddelete m_Window;
 		dddelete m_Logger;
-		dddelete m_RenderAPI;
 	}
 
 	void Application::Run()

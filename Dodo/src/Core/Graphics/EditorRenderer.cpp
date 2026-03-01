@@ -30,7 +30,6 @@ namespace Dodo {
     {
         World &world = scene->GetWorld();
         RenderEntities(world, m_Camera, scene->m_LightSystem, *Application::s_Application->m_AssetManager);
-        if (scene->m_SkyBox)
-            scene->m_SkyBox->Draw(m_Camera->GetViewMatrix());
+        if (scene->m_SkyBox) scene->m_SkyBox->Draw(m_Camera->GetViewMatrix());
     }
 } // namespace Dodo

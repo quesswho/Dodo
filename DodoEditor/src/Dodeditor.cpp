@@ -50,8 +50,7 @@ GameLayer::~GameLayer()
 
 void GameLayer::Update(float elapsed)
 {
-    if (m_Interface->m_EditorProperties.m_ViewportInput)
-        m_Camera->Update(elapsed);
+    if (m_Interface->m_EditorProperties.m_ViewportInput) m_Camera->Update(elapsed);
 }
 
 void GameLayer::Render()
@@ -67,8 +66,7 @@ void GameLayer::Render()
         m_Camera->Resize(m_Interface->m_EditorContext.viewportWidth, m_Interface->m_EditorContext.viewportHeight);
         m_FrameBuffer->Resize(m_Interface->m_EditorContext.viewportWidth, m_Interface->m_EditorContext.viewportHeight);
 
-        if (m_Scene->m_SkyBox != nullptr)
-            m_Scene->m_SkyBox->m_Projection = m_Camera->GetProjectionMatrix();
+        if (m_Scene->m_SkyBox != nullptr) m_Scene->m_SkyBox->m_Projection = m_Camera->GetProjectionMatrix();
     }
     DrawScene();
     m_Interface->EndViewport(m_FrameBuffer);
@@ -123,8 +121,7 @@ void GameLayer::OnEvent(const Event &event)
     case EventType::MOUSE_PRESSED:
         break;
     case EventType::MOUSE_POSITION:
-        if (m_Interface->m_EditorProperties.m_ViewportInput)
-            m_Camera->UpdateRotation();
+        if (m_Interface->m_EditorProperties.m_ViewportInput) m_Camera->UpdateRotation();
         break;
     }
 }

@@ -86,8 +86,7 @@ namespace Dodo { namespace Platform {
         uint filter = static_cast<uint>(settings.m_Filter);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter < 4 ? GL_LINEAR : GL_NEAREST);
-        if (filter >= 4)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 4); // make this a parameter
+        if (filter >= 4) glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 4); // make this a parameter
 
         if (settings.m_WrapU == TextureWrapMode::WRAP_CLAMP_TO_BORDER ||
             settings.m_WrapV == TextureWrapMode::WRAP_CLAMP_TO_BORDER)

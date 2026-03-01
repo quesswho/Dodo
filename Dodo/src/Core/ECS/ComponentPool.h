@@ -19,8 +19,7 @@ namespace Dodo {
         void RemoveComponent(EntityID id)
         {
             auto it = m_Lookup.find(id);
-            if (it == m_Lookup.end())
-                return;
+            if (it == m_Lookup.end()) return;
 
             // Instead of deleting in O(n), we swap the component to be deleted with the last component and pop back in
             // constant time.

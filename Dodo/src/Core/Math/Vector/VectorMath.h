@@ -29,8 +29,7 @@ namespace Dodo { namespace Math {
     static inline const TVec2<float> Normalize(const TVec2<float> &vec)
     {
         float mag = vec.Magnitude();
-        if (mag > 0)
-            return vec * (1.0f / mag);
+        if (mag > 0) return vec * (1.0f / mag);
         return vec;
     }
 
@@ -65,8 +64,7 @@ namespace Dodo { namespace Math {
     static inline const TVec3<float> NegativeNormalize(const TVec3<float> &vec)
     {
         float mag = vec.Magnitude();
-        if (mag > 0)
-            return vec * -(1.0f / mag);
+        if (mag > 0) return vec * -(1.0f / mag);
         return vec;
     }
 
@@ -105,8 +103,7 @@ namespace Dodo { namespace Math {
     static inline const TVec4<float> Normalize(const TVec4<float> &vec)
     {
         float mag = vec.Magnitude();
-        if (mag > 0)
-            return vec * (1.0f / mag);
+        if (mag > 0) return vec * (1.0f / mag);
         return vec;
     }
 

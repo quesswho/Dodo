@@ -20,23 +20,19 @@ namespace Dodo {
 
         // Diffuse map
         Ref<Texture> tex = LoadTextureFromMaterial(material, aiTextureType_DIFFUSE, flags, modelDir, textures.size());
-        if (tex)
-            textures.push_back(tex);
+        if (tex) textures.push_back(tex);
 
         // Specular map
         tex = LoadTextureFromMaterial(material, aiTextureType_SPECULAR, flags, modelDir, textures.size());
-        if (tex)
-            textures.push_back(tex);
+        if (tex) textures.push_back(tex);
 
         // NORMALS and DISPLACEMENT is the same thing
         aiTextureType normalType = aiTextureType_NORMALS;
         aiString str;
-        if (material->GetTexture(normalType, 0, &str) != AI_SUCCESS)
-            normalType = aiTextureType_DISPLACEMENT;
+        if (material->GetTexture(normalType, 0, &str) != AI_SUCCESS) normalType = aiTextureType_DISPLACEMENT;
 
         tex = LoadTextureFromMaterial(material, normalType, flags, modelDir, textures.size());
-        if (tex)
-            textures.push_back(tex);
+        if (tex) textures.push_back(tex);
 
         // Create material
         if (!textures.empty())

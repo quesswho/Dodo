@@ -98,8 +98,7 @@ namespace Dodo { namespace Platform {
 
     void OpenGLShader::CompileInit(const std::string &fileSource)
     {
-        if (fileSource == "-1")
-            return;
+        if (fileSource == "-1") return;
         ShaderType type = ShaderType::UNKNOWN;
 
         std::string stringFragmentSource = "";
@@ -111,8 +110,7 @@ namespace Dodo { namespace Platform {
         {
             // Trim beginning of line
             const auto strBegin = line.find_first_not_of(" \t");
-            if (strBegin != std::string::npos)
-                line = line.substr(strBegin);
+            if (strBegin != std::string::npos) line = line.substr(strBegin);
 
             // Check for type
             if (line == "#shader fragment")
@@ -175,8 +173,7 @@ namespace Dodo { namespace Platform {
 
     int OpenGLShader::GetLocation(const char *location)
     {
-        if (m_UniformLocations.find(location) != m_UniformLocations.end())
-            return m_UniformLocations[location];
+        if (m_UniformLocations.find(location) != m_UniformLocations.end()) return m_UniformLocations[location];
 
         // New location
         const int locationi = glGetUniformLocation(m_ShaderID, location);

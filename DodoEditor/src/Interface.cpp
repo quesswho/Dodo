@@ -190,11 +190,9 @@ bool Interface::BeginDraw()
     }
     ImGui::End();
 
-    if (m_EditorProperties.m_ShowHierarchy)
-        DrawHierarchy();
+    if (m_EditorProperties.m_ShowHierarchy) DrawHierarchy();
 
-    if (m_EditorProperties.m_ShowInspector)
-        DrawInspector();
+    if (m_EditorProperties.m_ShowInspector) DrawInspector();
 
     return m_ChangeScene;
 }
@@ -573,8 +571,7 @@ void Interface::DrawInspector()
             ImGui::TextColored(ImVec4(0.34f, 129.0f, 0, 255), "Right click here!");
         }
 
-        if (m_EditorContext.inspectorDirty)
-            m_EditorContext.inspectorDirty = false;
+        if (m_EditorContext.inspectorDirty) m_EditorContext.inspectorDirty = false;
         break;
     }
     ImGui::End();

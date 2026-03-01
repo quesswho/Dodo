@@ -100,8 +100,7 @@ namespace Dodo {
     {
         for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
         {
-            if (event.m_Handled)
-                break;
+            if (event.m_Handled) break;
 
             (*it)->OnEvent(event);
         }

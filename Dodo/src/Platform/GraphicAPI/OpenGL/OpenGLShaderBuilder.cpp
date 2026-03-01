@@ -194,16 +194,11 @@ namespace Dodo { namespace Platform {
         fragment.reserve(fragment.capacity() + 102); // atleast 102 characters always present in fragment shader
         // Uniform //
 
-        if (flags & ShaderBuilderFlagSpecularUniform)
-            fragment.append("uniform float u_Specular = 0.0f;\n");
-        if (flags & ShaderBuilderFlagColorUniform)
-            fragment.append("uniform vec3 u_Color = vec3(1.0f, 0.0f, 0.0f);\n");
-        if (flags & ShaderBuilderFlagNormalMap)
-            fragment.append("uniform sampler2D u_NormalMap;\n");
-        if (flags & ShaderBuilderFlagDiffuseMap)
-            fragment.append("uniform sampler2D u_DiffuseMap;\n");
-        if (flags & ShaderBuilderFlagSpecularMap)
-            fragment.append("uniform sampler2D u_SpecularMap;\n");
+        if (flags & ShaderBuilderFlagSpecularUniform) fragment.append("uniform float u_Specular = 0.0f;\n");
+        if (flags & ShaderBuilderFlagColorUniform) fragment.append("uniform vec3 u_Color = vec3(1.0f, 0.0f, 0.0f);\n");
+        if (flags & ShaderBuilderFlagNormalMap) fragment.append("uniform sampler2D u_NormalMap;\n");
+        if (flags & ShaderBuilderFlagDiffuseMap) fragment.append("uniform sampler2D u_DiffuseMap;\n");
+        if (flags & ShaderBuilderFlagSpecularMap) fragment.append("uniform sampler2D u_SpecularMap;\n");
         if (flags & ShaderBuilderFlagCubeMap)
             fragment.append("uniform samplerCube u_CubeMap;\n");
         else if (flags & ShaderBuilderFlagBasicTexture)
@@ -400,16 +395,11 @@ namespace Dodo { namespace Platform {
         Ref<Shader> shader = std::make_shared<Shader>(std::to_string(flags).c_str(), shaderid);
         shader->Bind();
         int i = 0;
-        if (flags & ShaderBuilderFlagCubeMap)
-            shader->SetUniformValue("u_CubeMap", i++);
-        if (flags & ShaderBuilderFlagDiffuseMap)
-            shader->SetUniformValue("u_DiffuseMap", i++);
-        if (flags & ShaderBuilderFlagSpecularMap)
-            shader->SetUniformValue("u_SpecularMap", i++);
-        if (flags & ShaderBuilderFlagNormalMap)
-            shader->SetUniformValue("u_NormalMap", i++);
-        if (flags & ShaderBuilderFlagShadowMap)
-            shader->SetUniformValue("u_DepthMap", 3);
+        if (flags & ShaderBuilderFlagCubeMap) shader->SetUniformValue("u_CubeMap", i++);
+        if (flags & ShaderBuilderFlagDiffuseMap) shader->SetUniformValue("u_DiffuseMap", i++);
+        if (flags & ShaderBuilderFlagSpecularMap) shader->SetUniformValue("u_SpecularMap", i++);
+        if (flags & ShaderBuilderFlagNormalMap) shader->SetUniformValue("u_NormalMap", i++);
+        if (flags & ShaderBuilderFlagShadowMap) shader->SetUniformValue("u_DepthMap", 3);
 
         return shader;
     }

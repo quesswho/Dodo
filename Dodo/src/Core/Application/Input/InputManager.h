@@ -48,8 +48,7 @@ namespace Dodo {
       private:
         void FireEvent(const Event &e)
         {
-            if (m_EventCallback)
-                m_EventCallback(e);
+            if (m_EventCallback) m_EventCallback(e);
         }
 
         Input m_Input;

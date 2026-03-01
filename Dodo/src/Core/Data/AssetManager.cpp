@@ -18,8 +18,7 @@ namespace Dodo {
 
     Ref<Shader> AssetManager::GetShader(ShaderBuilderFlags flags)
     {
-        if (m_ShaderBuilderShaders.find(flags) != m_ShaderBuilderShaders.end())
-            return m_ShaderBuilderShaders[flags];
+        if (m_ShaderBuilderShaders.find(flags) != m_ShaderBuilderShaders.end()) return m_ShaderBuilderShaders[flags];
 
         m_ShaderBuilderShaders.insert(std::make_pair(
             flags, Application::s_Application->m_RenderAPI->m_ShaderBuilder->BuildVertexFragmentShader(flags)));
@@ -45,8 +44,7 @@ namespace Dodo {
 
     Model *AssetManager::GetModel(ModelID id)
     {
-        if (m_Models.find(id) != m_Models.end())
-            return m_Models[id];
+        if (m_Models.find(id) != m_Models.end()) return m_Models[id];
         DD_ERR("Trying to get model that doesn't exist! ID: {0}", id);
         return nullptr;
     }

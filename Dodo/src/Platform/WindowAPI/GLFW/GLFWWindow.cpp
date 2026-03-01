@@ -171,8 +171,7 @@ namespace Dodo::Platform {
     void GLFWWindow::WindowResizeCallback(GLFWwindow *window, int width, int height)
     {
         GLFWWindow *self = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(window));
-        if (!self)
-            return;
+        if (!self) return;
 
         self->m_WindowProperties.m_Width = width;
         self->m_WindowProperties.m_Height = height;
@@ -183,8 +182,7 @@ namespace Dodo::Platform {
     void GLFWWindow::WindowMovedCallback(GLFWwindow *window, int xpos, int ypos)
     {
         GLFWWindow *self = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(window));
-        if (!self)
-            return;
+        if (!self) return;
 
         self->m_WindowProperties.m_PosX = xpos;
         self->m_WindowProperties.m_PosY = ypos;
@@ -195,8 +193,7 @@ namespace Dodo::Platform {
     void GLFWWindow::FramebufferResizeCallback(GLFWwindow *window, int width, int height)
     {
         GLFWWindow *self = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(window));
-        if (!self)
-            return;
+        if (!self) return;
 
         self->m_WindowProperties.m_FrameBufferWidth = width;
         self->m_WindowProperties.m_FrameBufferHeight = height;
@@ -208,8 +205,7 @@ namespace Dodo::Platform {
     void GLFWWindow::WindowFocusCallback(GLFWwindow *window, int focus)
     {
         GLFWWindow *self = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(window));
-        if (!self)
-            return;
+        if (!self) return;
         self->m_Focused = focus > 0;
         Application::s_Application->OnEvent(WindowFocusEvent(self->m_Focused));
     }

@@ -25,8 +25,7 @@ namespace Dodo {
 
         Ref<Texture> GetTexture(uint index)
         {
-            if (m_Textures.size() > index)
-                return m_Textures[index];
+            if (m_Textures.size() > index) return m_Textures[index];
 
             DD_ERR("Texture index does not exist in material!");
         }

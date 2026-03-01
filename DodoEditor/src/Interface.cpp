@@ -226,11 +226,11 @@ void Interface::ResetDockspace(uint dockspace_id)
 
 bool Interface::ViewportResize()
 {
-    if (m_ViewportWidth != ImGui::GetWindowWidth() || m_ViewportHeight != ImGui::GetWindowHeight() ||
+    if (m_EditorContext.viewportWidth != ImGui::GetWindowWidth() || m_EditorContext.viewportHeight != ImGui::GetWindowHeight() ||
         m_EditorContext.viewportX != ImGui::GetWindowPos().x || m_EditorContext.viewportY != ImGui::GetWindowPos().y)
     {
-        m_ViewportWidth = (uint)ImGui::GetWindowWidth();
-        m_ViewportHeight = (uint)ImGui::GetWindowHeight();
+        m_EditorContext.viewportWidth = (uint)ImGui::GetWindowWidth();
+        m_EditorContext.viewportHeight = (uint)ImGui::GetWindowHeight();
         m_EditorContext.viewportX = (uint)ImGui::GetWindowPos().x;
         m_EditorContext.viewportY = (uint)ImGui::GetWindowPos().y;
 
@@ -262,7 +262,7 @@ void Interface::EndViewport(FrameBuffer *framebuffer)
     if (m_EditorProperties.m_ShowViewport)
     {
         ImGui::Image((void *)(intptr_t)framebuffer->GetTextureHandle(),
-                     ImVec2((float)m_ViewportWidth, (float)m_ViewportHeight), ImVec2(0, 1), ImVec2(1, 0));
+                     ImVec2((float)m_EditorContext.viewportWidth, (float)m_EditorContext.viewportHeight), ImVec2(0, 1), ImVec2(1, 0));
         ImGui::End();
     }
 }

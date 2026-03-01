@@ -7,7 +7,7 @@ BUILD_DIR := build/$(BUILD_TYPE)
 EXECUTABLE_DIR := $(BUILD_DIR)/bin
 
 # Select executable
-EXECUTABLE := Sandbox
+EXECUTABLE := DodoEditor
 
 all: configure build
 

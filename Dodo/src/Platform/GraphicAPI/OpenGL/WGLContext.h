@@ -7,12 +7,15 @@
 #define NOMINMAX
 #include <Windows.h>
 
+#include <backends/imgui_impl_win32.h>
+
 namespace Dodo::Platform {
     class WGLContext {
         public:
             explicit WGLContext() {}
 
             void CreateContextImpl(const NativeWindowHandle& handle) {
+                m_HWND = (HWND)handle.window;
                 m_Hdc = (HDC)handle.display;
 
                 PIXELFORMATDESCRIPTOR pfd = {};
@@ -38,7 +41,12 @@ namespace Dodo::Platform {
             void SwapBuffers() { ::SwapBuffers(m_Hdc); }
             void SetVSync(bool enabled) { wglSwapIntervalEXT(enabled ? 1 : 0); }
 
+            void InitializeImGui() {
+                ImGui_ImplWin32_InitForOpenGL(m_HWND);
+            }
+
         private:
+            HWND m_HWND = nullptr;
             HDC   m_Hdc = nullptr;
             HGLRC m_Hglrc = nullptr;
     };

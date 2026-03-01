@@ -52,8 +52,10 @@ namespace Dodo {
 
 			DD_INFO("{}", m_GPUInfo);
 
-			if(winprop.m_Settings.imgui)
-				ImGui_ImplOpenGL3_Init();
+			if(winprop.m_Settings.imgui) {
+                m_Context.InitializeImGui();
+                ImGui_ImplOpenGL3_Init();
+            }
 
 			m_ShaderBuilder = new ShaderBuilder();
 

@@ -8,8 +8,7 @@
 
 namespace Dodo {
 
-    SceneFile::SceneFile(const std::string &path) : m_Path(path)
-    {}
+    SceneFile::SceneFile(const std::string &path) : m_Path(path) {}
 
     // Public API
     SceneFileError SceneFile::Write(Scene *scene)

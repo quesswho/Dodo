@@ -32,8 +32,7 @@ namespace Dodo { namespace Math {
             : FreeCamera(pos, Vec3(0.0f, 0.0f, 1.0f), aspectRatio, sensitivity, speed)
         {}
 
-        ~FreeCamera()
-        {}
+        ~FreeCamera() {}
 
         void Update(float elapsed);
         void UpdateRotation();
@@ -41,35 +40,23 @@ namespace Dodo { namespace Math {
         void ResetMouse();
         void Resize(uint width, uint height);
 
-        inline const Mat4 &GetViewMatrix() const
-        {
-            return m_ViewMatrix;
-        }
+        inline const Mat4 &GetViewMatrix() const { return m_ViewMatrix; }
 
-        inline const Mat4 &GetProjectionMatrix() const
-        {
-            return m_ProjectionMatrix;
-        }
+        inline const Mat4 &GetProjectionMatrix() const { return m_ProjectionMatrix; }
         void SetProjectionMatrix(const Mat4 &projection) noexcept
         {
             m_ProjectionMatrix = projection;
             CalculateProjectionViewMatrix();
         }
 
-        inline const Vec3 &GetCameraPos() const
-        {
-            return m_CameraPos;
-        }
+        inline const Vec3 &GetCameraPos() const { return m_CameraPos; }
         void SetCameraPos(const Vec3 &pos) noexcept
         {
             m_CameraPos = pos;
             CalculateProjectionViewMatrix();
         }
 
-        inline const Vec3 &GetViewDir() const
-        {
-            return m_ViewDir;
-        }
+        inline const Vec3 &GetViewDir() const { return m_ViewDir; }
         void SetViewDir(const Vec3 &dir) noexcept
         {
             m_ViewDir = dir;
@@ -83,10 +70,7 @@ namespace Dodo { namespace Math {
             m_Pitch = rotation.y;
         }
 
-        inline const Mat4 &GetCameraMatrix() const
-        {
-            return m_CameraMatrix;
-        }
+        inline const Mat4 &GetCameraMatrix() const { return m_CameraMatrix; }
 
       private:
         void CalculateProjectionViewMatrix();

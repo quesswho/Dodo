@@ -36,24 +36,12 @@ namespace Dodo {
             m_Lookup.erase(it);
         }
 
-        bool Exists(EntityID id) const
-        {
-            return m_Lookup.find(id) != m_Lookup.end();
-        }
+        bool Exists(EntityID id) const { return m_Lookup.find(id) != m_Lookup.end(); }
 
-        T &Get(EntityID id)
-        {
-            return m_Components[m_Lookup.at(id)];
-        }
+        T &Get(EntityID id) { return m_Components[m_Lookup.at(id)]; }
 
-        const std::vector<T> &GetComponents() const
-        {
-            return m_Components;
-        }
-        const std::vector<EntityID> &GetEntities() const
-        {
-            return m_Entities;
-        }
+        const std::vector<T> &GetComponents() const { return m_Components; }
+        const std::vector<EntityID> &GetEntities() const { return m_Entities; }
 
       private:
         std::vector<T> m_Components;

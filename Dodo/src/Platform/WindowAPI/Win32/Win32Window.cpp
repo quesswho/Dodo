@@ -11,10 +11,7 @@
 
 namespace Dodo::Platform {
 
-    Win32Window::Win32Window(const WindowProperties &winProp) : m_WindowProperties(winProp), m_Focused(true)
-    {
-        Init();
-    }
+    Win32Window::Win32Window(const WindowProperties &winProp) : m_WindowProperties(winProp), m_Focused(true) { Init(); }
 
     Win32Window::~Win32Window()
     {
@@ -308,10 +305,7 @@ namespace Dodo::Platform {
         SetWindowTextA(m_Hwnd, m_WindowProperties.m_Title);
     }
 
-    void Win32Window::SetCursorVisible(bool vis)
-    {
-        ShowCursor(vis);
-    }
+    void Win32Window::SetCursorVisible(bool vis) { ShowCursor(vis); }
 
     void Win32Window::SetCursorPosition(Math::TVec2<long> pos)
     {
@@ -323,10 +317,7 @@ namespace Dodo::Platform {
         SetCursorPos(pt.x, pt.y);
     }
 
-    void Win32Window::VSync(bool vsync)
-    {
-        wglSwapIntervalEXT(vsync);
-    }
+    void Win32Window::VSync(bool vsync) { wglSwapIntervalEXT(vsync); }
 
     void Win32Window::FullScreen(bool fullscreen)
     {
@@ -387,14 +378,8 @@ namespace Dodo::Platform {
         ShowWindow(m_Hwnd, SW_SHOW);
     }
 
-    void Win32Window::ImGuiNewFrame() const
-    {
-        Win32ImGuiBackend::NewFrame();
-    }
-    void Win32Window::ImGuiEndFrame() const
-    {
-        Win32ImGuiBackend::EndFrame();
-    }
+    void Win32Window::ImGuiNewFrame() const { Win32ImGuiBackend::NewFrame(); }
+    void Win32Window::ImGuiEndFrame() const { Win32ImGuiBackend::EndFrame(); }
 
     void Win32Window::KeyPressCallback(uint keycode)
     {
@@ -445,10 +430,7 @@ namespace Dodo::Platform {
         Application::s_Application->OnEvent(WindowCloseEvent());
     }
 
-    void Win32Window::SetWindowProperties(const WindowProperties &winprop)
-    {
-        m_WindowProperties = winprop;
-    }
+    void Win32Window::SetWindowProperties(const WindowProperties &winprop) { m_WindowProperties = winprop; }
 
     void Win32Window::FocusConsole() const
     {

@@ -15,19 +15,14 @@ namespace Dodo {
         Math::FreeCamera *m_Camera;
 
       public:
-        EditorRenderer(Math::FreeCamera *camera) : m_Camera(camera)
-        {}
+        EditorRenderer(Math::FreeCamera *camera) : m_Camera(camera) {}
 
-        ~EditorRenderer()
-        {}
+        ~EditorRenderer() {}
 
         void DrawScene(Scene *scene);
 
         void RenderEntities(World &world, Math::FreeCamera *camera, LightSystem &lightSystem, AssetManager &assets);
 
-        void UpdateCamera(Math::FreeCamera *camera)
-        {
-            m_Camera = camera;
-        }
+        void UpdateCamera(Math::FreeCamera *camera) { m_Camera = camera; }
     };
 } // namespace Dodo

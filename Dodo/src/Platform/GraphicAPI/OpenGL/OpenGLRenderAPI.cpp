@@ -107,13 +107,7 @@ namespace Dodo { namespace Platform {
         ResizeDefaultViewport(width, height);
     }
 
-    void OpenGLRenderAPI::ImGuiNewFrame() const
-    {
-        ImGui_ImplOpenGL3_NewFrame();
-    }
+    void OpenGLRenderAPI::ImGuiNewFrame() const { ImGui_ImplOpenGL3_NewFrame(); }
 
-    void OpenGLRenderAPI::ImGuiEndFrame() const
-    {
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    }
+    void OpenGLRenderAPI::ImGuiEndFrame() const { ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); }
 }} // namespace Dodo::Platform

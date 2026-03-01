@@ -18,10 +18,7 @@ namespace Dodo {
             m_Mesh->SetUniform(location, value);
         }
 
-        Mesh *GetMesh() const
-        {
-            return m_Mesh;
-        }
+        Mesh *GetMesh() const { return m_Mesh; }
 
         void Draw() const;
         void DrawGeometry() const;

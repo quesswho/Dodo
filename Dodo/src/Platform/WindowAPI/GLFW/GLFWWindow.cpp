@@ -11,10 +11,7 @@
 
 namespace Dodo::Platform {
 
-    GLFWWindow::GLFWWindow(const WindowProperties &winProp) : m_WindowProperties(winProp), m_Focused(true)
-    {
-        Init();
-    }
+    GLFWWindow::GLFWWindow(const WindowProperties &winProp) : m_WindowProperties(winProp), m_Focused(true) { Init(); }
 
     GLFWWindow::~GLFWWindow()
     {
@@ -77,15 +74,9 @@ namespace Dodo::Platform {
         }
     }
 
-    void GLFWWindow::Update() const
-    {
-        glfwPollEvents();
-    }
+    void GLFWWindow::Update() const { glfwPollEvents(); }
 
-    void GLFWWindow::SetTitle(const char *title)
-    {
-        glfwSetWindowTitle(m_Handle, title);
-    }
+    void GLFWWindow::SetTitle(const char *title) { glfwSetWindowTitle(m_Handle, title); }
 
     void GLFWWindow::SetCursorVisible(bool vis)
     {
@@ -106,10 +97,7 @@ namespace Dodo::Platform {
         }
     }
 
-    void GLFWWindow::SetCursorPosition(Math::TVec2<double> pos)
-    {
-        glfwSetCursorPos(m_Handle, pos.x, pos.y);
-    }
+    void GLFWWindow::SetCursorPosition(Math::TVec2<double> pos) { glfwSetCursorPos(m_Handle, pos.x, pos.y); }
 
     void GLFWWindow::FullScreen(bool fullscreen)
     {
@@ -141,20 +129,11 @@ namespace Dodo::Platform {
         };
     }
 
-    void GLFWWindow::ImGuiNewFrame() const
-    {
-        GLFWImGuiBackend::NewFrame();
-    }
+    void GLFWWindow::ImGuiNewFrame() const { GLFWImGuiBackend::NewFrame(); }
 
-    void GLFWWindow::ImGuiEndFrame() const
-    {
-        GLFWImGuiBackend::EndFrame();
-    }
+    void GLFWWindow::ImGuiEndFrame() const { GLFWImGuiBackend::EndFrame(); }
 
-    void GLFWWindow::ErrorCallback(int error, const char *description)
-    {
-        DD_ERR("{0}", description);
-    }
+    void GLFWWindow::ErrorCallback(int error, const char *description) { DD_ERR("{0}", description); }
 
     void GLFWWindow::KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
     {
@@ -241,13 +220,9 @@ namespace Dodo::Platform {
         Application::s_Application->OnEvent(WindowCloseEvent());
     }
 
-    void GLFWWindow::SetWindowProperties(const WindowProperties &winprop)
-    {
-        m_WindowProperties = winprop;
-    }
+    void GLFWWindow::SetWindowProperties(const WindowProperties &winprop) { m_WindowProperties = winprop; }
 
-    void GLFWWindow::FocusConsole() const
-    {}
+    void GLFWWindow::FocusConsole() const {}
 
     void GLFWWindow::ConfigureMonitor()
     {

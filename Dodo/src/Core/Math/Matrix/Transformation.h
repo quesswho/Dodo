@@ -12,10 +12,7 @@ namespace Dodo { namespace Math {
 
         Math::Mat4 m_Model;
 
-        Transformation() : m_Position(Vec3(0.0f)), m_Scale(Vec3(1.0f)), m_Rotation(Vec3(0.0f))
-        {
-            Calculate();
-        }
+        Transformation() : m_Position(Vec3(0.0f)), m_Scale(Vec3(1.0f)), m_Rotation(Vec3(0.0f)) { Calculate(); }
 
         Transformation(const Vec3 &pos, const Vec3 &scale, const Vec3 &rotate)
             : m_Position(pos), m_Scale(scale), m_Rotation(rotate)

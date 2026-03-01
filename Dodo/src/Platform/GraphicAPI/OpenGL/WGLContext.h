@@ -12,8 +12,7 @@
 namespace Dodo::Platform {
     class WGLContext {
       public:
-        explicit WGLContext()
-        {}
+        explicit WGLContext() {}
 
         void CreateContextImpl(const NativeWindowHandle &handle)
         {
@@ -37,23 +36,11 @@ namespace Dodo::Platform {
             wglMakeCurrent(m_Hdc, m_Hglrc);
         }
 
-        int LoadGlad()
-        {
-            return gladLoaderLoadWGL(m_Hdc);
-        }
-        void SwapBuffers()
-        {
-            ::SwapBuffers(m_Hdc);
-        }
-        void SetVSync(bool enabled)
-        {
-            wglSwapIntervalEXT(enabled ? 1 : 0);
-        }
+        int LoadGlad() { return gladLoaderLoadWGL(m_Hdc); }
+        void SwapBuffers() { ::SwapBuffers(m_Hdc); }
+        void SetVSync(bool enabled) { wglSwapIntervalEXT(enabled ? 1 : 0); }
 
-        void InitializeImGui()
-        {
-            ImGui_ImplWin32_InitForOpenGL(m_HWND);
-        }
+        void InitializeImGui() { ImGui_ImplWin32_InitForOpenGL(m_HWND); }
 
       private:
         HWND m_HWND = nullptr;

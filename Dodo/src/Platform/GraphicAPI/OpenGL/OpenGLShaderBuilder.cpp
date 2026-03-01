@@ -6,10 +6,7 @@
 #include <glad/gl.h>
 
 namespace Dodo { namespace Platform {
-    OpenGLShaderBuilder::OpenGLShaderBuilder()
-    {
-        InitFallbackShader();
-    }
+    OpenGLShaderBuilder::OpenGLShaderBuilder() { InitFallbackShader(); }
 
     void OpenGLShaderBuilder::InitFallbackShader()
     {
@@ -43,8 +40,7 @@ namespace Dodo { namespace Platform {
         m_FallbackShader = std::make_shared<Shader>("FallbackShader", CompileVertexFragmentShader(vertex, fragment));
     }
 
-    OpenGLShaderBuilder::~OpenGLShaderBuilder()
-    {}
+    OpenGLShaderBuilder::~OpenGLShaderBuilder() {}
 
     Ref<Shader> OpenGLShaderBuilder::BuildVertexFragmentShader(const ShaderBuilderFlags flags, const char *name) const
     {

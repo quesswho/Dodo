@@ -33,18 +33,9 @@ namespace Dodo {
         Scene *Read();
         Scene *Read(const std::string &path);
 
-        const std::string &GetPath() const
-        {
-            return m_Path;
-        }
-        bool HasPath() const
-        {
-            return !m_Path.empty();
-        }
-        SceneFileError GetLastError() const
-        {
-            return m_LastError;
-        }
+        const std::string &GetPath() const { return m_Path; }
+        bool HasPath() const { return !m_Path.empty(); }
+        SceneFileError GetLastError() const { return m_LastError; }
 
       private:
         void SetError(SceneFileError error, size_t line = 0);

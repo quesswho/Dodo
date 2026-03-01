@@ -26,41 +26,33 @@ namespace Dodo {
       public:
         bool m_Handled;
 
-        Event(EventType type) : m_EventType(type), m_Handled(false)
-        {}
+        Event(EventType type) : m_EventType(type), m_Handled(false) {}
 
-        EventType GetType() const
-        {
-            return m_EventType;
-        }
+        EventType GetType() const { return m_EventType; }
     };
 
     struct KeyPressEvent : public Event {
         uint m_Key;
 
-        KeyPressEvent(uint keycode) : Event(EventType::KEY_PRESSED), m_Key(keycode)
-        {}
+        KeyPressEvent(uint keycode) : Event(EventType::KEY_PRESSED), m_Key(keycode) {}
     };
 
     struct KeyReleaseEvent : public Event {
         uint m_Key;
 
-        KeyReleaseEvent(uint keycode) : Event(EventType::KEY_RELEASED), m_Key(keycode)
-        {}
+        KeyReleaseEvent(uint keycode) : Event(EventType::KEY_RELEASED), m_Key(keycode) {}
     };
 
     struct MousePressEvent : public Event {
         uint m_Key;
 
-        MousePressEvent(uint keycode) : Event(EventType::MOUSE_PRESSED), m_Key(keycode)
-        {}
+        MousePressEvent(uint keycode) : Event(EventType::MOUSE_PRESSED), m_Key(keycode) {}
     };
 
     struct MouseReleaseEvent : public Event {
         uint m_Key;
 
-        MouseReleaseEvent(uint keycode) : Event(EventType::MOUSE_RELEASED), m_Key(keycode)
-        {}
+        MouseReleaseEvent(uint keycode) : Event(EventType::MOUSE_RELEASED), m_Key(keycode) {}
     };
 
     struct MouseScrollEvent : public Event {
@@ -74,8 +66,7 @@ namespace Dodo {
     struct MouseMoveEvent : public Event {
         Math::TVec2<double> m_MousePos;
 
-        MouseMoveEvent(const Math::TVec2<double> &mousePos) : Event(EventType::MOUSE_POSITION), m_MousePos(mousePos)
-        {}
+        MouseMoveEvent(const Math::TVec2<double> &mousePos) : Event(EventType::MOUSE_POSITION), m_MousePos(mousePos) {}
     };
 
     struct WindowResizeEvent : public Event {
@@ -89,13 +80,11 @@ namespace Dodo {
     struct WindowFocusEvent : public Event {
         bool m_Focus;
 
-        WindowFocusEvent(bool focus) : Event(EventType::WINDOW_FOCUS), m_Focus(focus)
-        {}
+        WindowFocusEvent(bool focus) : Event(EventType::WINDOW_FOCUS), m_Focus(focus) {}
     };
 
     struct WindowCloseEvent : public Event {
 
-        WindowCloseEvent() : Event(EventType::WINDOW_CLOSE)
-        {}
+        WindowCloseEvent() : Event(EventType::WINDOW_CLOSE) {}
     };
 } // namespace Dodo

@@ -23,10 +23,7 @@ namespace Dodo {
             }
         }
 
-        const std::vector<Mesh *> &GetMeshes() const
-        {
-            return m_Meshes;
-        }
+        const std::vector<Mesh *> &GetMeshes() const { return m_Meshes; }
         void Draw() const;
         void DrawGeometry() const;
         void Draw(Ref<Material> material) const;

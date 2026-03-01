@@ -25,10 +25,7 @@ namespace Dodo { namespace Math {
         181, 199, 106, 157, 184, 84,  204, 176, 115, 121, 50,  45,  127, 4,   150, 254, 138, 236, 205, 93,  222, 114,
         67,  29,  24,  72,  243, 141, 128, 195, 78,  66,  215, 61,  156, 180};
 
-    static inline uint8_t hash(int32_t i)
-    {
-        return perm[static_cast<uint8_t>(i)];
-    }
+    static inline uint8_t hash(int32_t i) { return perm[static_cast<uint8_t>(i)]; }
     static float grad(int32_t hash, float x, float y)
     {
         const int32_t h = hash & 0x3F;

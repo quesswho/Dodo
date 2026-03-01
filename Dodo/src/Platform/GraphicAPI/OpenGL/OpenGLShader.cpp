@@ -26,15 +26,9 @@ namespace Dodo { namespace Platform {
         }
     }
 
-    OpenGLShader::OpenGLShader(const char *name, std::string &source) : m_Name(name)
-    {
-        CompileInit(source);
-    }
+    OpenGLShader::OpenGLShader(const char *name, std::string &source) : m_Name(name) { CompileInit(source); }
 
-    OpenGLShader::~OpenGLShader()
-    {
-        glDeleteProgram(m_ShaderID);
-    }
+    OpenGLShader::~OpenGLShader() { glDeleteProgram(m_ShaderID); }
 
     void OpenGLShader::CompileVFShader(const char *vertex, const char *fragment)
     {
@@ -175,15 +169,9 @@ namespace Dodo { namespace Platform {
         CompileVFShader(vertex, fragment);
     }
 
-    void OpenGLShader::Bind() const
-    {
-        glUseProgram(m_ShaderID);
-    }
+    void OpenGLShader::Bind() const { glUseProgram(m_ShaderID); }
 
-    void OpenGLShader::Unbind() const
-    {
-        glUseProgram(0);
-    }
+    void OpenGLShader::Unbind() const { glUseProgram(0); }
 
     int OpenGLShader::GetLocation(const char *location)
     {

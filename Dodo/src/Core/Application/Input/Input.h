@@ -15,10 +15,7 @@ namespace Dodo {
             if (IsValidKey(key))
                 m_Keys[key] = pressed;
         }
-        bool IsKeyPressed(int key) const
-        {
-            return IsValidKey(key) && m_Keys[key];
-        }
+        bool IsKeyPressed(int key) const { return IsValidKey(key) && m_Keys[key]; }
 
         // Mouse
         void SetMouseState(int button, bool pressed)
@@ -26,20 +23,11 @@ namespace Dodo {
             if (IsValidMouse(button))
                 m_Mouse[button] = pressed;
         }
-        bool IsMousePressed(int button) const
-        {
-            return IsValidMouse(button) && m_Mouse[button];
-        }
+        bool IsMousePressed(int button) const { return IsValidMouse(button) && m_Mouse[button]; }
 
         // Mouse pos
-        void SetMousePosition(Math::TVec2<double> mousePos)
-        {
-            m_MousePos = mousePos;
-        }
-        Math::TVec2<double> GetMousePosition() const
-        {
-            return m_MousePos;
-        }
+        void SetMousePosition(Math::TVec2<double> mousePos) { m_MousePos = mousePos; }
+        Math::TVec2<double> GetMousePosition() const { return m_MousePos; }
 
         void Reset()
         {
@@ -52,13 +40,7 @@ namespace Dodo {
         std::bitset<MAX_MOUSE_BUTTONS> m_Mouse;
         Math::TVec2<double> m_MousePos;
 
-        bool IsValidKey(int key) const
-        {
-            return key >= 0 && key < MAX_KEYS;
-        }
-        bool IsValidMouse(int button) const
-        {
-            return button >= 0 && button < MAX_MOUSE_BUTTONS;
-        }
+        bool IsValidKey(int key) const { return key >= 0 && key < MAX_KEYS; }
+        bool IsValidMouse(int button) const { return button >= 0 && button < MAX_MOUSE_BUTTONS; }
     };
 } // namespace Dodo

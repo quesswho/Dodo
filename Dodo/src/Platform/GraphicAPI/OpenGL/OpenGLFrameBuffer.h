@@ -50,10 +50,7 @@ namespace Dodo {
             }
 
             void Resize(uint width, uint height);
-            inline uint GetTextureHandle()
-            {
-                return m_TextureID;
-            }
+            inline uint GetTextureHandle() { return m_TextureID; }
 
           private:
             void Create();

@@ -15,10 +15,7 @@ namespace Dodo {
 
     class Logger {
       public:
-        inline static Ref<spdlog::logger> GetLogger()
-        {
-            return m_Logger;
-        }
+        inline static Ref<spdlog::logger> GetLogger() { return m_Logger; }
 
         template <typename... Args>
         static void ErrorHandler(const char *file, int line, std::string message, const Args &...args)

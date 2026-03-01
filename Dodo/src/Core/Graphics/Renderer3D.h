@@ -22,8 +22,7 @@ namespace Dodo {
       public:
         Renderer3D(Math::FreeCamera *camera);
 
-        ~Renderer3D()
-        {}
+        ~Renderer3D() {}
 
         void DrawScene(Scene *scene);
         void DrawShadowedScene(Scene *scene);
@@ -31,14 +30,8 @@ namespace Dodo {
         void RenderEntities(World &world, Math::FreeCamera *camera, LightSystem &lightSystem, AssetManager &assets);
         void RenderEntitiesWithMaterial(World &world, Ref<Material> material, AssetManager &assets);
 
-        void UpdateCamera(Math::FreeCamera *camera)
-        {
-            m_Camera = camera;
-        }
+        void UpdateCamera(Math::FreeCamera *camera) { m_Camera = camera; }
 
-        void SetPostEffect(PostEffect *fx)
-        {
-            m_PostEffect = fx;
-        }
+        void SetPostEffect(PostEffect *fx) { m_PostEffect = fx; }
     };
 } // namespace Dodo

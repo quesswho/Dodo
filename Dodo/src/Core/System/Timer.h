@@ -11,13 +11,9 @@ namespace Dodo {
         float m_LastElapsed;
 
       public:
-        Timer() : m_LastElapsed(0.0f)
-        {}
+        Timer() : m_LastElapsed(0.0f) {}
 
-        void Start()
-        {
-            m_Start = std::chrono::high_resolution_clock::now();
-        }
+        void Start() { m_Start = std::chrono::high_resolution_clock::now(); }
         float End()
         {
             return std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - m_Start).count();

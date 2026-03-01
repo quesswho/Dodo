@@ -14,12 +14,8 @@ namespace Dodo { namespace Platform {
             Math::TVec4<T> m_Columns[4];
         };
 
-        CRHMat4x4() : m_Elements{0}
-        {}
-        CRHMat4x4(float diagonal)
-        {
-            Identity(diagonal);
-        }
+        CRHMat4x4() : m_Elements{0} {}
+        CRHMat4x4(float diagonal) { Identity(diagonal); }
 
         CRHMat4x4(const Math::TVec4<T> &first, const Math::TVec4<T> &second, const Math::TVec4<T> &third,
                   const Math::TVec4<T> &forth)
@@ -95,10 +91,7 @@ namespace Dodo { namespace Platform {
             m_Elements[GetIndex(3, 3)] = (T)diagonal;
         }
 
-        inline T operator[](int i) const
-        {
-            this->m_Elements[i];
-        }
+        inline T operator[](int i) const { this->m_Elements[i]; }
 
         // Addition
 
@@ -111,10 +104,7 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat4x4 operator+(CRHMat4x4 left, const float right)
-        {
-            return left += right;
-        }
+        friend CRHMat4x4 operator+(CRHMat4x4 left, const float right) { return left += right; }
 
         const CRHMat4x4 &operator+=(const CRHMat4x4 &other)
         {
@@ -125,10 +115,7 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat4x4 operator+(CRHMat4x4 left, const CRHMat4x4 &right)
-        {
-            return left += right;
-        }
+        friend CRHMat4x4 operator+(CRHMat4x4 left, const CRHMat4x4 &right) { return left += right; }
 
         // Subtraction
 
@@ -141,10 +128,7 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat4x4 operator-(CRHMat4x4 left, const float right)
-        {
-            return left -= right;
-        }
+        friend CRHMat4x4 operator-(CRHMat4x4 left, const float right) { return left -= right; }
 
         const CRHMat4x4 &operator-=(const CRHMat4x4 &other)
         {
@@ -155,10 +139,7 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat4x4 operator-(CRHMat4x4 left, const CRHMat4x4 &right)
-        {
-            return left -= right;
-        }
+        friend CRHMat4x4 operator-(CRHMat4x4 left, const CRHMat4x4 &right) { return left -= right; }
 
         // Multiplication
 
@@ -170,10 +151,7 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat4x4 operator*(CRHMat4x4 left, const float right)
-        {
-            return left *= right;
-        }
+        friend CRHMat4x4 operator*(CRHMat4x4 left, const float right) { return left *= right; }
 
         inline const CRHMat4x4 &operator*=(const CRHMat4x4 &other)
         {
@@ -210,10 +188,7 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat4x4 operator*(CRHMat4x4 left, const CRHMat4x4 &right)
-        {
-            return left *= right;
-        }
+        friend CRHMat4x4 operator*(CRHMat4x4 left, const CRHMat4x4 &right) { return left *= right; }
 
         // Assignment
 
@@ -441,10 +416,7 @@ namespace Dodo { namespace Platform {
         // Useful static functions
         /////
 
-        static inline const CRHMat4x4<T> Multiply(const CRHMat4x4<T> &mat)
-        {
-            return mat;
-        }
+        static inline const CRHMat4x4<T> Multiply(const CRHMat4x4<T> &mat) { return mat; }
 
         template <class... O> static const CRHMat4x4<T> Multiply(const CRHMat4x4<T> &mat, O... others)
         {
@@ -467,9 +439,6 @@ namespace Dodo { namespace Platform {
         }
 
       private:
-        static constexpr inline int GetIndex(int column, int row)
-        {
-            return (column * 4) + row;
-        }
+        static constexpr inline int GetIndex(int column, int row) { return (column * 4) + row; }
     };
 }} // namespace Dodo::Platform

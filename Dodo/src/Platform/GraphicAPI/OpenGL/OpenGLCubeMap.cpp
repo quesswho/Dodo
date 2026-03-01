@@ -92,10 +92,7 @@ namespace Dodo { namespace Platform {
         }
     }
 
-    OpenGLCubeMapTexture::~OpenGLCubeMapTexture()
-    {
-        glDeleteTextures(1, &m_TextureID);
-    }
+    OpenGLCubeMapTexture::~OpenGLCubeMapTexture() { glDeleteTextures(1, &m_TextureID); }
 
     void OpenGLCubeMapTexture::Bind() const
     {

@@ -12,8 +12,7 @@ enum BlockType
 };
 
 struct Block {
-    Block(BlockType type) : m_Type(type)
-    {}
+    Block(BlockType type) : m_Type(type) {}
     BlockType m_Type;
 };
 
@@ -29,8 +28,7 @@ struct FaceData {
 };
 
 struct RenderBlock {
-    RenderBlock(BlockType type, BlockPos pos, byte face) : m_Type(type), m_Pos(pos), m_Face(face)
-    {}
+    RenderBlock(BlockType type, BlockPos pos, byte face) : m_Type(type), m_Pos(pos), m_Face(face) {}
 
     BlockType m_Type;
     BlockPos m_Pos;

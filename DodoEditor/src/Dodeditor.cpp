@@ -131,8 +131,7 @@ void GameLayer::OnEvent(const Event &event)
 
 // Entry //
 
-Dodeditor::Dodeditor() : Application(PreInit())
-{}
+Dodeditor::Dodeditor() : Application(PreInit()) {}
 
 ApplicationConfig Dodeditor::PreInit()
 {

@@ -36,10 +36,7 @@ namespace Dodo {
                                                                             TextureWrapMode::WRAP_CLAMP_TO_EDGE)))
     {}
 
-    Skybox::~Skybox()
-    {
-        delete m_VertexBuffer;
-    }
+    Skybox::~Skybox() { delete m_VertexBuffer; }
 
     void Skybox::Draw(const Math::Mat4 &viewMatrix) const
     {

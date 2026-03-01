@@ -16,6 +16,8 @@ namespace Dodo {
 
 		OpenGLRenderAPI::~OpenGLRenderAPI() 
 		{
+            ImGui_ImplOpenGL3_Shutdown();
+            delete m_ShaderBuilder;
 			gladLoaderUnloadGL();
 		}
 
@@ -23,7 +25,6 @@ namespace Dodo {
 		{
 			m_Context.CreateContextImpl(m_Handle); // Run glad loader
 			m_Version = m_Context.LoadGlad();
-			//std::string versionStr = std::to_string(GLAD_VERSION_MAJOR(m_Version)) + "." + std::to_string(GLAD_VERSION_MINOR(m_Version));
 			std::string versionStr = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 			DD_INFO("OPENGL: {0}", versionStr);
 			if (GLAD_VERSION_MAJOR(m_Version) <= 3) {

@@ -5,43 +5,48 @@
 using namespace Dodo;
 
 struct Component {
-	Component()
-		: m_Name("None"), m_Selected(false)
-	{}
+    Component() : m_Name("None"), m_Selected(false)
+    {}
 
-	Component(const char* name)
-		: m_Name(name), m_Selected(false)
-	{}
+    Component(const char *name) : m_Name(name), m_Selected(false)
+    {}
 
-	const char* m_Name;
-	bool m_Selected;
+    const char *m_Name;
+    bool m_Selected;
 };
 
 struct EditorProperties {
-	bool m_ShowViewport;
-	bool m_ShowHierarchy;
-	bool m_ShowInspector;
+    bool m_ShowViewport;
+    bool m_ShowHierarchy;
+    bool m_ShowInspector;
 
-	bool m_ViewportHover;
-	bool m_ViewportInput;
+    bool m_ViewportHover;
+    bool m_ViewportInput;
 
-	const char* m_HierarchyName;
-	const char* m_ViewportName;
-	const char* m_InspectorName;
+    const char *m_HierarchyName;
+    const char *m_ViewportName;
+    const char *m_InspectorName;
 };
 
 struct Selection {
     std::vector<EntityID> entities;
 
-    bool Empty() const { return entities.empty(); }
-    bool Single() const { return entities.size() == 1; }
-    bool Contains(EntityID e) const {
+    bool Empty() const
+    {
+        return entities.empty();
+    }
+    bool Single() const
+    {
+        return entities.size() == 1;
+    }
+    bool Contains(EntityID e) const
+    {
         return std::find(entities.begin(), entities.end(), e) != entities.end();
     }
 };
 
 struct EditorContext {
-    Scene* scene = nullptr;
+    Scene *scene = nullptr;
 
     Selection selection;
     bool inspectorDirty = false;
@@ -55,43 +60,44 @@ struct EditorContext {
 };
 
 class Interface {
-public:
-	uint m_ViewportWidth = 0;
-	uint m_ViewportHeight = 0;
+  public:
+    uint m_ViewportWidth = 0;
+    uint m_ViewportHeight = 0;
 
-	EditorProperties m_EditorProperties;
-	EditorContext m_EditorContext;
-public:
-	Interface(Scene* scene);
+    EditorProperties m_EditorProperties;
+    EditorContext m_EditorContext;
 
-	bool BeginDraw();
-	bool BeginViewport();
-	bool ViewportResize();
-	void EndViewport(FrameBuffer* framebuffer);
-	void EndDraw();
+  public:
+    Interface(Scene *scene);
 
-	void ChangeScene(Scene* scene);
+    bool BeginDraw();
+    bool BeginViewport();
+    bool ViewportResize();
+    void EndViewport(FrameBuffer *framebuffer);
+    void EndDraw();
 
-	void SetChangeSceneCallback(void (*scene)(Scene*));
-private:
-	void InitInterface();
+    void ChangeScene(Scene *scene);
 
-	void ResetDockspace(uint dockspace_id);
+    void SetChangeSceneCallback(void (*scene)(Scene *));
 
-	void DrawHierarchy();
-	void DrawInspector();
+  private:
+    void InitInterface();
 
+    void ResetDockspace(uint dockspace_id);
+
+    void DrawHierarchy();
+    void DrawInspector();
 
     void SingleSelect(EntityID e);
     void ToggleSelect(EntityID e);
     void ClearSelection();
 
-	std::vector<Component> m_HierarchyComponents;
-	std::vector<Component> m_InspectorComponents;
+    std::vector<Component> m_HierarchyComponents;
+    std::vector<Component> m_InspectorComponents;
 
-	bool m_ChangeScene;
+    bool m_ChangeScene;
 
-	SceneFile m_File;
+    SceneFile m_File;
 
-	void (*m_ChangeSceneFunc)(Scene*);
+    void (*m_ChangeSceneFunc)(Scene *);
 };

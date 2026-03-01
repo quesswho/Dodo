@@ -1,25 +1,34 @@
 #pragma once
 
-#include "Mesh/Mesh.h"
 #include "Core/Graphics/Material/Material.h"
+#include "Mesh/Mesh.h"
 
 namespace Dodo {
 
     using ModelID = uint64_t;
-    
-	class Model {
-	private:
-		std::vector<Mesh*> m_Meshes;
-	public:
-		Model(std::vector<Mesh*> meshes);
-		~Model();
 
-		template<typename T>
-		void SetUniform(const char* location, T value) { for (auto mesh : m_Meshes) { mesh->SetUniform(location, value); }}
+    class Model {
+      private:
+        std::vector<Mesh *> m_Meshes;
 
-		const std::vector<Mesh*>& GetMeshes() const { return m_Meshes; }
-		void Draw() const;
-		void DrawGeometry() const;
-		void Draw(Ref<Material> material) const;
-	};
-}
+      public:
+        Model(std::vector<Mesh *> meshes);
+        ~Model();
+
+        template <typename T> void SetUniform(const char *location, T value)
+        {
+            for (auto mesh : m_Meshes)
+            {
+                mesh->SetUniform(location, value);
+            }
+        }
+
+        const std::vector<Mesh *> &GetMeshes() const
+        {
+            return m_Meshes;
+        }
+        void Draw() const;
+        void DrawGeometry() const;
+        void Draw(Ref<Material> material) const;
+    };
+} // namespace Dodo

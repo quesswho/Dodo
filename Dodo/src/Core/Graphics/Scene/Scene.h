@@ -11,23 +11,28 @@
 
 namespace Dodo {
 
-	class Scene {
-	public:
-		std::string m_Name;
+    class Scene {
+      public:
+        std::string m_Name;
 
         // Contains all entities and their components.
-        World* m_World;
+        World *m_World;
 
-		Skybox* m_SkyBox;
-		LightSystem m_LightSystem;
-	public:
-		Scene(Math::FreeCamera* camera, std::string name = "Unnamed");
-		~Scene();
+        Skybox *m_SkyBox;
+        LightSystem m_LightSystem;
 
-        World& GetWorld();
+      public:
+        Scene(Math::FreeCamera *camera, std::string name = "Unnamed");
+        ~Scene();
 
-		inline void UpdateCamera(Math::FreeCamera* camera) { m_Camera = camera; }
-	private:
-		Math::FreeCamera* m_Camera;
-	};
-}
+        World &GetWorld();
+
+        inline void UpdateCamera(Math::FreeCamera *camera)
+        {
+            m_Camera = camera;
+        }
+
+      private:
+        Math::FreeCamera *m_Camera;
+    };
+} // namespace Dodo

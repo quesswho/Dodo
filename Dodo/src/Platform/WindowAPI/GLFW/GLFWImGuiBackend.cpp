@@ -4,28 +4,33 @@
 
 namespace Dodo::Platform {
 
-    void GLFWImGuiBackend::Init(GLFWwindow* window, bool enableDocking) {
+    void GLFWImGuiBackend::Init(GLFWwindow *window, bool enableDocking)
+    {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        
-        if(enableDocking) {
-            ImGuiIO& io = ImGui::GetIO();
+
+        if (enableDocking)
+        {
+            ImGuiIO &io = ImGui::GetIO();
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         }
     }
 
-    void GLFWImGuiBackend::Shutdown() {
+    void GLFWImGuiBackend::Shutdown()
+    {
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
-    
-    void GLFWImGuiBackend::NewFrame() {
+
+    void GLFWImGuiBackend::NewFrame()
+    {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
 
-    void GLFWImGuiBackend::EndFrame() {
+    void GLFWImGuiBackend::EndFrame()
+    {
         ImGui::Render();
     }
 
-}
+} // namespace Dodo::Platform

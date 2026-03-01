@@ -4,21 +4,22 @@
 #include "WorldGeneration.h"
 #include "WorldRenderer.h"
 
-#include <memory>
 #include <array>
+#include <memory>
 
 class World {
-private:
-	Ref<WorldGeneration> m_WorldGen;
-	Ref<WorldRenderer> m_WorldRenderer;
-	Ref<ResourceManager> m_ResourceManager;
-public:
-	World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRenderer);
+  private:
+    Ref<WorldGeneration> m_WorldGen;
+    Ref<WorldRenderer> m_WorldRenderer;
+    Ref<ResourceManager> m_ResourceManager;
 
-	std::unordered_map<ChunkPos, Ref<Chunk>, ChunkPos::HashFunction> m_Chunks;
+  public:
+    World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRenderer);
 
-	void UpdateChunk(ChunkPos chunkpos);
-	void Draw();
+    std::unordered_map<ChunkPos, Ref<Chunk>, ChunkPos::HashFunction> m_Chunks;
 
-	BlockType GetBlockType(int x, int y, int z);
+    void UpdateChunk(ChunkPos chunkpos);
+    void Draw();
+
+    BlockType GetBlockType(int x, int y, int z);
 };

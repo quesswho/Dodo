@@ -5,13 +5,13 @@
 
 namespace Dodo {
 
-	struct ModelComponent {
-		ModelID m_ModelID;
-		Math::Transformation m_Transformation;
+    struct ModelComponent {
+        ModelID m_ModelID;
+        Math::Transformation m_Transformation;
 
         ModelComponent() = default;
-		explicit ModelComponent(ModelID modelID, const Math::Transformation& transformation = Math::Transformation())
-			: m_ModelID(modelID), m_Transformation(transformation)
-		{}
-	};
-}
+        explicit ModelComponent(ModelID modelID, const Math::Transformation &transformation = Math::Transformation())
+            : m_ModelID(modelID), m_Transformation(transformation)
+        {}
+    };
+} // namespace Dodo

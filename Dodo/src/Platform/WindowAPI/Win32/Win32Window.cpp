@@ -124,8 +124,7 @@ namespace Dodo::Platform {
             doubleSpace = m_Pcspecs.m_CpuBrand.find("  ");
         }
 
-        if (isspace(m_Pcspecs.m_CpuBrand.at(0)))
-            m_Pcspecs.m_CpuBrand.erase(0, 1); // Remove space in beginning
+        if (isspace(m_Pcspecs.m_CpuBrand.at(0))) m_Pcspecs.m_CpuBrand.erase(0, 1); // Remove space in beginning
 
         MEMORYSTATUSEX memInfo;
         memInfo.dwLength = sizeof(MEMORYSTATUSEX);
@@ -206,11 +205,9 @@ namespace Dodo::Platform {
     LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
         LRESULT result = NULL;
-        if (s_WindowClass == nullptr)
-            return DefWindowProc(hwnd, msg, wParam, lParam);
+        if (s_WindowClass == nullptr) return DefWindowProc(hwnd, msg, wParam, lParam);
 
-        if (Win32ImGuiBackend::WndProcHandler(hwnd, msg, wParam, lParam))
-            return true;
+        if (Win32ImGuiBackend::WndProcHandler(hwnd, msg, wParam, lParam)) return true;
 
         switch (msg)
         {

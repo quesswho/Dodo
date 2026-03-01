@@ -48,14 +48,10 @@ namespace Dodo { namespace Math {
     void FreeCamera::Update(float elapsed)
     {
         m_MoveDirection = Vec3();
-        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_W))
-            m_MoveDirection.x += 1.0f;
-        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_S))
-            m_MoveDirection.x -= 1.0f;
-        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_D))
-            m_MoveDirection.y += 1.0f;
-        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_A))
-            m_MoveDirection.y -= 1.0f;
+        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_W)) m_MoveDirection.x += 1.0f;
+        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_S)) m_MoveDirection.x -= 1.0f;
+        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_D)) m_MoveDirection.y += 1.0f;
+        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_A)) m_MoveDirection.y -= 1.0f;
 
         m_MoveDirection.NormalizeVector();
 
@@ -98,10 +94,8 @@ namespace Dodo { namespace Math {
             m_Yaw = std::fmod((m_Yaw + movementX), 360.0f); // Prevent yaw from reaching high numbers
             m_Pitch += movementY;
 
-            if (m_Pitch > 89.9f)
-                m_Pitch = 89.9f;
-            if (m_Pitch < -89.0f)
-                m_Pitch = -89.0f;
+            if (m_Pitch > 89.9f) m_Pitch = 89.9f;
+            if (m_Pitch < -89.0f) m_Pitch = -89.0f;
         }
     }
 

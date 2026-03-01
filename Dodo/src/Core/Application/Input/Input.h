@@ -12,16 +12,14 @@ namespace Dodo {
         // Keyboard
         void SetKeyState(int key, bool pressed)
         {
-            if (IsValidKey(key))
-                m_Keys[key] = pressed;
+            if (IsValidKey(key)) m_Keys[key] = pressed;
         }
         bool IsKeyPressed(int key) const { return IsValidKey(key) && m_Keys[key]; }
 
         // Mouse
         void SetMouseState(int button, bool pressed)
         {
-            if (IsValidMouse(button))
-                m_Mouse[button] = pressed;
+            if (IsValidMouse(button)) m_Mouse[button] = pressed;
         }
         bool IsMousePressed(int button) const { return IsValidMouse(button) && m_Mouse[button]; }
 

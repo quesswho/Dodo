@@ -131,8 +131,7 @@ namespace Dodo { namespace Math {
         inline TVec4 Normalize() const
         {
             float mag = Magnitude();
-            if (mag > 0)
-                return *this / mag;
+            if (mag > 0) return *this / mag;
             return *this;
         }
 
@@ -140,8 +139,7 @@ namespace Dodo { namespace Math {
         inline void NormalizeVector()
         {
             float mag = Magnitude();
-            if (mag > 0)
-                *this /= mag;
+            if (mag > 0) *this /= mag;
         }
 
         // Return a vector with a magnitude of limit

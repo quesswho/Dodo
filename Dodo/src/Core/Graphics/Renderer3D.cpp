@@ -71,8 +71,7 @@ namespace Dodo {
     void Renderer3D::DrawScene(Scene *scene)
     {
         RenderEntities(scene->GetWorld(), m_Camera, scene->m_LightSystem, *Application::s_Application->m_AssetManager);
-        if (scene->m_SkyBox)
-            scene->m_SkyBox->Draw(m_Camera->GetViewMatrix());
+        if (scene->m_SkyBox) scene->m_SkyBox->Draw(m_Camera->GetViewMatrix());
     }
 
     void Renderer3D::DrawShadowedScene(Scene *scene)

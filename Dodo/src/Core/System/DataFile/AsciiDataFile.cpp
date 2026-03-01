@@ -9,8 +9,7 @@ namespace Dodo {
         std::ifstream in(path);
         if (!in)
         {
-            if (throwOnFail)
-                throw std::runtime_error("Failed to open ASCII file: " + path);
+            if (throwOnFail) throw std::runtime_error("Failed to open ASCII file: " + path);
             return false;
         }
 
@@ -47,16 +46,13 @@ namespace Dodo {
 
     std::string AsciiDataFile::ReadSection()
     {
-        if (m_Offset >= m_File.size())
-            return "";
+        if (m_Offset >= m_File.size()) return "";
 
         const std::string &line = m_File[m_Offset];
-        if (line.empty() || line[0] != '[')
-            return "";
+        if (line.empty() || line[0] != '[') return "";
 
         size_t end = line.find(']');
-        if (end == std::string::npos)
-            return "";
+        if (end == std::string::npos) return "";
 
         ++m_Offset;
         return line.substr(1, end - 1);
@@ -64,8 +60,7 @@ namespace Dodo {
 
     bool AsciiDataFile::IsSection() const
     {
-        if (m_Offset >= m_File.size())
-            return false;
+        if (m_Offset >= m_File.size()) return false;
         const std::string &line = m_File[m_Offset];
         return !line.empty() && line[0] == '[';
     }
@@ -116,30 +111,25 @@ namespace Dodo {
         }
 
         std::string s = line.substr(quote + 1);
-        if (!s.empty() && s.back() == '"')
-            s.pop_back();
+        if (!s.empty() && s.back() == '"') s.pop_back();
         return s;
     }
 
     int AsciiDataFile::ReadInt()
     {
-        if (m_Offset >= m_File.size())
-            return 0;
+        if (m_Offset >= m_File.size()) return 0;
         std::string line = m_File[m_Offset++];
         size_t eq = line.find('=');
-        if (eq == std::string::npos)
-            return 0;
+        if (eq == std::string::npos) return 0;
         return std::stoi(line.substr(eq + 1));
     }
 
     float AsciiDataFile::ReadFloat()
     {
-        if (m_Offset >= m_File.size())
-            return 0.0f;
+        if (m_Offset >= m_File.size()) return 0.0f;
         std::string line = m_File[m_Offset++];
         size_t eq = line.find('=');
-        if (eq == std::string::npos)
-            return 0.0f;
+        if (eq == std::string::npos) return 0.0f;
         return std::stof(line.substr(eq + 1));
     }
 
@@ -220,16 +210,14 @@ namespace Dodo {
 
     void AsciiDataFile::SkipLine()
     {
-        if (m_Offset < m_File.size())
-            ++m_Offset;
+        if (m_Offset < m_File.size()) ++m_Offset;
     }
 
     // Additional ASCII-specific helpers
     Math::Transformation AsciiDataFile::GetTransformation()
     {
         Math::Transformation t;
-        if (m_Offset + 2 >= m_File.size())
-            return t;
+        if (m_Offset + 2 >= m_File.size()) return t;
         t.m_Position = ReadVec3();
         t.m_Scale = ReadVec3();
         t.m_Rotation = ReadVec3();

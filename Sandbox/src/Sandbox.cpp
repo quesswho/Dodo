@@ -59,10 +59,8 @@ GameLayer::~GameLayer()
 
 void GameLayer::Update(float elapsed)
 {
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_9))
-        m_Gamma += 1.0f * elapsed;
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_8))
-        m_Gamma -= 1.0f * elapsed;
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_9)) m_Gamma += 1.0f * elapsed;
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_8)) m_Gamma -= 1.0f * elapsed;
 
     // Change directional light
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_1))

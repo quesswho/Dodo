@@ -54,8 +54,7 @@ namespace Dodo {
             {
                 std::unique_lock<std::mutex> lock(m_Mutex);
                 m_WorkConditional.wait(lock, [&]() { return !m_Queue.empty() || m_Terminate; });
-                if (m_Terminate)
-                    return;
+                if (m_Terminate) return;
                 job = m_Queue.back();
                 m_Queue.pop_back();
             }

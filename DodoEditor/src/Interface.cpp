@@ -1,5 +1,7 @@
 #include "Interface.h"
 
+#include "FileDialog.h"
+
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -134,7 +136,7 @@ bool Interface::BeginDraw()
 			{
 				if (ImGui::MenuItem("Scene"))
 				{
-					std::string path = Application::s_Application->m_Window->OpenFileSelector("Dodo Ascii Scene File\0*.das\0");
+                    std::string path = FileDialog::OpenFile("Open Scene", "Dodo Ascii Scene File\0*.das\0");
 					if (path != "")
 					{
 						Scene* scene = m_File.Read(path);
@@ -156,7 +158,7 @@ bool Interface::BeginDraw()
 			if (ImGui::MenuItem("Save As..."))
 			{
 				Application::s_Application->m_Window->DefaultWorkDirectory();
-				std::string path = Application::s_Application->m_Window->OpenFileSaver("Dodo Ascii Scene File\0*.das\0", ".das");
+                std::string path = FileDialog::SaveFile("Save Scene As", "Dodo Ascii Scene File\0*.das\0");
 				if (path != "")
 				{
 					m_File.WriteAs(path, m_Scene);

@@ -16,9 +16,16 @@ target_sources(DodoEditor
     PRIVATE
         ${DODOEDITOR_CPP_SOURCES}
         ${DODOEDITOR_H_SOURCES}
+        lib/tinyfiledialogs/tinyfiledialogs.cpp
 )
 
 target_link_libraries(DodoEditor PRIVATE Dodo)
+
+target_include_directories(DodoEditor
+    PRIVATE
+        src
+        lib/tinyfiledialogs
+)
 
 target_compile_definitions(DodoEditor
     PRIVATE

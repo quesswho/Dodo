@@ -1,14 +1,14 @@
 #include "FileDialog.h"
 #include <tinyfiledialogs.h>
 
-std::string FileDialog::OpenFile(const char* title, const char* filters) {
+std::filesystem::path FileDialog::OpenFile(const char* title, const char* filters) {
     const char* path = tinyfd_openFileDialog(title, "", 0, nullptr, filters, 0);
-    if (!path) return std::string();
-    return std::string(path);
+    if (!path) return std::filesystem::path();
+    return std::filesystem::path(path);
 }
 
-std::string FileDialog::SaveFile(const char* title, const char* defaultPath) {
-    const char* path = tinyfd_saveFileDialog(title, defaultPath, 0, nullptr, nullptr);
-    if (!path) return std::string();
-    return std::string(path);
+std::filesystem::path FileDialog::SaveFile(const char* title, const char* filters) {
+    const char* path = tinyfd_saveFileDialog(title, "", 0, nullptr, filters);
+    if (!path) return std::filesystem::path();
+    return std::filesystem::path(path);
 }

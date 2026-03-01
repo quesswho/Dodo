@@ -136,10 +136,10 @@ bool Interface::BeginDraw()
 			{
 				if (ImGui::MenuItem("Scene"))
 				{
-                    std::string path = FileDialog::OpenFile("Open Scene", "Dodo Ascii Scene File\0*.das\0");
-					if (path != "")
+                    std::filesystem::path path = FileDialog::OpenFile("Open Scene", "Dodo Ascii Scene File\0*.das\0");
+					if (!path.empty())
 					{
-						Scene* scene = m_File.Read(path);
+						Scene* scene = m_File.Read(path.string());
 						scene->m_SkyBox = m_Scene->m_SkyBox;
 						delete m_Scene;
 						ChangeScene(scene);
@@ -150,18 +150,14 @@ bool Interface::BeginDraw()
 
 			/*if (ImGui::MenuItem("Save"))
 			{
-				Application::s_Application->m_Window->DefaultWorkDirectory();
-
 				m_File.Write("test.das", m_Scene);
 			}*/
 
-			if (ImGui::MenuItem("Save As..."))
-			{
-				Application::s_Application->m_Window->DefaultWorkDirectory();
-                std::string path = FileDialog::SaveFile("Save Scene As", "Dodo Ascii Scene File\0*.das\0");
-				if (path != "")
+			if (ImGui::MenuItem("Save As...")) {
+                std::filesystem::path path = FileDialog::SaveFile("Save As", "Dodo Ascii Scene File\0*.das\0");
+				if (!path.empty())
 				{
-					m_File.WriteAs(path, m_Scene);
+					m_File.WriteAs(path.string(), m_Scene);
 				}
 
 			}
@@ -490,11 +486,10 @@ void Interface::DrawInspector()
 					}
 					ImGui::Indent();
 					if (ImGui::Button("Browse")) {
-						std::string str = Application::s_Application->m_Window->OpenFileSelector("Model\0*.fbx;*.obj\0");
-						if (str != "" && str.starts_with(Application::s_Application->m_Window->GetMainWorkDirectory())) {
-							str.erase(0, Application::s_Application->m_Window->GetMainWorkDirectory().length() + 1); // In main work directory
+						std::filesystem::path path = FileDialog::OpenFile("Open file", "Model\0*.fbx;*.obj\0");
+						if (!path.empty()) {
 							// Replace the component with new model
-                            ModelID id = Application::s_Application->m_AssetManager->LoadModel(str);
+                            ModelID id = Application::s_Application->m_AssetManager->LoadModel(path.string());
 							world.GetComponent<ModelComponent>(e.first) = ModelComponent(id, model.m_Transformation);
 						}
 					}

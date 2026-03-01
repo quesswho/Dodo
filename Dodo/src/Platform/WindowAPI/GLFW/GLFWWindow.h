@@ -33,15 +33,6 @@ namespace Dodo::Platform {
             NativeWindowHandle GetHandle() const;
             void ImGuiNewFrame() const;
             void ImGuiEndFrame() const;
-
-            // TODO: The working directory stuff should defiently not be here
-            std::string OpenFileSelector(const char* filter = "All\0 * .*\0");
-            std::string OpenFileSaver(const char* filter = "All\0 * .*\0", const char* extension = "\0");
-            void DefaultWorkDirectory() { ChangeWorkDirectory(m_MainWorkDirectory); }
-            void CurrentDialogDirectory() { ChangeWorkDirectory(m_CurrentDialogDirectory); }
-            void ChangeWorkDirectory(std::string dir);
-            void TruncateWorkDirectory(std::string dir);
-            inline const std::string GetMainWorkDirectory() const { return m_MainWorkDirectory; }
             bool m_Focused;
 
             const WindowProperties& GetWindowProperties() { return m_WindowProperties; }
@@ -61,8 +52,6 @@ namespace Dodo::Platform {
             static void WindowCloseCallback(GLFWwindow* window);  
 
             void ConfigureMonitor();
-            std::string m_CurrentDialogDirectory;
-            std::string m_MainWorkDirectory;
     };
 }
 

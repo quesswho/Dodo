@@ -40,15 +40,8 @@ namespace Dodo::Platform {
         void ImGuiNewFrame() const;
         void ImGuiEndFrame() const;
 
-        std::string OpenFileSelector(const char* filter = "All\0 * .*\0");
-        std::string OpenFileSaver(const char* filter = "All\0 * .*\0", const char* extension = "\0");
-        void DefaultWorkDirectory() { ChangeWorkDirectory(m_MainWorkDirectory); }
-        void CurrentDialogDirectory() { ChangeWorkDirectory(m_CurrentDialogDirectory); }
-        void ChangeWorkDirectory(std::string dir);
-        void TruncateWorkDirectory(std::string dir);
-        inline const std::string GetMainWorkDirectory() const { return m_MainWorkDirectory; }
+        
         bool m_Focused;
-
         void WindowResizeCallback(Math::TVec2<int> size);
         void WindowFocusCallback(bool focused);
         void WindowCloseCallback();      
@@ -61,10 +54,6 @@ namespace Dodo::Platform {
         void Init();
         void RegisterRawMouse() const;
         PIXELFORMATDESCRIPTOR GetPixelFormat() const;
-        short int CreateDeviceContext();
-        
-        std::string m_CurrentDialogDirectory;
-        std::string m_MainWorkDirectory;
     };
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     static Win32Window* s_WindowClass;

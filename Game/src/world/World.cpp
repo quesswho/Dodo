@@ -94,7 +94,7 @@ BlockType World::GetBlockType(int x, int y, int z)
     auto chunk = m_Chunks.find(ChunkPos(floor(x / 16.0f), floor(z / 16.0f)));
     if (chunk != m_Chunks.end())
     {
-        auto &subchunk = chunk->second->m_Blocks.find(floor(y / 16.0f));
+        auto subchunk = chunk->second->m_Blocks.find(floor(y / 16.0f));
         if (subchunk != chunk->second->m_Blocks.end())
         {
             x = (x % 16 + 16) % 16;

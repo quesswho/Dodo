@@ -8,58 +8,73 @@
 
 #include <unordered_map>
 
-namespace Dodo {
-	namespace Platform {
+namespace Dodo { namespace Platform {
 
-		class OpenGLShader {
-		private:
-			enum class ShaderType { UNKNOWN = -1, VERTEX = 0, FRAGMENT = 1 };
+    class OpenGLShader {
+      private:
+        enum class ShaderType
+        {
+            UNKNOWN = -1,
+            VERTEX = 0,
+            FRAGMENT = 1
+        };
 
-			uint m_ShaderID;
-			const char* m_Name;
-			std::unordered_map<std::string, int> m_UniformLocations;
-		public:
-			OpenGLShader(const char* name, uint shader) // Internal use only
-				: m_Name(name), m_ShaderID(shader)
-			{}
+        uint m_ShaderID;
+        const char *m_Name;
+        std::unordered_map<std::string, int> m_UniformLocations;
 
-			OpenGLShader(const char* name, uint shader, std::unordered_map<std::string, int> uniformLocations) // Internal use only
-				: m_Name(name), m_ShaderID(shader), m_UniformLocations(uniformLocations)
-			{}
+      public:
+        OpenGLShader(const char *name, uint shader) // Internal use only
+            : m_Name(name), m_ShaderID(shader)
+        {}
 
-			explicit OpenGLShader(const char* name, const char* path); // File path
-			explicit OpenGLShader(const char* name, std::string& source); // Shader code
+        OpenGLShader(const char *name, uint shader,
+                     std::unordered_map<std::string, int> uniformLocations) // Internal use only
+            : m_Name(name), m_ShaderID(shader), m_UniformLocations(uniformLocations)
+        {}
 
-			~OpenGLShader();
+        explicit OpenGLShader(const char *name, const char *path);    // File path
+        explicit OpenGLShader(const char *name, std::string &source); // Shader code
 
-			static Ref<OpenGLShader> CreateFromPath(const char* name, const char* path) { return std::make_shared<OpenGLShader>(name, path); }
-			static Ref<OpenGLShader> CreateFromSource(const char* name, std::string& source) { return std::make_shared<OpenGLShader>(name, source); }
+        ~OpenGLShader();
 
-			void Bind() const;
-			void Unbind() const;
+        static Ref<OpenGLShader> CreateFromPath(const char *name, const char *path)
+        {
+            return std::make_shared<OpenGLShader>(name, path);
+        }
+        static Ref<OpenGLShader> CreateFromSource(const char *name, std::string &source)
+        {
+            return std::make_shared<OpenGLShader>(name, source);
+        }
 
-			void ReloadFromPath(const char* path);
-			void ReloadFromSource(std::string& source);
-			void ReloadFromSource(const char* vertex, const char* fragment);
+        void Bind() const;
+        void Unbind() const;
 
-			void CreateConstantBuffers() {}
+        void ReloadFromPath(const char *path);
+        void ReloadFromSource(std::string &source);
+        void ReloadFromSource(const char *vertex, const char *fragment);
 
-			const char* GetEntryName() const { return m_Name; }
+        void CreateConstantBuffers()
+        {}
 
-			void SetUniformValue(const char* location, const int value);
-			void SetUniformValue(const char* location, const float value);
-			void SetUniformValue(const char* location, const Math::TVec2<float>& value);
-			void SetUniformValue(const char* location, const Math::TVec3<float>& value);
-			void SetUniformValue(const char* location, const Math::TVec4<float>& value);
-			void SetUniformValue(const char* location, const Math::Mat2& value);
-			void SetUniformValue(const char* location, const Math::Mat3& value);
-			void SetUniformValue(const char* location, const Math::Mat4& value);
-		private:
+        const char *GetEntryName() const
+        {
+            return m_Name;
+        }
 
-			void CompileInit(const std::string& fileSource);
-			void CompileVFShader(const char* vertex, const char* fragment);
+        void SetUniformValue(const char *location, const int value);
+        void SetUniformValue(const char *location, const float value);
+        void SetUniformValue(const char *location, const Math::TVec2<float> &value);
+        void SetUniformValue(const char *location, const Math::TVec3<float> &value);
+        void SetUniformValue(const char *location, const Math::TVec4<float> &value);
+        void SetUniformValue(const char *location, const Math::Mat2 &value);
+        void SetUniformValue(const char *location, const Math::Mat3 &value);
+        void SetUniformValue(const char *location, const Math::Mat4 &value);
 
-			int GetLocation(const char* location);
-		};
-	}
-}
+      private:
+        void CompileInit(const std::string &fileSource);
+        void CompileVFShader(const char *vertex, const char *fragment);
+
+        int GetLocation(const char *location);
+    };
+}} // namespace Dodo::Platform

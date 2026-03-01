@@ -3,7 +3,8 @@
 
 namespace Dodo {
 
-    enum class RenderInitStatus {
+    enum class RenderInitStatus
+    {
         Success,
         Failed
     };
@@ -12,4 +13,4 @@ namespace Dodo {
         RenderInitStatus status;
         std::string message;
     };
-}
+} // namespace Dodo

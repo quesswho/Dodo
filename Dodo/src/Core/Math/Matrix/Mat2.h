@@ -5,9 +5,8 @@
 #if defined(DD_MATH_COLUMN_MAJOR) && defined(DD_COORDINATE_RIGHT_HANDED)
 #include "Platform/Math/CRH/CRHMat2.h"
 namespace Dodo { namespace Math {
-		template<class T = float>
-		using Mat2x2 = Dodo::Platform::CRHMat2x2<T>;
-		using Mat2 = Mat2x2<float>;
-}}
+    template <class T = float> using Mat2x2 = Dodo::Platform::CRHMat2x2<T>;
+    using Mat2 = Mat2x2<float>;
+}} // namespace Dodo::Math
 #else
 #endif

@@ -6,13 +6,12 @@
 #include "WorldRenderer.h"
 
 class WorldManager {
-public:
+  public:
+    WorldManager(Ref<ResourceManager> resourceManager, Dodo::Math::FreeCamera *camera);
 
-	WorldManager(Ref<ResourceManager> resourceManager, Dodo::Math::FreeCamera* camera);
+    Ref<ResourceManager> m_ResourceManager;
+    Ref<World> m_World;
+    Ref<WorldRenderer> m_WorldRenderer;
 
-	Ref<ResourceManager> m_ResourceManager;
-	Ref<World> m_World;
-	Ref<WorldRenderer> m_WorldRenderer;
-
-	void Draw();
+    void Draw();
 };

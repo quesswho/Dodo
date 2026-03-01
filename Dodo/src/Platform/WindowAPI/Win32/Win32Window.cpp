@@ -1,6 +1,6 @@
-#include "pch.h"
 #include "Win32Window.h"
 #include "Win32UIHook.h"
+#include "pch.h"
 
 #include "Core/System/FileUtils.h"
 
@@ -11,15 +11,15 @@
 
 namespace Dodo::Platform {
 
-    Win32Window::Win32Window(const WindowProperties& winProp)
-        : m_WindowProperties(winProp), m_Focused(true)
+    Win32Window::Win32Window(const WindowProperties &winProp) : m_WindowProperties(winProp), m_Focused(true)
     {
         Init();
     }
 
     Win32Window::~Win32Window()
     {
-        if (m_WindowProperties.m_Settings.imgui) {
+        if (m_WindowProperties.m_Settings.imgui)
+        {
             Win32ImGuiBackend::Shutdown();
         }
         ShowCursor(true);
@@ -50,36 +50,45 @@ namespace Dodo::Platform {
             DD_FATAL("Could not register Window class!");
         }
 
-
-        if (GetSystemMetrics(SM_CXSCREEN) < (int) m_WindowProperties.m_Width || GetSystemMetrics(SM_CYSCREEN) < (int) m_WindowProperties.m_Height)
+        if (GetSystemMetrics(SM_CXSCREEN) < (int)m_WindowProperties.m_Width ||
+            GetSystemMetrics(SM_CYSCREEN) < (int)m_WindowProperties.m_Height)
         {
             DD_WARN("Application resolution is more than the resolution of the screen!");
         }
 
-        m_WindowProperties.m_Width = m_WindowProperties.m_Width <= 0 ? GetSystemMetrics(SM_CXSCREEN) : m_WindowProperties.m_Width;
-        m_WindowProperties.m_Height = m_WindowProperties.m_Height <= 0 ? GetSystemMetrics(SM_CYSCREEN) : m_WindowProperties.m_Height;
+        m_WindowProperties.m_Width =
+            m_WindowProperties.m_Width <= 0 ? GetSystemMetrics(SM_CXSCREEN) : m_WindowProperties.m_Width;
+        m_WindowProperties.m_Height =
+            m_WindowProperties.m_Height <= 0 ? GetSystemMetrics(SM_CYSCREEN) : m_WindowProperties.m_Height;
 
         int posX, posY;
 
         if (m_WindowProperties.m_Settings.fullscreen)
         {
-            m_Hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, wc.lpszClassName, "", WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP,
-                0, 0, m_WindowProperties.m_Width, m_WindowProperties.m_Height, NULL, NULL, m_HInstance, NULL);
+            m_Hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, wc.lpszClassName, "",
+                                    WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP, 0, 0, m_WindowProperties.m_Width,
+                                    m_WindowProperties.m_Height, NULL, NULL, m_HInstance, NULL);
 
             posX = (GetSystemMetrics(SM_CXSCREEN) - m_WindowProperties.m_Width) / 2;
             posY = (GetSystemMetrics(SM_CYSCREEN) - m_WindowProperties.m_Height) / 2;
-        }
-        else
+        } else
         {
 
-            m_Hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, wc.lpszClassName, "", WS_OVERLAPPEDWINDOW,
-                0, 0, m_WindowProperties.m_Width, m_WindowProperties.m_Height, NULL, NULL, m_HInstance, NULL);
+            m_Hwnd =
+                CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, wc.lpszClassName, "", WS_OVERLAPPEDWINDOW, 0, 0,
+                               m_WindowProperties.m_Width, m_WindowProperties.m_Height, NULL, NULL, m_HInstance, NULL);
 
-            posX = (GetSystemMetrics(SM_CXSCREEN) - m_WindowProperties.m_Width) / 2 - (GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) - GetSystemMetrics(SM_CXFRAME)) / 2;
-            posY = (GetSystemMetrics(SM_CYSCREEN) - m_WindowProperties.m_Height) / 2 - GetSystemMetrics(SM_CYCAPTION) - (GetSystemMetrics(SM_CYSMSIZE) + GetSystemMetrics(SM_CYEDGE)) / 2 + GetSystemMetrics(SM_CYFRAME);
+            posX = (GetSystemMetrics(SM_CXSCREEN) - m_WindowProperties.m_Width) / 2 -
+                   (GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) - GetSystemMetrics(SM_CXFRAME)) / 2;
+            posY = (GetSystemMetrics(SM_CYSCREEN) - m_WindowProperties.m_Height) / 2 - GetSystemMetrics(SM_CYCAPTION) -
+                   (GetSystemMetrics(SM_CYSMSIZE) + GetSystemMetrics(SM_CYEDGE)) / 2 + GetSystemMetrics(SM_CYFRAME);
 
-            SetWindowPos(m_Hwnd, HWND_TOP, posX, posY, m_WindowProperties.m_Width + GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) - GetSystemMetrics(SM_CXFRAME), m_WindowProperties.m_Height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYSMSIZE) - GetSystemMetrics(SM_CYEDGE) - GetSystemMetrics(SM_CYFRAME), 0);
-
+            SetWindowPos(m_Hwnd, HWND_TOP, posX, posY,
+                         m_WindowProperties.m_Width + GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) -
+                             GetSystemMetrics(SM_CXFRAME),
+                         m_WindowProperties.m_Height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYSMSIZE) -
+                             GetSystemMetrics(SM_CYEDGE) - GetSystemMetrics(SM_CYFRAME),
+                         0);
         }
 
         if (!m_Hwnd)
@@ -88,12 +97,10 @@ namespace Dodo::Platform {
             return;
         }
 
-
-        
         SYSTEM_INFO sysinfo;
         GetSystemInfo(&sysinfo);
 
-        int cpuInfo[4] = { -1 };
+        int cpuInfo[4] = {-1};
         char cpuName[0x40];
         __cpuid(cpuInfo, 0x80000000);
         int nExIds = cpuInfo[0];
@@ -120,13 +127,13 @@ namespace Dodo::Platform {
             doubleSpace = m_Pcspecs.m_CpuBrand.find("  ");
         }
 
-        if (isspace(m_Pcspecs.m_CpuBrand.at(0))) m_Pcspecs.m_CpuBrand.erase(0, 1); // Remove space in beginning
-
+        if (isspace(m_Pcspecs.m_CpuBrand.at(0)))
+            m_Pcspecs.m_CpuBrand.erase(0, 1); // Remove space in beginning
 
         MEMORYSTATUSEX memInfo;
         memInfo.dwLength = sizeof(MEMORYSTATUSEX);
         GlobalMemoryStatusEx(&memInfo);
-        m_Pcspecs.m_TotalPhysicalMemory = memInfo.ullTotalPhys;     
+        m_Pcspecs.m_TotalPhysicalMemory = memInfo.ullTotalPhys;
 
         m_MainWorkDirectory = std::filesystem::current_path().string();
 
@@ -145,7 +152,6 @@ namespace Dodo::Platform {
         POINT p;
         GetCursorPos(&p);
         Application::s_Application->m_InputManager.MouseMoved(Math::TVec2<long>(p.x, p.y));
-
 
         if (m_WindowProperties.m_Settings.imgui || m_WindowProperties.m_Settings.imguiDocking)
         {
@@ -197,13 +203,8 @@ namespace Dodo::Platform {
 
     NativeWindowHandle Win32Window::GetHandle() const
     {
-        return {
-            NativeWindowHandle::WindowBackend::Win32,
-            (void*)m_Hwnd,
-            (void*)m_Hdc
-        };
+        return {NativeWindowHandle::WindowBackend::Win32, (void *)m_Hwnd, (void *)m_Hdc};
     }
-
 
     LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
@@ -216,91 +217,92 @@ namespace Dodo::Platform {
 
         switch (msg)
         {
-            case WM_ACTIVATE:
+        case WM_ACTIVATE: {
+            if (!HIWORD(wParam))
             {
-                if (!HIWORD(wParam)) {} // Is minimized
-                else{}
+            } // Is minimized
+            else
+            {}
 
+            return 0;
+        }
+        case WM_SYSCOMMAND: {
+            switch (wParam)
+            {
+            case SC_SCREENSAVE:
+            case SC_MONITORPOWER:
                 return 0;
             }
-            case WM_SYSCOMMAND:
+            result = DefWindowProc(hwnd, msg, wParam, lParam);
+        }
+        break;
+        case WM_SETFOCUS:
+            if (!Application::s_Application->m_Initializing)
+                Application::s_Application->m_Window->WindowFocusCallback(true);
+            break;
+        case WM_KILLFOCUS:
+            if (!Application::s_Application->m_Initializing)
+                Application::s_Application->m_Window->WindowFocusCallback(false);
+            break;
+        case WM_CLOSE:
+        case WM_DESTROY:
+            Application::s_Application->m_Window->WindowCloseCallback();
+            break;
+        case WM_SYSKEYDOWN:
+        case WM_KEYDOWN:
+            Application::s_Application->m_InputManager.KeyPressed((uint)wParam);
+            break;
+        case WM_SYSKEYUP:
+        case WM_KEYUP:
+            Application::s_Application->m_InputManager.KeyReleased((uint)wParam);
+            break;
+        case WM_MOUSEMOVE:
+            break;
+        case WM_INPUT: {
+            UINT dwSize;
+            GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
+            LPBYTE lpb = new BYTE[dwSize];
+            if (lpb == NULL)
             {
-                switch (wParam)
-                {
-                    case SC_SCREENSAVE:
-                    case SC_MONITORPOWER:
-                        return 0;
-                }
-                result = DefWindowProc(hwnd, msg, wParam, lParam);
-            } break;
-            case WM_SETFOCUS:
-                if(!Application::s_Application->m_Initializing)
-                    Application::s_Application->m_Window->WindowFocusCallback(true);
-                break;
-            case WM_KILLFOCUS:
-                if (!Application::s_Application->m_Initializing)
-                    Application::s_Application->m_Window->WindowFocusCallback(false);
-                break;
-            case WM_CLOSE:
-            case WM_DESTROY:
-                Application::s_Application->m_Window->WindowCloseCallback();
-                break;
-            case WM_SYSKEYDOWN:
-            case WM_KEYDOWN:
-                Application::s_Application->m_InputManager.KeyPressed((uint)wParam);
-                break;
-            case WM_SYSKEYUP:
-            case WM_KEYUP:
-                Application::s_Application->m_InputManager.KeyReleased((uint)wParam);
-                break;
-            case WM_MOUSEMOVE:
-                break;
-            case WM_INPUT:
-            {
-                UINT dwSize;
-                GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize,
-                    sizeof(RAWINPUTHEADER));
-                LPBYTE lpb = new BYTE[dwSize];
-                if (lpb == NULL)
-                {
-                    return 0;
-                }
-
-                GetRawInputData((HRAWINPUT)lParam, RID_INPUT,
-                    lpb, &dwSize, sizeof(RAWINPUTHEADER));
-
-                RAWINPUT* raw = (RAWINPUT*)lpb;
-
-                if (raw->header.dwType == RIM_TYPEMOUSE)
-                {
-                    Application::s_Application->m_InputManager.MouseMoved(Math::TVec2<double>(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
-                }
-                delete raw;
-                break;
+                return 0;
             }
-            case WM_LBUTTONDOWN:
-            case WM_RBUTTONDOWN:
-            case WM_MBUTTONDOWN:
-                Application::s_Application->m_InputManager.MousePressed((uint)wParam);
-                break;
-            case WM_LBUTTONUP:
-            case WM_RBUTTONUP:
-            case WM_MBUTTONUP:
-                Application::s_Application->m_InputManager.MouseReleaseCallback((uint)wParam);
-                break;
-            case WM_SIZE:
-                if (!Application::s_Application->m_Initializing)
-                {
-                    Application::s_Application->m_Window->WindowResizeCallback(Math::TVec2<int>(LOWORD(lParam), HIWORD(lParam)));
-                }
-                break;
-            default:
-                result = DefWindowProc(hwnd, msg, wParam, lParam);
+
+            GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER));
+
+            RAWINPUT *raw = (RAWINPUT *)lpb;
+
+            if (raw->header.dwType == RIM_TYPEMOUSE)
+            {
+                Application::s_Application->m_InputManager.MouseMoved(
+                    Math::TVec2<double>(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
+            }
+            delete raw;
+            break;
+        }
+        case WM_LBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+        case WM_MBUTTONDOWN:
+            Application::s_Application->m_InputManager.MousePressed((uint)wParam);
+            break;
+        case WM_LBUTTONUP:
+        case WM_RBUTTONUP:
+        case WM_MBUTTONUP:
+            Application::s_Application->m_InputManager.MouseReleaseCallback((uint)wParam);
+            break;
+        case WM_SIZE:
+            if (!Application::s_Application->m_Initializing)
+            {
+                Application::s_Application->m_Window->WindowResizeCallback(
+                    Math::TVec2<int>(LOWORD(lParam), HIWORD(lParam)));
+            }
+            break;
+        default:
+            result = DefWindowProc(hwnd, msg, wParam, lParam);
         }
         return result;
     }
 
-    void Win32Window::SetTitle(const char* title)
+    void Win32Window::SetTitle(const char *title)
     {
         m_WindowProperties.m_Title = title;
         SetWindowTextA(m_Hwnd, m_WindowProperties.m_Title);
@@ -331,41 +333,52 @@ namespace Dodo::Platform {
         if (fullscreen)
         {
             SetWindowLongPtr(m_Hwnd, GWL_STYLE, WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP);
-            HMONITOR hmon = MonitorFromWindow(m_Hwnd,
-                MONITOR_DEFAULTTONEAREST);
-            MONITORINFO mi = { sizeof(mi) };
+            HMONITOR hmon = MonitorFromWindow(m_Hwnd, MONITOR_DEFAULTTONEAREST);
+            MONITORINFO mi = {sizeof(mi)};
             GetMonitorInfo(hmon, &mi);
-            SetWindowPos(m_Hwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, 
-                mi.rcMonitor.right - mi.rcMonitor.left, mi.rcMonitor.bottom - mi.rcMonitor.top, 0);
-            
+            SetWindowPos(m_Hwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left,
+                         mi.rcMonitor.bottom - mi.rcMonitor.top, 0);
+
             Application::s_Application->m_WindowProperties.m_Width = GetSystemMetrics(SM_CXSCREEN);
             Application::s_Application->m_WindowProperties.m_Height = GetSystemMetrics(SM_CYSCREEN);
 
-            Application::s_Application->m_RenderAPI->ResizeDefaultViewport(Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height);
+            Application::s_Application->m_RenderAPI->ResizeDefaultViewport(
+                Application::s_Application->m_WindowProperties.m_Width,
+                Application::s_Application->m_WindowProperties.m_Height);
             DD_INFO("{0}, {1}", GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 
             m_WindowProperties.m_Settings.fullscreen = true;
             Application::s_Application->m_WindowProperties.m_Settings = true;
-        }
-        else
+        } else
         {
             SetWindowLongPtr(m_Hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
 
             HMONITOR hmon = MonitorFromWindow(m_Hwnd, MONITOR_DEFAULTTONEAREST);
-            MONITORINFO mi = { sizeof(mi) };
+            MONITORINFO mi = {sizeof(mi)};
             GetMonitorInfo(hmon, &mi);
             int posX, posY;
-            posX = (GetSystemMetrics(SM_CXSCREEN) - m_WindowProperties.m_Width) / 2 - (GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) - GetSystemMetrics(SM_CXFRAME)) / 2;
-            posY = (GetSystemMetrics(SM_CYSCREEN) - m_WindowProperties.m_Height) / 2 - GetSystemMetrics(SM_CYCAPTION) - (GetSystemMetrics(SM_CYSMSIZE) + GetSystemMetrics(SM_CYEDGE)) / 2 + GetSystemMetrics(SM_CYFRAME);
+            posX = (GetSystemMetrics(SM_CXSCREEN) - m_WindowProperties.m_Width) / 2 -
+                   (GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) - GetSystemMetrics(SM_CXFRAME)) / 2;
+            posY = (GetSystemMetrics(SM_CYSCREEN) - m_WindowProperties.m_Height) / 2 - GetSystemMetrics(SM_CYCAPTION) -
+                   (GetSystemMetrics(SM_CYSMSIZE) + GetSystemMetrics(SM_CYEDGE)) / 2 + GetSystemMetrics(SM_CYFRAME);
 
             SetWindowPos(m_Hwnd, HWND_TOP, posX, posY,
-                m_WindowProperties.m_Width + GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) - GetSystemMetrics(SM_CXFRAME),
-                m_WindowProperties.m_Height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYSMSIZE) - GetSystemMetrics(SM_CYEDGE) - GetSystemMetrics(SM_CYFRAME), 0);
+                         m_WindowProperties.m_Width + GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) -
+                             GetSystemMetrics(SM_CXFRAME),
+                         m_WindowProperties.m_Height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYSMSIZE) -
+                             GetSystemMetrics(SM_CYEDGE) - GetSystemMetrics(SM_CYFRAME),
+                         0);
 
-            Application::s_Application->m_WindowProperties.m_Width = m_WindowProperties.m_Width + GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) - GetSystemMetrics(SM_CXFRAME);
-            Application::s_Application->m_WindowProperties.m_Height = m_WindowProperties.m_Height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYSMSIZE) - GetSystemMetrics(SM_CYEDGE) - GetSystemMetrics(SM_CYFRAME);
+            Application::s_Application->m_WindowProperties.m_Width =
+                m_WindowProperties.m_Width + GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) -
+                GetSystemMetrics(SM_CXFRAME);
+            Application::s_Application->m_WindowProperties.m_Height =
+                m_WindowProperties.m_Height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYSMSIZE) -
+                GetSystemMetrics(SM_CYEDGE) - GetSystemMetrics(SM_CYFRAME);
 
-            Application::s_Application->m_RenderAPI->ResizeDefaultViewport(Application::s_Application->m_WindowProperties.m_Width, Application::s_Application->m_WindowProperties.m_Height);
+            Application::s_Application->m_RenderAPI->ResizeDefaultViewport(
+                Application::s_Application->m_WindowProperties.m_Width,
+                Application::s_Application->m_WindowProperties.m_Height);
 
             m_WindowProperties.m_Settings.fullscreen = false;
             Application::s_Application->m_WindowProperties.m_Settings.fullscreen = false;
@@ -400,7 +413,7 @@ namespace Dodo::Platform {
         m_Keys[keycode] = true;
         Application::s_Application->OnEvent(MousePressEvent(keycode));
     }
-    
+
     void Win32Window::MouseReleaseCallback(uint keycode)
     {
         m_Keys[keycode] = false;
@@ -432,7 +445,7 @@ namespace Dodo::Platform {
         Application::s_Application->OnEvent(WindowCloseEvent());
     }
 
-    void Win32Window::SetWindowProperties(const WindowProperties& winprop)
+    void Win32Window::SetWindowProperties(const WindowProperties &winprop)
     {
         m_WindowProperties = winprop;
     }
@@ -443,4 +456,4 @@ namespace Dodo::Platform {
         SetWindowPos(consoleHwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_DRAWFRAME | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         ShowWindow(consoleHwnd, SW_NORMAL);
     }
-}
+} // namespace Dodo::Platform

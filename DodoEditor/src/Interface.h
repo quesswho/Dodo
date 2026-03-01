@@ -50,9 +50,6 @@ struct EditorContext {
 
 class Interface {
   public:
-    uint m_ViewportWidth = 0;
-    uint m_ViewportHeight = 0;
-
     EditorProperties m_EditorProperties;
     EditorContext m_EditorContext;
 

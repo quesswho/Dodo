@@ -58,7 +58,6 @@ GameLayer::GameLayer()
 }
 GameLayer::~GameLayer()
 {
-	Application::s_Application->m_Window->DefaultWorkDirectory();
 	delete m_PostEffect;
 	delete m_Camera;
 	delete m_Scene;

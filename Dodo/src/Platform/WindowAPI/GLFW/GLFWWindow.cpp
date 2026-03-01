@@ -141,25 +141,10 @@ namespace Dodo::Platform {
     {
         GLFWImGuiBackend::NewFrame();
     }
-    
+
     void GLFWWindow::ImGuiEndFrame() const
     {
         GLFWImGuiBackend::EndFrame();
-    }
-
-    std::string GLFWWindow::OpenFileSelector(const char* filter)
-    {}
-
-    std::string GLFWWindow::OpenFileSaver(const char* filter, const char* extension)
-    {}
-
-    void GLFWWindow::ChangeWorkDirectory(std::string dir)
-    {
-        
-    }
-
-    void GLFWWindow::TruncateWorkDirectory(std::string dir)
-    {
     }
 
     void GLFWWindow::ErrorCallback(int error, const char* description)

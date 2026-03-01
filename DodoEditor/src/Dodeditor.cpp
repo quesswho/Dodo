@@ -48,7 +48,6 @@ void GameLayer::SetScene(Scene* scene)
 
 GameLayer::~GameLayer()
 {
-	Application::s_Application->m_Window->DefaultWorkDirectory();
 	delete m_FrameBuffer;
 	delete m_Camera;
 	delete m_Scene;

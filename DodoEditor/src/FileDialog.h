@@ -1,10 +1,9 @@
 #pragma once
-#include <optional>
-#include <string>
+#include <filesystem>
 
 class FileDialog {
 public:
-    static std::string OpenFile(const char* title, const char* filterPatterns = nullptr);
+    static std::filesystem::path OpenFile(const char* title, const char* filterPatterns = nullptr);
 
-    static std::string SaveFile(const char* title, const char* defaultPath = nullptr);
+    static std::filesystem::path SaveFile(const char* title, const char* defaultPath = nullptr);
 };

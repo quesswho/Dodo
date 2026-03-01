@@ -43,4 +43,9 @@ run-release:
 	@echo "Running Release build..."
 	cd $(EXECUTABLE_DIR) && ./$(EXECUTABLE)
 
+format:
+	clang-format -i -style=file \
+	$(shell find Dodo/src Sandbox/src DodoEditor/src Game/src \
+	-type f \( -name "*.cpp" -o -name "*.h" \))
+
 .PHONY: all configure build clean debug release

@@ -58,9 +58,8 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
                     {
                         if (!world.HasComponent<ModelComponent>(entityId))
                         {
-                            world.AddComponent<ModelComponent>(
-                                entityId, ModelComponent(Application::s_Application->m_AssetManager->GetBuiltinModel(
-                                              BuiltinModel::Cube)));
+                            ModelID id = Application::s_Application->m_AssetManager->GetBuiltinModel(BuiltinModel::Cube);
+                            world.AddComponent<ModelComponent>(entityId, ModelComponent(id, Math::Transformation()));
                         }
                     }
                     ImGui::EndMenu();
@@ -111,13 +110,20 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
                 }
                 ImGui::SameLine();
 
-                std::string modelPath = Application::s_Application->m_AssetManager->GetModelPath(model.m_ModelID);
-                if (modelPath.empty())
+                // Check if it's a built-in model first to avoid error logs
+                if (Application::s_Application->m_AssetManager->HasPath(model.m_ModelID))
                 {
-                    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Built-in model");
+                    std::string modelPath = Application::s_Application->m_AssetManager->GetModelPath(model.m_ModelID);
+                    if (modelPath.empty())
+                    {
+                        ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "Path not found");
+                    } else
+                    {
+                        ImGui::Text("%s", modelPath.c_str());
+                    }
                 } else
                 {
-                    ImGui::Text("%s", modelPath.c_str());
+                    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Built-in model");
                 }
 
                 if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))

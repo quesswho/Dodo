@@ -3,10 +3,9 @@
 #include "Core/Graphics/Scene/Model.h"
 #include "Core/Graphics/Shader/ShaderBuilder.h"
 
-#include <assimp/scene.h>
+struct aiMesh;
 
 namespace Dodo {
-
     struct ModelLoader {
 
         struct Vertex {
@@ -57,6 +56,6 @@ namespace Dodo {
         Model* LoadModel(const std::string& path);
 
       private:
-        Mesh* LoadMesh(aiMesh* mesh, Ref<Material> material);
+		Mesh* LoadMesh(::aiMesh* mesh, Ref<Material> material);
     };
 } // namespace Dodo

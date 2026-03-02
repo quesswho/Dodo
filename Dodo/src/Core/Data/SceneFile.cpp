@@ -98,7 +98,7 @@ namespace Dodo {
             if (section.find("Entity:") == 0)
             {
                 // Currently unused
-                //EntityID fileEntityId = (EntityID)std::stoi(section.substr(7));
+                // EntityID fileEntityId = (EntityID)std::stoi(section.substr(7));
 
                 World& world = result->GetWorld();
                 currentEntityId = world.CreateEntity();

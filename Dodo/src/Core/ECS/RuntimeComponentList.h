@@ -7,6 +7,6 @@
 namespace Dodo {
 
     // Update this list when adding new components
-	using RuntimeComponentList = TypeList<ModelComponent>;
+    using RuntimeComponentList = TypeList<ModelComponent>;
 
 } // namespace Dodo

@@ -1,5 +1,6 @@
 #pragma once
-#include "../EditorState.h"
+#include "PanelStates/EditorState.h"
+#include "PanelStates/InspectorState.h"
 
 class InspectorPanel {
   public:

@@ -1,6 +1,6 @@
 #include "InspectorPanel.h"
 
-#include "../FileDialog.h"
+#include "FileDialog.h"
 
 #include <Dodo.h>
 #include <imgui.h>

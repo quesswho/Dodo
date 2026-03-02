@@ -34,24 +34,28 @@ struct Selection {
     bool Contains(EntityID e) const { return std::find(entities.begin(), entities.end(), e) != entities.end(); }
 };
 
-struct EditorContext {
-    Scene *scene = nullptr;
-
+struct EditorState {
+    Scene* scene = nullptr;
     Selection selection;
-    bool inspectorDirty = false;
+}
 
-    uint viewportWidth = 0;
-    uint viewportHeight = 0;
-    uint viewportX = 0;
-    uint viewportY = 0;
+struct ViewportState {
+    uint width = 0, height = 0;
+    uint x = 0, y = 0;
+};
 
-    std::string inspectorNameBuffer;
+struct InspectorState {
+    bool dirty = false;
+    std::string nameBuffer;
 };
 
 class Interface {
   public:
     EditorProperties m_EditorProperties;
-    EditorContext m_EditorContext;
+
+    EditorState m_EditorState;
+    ViewportState m_ViewportState;
+    InspectorState m_InspectorState;
 
   public:
     Interface(Scene *scene);

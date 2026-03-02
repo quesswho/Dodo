@@ -44,7 +44,8 @@ namespace Dodo {
         static std::string TeraByte(size_t size);
         static std::string TeraByte(double size);
 
-        template <typename Ty> static std::string precision_to_string(const Ty val, const int n = 2);
+        template <typename Ty>
+        static std::string precision_to_string(const Ty val, const int n = 2);
     };
 } // namespace Dodo
 #if !defined(DODO_DISABLE_MEM_DEBUG)

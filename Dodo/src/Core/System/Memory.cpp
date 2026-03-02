@@ -111,7 +111,8 @@ namespace Dodo {
         return std::string("0 B");
     }
 
-    template <typename Ty> std::string StringUtils::precision_to_string(const Ty val, const int n)
+    template <typename Ty>
+    std::string StringUtils::precision_to_string(const Ty val, const int n)
     {
         std::ostringstream result;
         result.precision(n);

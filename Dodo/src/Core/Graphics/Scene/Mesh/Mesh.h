@@ -20,7 +20,8 @@ namespace Dodo {
         Mesh(VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, Ref<Material> material);
         ~Mesh();
 
-        template <typename T> void SetUniform(const char* location, T value)
+        template <typename T>
+        void SetUniform(const char* location, T value)
         {
             m_Material->SetUniform(location, value);
         }

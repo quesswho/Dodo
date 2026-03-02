@@ -16,6 +16,11 @@ namespace Dodo {
 
     using MaterialID = uint64_t;
 
+    enum class BuiltinModel
+    {
+        Cube,
+    };
+
     class AssetManager {
       private:
         std::unordered_map<ShaderBuilderFlags, Ref<Shader>>
@@ -27,6 +32,8 @@ namespace Dodo {
         std::unordered_map<ModelID, Model*> m_Models;         // Stores id as key and model pointer as value
         std::unordered_map<std::string, uint> m_ModelID;      // Stores path as key and id as value
         std::unordered_map<ModelID, std::string> m_ModelPath; // Stores id as key and path as value
+        std::unordered_map<BuiltinModel, ModelID> builtinIDs;
+
       public:
         AssetManager(bool serialization);
         ~AssetManager();
@@ -35,6 +42,7 @@ namespace Dodo {
         Ref<Material> GetMaterial(const char* path);
 
         ModelID LoadModel(const std::string& path);
+        ModelID GetBuiltinModel(BuiltinModel type);
         Model* GetModel(ModelID id);
 
         const std::string& GetModelPath(ModelID id);

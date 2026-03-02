@@ -34,11 +34,41 @@ namespace Dodo {
         }
 
         Model* model = m_ModelLoader->LoadModel(path);
+        if (model == nullptr)
+        {
+            DD_ERR("Failed to load model: {0}, Loading default cube", path);
+            return GetBuiltinModel(BuiltinModel::Cube);
+        }
+
         int id = m_Models.size();
 
         m_ModelID.emplace(path, id);
         m_ModelPath.emplace(id, path);
         m_Models.emplace(id, model);
+        return id;
+    }
+
+    ModelID AssetManager::GetBuiltinModel(BuiltinModel type)
+    {
+        auto it = builtinIDs.find(type);
+        if (it != builtinIDs.end()) return it->second;
+
+        Model* model = nullptr;
+
+        switch (type)
+        {
+        case BuiltinModel::Cube: {
+            std::vector<Mesh*> meshes;
+            meshes.push_back(m_MeshFactory->CreateCube(std::make_shared<Material>(Material())));
+            model = new Model(meshes);
+            break;
+        }
+        }
+
+        ModelID id = m_Models.size();
+        m_Models.emplace(id, model);
+
+        builtinIDs.emplace(type, id);
         return id;
     }
 

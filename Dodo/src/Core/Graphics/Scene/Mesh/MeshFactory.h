@@ -8,9 +8,11 @@ namespace Dodo {
         MeshFactory();
 
         Mesh* GetRectangleMesh(Ref<Material> material);
+        Mesh* CreateCube(Ref<Material> material);
 
       private:
         const BufferProperties m_BasicProperties;
         Mesh* m_RectangleMesh;
+        Mesh* m_CubeMesh;
     };
 } // namespace Dodo

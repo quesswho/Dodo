@@ -58,9 +58,9 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
                     {
                         if (!world.HasComponent<ModelComponent>(entityId))
                         {
-                            // Add empty ModelComponent for user to configure
-                            // world.AddComponent<ModelComponent>(entityId,
-                            // Application::s_Application->m_AssetManager->m_MeshFactory->GetRectangleMesh());
+                            world.AddComponent<ModelComponent>(
+                                entityId, ModelComponent(Application::s_Application->m_AssetManager->GetBuiltinModel(
+                                              BuiltinModel::Cube)));
                         }
                     }
                     ImGui::EndMenu();
@@ -110,7 +110,15 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
                     }
                 }
                 ImGui::SameLine();
-                ImGui::Text(Application::s_Application->m_AssetManager->GetModelPath(model.m_ModelID).c_str());
+
+                std::string modelPath = Application::s_Application->m_AssetManager->GetModelPath(model.m_ModelID);
+                if (modelPath.empty())
+                {
+                    ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Built-in model");
+                } else
+                {
+                    ImGui::Text("%s", modelPath.c_str());
+                }
 
                 if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
                 {

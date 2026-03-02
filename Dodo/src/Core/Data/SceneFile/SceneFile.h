@@ -37,6 +37,14 @@ namespace Dodo {
         bool HasPath() const { return !m_Path.empty(); }
         SceneFileError GetLastError() const { return m_LastError; }
 
+        // Write entities without flushing to disk
+        SceneFileError WriteEntities(const std::string& path, Scene* scene);
+
+        // Call GetFile().EndRead() to cleanup
+        Scene* ReadEntities(const std::string& path);
+
+        AsciiDataFile& GetFile() { return m_File; }
+
       private:
         void SetError(SceneFileError error, size_t line = 0);
 

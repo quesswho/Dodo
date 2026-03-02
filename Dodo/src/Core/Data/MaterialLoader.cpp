@@ -1,7 +1,8 @@
 #include "MaterialLoader.h"
 #include "pch.h"
-
 #include "Core/Application/Application.h"
+
+#include <assimp/material.h>
 
 namespace Dodo {
     Ref<Material> MaterialLoader::LoadMaterial(const char* path)
@@ -19,11 +20,11 @@ namespace Dodo {
         std::filesystem::path modelDir = std::filesystem::path(path).parent_path();
 
         // Diffuse map
-        Ref<Texture> tex = LoadTextureFromMaterial(material, aiTextureType_DIFFUSE, flags, modelDir, textures.size());
+        Ref<Texture> tex = LoadTextureFromMaterial(material, (int)aiTextureType_DIFFUSE, flags, modelDir, textures.size());
         if (tex) textures.push_back(tex);
 
         // Specular map
-        tex = LoadTextureFromMaterial(material, aiTextureType_SPECULAR, flags, modelDir, textures.size());
+        tex = LoadTextureFromMaterial(material, (int)aiTextureType_SPECULAR, flags, modelDir, textures.size());
         if (tex) textures.push_back(tex);
 
         // NORMALS and DISPLACEMENT is the same thing
@@ -31,7 +32,7 @@ namespace Dodo {
         aiString str;
         if (material->GetTexture(normalType, 0, &str) != AI_SUCCESS) normalType = aiTextureType_DISPLACEMENT;
 
-        tex = LoadTextureFromMaterial(material, normalType, flags, modelDir, textures.size());
+        tex = LoadTextureFromMaterial(material, (int)normalType, flags, modelDir, textures.size());
         if (tex) textures.push_back(tex);
 
         // Create material
@@ -56,14 +57,15 @@ namespace Dodo {
         return std::make_shared<Material>(); // Fallback shader
     }
 
-    Ref<Texture> MaterialLoader::LoadTextureFromMaterial(aiMaterial* material, aiTextureType type,
+    Ref<Texture> MaterialLoader::LoadTextureFromMaterial(aiMaterial* material, int type,
                                                          ShaderBuilderFlags& shaderFlags,
                                                          const std::filesystem::path& modelDir, uint slot)
     {
+        aiTextureType typeEnum = static_cast<aiTextureType>(type);
         aiString str;
-        if (material->GetTexture(type, 0, &str) == AI_SUCCESS && str.length > 0)
+        if (material->GetTexture(typeEnum, 0, &str) == AI_SUCCESS && str.length > 0)
         {
-            switch (type)
+            switch (typeEnum)
             {
             case aiTextureType_DIFFUSE:
                 shaderFlags |= ShaderBuilderFlagDiffuseMap;

@@ -15,7 +15,7 @@ namespace Dodo {
     {
         std::vector<uint> index;
         index.resize(textures.size(), -1);
-        for (auto &tex : m_Textures)
+        for (auto& tex : m_Textures)
         {
             if (std::find(index.begin(), index.end(), tex->m_Index) != index.end())
                 DD_WARN("Duplicate Texture indexes found for index: {}", tex->m_Index);
@@ -29,7 +29,7 @@ namespace Dodo {
     void Material::AddTexture(Ref<Texture> texture)
     {
         m_Textures.push_back(texture);
-        for (auto &tex : m_Textures)
+        for (auto& tex : m_Textures)
         {
             if (texture->m_Index == tex->m_Index)
                 DD_WARN("Duplicate Texture indexes found for index: {}", tex->m_Index);
@@ -41,7 +41,7 @@ namespace Dodo {
     void Material::Bind() const
     {
         m_Shader->Bind();
-        for (auto &tex : m_Textures)
+        for (auto& tex : m_Textures)
             tex->Bind();
     }
 } // namespace Dodo

@@ -41,17 +41,17 @@ namespace Dodo {
             FireEvent(MouseMoveEvent(mousePos));
         }
 
-        const Input &GetInput() const { return m_Input; }
+        const Input& GetInput() const { return m_Input; }
 
-        void SetEventCallback(std::function<void(const Event &)> cb) { m_EventCallback = cb; }
+        void SetEventCallback(std::function<void(const Event&)> cb) { m_EventCallback = cb; }
 
       private:
-        void FireEvent(const Event &e)
+        void FireEvent(const Event& e)
         {
             if (m_EventCallback) m_EventCallback(e);
         }
 
         Input m_Input;
-        std::function<void(const Event &)> m_EventCallback;
+        std::function<void(const Event&)> m_EventCallback;
     };
 } // namespace Dodo

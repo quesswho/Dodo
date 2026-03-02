@@ -26,20 +26,20 @@ namespace Dodo {
         };
 
         struct MaterialData {
-            MaterialData(std::unordered_map<const char *, uint> textureInfo, ShaderBuilderFlags flags)
+            MaterialData(std::unordered_map<const char*, uint> textureInfo, ShaderBuilderFlags flags)
                 : m_TextureInfo(textureInfo), m_Flags(flags)
             {}
-            std::unordered_map<const char *, uint> m_TextureInfo;
+            std::unordered_map<const char*, uint> m_TextureInfo;
             ShaderBuilderFlags m_Flags;
         };
 
         struct ModelData {
             ModelData(std::vector<Vertex> vertices, std::vector<uint> indices,
-                      std::unordered_map<const char *, uint> textureInfo, ShaderBuilderFlags flags)
+                      std::unordered_map<const char*, uint> textureInfo, ShaderBuilderFlags flags)
                 : m_MeshData(new MeshData(vertices, indices)), m_MaterialData(new MaterialData(textureInfo, flags))
             {}
 
-            ModelData(MeshData *meshData, MaterialData *materialData)
+            ModelData(MeshData* meshData, MaterialData* materialData)
                 : m_MeshData(meshData), m_MaterialData(materialData)
             {}
 
@@ -48,15 +48,15 @@ namespace Dodo {
                 delete m_MeshData;
                 delete m_MaterialData;
             }
-            MeshData *m_MeshData;
-            MaterialData *m_MaterialData;
+            MeshData* m_MeshData;
+            MaterialData* m_MaterialData;
         };
 
         ///////////////////////////////////////////////////
 
-        Model *LoadModel(const std::string &path);
+        Model* LoadModel(const std::string& path);
 
       private:
-        Mesh *LoadMesh(aiMesh *mesh, Ref<Material> material);
+        Mesh* LoadMesh(aiMesh* mesh, Ref<Material> material);
     };
 } // namespace Dodo

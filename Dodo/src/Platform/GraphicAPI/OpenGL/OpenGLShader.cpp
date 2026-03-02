@@ -8,13 +8,13 @@
 
 namespace Dodo { namespace Platform {
 
-    OpenGLShader::OpenGLShader(const char *name, const char *path) : m_Name(name)
+    OpenGLShader::OpenGLShader(const char* name, const char* path) : m_Name(name)
     {
         size_t len = strlen(path);
         if (path[len - 1] == 'x' && path[len - 2] == '.') // Why is this here?
         {
             len += strlen("lsl");
-            char *newpath = new char[len + 1];
+            char* newpath = new char[len + 1];
             *newpath = '\0';
             strcat(newpath, path);
             newpath[strlen(path) - 1] = 'g';
@@ -26,11 +26,11 @@ namespace Dodo { namespace Platform {
         }
     }
 
-    OpenGLShader::OpenGLShader(const char *name, std::string &source) : m_Name(name) { CompileInit(source); }
+    OpenGLShader::OpenGLShader(const char* name, std::string& source) : m_Name(name) { CompileInit(source); }
 
     OpenGLShader::~OpenGLShader() { glDeleteProgram(m_ShaderID); }
 
-    void OpenGLShader::CompileVFShader(const char *vertex, const char *fragment)
+    void OpenGLShader::CompileVFShader(const char* vertex, const char* fragment)
     {
         m_ShaderID = glCreateProgram();
 
@@ -96,7 +96,7 @@ namespace Dodo { namespace Platform {
         glDeleteShader(fragmentID);
     }
 
-    void OpenGLShader::CompileInit(const std::string &fileSource)
+    void OpenGLShader::CompileInit(const std::string& fileSource)
     {
         if (fileSource == "-1") return;
         ShaderType type = ShaderType::UNKNOWN;
@@ -149,19 +149,19 @@ namespace Dodo { namespace Platform {
         CompileVFShader(stringVertexSource.c_str(), stringFragmentSource.c_str());
     }
 
-    void OpenGLShader::ReloadFromPath(const char *path)
+    void OpenGLShader::ReloadFromPath(const char* path)
     {
         glDeleteProgram(m_ShaderID);
         CompileInit(FileUtils::ReadTextFile(path));
     }
 
-    void OpenGLShader::ReloadFromSource(std::string &source)
+    void OpenGLShader::ReloadFromSource(std::string& source)
     {
         glDeleteProgram(m_ShaderID);
         CompileInit(source);
     }
 
-    void OpenGLShader::ReloadFromSource(const char *vertex, const char *fragment)
+    void OpenGLShader::ReloadFromSource(const char* vertex, const char* fragment)
     {
         glDeleteProgram(m_ShaderID);
         CompileVFShader(vertex, fragment);
@@ -171,7 +171,7 @@ namespace Dodo { namespace Platform {
 
     void OpenGLShader::Unbind() const { glUseProgram(0); }
 
-    int OpenGLShader::GetLocation(const char *location)
+    int OpenGLShader::GetLocation(const char* location)
     {
         if (m_UniformLocations.find(location) != m_UniformLocations.end()) return m_UniformLocations[location];
 
@@ -181,36 +181,36 @@ namespace Dodo { namespace Platform {
         return locationi;
     }
 
-    void OpenGLShader::SetUniformValue(const char *location, const int value)
+    void OpenGLShader::SetUniformValue(const char* location, const int value)
     {
         glUniform1i(GetLocation(location), value);
     }
 
-    void OpenGLShader::SetUniformValue(const char *location, const float value)
+    void OpenGLShader::SetUniformValue(const char* location, const float value)
     {
         glUniform1f(GetLocation(location), value);
     }
-    void OpenGLShader::SetUniformValue(const char *location, const Math::TVec2<float> &value)
+    void OpenGLShader::SetUniformValue(const char* location, const Math::TVec2<float>& value)
     {
         glUniform2f(GetLocation(location), value.x, value.y);
     }
-    void OpenGLShader::SetUniformValue(const char *location, const Math::TVec3<float> &value)
+    void OpenGLShader::SetUniformValue(const char* location, const Math::TVec3<float>& value)
     {
         glUniform3f(GetLocation(location), value.x, value.y, value.z);
     }
-    void OpenGLShader::SetUniformValue(const char *location, const Math::TVec4<float> &value)
+    void OpenGLShader::SetUniformValue(const char* location, const Math::TVec4<float>& value)
     {
         glUniform4f(GetLocation(location), value.x, value.y, value.z, value.w);
     }
-    void OpenGLShader::SetUniformValue(const char *location, const Math::Mat2 &value)
+    void OpenGLShader::SetUniformValue(const char* location, const Math::Mat2& value)
     {
         glUniformMatrix2fv(GetLocation(location), 1, GL_FALSE, &value.m_Elements[0]);
     }
-    void OpenGLShader::SetUniformValue(const char *location, const Math::Mat3 &value)
+    void OpenGLShader::SetUniformValue(const char* location, const Math::Mat3& value)
     {
         glUniformMatrix3fv(GetLocation(location), 1, GL_FALSE, &value.m_Elements[0]);
     }
-    void OpenGLShader::SetUniformValue(const char *location, const Math::Mat4 &value)
+    void OpenGLShader::SetUniformValue(const char* location, const Math::Mat4& value)
     {
         glUniformMatrix4fv(GetLocation(location), 1, GL_FALSE, &value.m_Elements[0]);
     }

@@ -25,7 +25,7 @@ namespace Dodo {
         uint32_t m_PosX;
         uint32_t m_PosY;
 
-        const char *m_Title;
+        const char* m_Title;
 
         WindowSettings m_Settings;
     };

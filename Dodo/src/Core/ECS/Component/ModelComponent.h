@@ -10,7 +10,7 @@ namespace Dodo {
         Math::Transformation m_Transformation;
 
         ModelComponent() = default;
-        explicit ModelComponent(ModelID modelID, const Math::Transformation &transformation = Math::Transformation())
+        explicit ModelComponent(ModelID modelID, const Math::Transformation& transformation = Math::Transformation())
             : m_ModelID(modelID), m_Transformation(transformation)
         {}
     };

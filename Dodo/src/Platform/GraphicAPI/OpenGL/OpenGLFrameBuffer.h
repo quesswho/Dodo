@@ -33,7 +33,7 @@ namespace Dodo {
             FrameBufferProperties m_FrameBufferProperties;
 
           public:
-            OpenGLFrameBuffer(const FrameBufferProperties &framebufferprop);
+            OpenGLFrameBuffer(const FrameBufferProperties& framebufferprop);
             ~OpenGLFrameBuffer();
 
             inline void Bind() const

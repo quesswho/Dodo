@@ -13,9 +13,9 @@ namespace Dodo::Platform {
       public:
         explicit GLFWContext() {}
 
-        void CreateContextImpl(const NativeWindowHandle &handle)
+        void CreateContextImpl(const NativeWindowHandle& handle)
         {
-            m_Window = reinterpret_cast<GLFWwindow *>(handle.window);
+            m_Window = reinterpret_cast<GLFWwindow*>(handle.window);
             glfwMakeContextCurrent(m_Window);
         }
 
@@ -30,7 +30,7 @@ namespace Dodo::Platform {
         void InitializeImGui() { ImGui_ImplGlfw_InitForOpenGL(m_Window, true); }
 
       private:
-        GLFWwindow *m_Window = nullptr;
+        GLFWwindow* m_Window = nullptr;
     };
 
 } // namespace Dodo::Platform

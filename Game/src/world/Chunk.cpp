@@ -2,7 +2,7 @@
 
 Chunk::Chunk(ChunkPos chunkpos) : m_ChunkPos(chunkpos) {}
 
-Chunk::Chunk(ChunkPos chunkpos, const std::unordered_map<int, std::array<Ref<Block>, 4096>> &blocks)
+Chunk::Chunk(ChunkPos chunkpos, const std::unordered_map<int, std::array<Ref<Block>, 4096>>& blocks)
     : m_ChunkPos(chunkpos), m_Blocks(blocks)
 {}
 

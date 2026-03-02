@@ -108,12 +108,12 @@ void GameLayer::Render()
     m_PostEffect->Draw();
 }
 
-void GameLayer::OnEvent(const Event &event)
+void GameLayer::OnEvent(const Event& event)
 {
     switch (event.GetType())
     {
     case EventType::KEY_PRESSED:
-        if (static_cast<const KeyPressEvent &>(event).m_Key == DODO_KEY_F11)
+        if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_F11)
         {
             Application::s_Application->m_Window->FullScreen();
             m_Camera->Resize(Application::s_Application->GetWindowProperties().m_Width,
@@ -122,7 +122,7 @@ void GameLayer::OnEvent(const Event &event)
                                  Application::s_Application->GetWindowProperties().m_Height);
         }
 
-        if (static_cast<const KeyPressEvent &>(event).m_Key == DODO_KEY_ESCAPE)
+        if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_ESCAPE)
         {
             Application::s_Application->Shutdown();
         }
@@ -133,7 +133,7 @@ void GameLayer::OnEvent(const Event &event)
         m_Camera->UpdateRotation();
         break;
     case EventType::WINDOW_RESIZE:
-        TVec2<int> screen = static_cast<const WindowResizeEvent &>(event).m_ScreenSize;
+        TVec2<int> screen = static_cast<const WindowResizeEvent&>(event).m_ScreenSize;
         m_Camera->Resize(screen.x, screen.y);
         m_Scene->m_SkyBox->m_Projection = m_Camera->GetProjectionMatrix();
         break;
@@ -161,7 +161,7 @@ class Sandbox : public Application {
 
 int main()
 {
-    Sandbox *sandBox = new Sandbox();
+    Sandbox* sandBox = new Sandbox();
     sandBox->Run();
     delete sandBox;
 }

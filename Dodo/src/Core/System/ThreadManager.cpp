@@ -40,7 +40,7 @@ namespace Dodo {
 
         m_WorkConditional.notify_all();
 
-        for (std::thread &thread : m_WorkThreads)
+        for (std::thread& thread : m_WorkThreads)
             thread.join();
 
         m_WorkThreads.clear();

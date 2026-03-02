@@ -22,9 +22,9 @@ namespace Dodo { namespace Math {
         inline constexpr uint64 Next() { return m_Generator.Next(); }
 
       private:
-        constexpr uint64 *GenState(uint64 seed)
+        constexpr uint64* GenState(uint64 seed)
         {
-            uint64 *state = new uint64[4];
+            uint64* state = new uint64[4];
             state[0] = seed;
             // Splitmix64 for generating states
             for (int i = 0; i < 3; i++)
@@ -40,11 +40,11 @@ namespace Dodo { namespace Math {
 
     // Original Implementation https://prng.di.unimi.it/xoshiro256plus.c
     class Xoshiro256Plus {
-        uint64 *m_State;
+        uint64* m_State;
 
       public:
         // (uint64 state[4])
-        Xoshiro256Plus(uint64 *state) : m_State(state) {}
+        Xoshiro256Plus(uint64* state) : m_State(state) {}
 
         // Get next random number
         inline constexpr uint64 Next() noexcept

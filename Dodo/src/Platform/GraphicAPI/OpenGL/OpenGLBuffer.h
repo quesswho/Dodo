@@ -8,19 +8,19 @@ namespace Dodo {
 
     struct BufferElement {
 
-        BufferElement(const char *name, const uint componentCount)
+        BufferElement(const char* name, const uint componentCount)
             : m_Name(name), m_ComponentCount(componentCount), m_Offset(0), m_Index(0)
         {}
 
         inline const uint GetComponentCount() const { return m_ComponentCount; }
-        inline const char *GetEntryName() const { return m_Name; }
+        inline const char* GetEntryName() const { return m_Name; }
 
       public:
         uchar m_Index;
         uchar m_Offset;
 
       private:
-        const char *m_Name;
+        const char* m_Name;
         const uchar m_ComponentCount;
     };
 
@@ -57,10 +57,10 @@ namespace Dodo {
             uint m_ABufferID;
 
           public:
-            OpenGLVertexBuffer(const float *vertices, const uint size, const BufferProperties &prop);
+            OpenGLVertexBuffer(const float* vertices, const uint size, const BufferProperties& prop);
             ~OpenGLVertexBuffer();
 
-            const BufferProperties &GetBufferProperties() const { return m_BufferProperties; }
+            const BufferProperties& GetBufferProperties() const { return m_BufferProperties; }
 
             inline void Bind() const { glBindVertexArray(m_ABufferID); }
 
@@ -73,7 +73,7 @@ namespace Dodo {
             uint m_BufferID;
 
           public:
-            OpenGLIndexBuffer(const uint *indices, const uint count);
+            OpenGLIndexBuffer(const uint* indices, const uint count);
             ~OpenGLIndexBuffer();
 
             inline void Bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID); }

@@ -35,9 +35,9 @@ namespace Dodo {
 
         class OpenGLRenderAPI {
           public:
-            OpenGLRenderAPI(const NativeWindowHandle &NativeWindowHandle);
+            OpenGLRenderAPI(const NativeWindowHandle& NativeWindowHandle);
             ~OpenGLRenderAPI();
-            RenderInitError Init(const WindowProperties &winprop);
+            RenderInitError Init(const WindowProperties& winprop);
 
             inline void Begin() const { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); }
             inline void End() { m_Context.SwapBuffer(); }
@@ -68,7 +68,7 @@ namespace Dodo {
             void Blending(bool blending) const;
             void Culling(bool cull, bool backface = true);
 
-            inline const char *GetAPIName() const { return "OpenGL"; }
+            inline const char* GetAPIName() const { return "OpenGL"; }
             int CurrentVRamUsage() const
             {
                 int availKb;
@@ -79,7 +79,7 @@ namespace Dodo {
 
             OpenGLContext m_Context;
 
-            ShaderBuilder *m_ShaderBuilder;
+            ShaderBuilder* m_ShaderBuilder;
 
             std::string m_GPUInfo;
             int m_VramKbs;

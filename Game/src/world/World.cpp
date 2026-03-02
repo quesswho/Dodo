@@ -84,7 +84,7 @@ void World::UpdateChunk(ChunkPos chunkpos)
         }
     }
     chunk->m_Vertbuffer =
-        std::make_shared<Dodo::VertexBuffer>((float *)&faces[0], faces.size() * sizeof(FaceData),
+        std::make_shared<Dodo::VertexBuffer>((float*)&faces[0], faces.size() * sizeof(FaceData),
                                              Dodo::BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}}));
     chunk->m_Indexbuffer = std::make_shared<Dodo::IndexBuffer>(indices.data(), indices.size());
 }

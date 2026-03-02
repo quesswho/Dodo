@@ -13,18 +13,18 @@ class GameLayer : public Layer {
     void DrawScene();
     void Update(float elapsed);
     void Render();
-    void OnEvent(const Event &event);
-    void SetScene(Scene *scene);
+    void OnEvent(const Event& event);
+    void SetScene(Scene* scene);
 
   private:
-    FrameBuffer *m_FrameBuffer;
+    FrameBuffer* m_FrameBuffer;
 
-    Math::FreeCamera *m_Camera;
+    Math::FreeCamera* m_Camera;
 
-    EditorRenderer *m_Renderer;
-    Scene *m_Scene;
+    EditorRenderer* m_Renderer;
+    Scene* m_Scene;
 
-    Interface *m_Interface;
+    Interface* m_Interface;
 };
 
 class Dodeditor : public Application {

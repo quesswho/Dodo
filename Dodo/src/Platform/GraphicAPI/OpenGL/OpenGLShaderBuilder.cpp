@@ -10,7 +10,7 @@ namespace Dodo { namespace Platform {
 
     void OpenGLShaderBuilder::InitFallbackShader()
     {
-        const char *vertex = "#version 330 core\n"
+        const char* vertex = "#version 330 core\n"
                              "layout (location = 0) in vec3 a_Position;\n"
                              "layout (location = 1) in vec2 a_Texcoord;\n"
                              "uniform mat4 u_Model = mat4(1.0f);\n"
@@ -22,7 +22,7 @@ namespace Dodo { namespace Platform {
                              "   gl_Position = u_Camera * u_Model * vec4(a_Position, 1.0);\n"
                              "}\0";
 
-        const char *fragment = "#version 330 core\n"
+        const char* fragment = "#version 330 core\n"
                                "in vec2 o_Texcoord;\n"
                                "out vec4 pixel;\n"
                                "float checker()\n"
@@ -42,7 +42,7 @@ namespace Dodo { namespace Platform {
 
     OpenGLShaderBuilder::~OpenGLShaderBuilder() {}
 
-    Ref<Shader> OpenGLShaderBuilder::BuildVertexFragmentShader(const ShaderBuilderFlags flags, const char *name) const
+    Ref<Shader> OpenGLShaderBuilder::BuildVertexFragmentShader(const ShaderBuilderFlags flags, const char* name) const
     {
         ////////////
         // Vertex //
@@ -404,7 +404,7 @@ namespace Dodo { namespace Platform {
         return shader;
     }
 
-    uint OpenGLShaderBuilder::CompileVertexFragmentShader(const char *vertex, const char *fragment) const
+    uint OpenGLShaderBuilder::CompileVertexFragmentShader(const char* vertex, const char* fragment) const
     {
         uint result = glCreateProgram();
 

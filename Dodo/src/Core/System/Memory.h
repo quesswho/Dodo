@@ -13,8 +13,8 @@ namespace Dodo {
 
     class MemoryAllocator {
       public:
-        static inline void *Alloc(size_t size);
-        static inline void Dealloc(void *block, size_t size);
+        static inline void* Alloc(size_t size);
+        static inline void Dealloc(void* block, size_t size);
     };
 
     class StringUtils {
@@ -52,13 +52,13 @@ namespace Dodo {
 #pragma push_macro("new")
 #undef new
 
-void *operator new(size_t size);
+void* operator new(size_t size);
 
 #define ddnew new
 #pragma pop_macro("new")
 
 #pragma push_macro("delete")
-void operator delete(void *block, size_t size);
+void operator delete(void* block, size_t size);
 #define dddelete delete
 #pragma pop_macro("delete")
 #else

@@ -23,7 +23,7 @@ namespace Dodo {
                                              -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f,
                                              1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f};
 
-    Skybox::Skybox(const Math::Mat4 &projection, std::vector<std::string> paths)
+    Skybox::Skybox(const Math::Mat4& projection, std::vector<std::string> paths)
         : m_Projection(projection),
           m_Shader(Application::s_Application->m_AssetManager->GetShader(
               ShaderBuilderFlags::ShaderBuilderFlagCubeMap | ShaderBuilderFlags::ShaderBuilderFlagMaxDepth |
@@ -38,7 +38,7 @@ namespace Dodo {
 
     Skybox::~Skybox() { delete m_VertexBuffer; }
 
-    void Skybox::Draw(const Math::Mat4 &viewMatrix) const
+    void Skybox::Draw(const Math::Mat4& viewMatrix) const
     {
         Application::s_Application->m_RenderAPI->DepthComparisonFunction(DepthComparisonFunction::LESS_EQUAL);
         m_Shader->Bind();

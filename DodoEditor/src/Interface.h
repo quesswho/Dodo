@@ -3,15 +3,15 @@
 #include <Dodo.h>
 
 #include "EditorState.h"
-#include "Panels/InspectorPanel.h"
 #include "Panels/HierarchyPanel.h"
+#include "Panels/InspectorPanel.h"
 
 struct Component {
     Component() : m_Name("None"), m_Selected(false) {}
 
-    Component(const char *name) : m_Name(name), m_Selected(false) {}
+    Component(const char* name) : m_Name(name), m_Selected(false) {}
 
-    const char *m_Name;
+    const char* m_Name;
     bool m_Selected;
 };
 
@@ -21,10 +21,10 @@ struct EditorProperties {
     bool m_ViewportInput;
     bool m_ViewportHover;
 
-    const char *m_ViewportName;
+    const char* m_HierarchyName;
+    const char* m_ViewportName;
+    const char* m_InspectorName;
 };
-
-
 
 class Interface {
   public:
@@ -39,15 +39,15 @@ class Interface {
     HierarchyPanel m_HierarchyPanel;
 
   public:
-    Interface(Scene *scene);
+    Interface(Scene* scene);
 
     bool BeginDraw();
     bool BeginViewport();
     bool ViewportResize();
-    void EndViewport(FrameBuffer *framebuffer);
+    void EndViewport(FrameBuffer* framebuffer);
     void EndDraw();
 
-    void ChangeScene(Scene *scene);
+    void ChangeScene(Scene* scene);
 
   private:
     void InitInterface();

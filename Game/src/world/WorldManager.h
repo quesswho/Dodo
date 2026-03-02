@@ -7,7 +7,7 @@
 
 class WorldManager {
   public:
-    WorldManager(Ref<ResourceManager> resourceManager, Dodo::Math::FreeCamera *camera);
+    WorldManager(Ref<ResourceManager> resourceManager, Dodo::Math::FreeCamera* camera);
 
     Ref<ResourceManager> m_ResourceManager;
     Ref<World> m_World;

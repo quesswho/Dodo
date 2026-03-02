@@ -27,19 +27,19 @@ namespace Dodo {
 		gl_Position = u_LightCamera * u_Model * vec4(a_Position, 1.0);
 	})";
 
-    Renderer3D::Renderer3D(Math::FreeCamera *camera)
+    Renderer3D::Renderer3D(Math::FreeCamera* camera)
         : m_Camera(camera), m_ShadowMap(new ShadowMap()),
           m_ShadowMapMaterial(std::make_shared<Material>(Shader::CreateFromSource("Shadow", s_ShadowShader)))
     {}
 
-    void Renderer3D::RenderEntities(World &world, Math::FreeCamera *camera, LightSystem &lightSystem,
-                                    AssetManager &assets)
+    void Renderer3D::RenderEntities(World& world, Math::FreeCamera* camera, LightSystem& lightSystem,
+                                    AssetManager& assets)
     {
         // Draw ModelComponent
-        const auto &modelPool = world.GetPool<ModelComponent>();
-        for (const auto &modelComponent : modelPool.GetComponents())
+        const auto& modelPool = world.GetPool<ModelComponent>();
+        for (const auto& modelComponent : modelPool.GetComponents())
         {
-            Model *model = assets.GetModel(modelComponent.m_ModelID);
+            Model* model = assets.GetModel(modelComponent.m_ModelID);
             for (auto mesh : model->GetMeshes())
             {
                 Ref<Material> mat = mesh->GetMaterial();
@@ -54,27 +54,27 @@ namespace Dodo {
         }
     }
 
-    void Renderer3D::RenderEntitiesWithMaterial(World &world, Ref<Material> material, AssetManager &assets)
+    void Renderer3D::RenderEntitiesWithMaterial(World& world, Ref<Material> material, AssetManager& assets)
     {
         material->Bind();
 
         // Draw ModelComponents with custom material
-        const auto &modelPool = world.GetPool<ModelComponent>();
-        for (const auto &modelComponent : modelPool.GetComponents())
+        const auto& modelPool = world.GetPool<ModelComponent>();
+        for (const auto& modelComponent : modelPool.GetComponents())
         {
             material->SetUniform("u_Model", modelComponent.m_Transformation.m_Model);
-            Model *model = assets.GetModel(modelComponent.m_ModelID);
+            Model* model = assets.GetModel(modelComponent.m_ModelID);
             model->DrawGeometry();
         }
     }
 
-    void Renderer3D::DrawScene(Scene *scene)
+    void Renderer3D::DrawScene(Scene* scene)
     {
         RenderEntities(scene->GetWorld(), m_Camera, scene->m_LightSystem, *Application::s_Application->m_AssetManager);
         if (scene->m_SkyBox) scene->m_SkyBox->Draw(m_Camera->GetViewMatrix());
     }
 
-    void Renderer3D::DrawShadowedScene(Scene *scene)
+    void Renderer3D::DrawShadowedScene(Scene* scene)
     {
 
         // Bind shadowmap
@@ -84,7 +84,7 @@ namespace Dodo {
         Application::s_Application->m_RenderAPI->Culling(true, false);
         m_ShadowMapMaterial->BindShader();
         m_ShadowMapMaterial->SetUniform("u_LightCamera", scene->m_LightSystem.m_Directional.m_LightCamera);
-        World &world = scene->GetWorld();
+        World& world = scene->GetWorld();
         RenderEntitiesWithMaterial(world, m_ShadowMapMaterial, *Application::s_Application->m_AssetManager);
         Application::s_Application->m_RenderAPI->Culling(Application::s_Application->m_RenderAPI->m_CullingDefault,
                                                          true);

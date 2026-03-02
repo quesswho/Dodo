@@ -11,17 +11,17 @@
 namespace Dodo {
     class PostEffect {
       private:
-        VertexBuffer *m_Vertexbuffer;
-        FrameBuffer *m_Framebuffer;
+        VertexBuffer* m_Vertexbuffer;
+        FrameBuffer* m_Framebuffer;
         Ref<Shader> m_Shader;
 
       public:
-        PostEffect(const FrameBufferProperties &framebufferprop, const char *path);
+        PostEffect(const FrameBufferProperties& framebufferprop, const char* path);
         ~PostEffect();
 
         inline void Bind() const { m_Framebuffer->Bind(); }
 
-        template <typename T> void SetUniformValue(const char *location, const T val)
+        template <typename T> void SetUniformValue(const char* location, const T val)
         {
             m_Shader->Bind();
             m_Shader->SetUniformValue(location, val);

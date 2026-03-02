@@ -8,12 +8,12 @@
 
 namespace Dodo { namespace Platform {
 
-    OpenGLTexture::OpenGLTexture(const char *path, uint index, const TextureSettings &settings)
+    OpenGLTexture::OpenGLTexture(const char* path, uint index, const TextureSettings& settings)
         : m_Index(index), m_TextureID(0)
     {
         int width, height, channels;
         stbi_set_flip_vertically_on_load(true);
-        uchar *data = stbi_load(path, &width, &height, &channels, 0);
+        uchar* data = stbi_load(path, &width, &height, &channels, 0);
         if (data)
         {
             TextureProperties props((uint)width, (uint)height);
@@ -40,13 +40,13 @@ namespace Dodo { namespace Platform {
         stbi_image_free(data);
     }
 
-    OpenGLTexture::OpenGLTexture(uchar *data, TextureProperties prop, uint index, const TextureSettings &settings)
+    OpenGLTexture::OpenGLTexture(uchar* data, TextureProperties prop, uint index, const TextureSettings& settings)
         : m_Index(index), m_TextureProperties(prop)
     {
         Init(data, settings);
     }
 
-    void OpenGLTexture::Init(uchar *data, const TextureSettings &settings)
+    void OpenGLTexture::Init(uchar* data, const TextureSettings& settings)
     {
         glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
         glBindTexture(GL_TEXTURE_2D, m_TextureID);

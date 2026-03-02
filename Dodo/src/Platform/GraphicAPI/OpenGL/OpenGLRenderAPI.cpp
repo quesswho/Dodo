@@ -7,7 +7,7 @@
 
 namespace Dodo { namespace Platform {
 
-    OpenGLRenderAPI::OpenGLRenderAPI(const NativeWindowHandle &handle)
+    OpenGLRenderAPI::OpenGLRenderAPI(const NativeWindowHandle& handle)
         : m_Handle(handle), m_ShaderBuilder(0), m_GPUInfo(""), m_VramKbs(0), m_ViewportWidth(0), m_ViewportHeight(0),
           m_ViewportPosX(0), m_ViewportPosY(0)
     {}
@@ -19,11 +19,11 @@ namespace Dodo { namespace Platform {
         gladLoaderUnloadGL();
     }
 
-    RenderInitError OpenGLRenderAPI::Init(const WindowProperties &winprop)
+    RenderInitError OpenGLRenderAPI::Init(const WindowProperties& winprop)
     {
         m_Context.CreateContextImpl(m_Handle); // Run glad loader
         m_Version = m_Context.LoadGlad();
-        std::string versionStr = reinterpret_cast<const char *>(glGetString(GL_VERSION));
+        std::string versionStr = reinterpret_cast<const char*>(glGetString(GL_VERSION));
         DD_INFO("OPENGL: {0}", versionStr);
         if (GLAD_VERSION_MAJOR(m_Version) <= 3)
         {
@@ -39,8 +39,8 @@ namespace Dodo { namespace Platform {
 
         m_Context.SetVSync(winprop.m_Settings.vsync);
 
-        std::string vendor = reinterpret_cast<const char *>(glGetString(GL_VENDOR));
-        std::string renderer = reinterpret_cast<const char *>(glGetString(GL_RENDERER));
+        std::string vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+        std::string renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 
         glGetIntegerv(0x9048, &m_VramKbs);
         m_GPUInfo = "Vendor: " + vendor + " Renderer: " + renderer;

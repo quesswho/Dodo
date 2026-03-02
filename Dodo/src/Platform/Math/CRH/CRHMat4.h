@@ -17,8 +17,8 @@ namespace Dodo { namespace Platform {
         CRHMat4x4() : m_Elements{0} {}
         CRHMat4x4(float diagonal) { Identity(diagonal); }
 
-        CRHMat4x4(const Math::TVec4<T> &first, const Math::TVec4<T> &second, const Math::TVec4<T> &third,
-                  const Math::TVec4<T> &forth)
+        CRHMat4x4(const Math::TVec4<T>& first, const Math::TVec4<T>& second, const Math::TVec4<T>& third,
+                  const Math::TVec4<T>& forth)
         {
             m_Elements[GetIndex(0, 0)] = first.x;
             m_Elements[GetIndex(0, 1)] = first.y;
@@ -65,7 +65,7 @@ namespace Dodo { namespace Platform {
             m_Elements[GetIndex(3, 3)] = sixteenth;
         }
 
-        CRHMat4x4(const Math::Mat3x3<T> &mat)
+        CRHMat4x4(const Math::Mat3x3<T>& mat)
         {
             m_Elements[GetIndex(0, 0)] = mat.m_Elements[0];
             m_Elements[GetIndex(0, 1)] = mat.m_Elements[1];
@@ -95,7 +95,7 @@ namespace Dodo { namespace Platform {
 
         // Addition
 
-        const CRHMat4x4 &operator+=(const float scalar)
+        const CRHMat4x4& operator+=(const float scalar)
         {
             for (int i = 0; i < 16; i++)
             {
@@ -106,7 +106,7 @@ namespace Dodo { namespace Platform {
 
         friend CRHMat4x4 operator+(CRHMat4x4 left, const float right) { return left += right; }
 
-        const CRHMat4x4 &operator+=(const CRHMat4x4 &other)
+        const CRHMat4x4& operator+=(const CRHMat4x4& other)
         {
             for (int i = 0; i < 16; i++)
             {
@@ -115,11 +115,11 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat4x4 operator+(CRHMat4x4 left, const CRHMat4x4 &right) { return left += right; }
+        friend CRHMat4x4 operator+(CRHMat4x4 left, const CRHMat4x4& right) { return left += right; }
 
         // Subtraction
 
-        const CRHMat4x4 &operator-=(const float scalar)
+        const CRHMat4x4& operator-=(const float scalar)
         {
             for (int i = 0; i < 16; i++)
             {
@@ -130,7 +130,7 @@ namespace Dodo { namespace Platform {
 
         friend CRHMat4x4 operator-(CRHMat4x4 left, const float right) { return left -= right; }
 
-        const CRHMat4x4 &operator-=(const CRHMat4x4 &other)
+        const CRHMat4x4& operator-=(const CRHMat4x4& other)
         {
             for (int i = 0; i < 16; i++)
             {
@@ -139,11 +139,11 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat4x4 operator-(CRHMat4x4 left, const CRHMat4x4 &right) { return left -= right; }
+        friend CRHMat4x4 operator-(CRHMat4x4 left, const CRHMat4x4& right) { return left -= right; }
 
         // Multiplication
 
-        const CRHMat4x4 &operator*=(const float scalar)
+        const CRHMat4x4& operator*=(const float scalar)
         {
             for (int i = 0; i < 16; i++)
                 m_Elements[i] *= scalar;
@@ -153,7 +153,7 @@ namespace Dodo { namespace Platform {
 
         friend CRHMat4x4 operator*(CRHMat4x4 left, const float right) { return left *= right; }
 
-        inline const CRHMat4x4 &operator*=(const CRHMat4x4 &other)
+        inline const CRHMat4x4& operator*=(const CRHMat4x4& other)
         {
 
             const Math::TVec4 row0 = Math::TVec4(m_Elements[GetIndex(0, 0)], m_Elements[GetIndex(1, 0)],
@@ -188,11 +188,11 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat4x4 operator*(CRHMat4x4 left, const CRHMat4x4 &right) { return left *= right; }
+        friend CRHMat4x4 operator*(CRHMat4x4 left, const CRHMat4x4& right) { return left *= right; }
 
         // Assignment
 
-        const CRHMat4x4 &operator=(const CRHMat4x4 &other)
+        const CRHMat4x4& operator=(const CRHMat4x4& other)
         {
             m_Elements[GetIndex(0, 0)] = other.m_Elements[GetIndex(0, 0)];
             m_Elements[GetIndex(0, 1)] = other.m_Elements[GetIndex(0, 1)];
@@ -218,7 +218,7 @@ namespace Dodo { namespace Platform {
 
         // Test
 
-        const bool operator==(const CRHMat4x4 &other) const
+        const bool operator==(const CRHMat4x4& other) const
         {
             return (m_Elements[GetIndex(0, 0)] == other.m_Elements[GetIndex(0, 0)] &&
                     m_Elements[GetIndex(0, 1)] == other.m_Elements[GetIndex(0, 1)] &&
@@ -241,7 +241,7 @@ namespace Dodo { namespace Platform {
                     m_Elements[GetIndex(3, 3)] == other.m_Elements[GetIndex(3, 3)]);
         }
 
-        const bool operator!=(const CRHMat4x4 &other) const
+        const bool operator!=(const CRHMat4x4& other) const
         {
             return !(m_Elements[GetIndex(0, 0)] == other.m_Elements[GetIndex(0, 0)] &&
                      m_Elements[GetIndex(0, 1)] == other.m_Elements[GetIndex(0, 1)] &&
@@ -279,7 +279,7 @@ namespace Dodo { namespace Platform {
                 mat.m_Elements[GetIndex(3, 3)]);
         }
 
-        static inline const CRHMat4x4<T> Translate(const Math::TVec3<T> &translation)
+        static inline const CRHMat4x4<T> Translate(const Math::TVec3<T>& translation)
         {
             CRHMat4x4 result(1.0f);
 
@@ -289,7 +289,7 @@ namespace Dodo { namespace Platform {
             return result;
         }
 
-        static inline const CRHMat4x4<T> Scale(const Math::TVec3<T> &scale)
+        static inline const CRHMat4x4<T> Scale(const Math::TVec3<T>& scale)
         {
             CRHMat4x4 result(1.0f);
 
@@ -300,7 +300,7 @@ namespace Dodo { namespace Platform {
         }
 
         // Recommended to normalize axis
-        static inline CRHMat4x4<T> Rotate(const float radians, const Math::TVec3<T> &axis)
+        static inline CRHMat4x4<T> Rotate(const float radians, const Math::TVec3<T>& axis)
         {
             CRHMat4x4 result(1.0f);
 
@@ -366,7 +366,7 @@ namespace Dodo { namespace Platform {
                              -(zFar + zNear) / (zFar - zNear), -1, 0, 0, -(2 * zFar * zNear) / (zFar - zNear), 0);
         }
 
-        static inline const CRHMat4x4 LookAt(const Math::Vec3 &eye, const Math::Vec3 &to, const Math::Vec3 &up)
+        static inline const CRHMat4x4 LookAt(const Math::Vec3& eye, const Math::Vec3& to, const Math::Vec3& up)
         {
             CRHMat4x4 result(1.0f);
 
@@ -389,7 +389,7 @@ namespace Dodo { namespace Platform {
             return result;
         }
 
-        static inline const CRHMat4x4 LookDir(const Math::Vec3 &pos, const Math::Vec3 &dir, const Math::Vec3 &up)
+        static inline const CRHMat4x4 LookDir(const Math::Vec3& pos, const Math::Vec3& dir, const Math::Vec3& up)
         {
             CRHMat4x4 result(1.0f);
 
@@ -415,16 +415,16 @@ namespace Dodo { namespace Platform {
         // Useful static functions
         /////
 
-        static inline const CRHMat4x4<T> Multiply(const CRHMat4x4<T> &mat) { return mat; }
+        static inline const CRHMat4x4<T> Multiply(const CRHMat4x4<T>& mat) { return mat; }
 
-        template <class... O> static const CRHMat4x4<T> Multiply(const CRHMat4x4<T> &mat, O... others)
+        template <class... O> static const CRHMat4x4<T> Multiply(const CRHMat4x4<T>& mat, O... others)
         {
             CRHMat4x4<T> result;
             result = mat * Multiply(others...);
             return result;
         }
 
-        static inline const CRHMat4x4<T> RelinquishToMat3(const CRHMat4x4<T> &mat)
+        static inline const CRHMat4x4<T> RelinquishToMat3(const CRHMat4x4<T>& mat)
         {
             CRHMat4x4<T> result = mat;
             result.m_Elements[GetIndex(0, 3)] = 0.0f;

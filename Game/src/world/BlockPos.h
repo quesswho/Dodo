@@ -14,10 +14,10 @@ struct ChunkPos {
     ChunkPos(int x, int y) : x(x), y(y) {}
 
     // Allow hashing of ChunkPos
-    bool operator==(const ChunkPos &otherPos) const { return (this->x == otherPos.x && this->y == otherPos.y); }
+    bool operator==(const ChunkPos& otherPos) const { return (this->x == otherPos.x && this->y == otherPos.y); }
 
     struct HashFunction {
-        size_t operator()(const ChunkPos &pos) const
+        size_t operator()(const ChunkPos& pos) const
         {
             size_t xHash = std::hash<int>()(pos.x);
             size_t yHash = std::hash<int>()(pos.y) << 1;

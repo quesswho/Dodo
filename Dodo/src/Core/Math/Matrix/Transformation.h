@@ -14,13 +14,13 @@ namespace Dodo { namespace Math {
 
         Transformation() : m_Position(Vec3(0.0f)), m_Scale(Vec3(1.0f)), m_Rotation(Vec3(0.0f)) { Calculate(); }
 
-        Transformation(const Vec3 &pos, const Vec3 &scale, const Vec3 &rotate)
+        Transformation(const Vec3& pos, const Vec3& scale, const Vec3& rotate)
             : m_Position(pos), m_Scale(scale), m_Rotation(rotate)
         {
             Calculate();
         }
 
-        Transformation(const Vec3 &pos, const Vec3 &scale)
+        Transformation(const Vec3& pos, const Vec3& scale)
             : m_Position(pos), m_Scale(scale), m_Rotation(Vec3(0.0f, 0.0f, 0.0f))
         {
             Calculate();
@@ -33,25 +33,25 @@ namespace Dodo { namespace Math {
             Calculate();
         }
 
-        inline void Move(const Vec3 &pos)
+        inline void Move(const Vec3& pos)
         {
             m_Position = pos;
             Calculate();
         }
 
-        inline void Scale(const Vec3 &scale)
+        inline void Scale(const Vec3& scale)
         {
             m_Scale = scale;
             Calculate();
         }
 
-        inline void Rotate(const Vec3 &rotate)
+        inline void Rotate(const Vec3& rotate)
         {
             m_Rotation = ToRadians(rotate);
             Calculate();
         }
 
-        inline void Transformate(const Math::Vec3 &pos, const Math::Vec3 &scale, const Math::Vec3 &rotate)
+        inline void Transformate(const Math::Vec3& pos, const Math::Vec3& scale, const Math::Vec3& rotate)
         {
             m_Position = pos;
             m_Scale = scale;

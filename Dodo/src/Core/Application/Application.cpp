@@ -5,9 +5,9 @@
 
 namespace Dodo {
 
-    Application *Application::s_Application;
+    Application* Application::s_Application;
 
-    Application::Application(const ApplicationConfig &conf)
+    Application::Application(const ApplicationConfig& conf)
         : m_Closed(false), m_Initializing(true), m_FramesPerSecond(0), m_FrameTimeMs(0)
     {
         s_Application = this;
@@ -55,7 +55,7 @@ namespace Dodo {
         }
     }
 
-    void Application::CoreInit(const ApplicationConfig &conf)
+    void Application::CoreInit(const ApplicationConfig& conf)
     {
 
         m_Logger = ddnew Logger();
@@ -67,7 +67,7 @@ namespace Dodo {
         m_ThreadManager = ddnew ThreadManager(m_NumLogicalProcessors - 1 == 0 ? 1 : m_NumLogicalProcessors - 1);
 
         // Set event callback in input manager
-        m_InputManager.SetEventCallback([this](const Event &e) { OnEvent(e); });
+        m_InputManager.SetEventCallback([this](const Event& e) { OnEvent(e); });
 
         m_RenderAPI = ddnew RenderAPI(m_Window->GetHandle());
         RenderInitError res = m_RenderAPI->Init(m_Window->GetWindowProperties());
@@ -96,7 +96,7 @@ namespace Dodo {
         m_RenderAPI->End();
     }
 
-    void Application::OnEvent(const Event &event)
+    void Application::OnEvent(const Event& event)
     {
         for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
         {
@@ -108,9 +108,9 @@ namespace Dodo {
 
     void Application::Shutdown() { m_Closed = true; }
 
-    void Application::PushLayer(Layer *layer) { m_Layers.push_back(layer); }
+    void Application::PushLayer(Layer* layer) { m_Layers.push_back(layer); }
 
-    void Application::PopLayer(Layer *layer)
+    void Application::PopLayer(Layer* layer)
     {
         const auto it = std::find(m_Layers.begin(), m_Layers.end(), layer);
 

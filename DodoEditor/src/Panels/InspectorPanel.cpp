@@ -11,7 +11,7 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
     static float scale[3] = {1.0f, 1.0f, 1.0f};
     static float rotate[3] = {0.0f, 0.0f, 0.0f};
     ImGui::Begin("Inspector");
-    World &world = state.scene->GetWorld();
+    World& world = state.scene->GetWorld();
     for (int entityId : state.selection.entities)
     {
         static char nameBuffer[64] = "";
@@ -87,12 +87,12 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
         {
             if (ImGui::TreeNodeEx("ModelComponent", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                ModelComponent &model = world.GetComponent<ModelComponent>(entityId);
+                ModelComponent& model = world.GetComponent<ModelComponent>(entityId);
                 if (inspector.dirty)
                 {
-                    memcpy(translate, (float *)&model.m_Transformation.m_Position, 3 * sizeof(float));
-                    memcpy(scale, (float *)&model.m_Transformation.m_Scale, 3 * sizeof(float));
-                    memcpy(rotate, (float *)&model.m_Transformation.m_Rotation, 3 * sizeof(float));
+                    memcpy(translate, (float*)&model.m_Transformation.m_Position, 3 * sizeof(float));
+                    memcpy(scale, (float*)&model.m_Transformation.m_Scale, 3 * sizeof(float));
+                    memcpy(rotate, (float*)&model.m_Transformation.m_Rotation, 3 * sizeof(float));
                     rotate[0] = Math::ToDegrees(rotate[0]);
                     rotate[1] = Math::ToDegrees(rotate[1]);
                     rotate[2] = Math::ToDegrees(rotate[2]);
@@ -133,7 +133,7 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
                             model.m_Transformation.m_Scale += temp.x;
                             model.m_Transformation.m_Scale += temp.y;
                             model.m_Transformation.m_Scale += temp.z;
-                            memcpy(scale, (float *)&model.m_Transformation.m_Scale, sizeof(Math::Vec3));
+                            memcpy(scale, (float*)&model.m_Transformation.m_Scale, sizeof(Math::Vec3));
                             model.m_Transformation.Calculate();
                         } else
                             model.m_Transformation.Scale(Math::Vec3(scale[0], scale[1], scale[2]));
@@ -143,8 +143,9 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
                     if (ImGui::DragFloat3("##rotate", rotate, 0.5f))
                     {
                         Math::Vec3 temp = ((Math::Vec3)rotate);
-                        temp = Math::Vec3(std::fmod(temp.x, 360.0f), std::fmod(temp.y, 360.0f), std::fmod(temp.z, 360.0f));
-                        memcpy(rotate, (float *)&temp, sizeof(Math::Vec3));
+                        temp =
+                            Math::Vec3(std::fmod(temp.x, 360.0f), std::fmod(temp.y, 360.0f), std::fmod(temp.z, 360.0f));
+                        memcpy(rotate, (float*)&temp, sizeof(Math::Vec3));
                         model.m_Transformation.Rotate(temp);
                     }
 

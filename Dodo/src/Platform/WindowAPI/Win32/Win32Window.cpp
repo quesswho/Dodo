@@ -11,7 +11,7 @@
 
 namespace Dodo::Platform {
 
-    Win32Window::Win32Window(const WindowProperties &winProp) : m_WindowProperties(winProp), m_Focused(true) { Init(); }
+    Win32Window::Win32Window(const WindowProperties& winProp) : m_WindowProperties(winProp), m_Focused(true) { Init(); }
 
     Win32Window::~Win32Window()
     {
@@ -199,7 +199,7 @@ namespace Dodo::Platform {
 
     NativeWindowHandle Win32Window::GetHandle() const
     {
-        return {NativeWindowHandle::WindowBackend::Win32, (void *)m_Hwnd, (void *)m_Hdc};
+        return {NativeWindowHandle::WindowBackend::Win32, (void*)m_Hwnd, (void*)m_Hdc};
     }
 
     LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -263,7 +263,7 @@ namespace Dodo::Platform {
 
             GetRawInputData((HRAWINPUT)lParam, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER));
 
-            RAWINPUT *raw = (RAWINPUT *)lpb;
+            RAWINPUT* raw = (RAWINPUT*)lpb;
 
             if (raw->header.dwType == RIM_TYPEMOUSE)
             {
@@ -296,7 +296,7 @@ namespace Dodo::Platform {
         return result;
     }
 
-    void Win32Window::SetTitle(const char *title)
+    void Win32Window::SetTitle(const char* title)
     {
         m_WindowProperties.m_Title = title;
         SetWindowTextA(m_Hwnd, m_WindowProperties.m_Title);
@@ -427,7 +427,7 @@ namespace Dodo::Platform {
         Application::s_Application->OnEvent(WindowCloseEvent());
     }
 
-    void Win32Window::SetWindowProperties(const WindowProperties &winprop) { m_WindowProperties = winprop; }
+    void Win32Window::SetWindowProperties(const WindowProperties& winprop) { m_WindowProperties = winprop; }
 
     void Win32Window::FocusConsole() const
     {

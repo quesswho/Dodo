@@ -2,7 +2,6 @@
 #include "../EditorState.h"
 
 class InspectorPanel {
-public:
+  public:
     void Draw(EditorState& state, InspectorState& inspector);
-
 };

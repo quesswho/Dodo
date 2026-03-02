@@ -8,10 +8,10 @@
 
 namespace Dodo {
 
-    SceneFile::SceneFile(const std::string &path) : m_Path(path) {}
+    SceneFile::SceneFile(const std::string& path) : m_Path(path) {}
 
     // Public API
-    SceneFileError SceneFile::Write(Scene *scene)
+    SceneFileError SceneFile::Write(Scene* scene)
     {
         if (!HasPath())
         {
@@ -21,7 +21,7 @@ namespace Dodo {
         return WriteAs(m_Path, scene);
     }
 
-    SceneFileError SceneFile::WriteAs(const std::string &path, Scene *scene)
+    SceneFileError SceneFile::WriteAs(const std::string& path, Scene* scene)
     {
         m_Path = path;
         m_File.BeginWrite();
@@ -30,7 +30,7 @@ namespace Dodo {
         m_File.WriteComment("Scene v" + std::to_string(CURRENT_VERSION));
         m_File.WriteBlankLine();
 
-        World &world = scene->GetWorld();
+        World& world = scene->GetWorld();
         for (EntityID entityId : world.GetAliveEntities())
         {
             m_File.WriteSection("Entity:" + std::to_string(entityId));
@@ -44,7 +44,7 @@ namespace Dodo {
             // Write ModelComponent if entity has one
             if (world.HasComponent<ModelComponent>(entityId))
             {
-                auto &comp = world.GetComponent<ModelComponent>(entityId);
+                auto& comp = world.GetComponent<ModelComponent>(entityId);
                 std::string path = Application::s_Application->m_AssetManager->GetModelPath(comp.m_ModelID);
                 m_File.WriteSection("ModelComponent");
                 m_File.WriteString("path", path);
@@ -61,7 +61,7 @@ namespace Dodo {
         return m_LastError;
     }
 
-    Scene *SceneFile::Read()
+    Scene* SceneFile::Read()
     {
         if (!HasPath())
         {
@@ -71,7 +71,7 @@ namespace Dodo {
         return Read(m_Path);
     }
 
-    Scene *SceneFile::Read(const std::string &path)
+    Scene* SceneFile::Read(const std::string& path)
     {
         m_Path = path;
 
@@ -87,7 +87,7 @@ namespace Dodo {
             m_File.SkipLine();
         }
 
-        Scene *result =
+        Scene* result =
             new Scene(new Math::FreeCamera(Math::Vec3(0.0f, 0.0f, 20.0f),
                                            (float)Application::s_Application->m_RenderAPI->m_ViewportWidth /
                                                (float)Application::s_Application->m_RenderAPI->m_ViewportHeight,
@@ -112,7 +112,7 @@ namespace Dodo {
                 currentEntityId = std::stoi(section.substr(7));
                 std::string name = m_File.ReadString();
 
-                World &world = result->GetWorld();
+                World& world = result->GetWorld();
                 EntityID createdId = world.CreateEntity();
                 currentEntityId = createdId;
                 world.AddComponent<NameComponent>(currentEntityId, NameComponent{name});

@@ -58,7 +58,7 @@ namespace Dodo {
     struct MouseScrollEvent : public Event {
         Math::TVec2<double> m_MouseScrollOffset;
 
-        MouseScrollEvent(const Math::TVec2<double> &mouseScrollOffset)
+        MouseScrollEvent(const Math::TVec2<double>& mouseScrollOffset)
             : Event(EventType::MOUSE_SCROLL), m_MouseScrollOffset(mouseScrollOffset)
         {}
     };
@@ -66,13 +66,13 @@ namespace Dodo {
     struct MouseMoveEvent : public Event {
         Math::TVec2<double> m_MousePos;
 
-        MouseMoveEvent(const Math::TVec2<double> &mousePos) : Event(EventType::MOUSE_POSITION), m_MousePos(mousePos) {}
+        MouseMoveEvent(const Math::TVec2<double>& mousePos) : Event(EventType::MOUSE_POSITION), m_MousePos(mousePos) {}
     };
 
     struct WindowResizeEvent : public Event {
         Math::TVec2<int> m_ScreenSize;
 
-        WindowResizeEvent(const Math::TVec2<int> &screenSize)
+        WindowResizeEvent(const Math::TVec2<int>& screenSize)
             : Event(EventType::WINDOW_RESIZE), m_ScreenSize(screenSize)
         {}
     };

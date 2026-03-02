@@ -10,7 +10,7 @@ namespace Dodo {
         };
 
         WindowBackend backend;
-        void *window;  // HWND or GLFWHandle
-        void *display; // HDC
+        void* window;  // HWND or GLFWHandle
+        void* display; // HDC
     };
 } // namespace Dodo

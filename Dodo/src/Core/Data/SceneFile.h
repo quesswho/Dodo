@@ -24,16 +24,16 @@ namespace Dodo {
         static constexpr uint32_t CURRENT_VERSION = 1;
 
         SceneFile() = default;
-        explicit SceneFile(const std::string &path);
+        explicit SceneFile(const std::string& path);
 
         // Write/Read operations
-        SceneFileError Write(Scene *scene);
-        SceneFileError WriteAs(const std::string &path, Scene *scene);
+        SceneFileError Write(Scene* scene);
+        SceneFileError WriteAs(const std::string& path, Scene* scene);
 
-        Scene *Read();
-        Scene *Read(const std::string &path);
+        Scene* Read();
+        Scene* Read(const std::string& path);
 
-        const std::string &GetPath() const { return m_Path; }
+        const std::string& GetPath() const { return m_Path; }
         bool HasPath() const { return !m_Path.empty(); }
         SceneFileError GetLastError() const { return m_LastError; }
 

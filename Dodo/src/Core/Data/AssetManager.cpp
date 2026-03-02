@@ -12,7 +12,7 @@ namespace Dodo {
 
     AssetManager::~AssetManager()
     {
-        for (auto &model : m_Models)
+        for (auto& model : m_Models)
             delete model.second;
     }
 
@@ -25,7 +25,7 @@ namespace Dodo {
         return m_ShaderBuilderShaders[flags];
     }
 
-    ModelID AssetManager::LoadModel(const std::string &path)
+    ModelID AssetManager::LoadModel(const std::string& path)
     {
         if (m_ModelID.find(path) != m_ModelID.end())
         {
@@ -33,7 +33,7 @@ namespace Dodo {
             return m_ModelID.at(path);
         }
 
-        Model *model = m_ModelLoader->LoadModel(path);
+        Model* model = m_ModelLoader->LoadModel(path);
         int id = m_Models.size();
 
         m_ModelID.emplace(path, id);
@@ -42,14 +42,14 @@ namespace Dodo {
         return id;
     }
 
-    Model *AssetManager::GetModel(ModelID id)
+    Model* AssetManager::GetModel(ModelID id)
     {
         if (m_Models.find(id) != m_Models.end()) return m_Models[id];
         DD_ERR("Trying to get model that doesn't exist! ID: {0}", id);
         return nullptr;
     }
 
-    const std::string &AssetManager::GetModelPath(ModelID id)
+    const std::string& AssetManager::GetModelPath(ModelID id)
     {
         if (m_ModelPath.find(id) != m_ModelPath.end())
         {
@@ -60,7 +60,7 @@ namespace Dodo {
         return empty;
     }
 
-    Ref<Material> AssetManager::GetMaterial(const char *path)
+    Ref<Material> AssetManager::GetMaterial(const char* path)
     {
         if (m_MaterialID.find(path) != m_MaterialID.end())
         {

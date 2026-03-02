@@ -2,7 +2,7 @@
 #include "pch.h"
 
 namespace Dodo {
-    PostEffect::PostEffect(const FrameBufferProperties &framebufferprop, const char *path)
+    PostEffect::PostEffect(const FrameBufferProperties& framebufferprop, const char* path)
         : m_Framebuffer(new FrameBuffer(framebufferprop)), m_Shader(Shader::CreateFromPath("Postfx", path))
     {
         Create();

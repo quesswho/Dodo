@@ -8,13 +8,13 @@
 using namespace Dodo;
 using namespace Math;
 
-Interface::Interface(Scene *scene)
+Interface::Interface(Scene* scene)
 {
     m_EditorState.scene = scene;
     InitInterface();
 }
 
-void Interface::ChangeScene(Scene *scene)
+void Interface::ChangeScene(Scene* scene)
 {
     m_EditorState.scene = scene;
     m_EditorState.scene->m_LightSystem.m_Directional.m_Direction =
@@ -27,7 +27,7 @@ void Interface::ChangeScene(Scene *scene)
 
 void Interface::InitInterface()
 {
-    ImGuiStyle &style = ImGui::GetStyle();
+    ImGuiStyle& style = ImGui::GetStyle();
     style.Colors[ImGuiCol_WindowBg] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
     style.Colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
     style.Colors[ImGuiCol_Border] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
@@ -49,7 +49,7 @@ void Interface::InitInterface()
     style.WindowRounding = 0.0f;
     style.TabRounding = 0.0f;
 
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
     if (FileUtils::FileExists("res/font/opensans/opensans.ttf"))
     {
         io.Fonts->AddFontFromFileTTF("res/font/opensans/opensans.ttf", 16);
@@ -67,14 +67,13 @@ void Interface::InitInterface()
 
     m_EditorProperties.m_ShowViewport = true;
 
-    
     // Hierarchy
     m_HierarchyComponents.push_back(Component("ModelComponent"));
     m_HierarchyState.visible = true;
-    
+
     // Inspector
     m_InspectorComponents = m_HierarchyComponents;
-    
+
     m_InspectorState.visible = true;
     m_InspectorState.nameBuffer = "";
     m_InspectorState.dirty = false;
@@ -87,15 +86,16 @@ bool Interface::BeginDraw()
     static bool s_ResetDockspace = false;
 
     ImGuiWindowFlags dockWindow_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-    ImGuiViewport *viewport = ImGui::GetMainViewport();
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    dockWindow_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    dockWindow_flags |=
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
     dockWindow_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
 
     ImGui::Begin("DockSpace", 0, dockWindow_flags);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -132,7 +132,7 @@ bool Interface::BeginDraw()
                     std::filesystem::path path = FileDialog::OpenFile("Open Scene", "Dodo Ascii Scene File\0*.das\0");
                     if (!path.empty())
                     {
-                        Scene *scene = m_File.Read(path.string());
+                        Scene* scene = m_File.Read(path.string());
                         scene->m_SkyBox = m_EditorState.scene->m_SkyBox;
                         delete m_EditorState.scene;
                         ChangeScene(scene);
@@ -198,7 +198,7 @@ void Interface::EndDraw()
 
 void Interface::ResetDockspace(uint dockspace_id)
 {
-    ImGuiViewport *viewport = ImGui::GetMainViewport();
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::DockBuilderRemoveNode(dockspace_id);
     ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
     ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
@@ -227,9 +227,8 @@ bool Interface::ViewportResize()
         m_ViewportState.x = (uint)ImGui::GetWindowPos().x;
         m_ViewportState.y = (uint)ImGui::GetWindowPos().y;
 
-        Application::s_Application->m_RenderAPI->ResizeDefaultViewport(
-            m_ViewportState.width, m_ViewportState.height, m_ViewportState.x,
-            m_ViewportState.y);
+        Application::s_Application->m_RenderAPI->ResizeDefaultViewport(m_ViewportState.width, m_ViewportState.height,
+                                                                       m_ViewportState.x, m_ViewportState.y);
         return true;
     }
     return false;
@@ -250,11 +249,11 @@ bool Interface::BeginViewport()
     return false;
 }
 
-void Interface::EndViewport(FrameBuffer *framebuffer)
+void Interface::EndViewport(FrameBuffer* framebuffer)
 {
     if (m_EditorProperties.m_ShowViewport)
     {
-        ImGui::Image((void *)(intptr_t)framebuffer->GetTextureHandle(),
+        ImGui::Image((void*)(intptr_t)framebuffer->GetTextureHandle(),
                      ImVec2((float)m_ViewportState.width, (float)m_ViewportState.height), ImVec2(0, 1), ImVec2(1, 0));
         ImGui::End();
     }

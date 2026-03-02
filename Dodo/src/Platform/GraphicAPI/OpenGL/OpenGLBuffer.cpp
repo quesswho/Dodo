@@ -5,7 +5,7 @@ namespace Dodo { namespace Platform {
 
     // VertexBuffer //
 
-    OpenGLVertexBuffer::OpenGLVertexBuffer(const float *vertices, const uint size, const BufferProperties &prop)
+    OpenGLVertexBuffer::OpenGLVertexBuffer(const float* vertices, const uint size, const BufferProperties& prop)
         : m_BufferProperties(prop), m_VBufferID(0)
     {
         glGenBuffers(1, &m_VBufferID);
@@ -19,11 +19,11 @@ namespace Dodo { namespace Platform {
 
         if (const uchar stride = m_BufferProperties.m_Stride; stride > 0)
         {
-            for (const auto &element : m_BufferProperties.m_Elements)
+            for (const auto& element : m_BufferProperties.m_Elements)
             {
                 glEnableVertexAttribArray(element.m_Index);
                 glVertexAttribPointer(element.m_Index, element.GetComponentCount(), GL_FLOAT, GL_FALSE,
-                                      stride * sizeof(float), (const void *)(element.m_Offset * sizeof(float)));
+                                      stride * sizeof(float), (const void*)(element.m_Offset * sizeof(float)));
             }
         }
     }
@@ -36,7 +36,7 @@ namespace Dodo { namespace Platform {
 
     // IndexBuffer //
 
-    OpenGLIndexBuffer::OpenGLIndexBuffer(const uint *indices, const uint count) : m_Count(count), m_BufferID(0)
+    OpenGLIndexBuffer::OpenGLIndexBuffer(const uint* indices, const uint count) : m_Count(count), m_BufferID(0)
     {
         glGenBuffers(1, &m_BufferID);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);

@@ -46,6 +46,11 @@ struct ViewportState {
 };
 
 struct InspectorState {
+    bool visible = false;
     bool dirty = false;
     std::string nameBuffer;
+};
+
+struct HierarchyState {
+    bool visible = false;
 };

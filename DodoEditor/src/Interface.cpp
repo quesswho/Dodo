@@ -66,15 +66,16 @@ void Interface::InitInterface()
     m_EditorProperties.m_ViewportInput = false;
 
     m_EditorProperties.m_ShowViewport = true;
-    m_EditorProperties.m_ShowHierarchy = true;
-    m_EditorProperties.m_ShowInspector = true;
 
+    
     // Hierarchy
     m_HierarchyComponents.push_back(Component("ModelComponent"));
-
+    m_HierarchyState.visible = true;
+    
     // Inspector
     m_InspectorComponents = m_HierarchyComponents;
-
+    
+    m_InspectorState.visible = true;
     m_InspectorState.nameBuffer = "";
     m_InspectorState.dirty = false;
 }
@@ -169,8 +170,8 @@ bool Interface::BeginDraw()
         if (ImGui::BeginMenu("Window"))
         {
             ImGui::MenuItem(m_EditorProperties.m_ViewportName, "", &m_EditorProperties.m_ShowViewport);
-            ImGui::MenuItem(m_EditorProperties.m_HierarchyName, "", &m_EditorProperties.m_ShowHierarchy);
-            ImGui::MenuItem(m_EditorProperties.m_InspectorName, "", &m_EditorProperties.m_ShowInspector);
+            ImGui::MenuItem(m_EditorProperties.m_HierarchyName, "", &m_HierarchyState.visible);
+            ImGui::MenuItem(m_EditorProperties.m_InspectorName, "", &m_InspectorState.visible);
             ImGui::Separator();
             if (ImGui::Button("Reset DockSpace"))
             {
@@ -183,9 +184,8 @@ bool Interface::BeginDraw()
     }
     ImGui::End();
 
-    if (m_EditorProperties.m_ShowHierarchy) DrawHierarchy();
-
-    if (m_EditorProperties.m_ShowInspector) m_InspectorPanel.Draw(m_EditorState, m_InspectorState);
+    if (m_HierarchyState.visible) m_HierarchyPanel.Draw(m_EditorState, m_InspectorState);
+    if (m_InspectorState.visible) m_InspectorPanel.Draw(m_EditorState, m_InspectorState);
 
     return m_ChangeScene;
 }
@@ -258,148 +258,4 @@ void Interface::EndViewport(FrameBuffer *framebuffer)
                      ImVec2((float)m_ViewportState.width, (float)m_ViewportState.height), ImVec2(0, 1), ImVec2(1, 0));
         ImGui::End();
     }
-}
-
-///////////////
-// Hierarchy //
-///////////////
-
-void Interface::DrawHierarchy()
-{
-    ImGuiIO &io = ImGui::GetIO();
-    static bool s_ClickHandled = false;
-    static uint s_RenamingId = -1; // 4 294 967 295
-    ImGui::Begin(m_EditorProperties.m_HierarchyName);
-
-    if (ImGui::BeginPopupContextWindow("Right-Click Hierarchy", ImGuiPopupFlags_MouseButtonRight))
-    {
-        if (ImGui::MenuItem("Create New"))
-        {
-            s_RenamingId = m_EditorState.scene->GetWorld().CreateEntity();
-            m_EditorState.selection.Single(s_RenamingId);
-            s_ClickHandled = true;
-        }
-        ImGui::EndPopup();
-    }
-
-    static char s_RenameableHierarchy[32] = "Unnamed";
-
-    ImGui::ColorButton("##EntitiesIcon", ImColor(226, 189, 0), ImGuiColorEditFlags_NoTooltip);
-    ImGui::SameLine();
-
-    if (ImGui::TreeNodeEx("Entities", ImGuiTreeNodeFlags_DefaultOpen))
-    {
-        World &world = m_EditorState.scene->GetWorld();
-        if (!world.GetAliveEntities().empty())
-        {
-            for (EntityID entityId : world.GetAliveEntities())
-            {
-                if (entityId != s_RenamingId || m_EditorProperties.m_ViewportInput)
-                {
-                    std::string colorButtonId = "##EntityIcon" + std::to_string(entityId);
-                    ImGui::ColorButton(colorButtonId.c_str(), ImColor(120, 50, 0), ImGuiColorEditFlags_NoTooltip);
-                    ImGui::SameLine();
-                    ImGui::PushID((int)entityId);
-                    std::string entityName = world.HasComponent<NameComponent>(entityId)
-                                                 ? world.GetComponent<NameComponent>(entityId).m_Name
-                                                 : "Entity_" + std::to_string(entityId);
-                    bool open = ImGui::TreeNodeEx(
-                        entityName.c_str(),
-                        (m_EditorState.selection.Contains(entityId) ? ImGuiTreeNodeFlags_Selected : 0) |
-                            ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
-                    ImGui::PopID();
-                    if (m_EditorState.selection.Contains(entityId))
-                    {
-                        ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 40); // Move text to right side
-                        ImGui::Text("%i", entityId);
-                    }
-                    if (ImGui::IsItemClicked())
-                    {
-                        if (io.KeyCtrl)
-                            m_EditorState.selection.Toggle(entityId);
-                        else
-                            m_EditorState.selection.Single(entityId);
-
-                        if (world.HasComponent<NameComponent>(entityId))
-                        {
-                            m_InspectorState.nameBuffer = world.GetComponent<NameComponent>(entityId).m_Name;
-                        }
-                        s_ClickHandled = true;
-
-                        if (m_EditorState.selection.Contains(entityId))
-                        {
-                            m_InspectorState.dirty = true;
-                            m_EditorProperties.m_ShowInspector = true;
-                        }
-                    }
-
-                    if (open)
-                    {
-                        ImGui::Separator();
-
-                        // Check what components this entity has
-                        bool hasComponents = world.HasAnyComponent(entityId);
-                        if (hasComponents)
-                        {
-                            ImGui::Text("Components:");
-                            ImGui::Indent();
-                            if (world.HasComponent<ModelComponent>(entityId))
-                            {
-                                ImGui::BulletText("ModelComponent");
-                            }
-                            ImGui::Unindent();
-                        }
-                        ImGui::Unindent();
-                        ImGui::Separator();
-                        ImGui::TreePop();
-                    }
-                } else
-                {
-                    ImGui::SetKeyboardFocusHere(0);
-                    ImGui::Indent();
-                    if (ImGui::InputText(std::to_string(entityId).c_str(), s_RenameableHierarchy,
-                                         IM_ARRAYSIZE(s_RenameableHierarchy),
-                                         ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll |
-                                             ImGuiInputTextFlags_CharsNoBlank))
-                    {
-                        if (s_RenameableHierarchy == nullptr || s_RenameableHierarchy[0] == '\0')
-                            strncpy(s_RenameableHierarchy, "Unnamed", 256);
-
-                        if (world.HasComponent<NameComponent>(entityId))
-                        {
-                            world.GetComponent<NameComponent>(entityId).m_Name = std::string(s_RenameableHierarchy);
-                        } else
-                        {
-                            world.AddComponent<NameComponent>(entityId,
-                                                              NameComponent{std::string(s_RenameableHierarchy)});
-                        }
-                        m_InspectorState.nameBuffer = std::string(s_RenameableHierarchy);
-                        strncpy(s_RenameableHierarchy, "Unnamed", 256);
-                        s_RenamingId = -1;
-                        if (io.KeyCtrl)
-                            m_EditorState.selection.Toggle(entityId);
-                        else
-                            m_EditorState.selection.Single(entityId);
-
-                        m_InspectorState.dirty = true;
-                    }
-                    ImGui::Unindent();
-                }
-            }
-        } else
-        {
-            ImGui::Separator();
-            ImGui::TextColored(ImVec4(0.34f, 129.0f, 0, 255), "Right click here!");
-        }
-
-        ImGui::TreePop();
-        if (!s_ClickHandled && ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered() && ImGui::IsWindowHovered())
-        {
-            m_EditorState.selection.Clear();
-        }
-
-        s_ClickHandled = false;
-    }
-
-    ImGui::End();
 }

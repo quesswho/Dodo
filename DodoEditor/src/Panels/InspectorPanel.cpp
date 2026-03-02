@@ -8,28 +8,30 @@
 
 void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
 {
-    static float translate[3] = {0.0f, 0.0f, 0.0f};
-    static float scale[3] = {1.0f, 1.0f, 1.0f};
-    static float rotate[3] = {0.0f, 0.0f, 0.0f};
     ImGui::Begin("Inspector");
     World& world = state.scene->GetWorld();
     for (int entityId : state.selection.entities)
     {
-        if(state.renameState.entityId != entityId) {
-            std::string name = world.HasComponent<NameComponent>(entityId) ? world.GetComponent<NameComponent>(entityId).name : "Entity_" + std::to_string(entityId);
+        if (state.renameState.entityId != entityId)
+        {
+            std::string name = world.HasComponent<NameComponent>(entityId)
+                                   ? world.GetComponent<NameComponent>(entityId).name
+                                   : "Entity_" + std::to_string(entityId);
             ImGui::Text(name.c_str());
-            if(ImGui::IsItemClicked()) {
+            if (ImGui::IsItemClicked())
+            {
                 state.renameState.Begin(world, entityId);
             }
         }
 
-        if(state.renameState.entityId == entityId) {
+        if (state.renameState.entityId == entityId)
+        {
             ImGui::SetKeyboardFocusHere();
-            if (ImGui::InputText("##label", &state.renameState.nameBuffer, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank))
+            if (ImGui::InputText("##label", &state.renameState.nameBuffer,
+                                 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank))
             {
                 state.renameState.Finish(world);
             }
-            
         }
 
         ImGui::Separator();
@@ -45,7 +47,8 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
                     {
                         if (!world.HasComponent<ModelComponent>(entityId))
                         {
-                            ModelID id = Application::s_Application->m_AssetManager->GetBuiltinModel(BuiltinModel::Cube);
+                            ModelID id =
+                                Application::s_Application->m_AssetManager->GetBuiltinModel(BuiltinModel::Cube);
                             world.AddComponent<ModelComponent>(entityId, ModelComponent(id, Math::Transformation()));
                         }
                     }
@@ -74,16 +77,7 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
             if (ImGui::TreeNodeEx("ModelComponent", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ModelComponent& model = world.GetComponent<ModelComponent>(entityId);
-                if (inspector.dirty)
-                {
-                    memcpy(translate, (float*)&model.m_Transformation.m_Position, 3 * sizeof(float));
-                    memcpy(scale, (float*)&model.m_Transformation.m_Scale, 3 * sizeof(float));
-                    memcpy(rotate, (float*)&model.m_Transformation.m_Rotation, 3 * sizeof(float));
-                    rotate[0] = Math::ToDegrees(rotate[0]);
-                    rotate[1] = Math::ToDegrees(rotate[1]);
-                    rotate[2] = Math::ToDegrees(rotate[2]);
-                    inspector.dirty = false;
-                }
+
                 ImGui::Indent();
                 if (ImGui::Button("Browse"))
                 {
@@ -113,41 +107,47 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
                     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Built-in model");
                 }
 
+                TransformEditState& tState = inspector.transformState;
+                if (inspector.dirty)
+                {
+                    tState.translate = model.m_Transformation.m_Position;
+                    tState.scale = model.m_Transformation.m_Scale;
+                    tState.rotate = Math::Vec3(Math::ToDegrees(model.m_Transformation.m_Rotation.x),
+                                               Math::ToDegrees(model.m_Transformation.m_Rotation.y),
+                                               Math::ToDegrees(model.m_Transformation.m_Rotation.z));
+                    inspector.dirty = false;
+                }
                 if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
                 {
                     ImGui::Text("Translate:");
-                    if (ImGui::DragFloat3("##translate", translate, 0.05f))
+                    if (ImGui::DragFloat3("##translate", &tState.translate.x, 0.05f))
                     {
-                        model.m_Transformation.Move(Math::Vec3(translate[0], translate[1], translate[2]));
+                        model.m_Transformation.Move(tState.translate);
                     }
 
                     ImGui::Text("Scale:");
-                    static bool sync = true;
-                    bool dragscale = false;
-                    dragscale = ImGui::DragFloat3("##scale", scale, 0.0001f, -100000.0f, 100000.0f, "%.4f", 1.001f);
-                    ImGui::Checkbox("Sync", &sync);
-                    if (dragscale)
+                    if (ImGui::DragFloat3("##scale", &tState.scale.x, 0.0001f, -100000.0f, 100000.0f, "%.4f", 1.001f))
                     {
-                        if (sync)
+                        if (tState.syncScale)
                         {
-                            Math::Vec3 temp = ((Math::Vec3)scale) - model.m_Transformation.m_Scale;
-                            model.m_Transformation.m_Scale += temp.x;
-                            model.m_Transformation.m_Scale += temp.y;
-                            model.m_Transformation.m_Scale += temp.z;
-                            memcpy(scale, (float*)&model.m_Transformation.m_Scale, sizeof(Math::Vec3));
-                            model.m_Transformation.Calculate();
+                            Math::Vec3 diff = tState.scale - model.m_Transformation.m_Scale;
+                            model.m_Transformation.m_Scale += diff.x + diff.y + diff.z;
+                            tState.scale = model.m_Transformation.m_Scale;
+                            model.m_Transformation.Calculate(); // Recompute model matrix after manual change
                         } else
-                            model.m_Transformation.Scale(Math::Vec3(scale[0], scale[1], scale[2]));
+                        {
+                            model.m_Transformation.Scale(tState.scale);
+                        }
                     }
+                    ImGui::Checkbox("Sync", &tState.syncScale);
 
                     ImGui::Text("Rotate:");
-                    if (ImGui::DragFloat3("##rotate", rotate, 0.5f))
+                    if (ImGui::DragFloat3("##rotate", &tState.rotate.x, 0.5f))
                     {
-                        Math::Vec3 temp = ((Math::Vec3)rotate);
-                        temp =
-                            Math::Vec3(std::fmod(temp.x, 360.0f), std::fmod(temp.y, 360.0f), std::fmod(temp.z, 360.0f));
-                        memcpy(rotate, (float*)&temp, sizeof(Math::Vec3));
-                        model.m_Transformation.Rotate(temp);
+                        tState.rotate =
+                            Math::Vec3(std::fmod(tState.rotate.x, 360.0f), std::fmod(tState.rotate.y, 360.0f),
+                                       std::fmod(tState.rotate.z, 360.0f));
+                        model.m_Transformation.Rotate(tState.rotate);
                     }
 
                     ImGui::TreePop();

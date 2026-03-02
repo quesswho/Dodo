@@ -1,8 +1,7 @@
 #pragma once
 
 #include <Dodo.h>
-
-using namespace Dodo;
+#include "RenameState.h"
 
 struct Selection {
     std::vector<EntityID> entities;
@@ -32,9 +31,12 @@ struct Selection {
     void Clear() { entities.clear(); }
 };
 
+
+
 struct EditorState {
     Scene* scene = nullptr;
     Selection selection;
+    RenameState renameState;
 };
 
 struct ViewportState {
@@ -45,7 +47,6 @@ struct ViewportState {
 struct InspectorState {
     bool visible = false;
     bool dirty = false;
-    std::string nameBuffer;
 };
 
 struct HierarchyState {

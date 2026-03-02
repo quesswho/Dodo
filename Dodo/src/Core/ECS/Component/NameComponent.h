@@ -5,6 +5,6 @@
 namespace Dodo {
 
     struct NameComponent {
-        std::string m_Name;
+        std::string name;
     };
 } // namespace Dodo

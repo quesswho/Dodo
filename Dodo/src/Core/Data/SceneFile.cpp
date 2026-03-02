@@ -38,7 +38,7 @@ namespace Dodo {
             // Write entity name
             if (world.HasComponent<NameComponent>(entityId))
             {
-                m_File.WriteString("name", world.GetComponent<NameComponent>(entityId).m_Name);
+                m_File.WriteString("name", world.GetComponent<NameComponent>(entityId).name);
             }
 
             // Write ModelComponent if entity has one

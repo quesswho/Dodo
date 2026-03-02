@@ -59,7 +59,7 @@ void* operator new(size_t size);
 #pragma pop_macro("new")
 
 #pragma push_macro("delete")
-void operator delete(void* block, size_t size);
+void operator delete(void* block, size_t size) noexcept;
 #define dddelete delete
 #pragma pop_macro("delete")
 #else

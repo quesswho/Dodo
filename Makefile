@@ -21,7 +21,7 @@ configure:
 
 build:
 	@echo "Building with Ninja ($(BUILD_TYPE))..."
-	cd $(BUILD_DIR) && ninja -v
+	cd $(BUILD_DIR) && ninja
 
 clean:
 	@echo "Cleaning..."

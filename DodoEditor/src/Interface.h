@@ -88,6 +88,4 @@ class Interface {
     bool m_ChangeScene;
 
     SceneFile m_File;
-
-    void (*m_ChangeSceneFunc)(Scene *);
 };

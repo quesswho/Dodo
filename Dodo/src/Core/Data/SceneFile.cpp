@@ -75,19 +75,13 @@ namespace Dodo {
             return nullptr;
         }
 
-        // Skip header comment and blank lines until first section
-        while (m_File.HasMore() && !m_File.IsSection())
-        {
-            m_File.SkipLine();
-        }
-
         Scene* result =
             new Scene(new Math::FreeCamera(Math::Vec3(0.0f, 0.0f, 20.0f),
                                            (float)Application::s_Application->m_RenderAPI->m_ViewportWidth /
                                                (float)Application::s_Application->m_RenderAPI->m_ViewportHeight,
                                            0.04f, 10.0f));
 
-        int currentEntityId = -1;
+        EntityID currentEntityId = -1;
 
         while (m_File.HasMore())
         {
@@ -103,13 +97,11 @@ namespace Dodo {
             // Entity header: Entity:0
             if (section.find("Entity:") == 0)
             {
-                currentEntityId = std::stoi(section.substr(7));
-                //std::string name = m_File.ReadString();
+                // Currently unused
+                //EntityID fileEntityId = (EntityID)std::stoi(section.substr(7));
 
                 World& world = result->GetWorld();
-                EntityID createdId = world.CreateEntity();
-                currentEntityId = createdId;
-                //world.AddComponent<NameComponent>(currentEntityId, NameComponent{name});
+                currentEntityId = world.CreateEntity();
                 continue;
             }
 
@@ -134,6 +126,7 @@ namespace Dodo {
                 continue;
             } else
             {
+                DD_WARN("SceneFile: skipping unsupported section '{}'", section);
                 SetError(SceneFileError::UnsupportedComponent, m_File.GetCurrentOffset());
             }
         }

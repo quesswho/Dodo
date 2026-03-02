@@ -2,12 +2,12 @@
 
 #include <Dodo.h>
 
-#include "Scene/EditorScene.h"
 #include "Data/EditorSceneFile.h"
 #include "PanelStates/EditorState.h"
 #include "PanelStates/HierarchyState.h"
 #include "Panels/HierarchyPanel.h"
 #include "Panels/InspectorPanel.h"
+#include "Scene/EditorScene.h"
 
 struct Component {
     Component() : m_Name("None"), m_Selected(false) {}

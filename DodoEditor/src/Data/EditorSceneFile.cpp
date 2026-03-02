@@ -30,8 +30,7 @@ SceneFileError EditorSceneFile::WriteAs(const std::string& path, EditorScene* sc
     auto& world = scene->GetWorld();
     for (EntityID entityId : world.GetAliveEntities())
     {
-        if (!world.HasComponent<NameComponent>(entityId))
-            continue;
+        if (!world.HasComponent<NameComponent>(entityId)) continue;
 
         const auto& name = world.GetComponent<NameComponent>(entityId).name;
         file.WriteSection("NameComponent");
@@ -93,10 +92,9 @@ EditorScene* EditorSceneFile::Read(const std::string& path)
             inEditor = true;
             continue;
         }
-        
+
         // Skip core components
-        if (!inEditor)
-            continue;
+        if (!inEditor) continue;
 
         if (section == "NameComponent")
         {

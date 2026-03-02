@@ -14,9 +14,9 @@
 #include <unordered_set>
 #include <utility>
 
+using Dodo::AlwaysFalse;
 using Dodo::EntityID;
 using Dodo::TypeList;
-using Dodo::AlwaysFalse;
 
 using RuntimeWorld = ::Dodo::World;
 
@@ -82,7 +82,7 @@ class EditorWorld {
   public:
     using RuntimeComponentList = ::Dodo::RuntimeComponentList;
 
-        EditorWorld(RuntimeWorld& runtimeWorld, Overlay& overlay) : m_RuntimeWorld(&runtimeWorld), m_Overlay(&overlay) {}
+    EditorWorld(RuntimeWorld& runtimeWorld, Overlay& overlay) : m_RuntimeWorld(&runtimeWorld), m_Overlay(&overlay) {}
 
     EntityID CreateEntity()
     {
@@ -184,6 +184,6 @@ class EditorWorld {
     }
 
   private:
-        RuntimeWorld* m_RuntimeWorld;
+    RuntimeWorld* m_RuntimeWorld;
     Overlay* m_Overlay;
 };

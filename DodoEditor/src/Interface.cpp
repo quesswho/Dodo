@@ -10,7 +10,7 @@ using namespace Math;
 
 Interface::Interface(Scene *scene)
 {
-    m_EditorContext.scene = scene;
+    m_EditorState.scene = scene;
     InitInterface();
 }
 
@@ -22,8 +22,8 @@ void Interface::SetChangeSceneCallback(void (*callback)(Scene *))
 void Interface::ChangeScene(Scene *scene)
 {
 
-    m_EditorContext.scene = scene;
-    m_EditorContext.scene->m_LightSystem.m_Directional.m_Direction =
+    m_EditorState.scene = scene;
+    m_EditorState.scene->m_LightSystem.m_Directional.m_Direction =
         Vec3(0.4f, -1.0f, 0.4f).Normalize(); // Temporary because light direction is not stored in scene file
 
     m_ChangeScene = true;
@@ -81,8 +81,8 @@ void Interface::InitInterface()
     // Inspector
     m_InspectorComponents = m_HierarchyComponents;
 
-    m_EditorContext.inspectorNameBuffer = "";
-    m_EditorContext.inspectorDirty = false;
+    m_InspectorState.nameBuffer = "";
+    m_InspectorState.dirty = false;
 }
 
 bool Interface::BeginDraw()
@@ -98,8 +98,7 @@ bool Interface::BeginDraw()
     ImGui::SetNextWindowViewport(viewport->ID);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    dockWindow_flags |=
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    dockWindow_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
     dockWindow_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
     ImGuiIO &io = ImGui::GetIO();
 
@@ -139,8 +138,8 @@ bool Interface::BeginDraw()
                     if (!path.empty())
                     {
                         Scene *scene = m_File.Read(path.string());
-                        scene->m_SkyBox = m_EditorContext.scene->m_SkyBox;
-                        delete m_EditorContext.scene;
+                        scene->m_SkyBox = m_EditorState.scene->m_SkyBox;
+                        delete m_EditorState.scene;
                         ChangeScene(scene);
                     }
                 }
@@ -149,7 +148,7 @@ bool Interface::BeginDraw()
 
             /*if (ImGui::MenuItem("Save"))
             {
-                m_File.Write("test.das", m_EditorContext.scene);
+                m_File.Write("test.das", m_EditorState.scene);
             }*/
 
             if (ImGui::MenuItem("Save As..."))
@@ -157,7 +156,7 @@ bool Interface::BeginDraw()
                 std::filesystem::path path = FileDialog::SaveFile("Save As", "Dodo Ascii Scene File\0*.das\0");
                 if (!path.empty())
                 {
-                    m_File.WriteAs(path.string(), m_EditorContext.scene);
+                    m_File.WriteAs(path.string(), m_EditorState.scene);
                 }
             }
 
@@ -226,17 +225,17 @@ void Interface::ResetDockspace(uint dockspace_id)
 
 bool Interface::ViewportResize()
 {
-    if (m_EditorContext.viewportWidth != ImGui::GetWindowWidth() || m_EditorContext.viewportHeight != ImGui::GetWindowHeight() ||
-        m_EditorContext.viewportX != ImGui::GetWindowPos().x || m_EditorContext.viewportY != ImGui::GetWindowPos().y)
+    if (m_ViewportState.width != ImGui::GetWindowWidth() || m_ViewportState.height != ImGui::GetWindowHeight() ||
+        m_ViewportState.x != ImGui::GetWindowPos().x || m_ViewportState.y != ImGui::GetWindowPos().y)
     {
-        m_EditorContext.viewportWidth = (uint)ImGui::GetWindowWidth();
-        m_EditorContext.viewportHeight = (uint)ImGui::GetWindowHeight();
-        m_EditorContext.viewportX = (uint)ImGui::GetWindowPos().x;
-        m_EditorContext.viewportY = (uint)ImGui::GetWindowPos().y;
+        m_ViewportState.width = (uint)ImGui::GetWindowWidth();
+        m_ViewportState.height = (uint)ImGui::GetWindowHeight();
+        m_ViewportState.x = (uint)ImGui::GetWindowPos().x;
+        m_ViewportState.y = (uint)ImGui::GetWindowPos().y;
 
         Application::s_Application->m_RenderAPI->ResizeDefaultViewport(
-            m_EditorContext.viewportWidth, m_EditorContext.viewportHeight, m_EditorContext.viewportX,
-            m_EditorContext.viewportY);
+            m_ViewportState.width, m_ViewportState.height, m_ViewportState.x,
+            m_ViewportState.y);
         return true;
     }
     return false;
@@ -262,7 +261,7 @@ void Interface::EndViewport(FrameBuffer *framebuffer)
     if (m_EditorProperties.m_ShowViewport)
     {
         ImGui::Image((void *)(intptr_t)framebuffer->GetTextureHandle(),
-                     ImVec2((float)m_EditorContext.viewportWidth, (float)m_EditorContext.viewportHeight), ImVec2(0, 1), ImVec2(1, 0));
+                     ImVec2((float)m_ViewportState.width, (float)m_ViewportState.height), ImVec2(0, 1), ImVec2(1, 0));
         ImGui::End();
     }
 }
@@ -282,7 +281,7 @@ void Interface::DrawHierarchy()
     {
         if (ImGui::MenuItem("Create New"))
         {
-            s_RenamingId = m_EditorContext.scene->GetWorld().CreateEntity();
+            s_RenamingId = m_EditorState.scene->GetWorld().CreateEntity();
             SingleSelect(s_RenamingId);
             s_ClickHandled = true;
         }
@@ -296,7 +295,7 @@ void Interface::DrawHierarchy()
 
     if (ImGui::TreeNodeEx("Entities", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        World &world = m_EditorContext.scene->GetWorld();
+        World &world = m_EditorState.scene->GetWorld();
         if (!world.GetAliveEntities().empty())
         {
             for (EntityID entityId : world.GetAliveEntities())
@@ -312,10 +311,10 @@ void Interface::DrawHierarchy()
                                                  : "Entity_" + std::to_string(entityId);
                     bool open = ImGui::TreeNodeEx(
                         entityName.c_str(),
-                        (m_EditorContext.selection.Contains(entityId) ? ImGuiTreeNodeFlags_Selected : 0) |
+                        (m_EditorState.selection.Contains(entityId) ? ImGuiTreeNodeFlags_Selected : 0) |
                             ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
                     ImGui::PopID();
-                    if (m_EditorContext.selection.Contains(entityId))
+                    if (m_EditorState.selection.Contains(entityId))
                     {
                         ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 40); // Move text to right side
                         ImGui::Text("%i", entityId);
@@ -329,13 +328,13 @@ void Interface::DrawHierarchy()
 
                         if (world.HasComponent<NameComponent>(entityId))
                         {
-                            m_EditorContext.inspectorNameBuffer = world.GetComponent<NameComponent>(entityId).m_Name;
+                            m_InspectorState.nameBuffer = world.GetComponent<NameComponent>(entityId).m_Name;
                         }
                         s_ClickHandled = true;
 
-                        if (m_EditorContext.selection.Contains(entityId))
+                        if (m_EditorState.selection.Contains(entityId))
                         {
-                            m_EditorContext.inspectorDirty = true;
+                            m_InspectorState.dirty = true;
                             m_EditorProperties.m_ShowInspector = true;
                         }
                     }
@@ -380,7 +379,7 @@ void Interface::DrawHierarchy()
                             world.AddComponent<NameComponent>(entityId,
                                                               NameComponent{std::string(s_RenameableHierarchy)});
                         }
-                        m_EditorContext.inspectorNameBuffer = std::string(s_RenameableHierarchy);
+                        m_InspectorState.nameBuffer = std::string(s_RenameableHierarchy);
                         strncpy(s_RenameableHierarchy, "Unnamed", 256);
                         s_RenamingId = -1;
                         if (io.KeyCtrl)
@@ -388,7 +387,7 @@ void Interface::DrawHierarchy()
                         else
                             SingleSelect(entityId);
 
-                        m_EditorContext.inspectorDirty = true;
+                        m_InspectorState.dirty = true;
                     }
                     ImGui::Unindent();
                 }
@@ -420,36 +419,36 @@ void Interface::DrawInspector()
     static float scale[3] = {1.0f, 1.0f, 1.0f};
     static float rotate[3] = {0.0f, 0.0f, 0.0f};
     ImGui::Begin(m_EditorProperties.m_InspectorName);
-    World &world = m_EditorContext.scene->GetWorld();
-    for (int entityId : m_EditorContext.selection.entities)
+    World &world = m_EditorState.scene->GetWorld();
+    for (int entityId : m_EditorState.selection.entities)
     {
         static char nameBuffer[64] = "";
-        if (m_EditorContext.inspectorDirty)
+        if (m_InspectorState.dirty)
         {
-            strncpy(nameBuffer, m_EditorContext.inspectorNameBuffer.c_str(), sizeof(nameBuffer) - 1);
+            strncpy(nameBuffer, m_InspectorState.nameBuffer.c_str(), sizeof(nameBuffer) - 1);
             nameBuffer[sizeof(nameBuffer) - 1] = '\0';
         }
 
         if (ImGui::InputText("##label", nameBuffer, sizeof(nameBuffer),
                              ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank))
         {
-            m_EditorContext.inspectorNameBuffer = std::string(nameBuffer);
+            m_InspectorState.nameBuffer = std::string(nameBuffer);
 
-            if (!m_EditorContext.inspectorNameBuffer.empty())
+            if (!m_InspectorState.nameBuffer.empty())
             {
                 if (world.HasComponent<NameComponent>(entityId))
                 {
-                    world.GetComponent<NameComponent>(entityId).m_Name = m_EditorContext.inspectorNameBuffer;
+                    world.GetComponent<NameComponent>(entityId).m_Name = m_InspectorState.nameBuffer;
                 } else
                 {
-                    world.AddComponent<NameComponent>(entityId, NameComponent{m_EditorContext.inspectorNameBuffer});
+                    world.AddComponent<NameComponent>(entityId, NameComponent{m_InspectorState.nameBuffer});
                 }
             } else
             {
                 if (world.HasComponent<NameComponent>(entityId))
                 {
-                    m_EditorContext.inspectorNameBuffer = world.GetComponent<NameComponent>(entityId).m_Name;
-                    strncpy(nameBuffer, m_EditorContext.inspectorNameBuffer.c_str(), sizeof(nameBuffer) - 1);
+                    m_InspectorState.nameBuffer = world.GetComponent<NameComponent>(entityId).m_Name;
+                    strncpy(nameBuffer, m_InspectorState.nameBuffer.c_str(), sizeof(nameBuffer) - 1);
                 }
             }
         }
@@ -497,7 +496,7 @@ void Interface::DrawInspector()
             if (ImGui::TreeNodeEx("ModelComponent", ImGuiTreeNodeFlags_DefaultOpen))
             {
                 ModelComponent &model = world.GetComponent<ModelComponent>(entityId);
-                if (m_EditorContext.inspectorDirty)
+                if (m_InspectorState.dirty)
                 {
                     memcpy(translate, (float *)&model.m_Transformation.m_Position, 3 * sizeof(float));
                     memcpy(scale, (float *)&model.m_Transformation.m_Scale, 3 * sizeof(float));
@@ -505,7 +504,7 @@ void Interface::DrawInspector()
                     rotate[0] = Math::ToDegrees(rotate[0]);
                     rotate[1] = Math::ToDegrees(rotate[1]);
                     rotate[2] = Math::ToDegrees(rotate[2]);
-                    m_EditorContext.inspectorDirty = false;
+                    m_InspectorState.dirty = false;
                 }
                 ImGui::Indent();
                 if (ImGui::Button("Browse"))
@@ -571,7 +570,7 @@ void Interface::DrawInspector()
             ImGui::TextColored(ImVec4(0.34f, 129.0f, 0, 255), "Right click here!");
         }
 
-        if (m_EditorContext.inspectorDirty) m_EditorContext.inspectorDirty = false;
+        if (m_InspectorState.dirty) m_InspectorState.dirty = false;
         break;
     }
     ImGui::End();
@@ -579,25 +578,25 @@ void Interface::DrawInspector()
 
 void Interface::SingleSelect(EntityID e)
 {
-    m_EditorContext.selection.entities.clear();
-    m_EditorContext.selection.entities.push_back(e);
+    m_EditorState.selection.entities.clear();
+    m_EditorState.selection.entities.push_back(e);
 }
 
 void Interface::ToggleSelect(EntityID e)
 {
-    if (m_EditorContext.selection.Contains(e))
+    if (m_EditorState.selection.Contains(e))
     {
         // We want to keep the order of the entities in the selection, so we can't swap and delete the last element.
-        m_EditorContext.selection.entities.erase(
-            std::remove(m_EditorContext.selection.entities.begin(), m_EditorContext.selection.entities.end(), e),
-            m_EditorContext.selection.entities.end());
+        m_EditorState.selection.entities.erase(
+            std::remove(m_EditorState.selection.entities.begin(), m_EditorState.selection.entities.end(), e),
+            m_EditorState.selection.entities.end());
     } else
     {
-        m_EditorContext.selection.entities.push_back(e);
+        m_EditorState.selection.entities.push_back(e);
     }
 }
 
 void Interface::ClearSelection()
 {
-    m_EditorContext.selection.entities.clear();
+    m_EditorState.selection.entities.clear();
 }

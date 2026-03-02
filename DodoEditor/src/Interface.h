@@ -2,9 +2,11 @@
 
 #include <Dodo.h>
 
-#include "EditorState.h"
+#include "PanelStates/EditorState.h"
 #include "Panels/HierarchyPanel.h"
 #include "Panels/InspectorPanel.h"
+#include "PanelStates/HierarchyState.h"
+
 
 struct Component {
     Component() : m_Name("None"), m_Selected(false) {}

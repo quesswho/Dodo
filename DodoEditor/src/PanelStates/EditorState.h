@@ -41,21 +41,3 @@ struct ViewportState {
     uint width = 0, height = 0;
     uint x = 0, y = 0;
 };
-
-struct TransformEditState {
-    Math::Vec3 translate = {0.0f, 0.0f, 0.0f};
-    Math::Vec3 scale = {1.0f, 1.0f, 1.0f};
-    Math::Vec3 rotate = {0.0f, 0.0f, 0.0f};
-    bool syncScale = true;
-};
-
-struct InspectorState {
-    bool visible = false;
-    bool dirty = false;
-
-    TransformEditState transformState;
-};
-
-struct HierarchyState {
-    bool visible = false;
-};

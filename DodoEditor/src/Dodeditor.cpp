@@ -23,7 +23,7 @@ GameLayer::GameLayer()
     m_FrameBuffer = new FrameBuffer(frameprop);
 
     m_Renderer = new EditorRenderer(m_Camera);
-    m_Scene = new Scene(m_Camera);
+    m_Scene = new EditorScene(m_Camera);
 
     std::vector<std::string> skyboxPath = {
         "res/texture/skybox/right.jpg",  "res/texture/skybox/left.jpg",  "res/texture/skybox/top.jpg",
@@ -35,7 +35,7 @@ GameLayer::GameLayer()
     m_Interface = new Interface(m_Scene);
 }
 
-void GameLayer::SetScene(Scene* scene)
+void GameLayer::SetScene(EditorScene* scene)
 {
     m_Scene = scene;
 }

@@ -1,5 +1,6 @@
 #include "Interface.h"
 
+#include "Data/EditorSceneFile.h"
 #include "FileDialog.h"
 
 #include <imgui.h>
@@ -8,13 +9,13 @@
 using namespace Dodo;
 using namespace Math;
 
-Interface::Interface(Scene* scene)
+Interface::Interface(EditorScene* scene)
 {
     m_EditorState.scene = scene;
     InitInterface();
 }
 
-void Interface::ChangeScene(Scene* scene)
+void Interface::ChangeScene(EditorScene* scene)
 {
     m_EditorState.scene = scene;
     m_EditorState.scene->m_LightSystem.m_Directional.m_Direction =
@@ -131,8 +132,10 @@ bool Interface::BeginDraw()
                     std::filesystem::path path = FileDialog::OpenFile("Open Scene", "Dodo Ascii Scene File\0*.das\0");
                     if (!path.empty())
                     {
-                        Scene* scene = m_File.Read(path.string());
+                        EditorScene* scene = fileReader.Read(path.string());
+                        // Move skybox ownership to the new scene.
                         scene->m_SkyBox = m_EditorState.scene->m_SkyBox;
+                        m_EditorState.scene->m_SkyBox = nullptr;
                         delete m_EditorState.scene;
                         ChangeScene(scene);
                     }
@@ -142,7 +145,7 @@ bool Interface::BeginDraw()
 
             /*if (ImGui::MenuItem("Save"))
             {
-                m_File.Write("test.das", m_EditorState.scene);
+                m_File.Write(m_EditorState.scene);
             }*/
 
             if (ImGui::MenuItem("Save As..."))
@@ -150,7 +153,7 @@ bool Interface::BeginDraw()
                 std::filesystem::path path = FileDialog::SaveFile("Save As", "Dodo Ascii Scene File\0*.das\0");
                 if (!path.empty())
                 {
-                    m_File.WriteAs(path.string(), m_EditorState.scene);
+                    fileReader.WriteAs(path.string(), m_EditorState.scene);
                 }
             }
 

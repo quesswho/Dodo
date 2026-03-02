@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Scene/EditorScene.h"
+#include "EditorRenderer.h"
 #include "Interface.h"
 
 using namespace Dodo;
@@ -14,7 +16,7 @@ class GameLayer : public Layer {
     void Update(float elapsed);
     void Render();
     void OnEvent(const Event& event);
-    void SetScene(Scene* scene);
+    void SetScene(EditorScene* scene);
 
   private:
     FrameBuffer* m_FrameBuffer;
@@ -22,7 +24,7 @@ class GameLayer : public Layer {
     Math::FreeCamera* m_Camera;
 
     EditorRenderer* m_Renderer;
-    Scene* m_Scene;
+    EditorScene* m_Scene;
 
     Interface* m_Interface;
 };

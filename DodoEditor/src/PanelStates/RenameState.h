@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Scene/EditorWorld.h"
 #include <Dodo.h>
 
 using namespace Dodo;
@@ -10,7 +11,7 @@ struct RenameState {
 
     bool isActive() const { return entityId != -1; }
 
-    void Begin(World& world, EntityID id)
+    void Begin(EditorWorld& world, EntityID id)
     {
         entityId = id;
         if (!world.HasComponent<NameComponent>(id))
@@ -21,7 +22,7 @@ struct RenameState {
         nameBuffer = world.GetComponent<NameComponent>(id).name;
     }
 
-    void Update(World& world)
+    void Update(EditorWorld& world)
     {
         if (!isActive()) return;
 
@@ -36,7 +37,7 @@ struct RenameState {
         }
     }
 
-    void Finish(World& world)
+    void Finish(EditorWorld& world)
     {
         Update(world);
         Cancel();

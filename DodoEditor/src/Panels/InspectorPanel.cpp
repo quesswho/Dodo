@@ -9,7 +9,7 @@
 void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
 {
     ImGui::Begin("Inspector");
-    World& world = state.scene->GetWorld();
+    auto& world = state.scene->GetWorld();
     for (int entityId : state.selection.entities)
     {
         if (state.renameState.entityId != entityId)

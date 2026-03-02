@@ -1,6 +1,7 @@
 #pragma once
 
-#include "RenameState.h"
+#include "Scene/EditorScene.h"
+#include "PanelStates/RenameState.h"
 #include <Dodo.h>
 
 struct Selection {
@@ -32,7 +33,7 @@ struct Selection {
 };
 
 struct EditorState {
-    Scene* scene = nullptr;
+    EditorScene* scene = nullptr;
     Selection selection;
     RenameState renameState;
 };

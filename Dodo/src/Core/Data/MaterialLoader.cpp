@@ -1,6 +1,6 @@
 #include "MaterialLoader.h"
-#include "pch.h"
 #include "Core/Application/Application.h"
+#include "pch.h"
 
 #include <assimp/material.h>
 
@@ -20,7 +20,8 @@ namespace Dodo {
         std::filesystem::path modelDir = std::filesystem::path(path).parent_path();
 
         // Diffuse map
-        Ref<Texture> tex = LoadTextureFromMaterial(material, (int)aiTextureType_DIFFUSE, flags, modelDir, textures.size());
+        Ref<Texture> tex =
+            LoadTextureFromMaterial(material, (int)aiTextureType_DIFFUSE, flags, modelDir, textures.size());
         if (tex) textures.push_back(tex);
 
         // Specular map

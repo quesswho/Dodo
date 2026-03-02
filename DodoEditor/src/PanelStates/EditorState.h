@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Scene/EditorScene.h"
 #include "PanelStates/RenameState.h"
+#include "Scene/EditorScene.h"
 #include <Dodo.h>
 
 struct Selection {

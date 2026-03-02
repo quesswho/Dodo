@@ -57,8 +57,7 @@ namespace Dodo {
     SceneFileError SceneFile::WriteAs(const std::string& path, Scene* scene)
     {
         SceneFileError err = WriteEntities(path, scene);
-        if (err != SceneFileError::None)
-            return err;
+        if (err != SceneFileError::None) return err;
 
         m_File.EndWrite(path);
         return m_LastError;

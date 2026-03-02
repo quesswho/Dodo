@@ -45,7 +45,8 @@ namespace Dodo {
         ModelID GetBuiltinModel(BuiltinModel type);
         Model* GetModel(ModelID id);
 
-        const std::string& GetModelPath(ModelID id);
+        std::string GetModelPath(ModelID id);
+        bool HasPath(ModelID id) const { return m_ModelPath.find(id) != m_ModelPath.end(); }
 
       public:
         ModelLoader* m_ModelLoader;

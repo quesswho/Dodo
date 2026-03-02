@@ -79,15 +79,14 @@ namespace Dodo {
         return nullptr;
     }
 
-    const std::string& AssetManager::GetModelPath(ModelID id)
+    std::string AssetManager::GetModelPath(ModelID id)
     {
-        if (m_ModelPath.find(id) != m_ModelPath.end())
+        if (m_ModelPath.find(id) == m_ModelPath.end())
         {
-            return m_ModelPath[id];
+            DD_ERR("Trying to get path of model that doesn't exist! ID: {0}", id);
+            return "";
         }
-        DD_ERR("Trying to get path of model that doesn't exist! ID: {0}", id);
-        static std::string empty = "";
-        return empty;
+        return m_ModelPath[id];
     }
 
     Ref<Material> AssetManager::GetMaterial(const char* path)

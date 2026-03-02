@@ -2,7 +2,8 @@
 
 #include <Dodo.h>
 
-using namespace Dodo;
+#include "EditorState.h"
+#include "Panels/InspectorPanel.h"
 
 struct Component {
     Component() : m_Name("None"), m_Selected(false) {}
@@ -26,28 +27,7 @@ struct EditorProperties {
     const char *m_InspectorName;
 };
 
-struct Selection {
-    std::vector<EntityID> entities;
 
-    bool Empty() const { return entities.empty(); }
-    bool Single() const { return entities.size() == 1; }
-    bool Contains(EntityID e) const { return std::find(entities.begin(), entities.end(), e) != entities.end(); }
-};
-
-struct EditorState {
-    Scene* scene = nullptr;
-    Selection selection;
-};
-
-struct ViewportState {
-    uint width = 0, height = 0;
-    uint x = 0, y = 0;
-};
-
-struct InspectorState {
-    bool dirty = false;
-    std::string nameBuffer;
-};
 
 class Interface {
   public:
@@ -56,6 +36,8 @@ class Interface {
     EditorState m_EditorState;
     ViewportState m_ViewportState;
     InspectorState m_InspectorState;
+
+    InspectorPanel m_InspectorPanel;
 
   public:
     Interface(Scene *scene);
@@ -76,11 +58,6 @@ class Interface {
     void ResetDockspace(uint dockspace_id);
 
     void DrawHierarchy();
-    void DrawInspector();
-
-    void SingleSelect(EntityID e);
-    void ToggleSelect(EntityID e);
-    void ClearSelection();
 
     std::vector<Component> m_HierarchyComponents;
     std::vector<Component> m_InspectorComponents;

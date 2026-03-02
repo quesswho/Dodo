@@ -22,7 +22,7 @@ void Interface::ChangeScene(Scene *scene)
 
     m_ChangeScene = true;
 
-    ClearSelection();
+    m_EditorState.selection.Clear();
 }
 
 void Interface::InitInterface()
@@ -185,7 +185,7 @@ bool Interface::BeginDraw()
 
     if (m_EditorProperties.m_ShowHierarchy) DrawHierarchy();
 
-    if (m_EditorProperties.m_ShowInspector) DrawInspector();
+    if (m_EditorProperties.m_ShowInspector) m_InspectorPanel.Draw(m_EditorState, m_InspectorState);
 
     return m_ChangeScene;
 }
@@ -276,7 +276,7 @@ void Interface::DrawHierarchy()
         if (ImGui::MenuItem("Create New"))
         {
             s_RenamingId = m_EditorState.scene->GetWorld().CreateEntity();
-            SingleSelect(s_RenamingId);
+            m_EditorState.selection.Single(s_RenamingId);
             s_ClickHandled = true;
         }
         ImGui::EndPopup();
@@ -316,9 +316,9 @@ void Interface::DrawHierarchy()
                     if (ImGui::IsItemClicked())
                     {
                         if (io.KeyCtrl)
-                            ToggleSelect(entityId);
+                            m_EditorState.selection.Toggle(entityId);
                         else
-                            SingleSelect(entityId);
+                            m_EditorState.selection.Single(entityId);
 
                         if (world.HasComponent<NameComponent>(entityId))
                         {
@@ -377,9 +377,9 @@ void Interface::DrawHierarchy()
                         strncpy(s_RenameableHierarchy, "Unnamed", 256);
                         s_RenamingId = -1;
                         if (io.KeyCtrl)
-                            ToggleSelect(entityId);
+                            m_EditorState.selection.Toggle(entityId);
                         else
-                            SingleSelect(entityId);
+                            m_EditorState.selection.Single(entityId);
 
                         m_InspectorState.dirty = true;
                     }
@@ -395,202 +395,11 @@ void Interface::DrawHierarchy()
         ImGui::TreePop();
         if (!s_ClickHandled && ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered() && ImGui::IsWindowHovered())
         {
-            ClearSelection();
+            m_EditorState.selection.Clear();
         }
 
         s_ClickHandled = false;
     }
 
     ImGui::End();
-}
-
-///////////////
-// Inspector //
-///////////////
-void Interface::DrawInspector()
-{
-    static float translate[3] = {0.0f, 0.0f, 0.0f};
-    static float scale[3] = {1.0f, 1.0f, 1.0f};
-    static float rotate[3] = {0.0f, 0.0f, 0.0f};
-    ImGui::Begin(m_EditorProperties.m_InspectorName);
-    World &world = m_EditorState.scene->GetWorld();
-    for (int entityId : m_EditorState.selection.entities)
-    {
-        static char nameBuffer[64] = "";
-        if (m_InspectorState.dirty)
-        {
-            strncpy(nameBuffer, m_InspectorState.nameBuffer.c_str(), sizeof(nameBuffer) - 1);
-            nameBuffer[sizeof(nameBuffer) - 1] = '\0';
-        }
-
-        if (ImGui::InputText("##label", nameBuffer, sizeof(nameBuffer),
-                             ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank))
-        {
-            m_InspectorState.nameBuffer = std::string(nameBuffer);
-
-            if (!m_InspectorState.nameBuffer.empty())
-            {
-                if (world.HasComponent<NameComponent>(entityId))
-                {
-                    world.GetComponent<NameComponent>(entityId).m_Name = m_InspectorState.nameBuffer;
-                } else
-                {
-                    world.AddComponent<NameComponent>(entityId, NameComponent{m_InspectorState.nameBuffer});
-                }
-            } else
-            {
-                if (world.HasComponent<NameComponent>(entityId))
-                {
-                    m_InspectorState.nameBuffer = world.GetComponent<NameComponent>(entityId).m_Name;
-                    strncpy(nameBuffer, m_InspectorState.nameBuffer.c_str(), sizeof(nameBuffer) - 1);
-                }
-            }
-        }
-
-        ImGui::Separator();
-        ImGui::Text("Components:");
-
-        if (ImGui::BeginPopupContextWindow("Right-Click Inspector", ImGuiPopupFlags_MouseButtonRight))
-        {
-            if (ImGui::BeginMenu("Add.."))
-            {
-                if (ImGui::BeginMenu("Geometry"))
-                {
-                    if (ImGui::MenuItem("ModelComponent"))
-                    {
-                        if (!world.HasComponent<ModelComponent>(entityId))
-                        {
-                            // Add empty ModelComponent for user to configure
-                            // world.AddComponent<ModelComponent>(entityId,
-                            // Application::s_Application->m_AssetManager->m_MeshFactory->GetRectangleMesh());
-                        }
-                    }
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Script"))
-                {
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Audio"))
-                {
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Other"))
-                {
-                    ImGui::EndMenu();
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::EndPopup();
-        }
-
-        // ModelComponent
-        if (world.HasComponent<ModelComponent>(entityId))
-        {
-            if (ImGui::TreeNodeEx("ModelComponent", ImGuiTreeNodeFlags_DefaultOpen))
-            {
-                ModelComponent &model = world.GetComponent<ModelComponent>(entityId);
-                if (m_InspectorState.dirty)
-                {
-                    memcpy(translate, (float *)&model.m_Transformation.m_Position, 3 * sizeof(float));
-                    memcpy(scale, (float *)&model.m_Transformation.m_Scale, 3 * sizeof(float));
-                    memcpy(rotate, (float *)&model.m_Transformation.m_Rotation, 3 * sizeof(float));
-                    rotate[0] = Math::ToDegrees(rotate[0]);
-                    rotate[1] = Math::ToDegrees(rotate[1]);
-                    rotate[2] = Math::ToDegrees(rotate[2]);
-                    m_InspectorState.dirty = false;
-                }
-                ImGui::Indent();
-                if (ImGui::Button("Browse"))
-                {
-                    std::filesystem::path path = FileDialog::OpenFile("Open file", "Model\0*.fbx;*.obj\0");
-                    if (!path.empty())
-                    {
-                        // Replace the component with new model
-                        ModelID id = Application::s_Application->m_AssetManager->LoadModel(path.string());
-                        world.GetComponent<ModelComponent>(entityId) = ModelComponent(id, model.m_Transformation);
-                    }
-                }
-                ImGui::SameLine();
-                ImGui::Text(Application::s_Application->m_AssetManager->GetModelPath(model.m_ModelID).c_str());
-
-                if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
-                {
-                    ImGui::Text("Translate:");
-                    if (ImGui::DragFloat3("##translate", translate, 0.05f))
-                    {
-                        model.m_Transformation.Move(Vec3(translate[0], translate[1], translate[2]));
-                    }
-
-                    ImGui::Text("Scale:");
-                    static bool sync = true;
-                    bool dragscale = false;
-                    dragscale = ImGui::DragFloat3("##scale", scale, 0.0001f, -100000.0f, 100000.0f, "%.4f", 1.001f);
-                    ImGui::Checkbox("Sync", &sync);
-                    if (dragscale)
-                    {
-                        if (sync)
-                        {
-                            Vec3 temp = ((Vec3)scale) - model.m_Transformation.m_Scale;
-                            model.m_Transformation.m_Scale += temp.x;
-                            model.m_Transformation.m_Scale += temp.y;
-                            model.m_Transformation.m_Scale += temp.z;
-                            memcpy(scale, (float *)&model.m_Transformation.m_Scale, sizeof(Vec3));
-                            model.m_Transformation.Calculate();
-                        } else
-                            model.m_Transformation.Scale(Vec3(scale[0], scale[1], scale[2]));
-                    }
-
-                    ImGui::Text("Rotate:");
-                    if (ImGui::DragFloat3("##rotate", rotate, 0.5f))
-                    {
-                        Vec3 temp = ((Vec3)rotate);
-                        temp = Vec3(std::fmod(temp.x, 360.0f), std::fmod(temp.y, 360.0f), std::fmod(temp.z, 360.0f));
-                        memcpy(rotate, (float *)&temp, sizeof(Vec3));
-                        model.m_Transformation.Rotate(temp);
-                    }
-
-                    ImGui::TreePop();
-                }
-                ImGui::Unindent();
-                ImGui::TreePop();
-            }
-        }
-
-        // Show message if no components
-        if (!world.HasAnyComponent(entityId))
-        {
-            ImGui::Separator();
-            ImGui::TextColored(ImVec4(0.34f, 129.0f, 0, 255), "Right click here!");
-        }
-
-        if (m_InspectorState.dirty) m_InspectorState.dirty = false;
-        break;
-    }
-    ImGui::End();
-}
-
-void Interface::SingleSelect(EntityID e)
-{
-    m_EditorState.selection.entities.clear();
-    m_EditorState.selection.entities.push_back(e);
-}
-
-void Interface::ToggleSelect(EntityID e)
-{
-    if (m_EditorState.selection.Contains(e))
-    {
-        // We want to keep the order of the entities in the selection, so we can't swap and delete the last element.
-        m_EditorState.selection.entities.erase(
-            std::remove(m_EditorState.selection.entities.begin(), m_EditorState.selection.entities.end(), e),
-            m_EditorState.selection.entities.end());
-    } else
-    {
-        m_EditorState.selection.entities.push_back(e);
-    }
-}
-
-void Interface::ClearSelection()
-{
-    m_EditorState.selection.entities.clear();
 }

@@ -16,7 +16,6 @@
 
 /* Graphics */
 #include "Core/Graphics/Buffer.h"
-#include "Core/Graphics/EditorRenderer.h"
 #include "Core/Graphics/FrameBuffer.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/PostEffect.h"

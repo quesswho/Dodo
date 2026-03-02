@@ -1,6 +1,8 @@
 #pragma once
 
+#include "Core/Common.h"
 #include "Core/Graphics/Shader/Shader.h"
+#include "Core/Utilities/Logger.h"
 #include "Texture.h"
 
 #include <vector>

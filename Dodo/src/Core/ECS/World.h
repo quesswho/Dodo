@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Core/ECS/Component/ModelComponent.h>
 #include <Core/ECS/ComponentPool.h>
 #include <Core/ECS/Entity.h>
+#include <Core/ECS/RuntimeComponentList.h>
 
 #include <tuple>
 #include <unordered_set>
@@ -72,5 +72,7 @@ namespace Dodo {
         std::unordered_set<EntityID> m_AliveEntities;
     };
 
-    using World = BasicWorld<ModelComponent>;
+    // Defines the ECS structure of the core world.
+    using World = RuntimeComponentList::Apply<BasicWorld>;
+
 } // namespace Dodo

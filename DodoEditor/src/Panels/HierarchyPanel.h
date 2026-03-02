@@ -5,4 +5,4 @@
 class HierarchyPanel {
   public:
     void Draw(EditorState& state, InspectorState& inspector);
-};  
+};

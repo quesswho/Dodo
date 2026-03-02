@@ -10,7 +10,8 @@ struct RenameState {
 
     bool isActive() const { return entityId != -1; }
 
-    void Begin(World& world, EntityID id) {
+    void Begin(World& world, EntityID id)
+    {
         entityId = id;
         if (!world.HasComponent<NameComponent>(id))
         {
@@ -20,7 +21,8 @@ struct RenameState {
         nameBuffer = world.GetComponent<NameComponent>(id).name;
     }
 
-    void Update(World& world) {
+    void Update(World& world)
+    {
         if (!isActive()) return;
 
         if (!world.HasComponent<NameComponent>(entityId))
@@ -28,17 +30,20 @@ struct RenameState {
             world.AddComponent<NameComponent>(entityId, NameComponent{"Unnamed"});
         }
 
-        if(!nameBuffer.empty()) {
+        if (!nameBuffer.empty())
+        {
             world.GetComponent<NameComponent>(entityId).name = nameBuffer;
         }
     }
 
-    void Finish(World& world) {
+    void Finish(World& world)
+    {
         Update(world);
         Cancel();
     }
 
-    void Cancel() {
+    void Cancel()
+    {
         entityId = -1;
         nameBuffer.clear();
     }

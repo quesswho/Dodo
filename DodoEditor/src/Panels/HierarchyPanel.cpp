@@ -33,12 +33,15 @@ void HierarchyPanel::Draw(EditorState& state, InspectorState& inspector)
 
         for (EntityID entityId : world.GetAliveEntities())
         {
-            if (entityId == state.renameState.entityId) { // Currently renaming this entity
+            if (entityId == state.renameState.entityId)
+            { // Currently renaming this entity
                 ImGui::SetKeyboardFocusHere();
                 ImGui::Indent();
 
                 ImGui::SetKeyboardFocusHere();
-                if (ImGui::InputText("##label", &state.renameState.nameBuffer, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_CharsNoBlank))
+                if (ImGui::InputText("##label", &state.renameState.nameBuffer,
+                                     ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll |
+                                         ImGuiInputTextFlags_CharsNoBlank))
                 {
                     state.renameState.Finish(world);
                     state.selection.Single(entityId);

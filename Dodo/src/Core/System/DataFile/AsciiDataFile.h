@@ -52,6 +52,7 @@ namespace Dodo {
         // Additional ASCII-specific helpers (not in interface)
         Math::Transformation GetTransformation();
         void AddValue(const std::string& name, const Math::Transformation& t);
+        void ResetOffset() { m_Offset = 0; }
 
       private:
         std::vector<std::string> m_File;

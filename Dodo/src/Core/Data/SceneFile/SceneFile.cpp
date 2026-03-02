@@ -21,7 +21,7 @@ namespace Dodo {
         return WriteAs(m_Path, scene);
     }
 
-    SceneFileError SceneFile::WriteAs(const std::string& path, Scene* scene)
+    SceneFileError SceneFile::WriteEntities(const std::string& path, Scene* scene)
     {
         m_Path = path;
         m_File.BeginWrite();
@@ -50,8 +50,17 @@ namespace Dodo {
             m_File.WriteBlankLine();
         }
 
-        m_File.EndWrite(path);
         m_LastError = SceneFileError::None;
+        return m_LastError;
+    }
+
+    SceneFileError SceneFile::WriteAs(const std::string& path, Scene* scene)
+    {
+        SceneFileError err = WriteEntities(path, scene);
+        if (err != SceneFileError::None)
+            return err;
+
+        m_File.EndWrite(path);
         return m_LastError;
     }
 
@@ -65,7 +74,7 @@ namespace Dodo {
         return Read(m_Path);
     }
 
-    Scene* SceneFile::Read(const std::string& path)
+    Scene* SceneFile::ReadEntities(const std::string& path)
     {
         m_Path = path;
 
@@ -126,13 +135,20 @@ namespace Dodo {
                 continue;
             } else
             {
-                DD_WARN("SceneFile: skipping unsupported section '{}'", section);
-                SetError(SceneFileError::UnsupportedComponent, m_File.GetCurrentOffset());
+                // Skip unknown sections (e.g. [Editor] tail) gracefully
+                while (m_File.HasMore() && !m_File.IsSection())
+                    m_File.SkipLine();
             }
         }
 
-        m_File.EndRead();
         m_LastError = SceneFileError::None;
+        return result;
+    }
+
+    Scene* SceneFile::Read(const std::string& path)
+    {
+        Scene* result = ReadEntities(path);
+        m_File.EndRead();
         return result;
     }
 

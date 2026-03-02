@@ -12,7 +12,7 @@
 //#include "Core/Common/Common.h"
 //#include "Core/Common/Macros.h"
 /* Data */
-#include "Core/Data/SceneFile.h"
+#include "Core/Data/SceneFile/SceneFile.h"
 
 /* Graphics */
 #include "Core/Graphics/Buffer.h"

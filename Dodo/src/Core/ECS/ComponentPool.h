@@ -7,7 +7,8 @@
 
 namespace Dodo {
 
-    template <typename T> class ComponentPool {
+    template <typename T>
+    class ComponentPool {
       public:
         void AddComponent(EntityID id, T&& component)
         {

@@ -4,7 +4,8 @@
 
 namespace Dodo { namespace Math {
 
-    template <typename T = float> struct TVec4 {
+    template <typename T = float>
+    struct TVec4 {
         TVec4() : x((T)0), y((T)0), z((T)0), w((T)0) {}
 
         TVec4(T f) : x(f), y(f), z(f), w(f) {}

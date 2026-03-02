@@ -13,7 +13,8 @@ namespace Dodo {
         Rectangle(Ref<Material> material);
         ~Rectangle();
 
-        template <typename T> inline void SetUniform(const char* location, T value)
+        template <typename T>
+        inline void SetUniform(const char* location, T value)
         {
             m_Mesh->SetUniform(location, value);
         }

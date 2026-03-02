@@ -7,7 +7,8 @@
 namespace Dodo { namespace Platform {
 
     // Column Major Right hand 4x4 matrix
-    template <typename T = float> struct CRHMat4x4 {
+    template <typename T = float>
+    struct CRHMat4x4 {
 
         union {
             T m_Elements[16];
@@ -417,7 +418,8 @@ namespace Dodo { namespace Platform {
 
         static inline const CRHMat4x4<T> Multiply(const CRHMat4x4<T>& mat) { return mat; }
 
-        template <class... O> static const CRHMat4x4<T> Multiply(const CRHMat4x4<T>& mat, O... others)
+        template <class... O>
+        static const CRHMat4x4<T> Multiply(const CRHMat4x4<T>& mat, O... others)
         {
             CRHMat4x4<T> result;
             result = mat * Multiply(others...);

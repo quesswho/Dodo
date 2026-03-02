@@ -15,7 +15,8 @@ namespace Dodo {
         Model(std::vector<Mesh*> meshes);
         ~Model();
 
-        template <typename T> void SetUniform(const char* location, T value)
+        template <typename T>
+        void SetUniform(const char* location, T value)
         {
             for (auto mesh : m_Meshes)
             {

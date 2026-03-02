@@ -30,7 +30,8 @@ namespace Dodo {
             DD_ERR("Texture index does not exist in material!");
         }
 
-        template <typename T> void SetUniform(const char* location, T value)
+        template <typename T>
+        void SetUniform(const char* location, T value)
         {
             m_Shader->SetUniformValue(location, value);
         }

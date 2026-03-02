@@ -21,7 +21,8 @@ namespace Dodo {
 
         inline void Bind() const { m_Framebuffer->Bind(); }
 
-        template <typename T> void SetUniformValue(const char* location, const T val)
+        template <typename T>
+        void SetUniformValue(const char* location, const T val)
         {
             m_Shader->Bind();
             m_Shader->SetUniformValue(location, val);

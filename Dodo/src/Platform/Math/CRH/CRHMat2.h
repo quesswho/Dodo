@@ -5,7 +5,8 @@
 namespace Dodo { namespace Platform {
 
     // Column Major 2x2 matrix
-    template <typename T = float> struct CRHMat2x2 {
+    template <typename T = float>
+    struct CRHMat2x2 {
 
         union {
             T m_Elements[4];

@@ -2,6 +2,8 @@
 
 #include <Dodo.h>
 
+#include "Scene/EditorScene.h"
+#include "Data/EditorSceneFile.h"
 #include "PanelStates/EditorState.h"
 #include "PanelStates/HierarchyState.h"
 #include "Panels/HierarchyPanel.h"
@@ -40,7 +42,7 @@ class Interface {
     HierarchyPanel m_HierarchyPanel;
 
   public:
-    Interface(Scene* scene);
+    Interface(EditorScene* scene);
 
     bool BeginDraw();
     bool BeginViewport();
@@ -48,7 +50,7 @@ class Interface {
     void EndViewport(FrameBuffer* framebuffer);
     void EndDraw();
 
-    void ChangeScene(Scene* scene);
+    void ChangeScene(EditorScene* scene);
 
   private:
     void InitInterface();
@@ -60,5 +62,5 @@ class Interface {
 
     bool m_ChangeScene;
 
-    SceneFile m_File;
+    EditorSceneFile fileReader;
 };

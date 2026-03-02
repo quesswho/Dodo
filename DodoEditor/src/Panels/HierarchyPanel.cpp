@@ -24,7 +24,7 @@ void HierarchyPanel::Draw(EditorState& state, InspectorState& inspector)
 
     if (ImGui::TreeNodeEx("Entities", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        World& world = state.scene->GetWorld();
+        auto& world = state.scene->GetWorld();
         if (world.GetAliveEntities().empty())
         {
             ImGui::Separator();

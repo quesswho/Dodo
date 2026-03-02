@@ -125,7 +125,7 @@ void* operator new(size_t size)
     return Dodo::MemoryAllocator::Alloc(size);
 }
 
-void operator delete(void* block, size_t size)
+void operator delete(void* block, size_t size) noexcept
 {
     Dodo::MemoryAllocator::Dealloc(block, size);
 }

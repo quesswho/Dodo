@@ -57,14 +57,14 @@ void GameLayer::Render()
 {
     if (m_Interface->BeginDraw())
     {
-        m_Scene = m_Interface->m_EditorContext.scene; // Maybe work out something better when changing scene
+        m_Scene = m_Interface->m_EditorState.scene; // Maybe work out something better when changing scene
     }
 
     m_Interface->BeginViewport();
     if (m_Interface->ViewportResize())
     {
-        m_Camera->Resize(m_Interface->m_EditorContext.viewportWidth, m_Interface->m_EditorContext.viewportHeight);
-        m_FrameBuffer->Resize(m_Interface->m_EditorContext.viewportWidth, m_Interface->m_EditorContext.viewportHeight);
+        m_Camera->Resize(m_Interface->m_ViewportState.width, m_Interface->m_ViewportState.height);
+        m_FrameBuffer->Resize(m_Interface->m_ViewportState.width, m_Interface->m_ViewportState.height);
 
         if (m_Scene->m_SkyBox != nullptr) m_Scene->m_SkyBox->m_Projection = m_Camera->GetProjectionMatrix();
     }
@@ -111,9 +111,9 @@ void GameLayer::OnEvent(const Event &event)
                 break;
             }
 
-            for (int entityId : m_Interface->m_EditorContext.selection.entities)
+            for (int entityId : m_Interface->m_EditorState.selection.entities)
             {
-                m_Interface->m_EditorContext.scene->GetWorld().DeleteEntity(entityId);
+                m_Interface->m_EditorState.scene->GetWorld().DeleteEntity(entityId);
             }
             break;
         }

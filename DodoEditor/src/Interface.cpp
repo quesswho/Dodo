@@ -75,7 +75,6 @@ void Interface::InitInterface()
     m_InspectorComponents = m_HierarchyComponents;
 
     m_InspectorState.visible = true;
-    m_InspectorState.nameBuffer = "";
     m_InspectorState.dirty = false;
 }
 

@@ -4,6 +4,7 @@
 
 #include <Dodo.h>
 #include <imgui.h>
+#include <misc/cpp/imgui_stdlib.h>
 
 void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
 {
@@ -14,35 +15,21 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
     World& world = state.scene->GetWorld();
     for (int entityId : state.selection.entities)
     {
-        static char nameBuffer[64] = "";
-        if (inspector.dirty)
-        {
-            strncpy(nameBuffer, inspector.nameBuffer.c_str(), sizeof(nameBuffer) - 1);
-            nameBuffer[sizeof(nameBuffer) - 1] = '\0';
+        if(state.renameState.entityId != entityId) {
+            std::string name = world.HasComponent<NameComponent>(entityId) ? world.GetComponent<NameComponent>(entityId).name : "Entity_" + std::to_string(entityId);
+            ImGui::Text(name.c_str());
+            if(ImGui::IsItemClicked()) {
+                state.renameState.Begin(world, entityId);
+            }
         }
 
-        if (ImGui::InputText("##label", nameBuffer, sizeof(nameBuffer),
-                             ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank))
-        {
-            inspector.nameBuffer = std::string(nameBuffer);
-
-            if (!inspector.nameBuffer.empty())
+        if(state.renameState.entityId == entityId) {
+            ImGui::SetKeyboardFocusHere();
+            if (ImGui::InputText("##label", &state.renameState.nameBuffer, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank))
             {
-                if (world.HasComponent<NameComponent>(entityId))
-                {
-                    world.GetComponent<NameComponent>(entityId).m_Name = inspector.nameBuffer;
-                } else
-                {
-                    world.AddComponent<NameComponent>(entityId, NameComponent{inspector.nameBuffer});
-                }
-            } else
-            {
-                if (world.HasComponent<NameComponent>(entityId))
-                {
-                    inspector.nameBuffer = world.GetComponent<NameComponent>(entityId).m_Name;
-                    strncpy(nameBuffer, inspector.nameBuffer.c_str(), sizeof(nameBuffer) - 1);
-                }
+                state.renameState.Finish(world);
             }
+            
         }
 
         ImGui::Separator();
@@ -177,7 +164,6 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
             ImGui::TextColored(ImVec4(0.34f, 129.0f, 0, 255), "Right click here!");
         }
 
-        if (inspector.dirty) inspector.dirty = false;
         break;
     }
     ImGui::End();

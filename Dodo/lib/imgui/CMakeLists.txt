@@ -6,6 +6,7 @@ target_sources(imgui PRIVATE
     imgui/imgui_draw.cpp
     imgui/imgui_widgets.cpp
     imgui/imgui_tables.cpp
+    imgui/misc/cpp/imgui_stdlib.cpp
 )
 
 # We use glad for imgui opengl/vulkan implementations

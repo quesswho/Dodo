@@ -12,7 +12,7 @@ namespace Dodo {
 
       private:
         const BufferProperties m_BasicProperties;
-        Mesh* m_RectangleMesh;
-        Mesh* m_CubeMesh;
+        Mesh* m_RectangleMesh = nullptr;
+        Mesh* m_CubeMesh = nullptr;
     };
 } // namespace Dodo

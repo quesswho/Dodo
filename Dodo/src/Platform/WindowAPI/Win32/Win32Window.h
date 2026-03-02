@@ -28,11 +28,11 @@ namespace Dodo::Platform {
       public:
         PCSpecifications m_Pcspecs;
 
-        Win32Window(const WindowProperties &);
+        Win32Window(const WindowProperties&);
         ~Win32Window();
 
         void Update() const;
-        void SetTitle(const char *title);
+        void SetTitle(const char* title);
         void SetCursorPosition(Math::TVec2<long> pos);
         void SetCursorVisible(bool vis);
         void FullScreen(bool fullscreen);
@@ -46,8 +46,8 @@ namespace Dodo::Platform {
         void WindowFocusCallback(bool focused);
         void WindowCloseCallback();
 
-        const WindowProperties &GetWindowProperties() { return m_WindowProperties; }
-        void SetWindowProperties(const WindowProperties &winprop);
+        const WindowProperties& GetWindowProperties() { return m_WindowProperties; }
+        void SetWindowProperties(const WindowProperties& winprop);
 
         void FocusConsole() const;
 
@@ -57,7 +57,7 @@ namespace Dodo::Platform {
         PIXELFORMATDESCRIPTOR GetPixelFormat() const;
     };
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-    static Win32Window *s_WindowClass;
+    static Win32Window* s_WindowClass;
 }
 
 /* Printable keys */

@@ -14,7 +14,7 @@ namespace Dodo::Platform {
       public:
         explicit WGLContext() {}
 
-        void CreateContextImpl(const NativeWindowHandle &handle)
+        void CreateContextImpl(const NativeWindowHandle& handle)
         {
             m_HWND = (HWND)handle.window;
             m_Hdc = (HDC)handle.display;

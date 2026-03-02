@@ -4,14 +4,14 @@
 #include "Core/Application/Application.h"
 
 namespace Dodo {
-    Ref<Material> MaterialLoader::LoadMaterial(const char *path)
+    Ref<Material> MaterialLoader::LoadMaterial(const char* path)
     {
         return std::make_shared<Material>(
             Application::s_Application->m_AssetManager->GetShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture),
             std::make_shared<Texture>(path, 0, TextureSettings(TextureWrapMode::WRAP_CLAMP_TO_EDGE)));
     }
 
-    Ref<Material> MaterialLoader::LoadMaterial(const std::string &path, aiMaterial *material)
+    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, aiMaterial* material)
     {
         ShaderBuilderFlags flags = ShaderBuilderFlagShadowMap;
         std::vector<Ref<Texture>> textures;
@@ -56,9 +56,9 @@ namespace Dodo {
         return std::make_shared<Material>(); // Fallback shader
     }
 
-    Ref<Texture> MaterialLoader::LoadTextureFromMaterial(aiMaterial *material, aiTextureType type,
-                                                         ShaderBuilderFlags &shaderFlags,
-                                                         const std::filesystem::path &modelDir, uint slot)
+    Ref<Texture> MaterialLoader::LoadTextureFromMaterial(aiMaterial* material, aiTextureType type,
+                                                         ShaderBuilderFlags& shaderFlags,
+                                                         const std::filesystem::path& modelDir, uint slot)
     {
         aiString str;
         if (material->GetTexture(type, 0, &str) == AI_SUCCESS && str.length > 0)

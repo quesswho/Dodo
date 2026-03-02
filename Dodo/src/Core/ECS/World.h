@@ -24,7 +24,7 @@ namespace Dodo {
             (std::get<ComponentPool<ComponentTypes>>(m_Pools).RemoveComponent(entity), ...); // remove from all pools
         }
 
-        template <typename T> void AddComponent(EntityID entity, T &&component)
+        template <typename T> void AddComponent(EntityID entity, T&& component)
         {
             static_assert((std::is_same_v<T, ComponentTypes> || ...));
             GetPool<T>().AddComponent(entity, std::forward<T>(component));
@@ -36,25 +36,25 @@ namespace Dodo {
             return GetPool<T>().Exists(entity);
         }
 
-        template <typename T> T &GetComponent(EntityID entity)
+        template <typename T> T& GetComponent(EntityID entity)
         {
             static_assert((std::is_same_v<T, ComponentTypes> || ...));
             return GetPool<T>().Get(entity);
         }
 
-        template <typename T> ComponentPool<T> &GetPool()
+        template <typename T> ComponentPool<T>& GetPool()
         {
             static_assert((std::is_same_v<T, ComponentTypes> || ...));
             return std::get<ComponentPool<T>>(m_Pools);
         }
 
-        template <typename T> const ComponentPool<T> &GetPool() const
+        template <typename T> const ComponentPool<T>& GetPool() const
         {
             static_assert((std::is_same_v<T, ComponentTypes> || ...));
             return std::get<ComponentPool<T>>(m_Pools);
         }
 
-        const std::unordered_set<EntityID> &GetAliveEntities() const { return m_AliveEntities; }
+        const std::unordered_set<EntityID>& GetAliveEntities() const { return m_AliveEntities; }
 
         bool HasAnyComponent(EntityID entity) const
         {

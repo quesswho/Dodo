@@ -12,7 +12,7 @@ class Chunk {
     BlockType GetBlockType(int x, int y, int z);
 
     Chunk(ChunkPos chunkpos);
-    Chunk(ChunkPos chunkpos, const std::unordered_map<int, std::array<Ref<Block>, 4096>> &blocks);
+    Chunk(ChunkPos chunkpos, const std::unordered_map<int, std::array<Ref<Block>, 4096>>& blocks);
 
     ChunkPos m_ChunkPos;
 

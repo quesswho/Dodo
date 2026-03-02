@@ -2,7 +2,6 @@
 #include "../EditorState.h"
 
 class HierarchyPanel {
-public:
+  public:
     void Draw(EditorState& state, InspectorState& inspector);
-
 };

@@ -15,7 +15,7 @@ namespace Dodo { namespace Platform {
         CRHMat3x3() : m_Elements{0} {}
         CRHMat3x3(float diagonal) { Identity(diagonal); }
 
-        CRHMat3x3(const Math::TVec3<T> &first, const Math::TVec3<T> &second, const Math::TVec3<T> &third)
+        CRHMat3x3(const Math::TVec3<T>& first, const Math::TVec3<T>& second, const Math::TVec3<T>& third)
         {
             m_Elements[GetIndex(0, 0)] = first.x;
             m_Elements[GetIndex(0, 1)] = first.y;
@@ -65,7 +65,7 @@ namespace Dodo { namespace Platform {
 
         // Addition
 
-        const CRHMat3x3 &operator+=(const float scalar)
+        const CRHMat3x3& operator+=(const float scalar)
         {
             for (int i = 0; i < 9; i++)
             {
@@ -76,7 +76,7 @@ namespace Dodo { namespace Platform {
 
         friend CRHMat3x3 operator+(CRHMat3x3 left, const float right) { return left += right; }
 
-        const CRHMat3x3 &operator+=(const CRHMat3x3 &other)
+        const CRHMat3x3& operator+=(const CRHMat3x3& other)
         {
             for (int i = 0; i < 9; i++)
             {
@@ -85,11 +85,11 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat3x3 operator+(CRHMat3x3 left, const CRHMat3x3 &right) { return left += right; }
+        friend CRHMat3x3 operator+(CRHMat3x3 left, const CRHMat3x3& right) { return left += right; }
 
         // Subtraction
 
-        const CRHMat3x3 &operator-=(const float scalar)
+        const CRHMat3x3& operator-=(const float scalar)
         {
             for (int i = 0; i < 9; i++)
             {
@@ -100,7 +100,7 @@ namespace Dodo { namespace Platform {
 
         friend CRHMat3x3 operator-(CRHMat3x3 left, const float right) { return left -= right; }
 
-        const CRHMat3x3 &operator-=(const CRHMat3x3 &other)
+        const CRHMat3x3& operator-=(const CRHMat3x3& other)
         {
             for (int i = 0; i < 9; i++)
             {
@@ -109,11 +109,11 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat3x3 operator-(CRHMat3x3 left, const CRHMat3x3 &right) { return left -= right; }
+        friend CRHMat3x3 operator-(CRHMat3x3 left, const CRHMat3x3& right) { return left -= right; }
 
         // Multiplication
 
-        const CRHMat3x3 &operator*=(const float scalar)
+        const CRHMat3x3& operator*=(const float scalar)
         {
             for (int i = 0; i < 9; i++)
                 m_Elements[i] *= scalar;
@@ -123,7 +123,7 @@ namespace Dodo { namespace Platform {
 
         friend CRHMat3x3 operator*(CRHMat3x3 left, const float right) { return left *= right; }
 
-        const CRHMat3x3 &operator*=(const CRHMat3x3 &other)
+        const CRHMat3x3& operator*=(const CRHMat3x3& other)
         {
             const Math::TVec3<T> row0 =
                 Math::TVec3<T>(m_Elements[GetIndex(0, 0)], m_Elements[GetIndex(1, 0)], m_Elements[GetIndex(2, 0)]);
@@ -147,11 +147,11 @@ namespace Dodo { namespace Platform {
             return *this;
         }
 
-        friend CRHMat3x3 operator*(CRHMat3x3 left, const CRHMat3x3 &right) { return left *= right; }
+        friend CRHMat3x3 operator*(CRHMat3x3 left, const CRHMat3x3& right) { return left *= right; }
 
         // Assignment
 
-        const CRHMat3x3 &operator=(const CRHMat3x3 &other)
+        const CRHMat3x3& operator=(const CRHMat3x3& other)
         {
             m_Elements[GetIndex(0, 0)] = other.m_Elements[GetIndex(0, 0)];
             m_Elements[GetIndex(0, 1)] = other.m_Elements[GetIndex(0, 1)];
@@ -169,7 +169,7 @@ namespace Dodo { namespace Platform {
 
         // Test
 
-        const bool operator==(const CRHMat3x3 &other)
+        const bool operator==(const CRHMat3x3& other)
         {
             return (m_Elements[GetIndex(0, 0)] == other.m_Elements[GetIndex(0, 0)] &&
                     m_Elements[GetIndex(0, 1)] == other.m_Elements[GetIndex(0, 1)] &&
@@ -184,7 +184,7 @@ namespace Dodo { namespace Platform {
                     m_Elements[GetIndex(2, 2)] == other.m_Elements[GetIndex(2, 2)]);
         }
 
-        const bool operator!=(const CRHMat3x3 &other)
+        const bool operator!=(const CRHMat3x3& other)
         {
             return !(m_Elements[GetIndex(0, 0)] == other.m_Elements[GetIndex(0, 0)] &&
                      m_Elements[GetIndex(0, 1)] == other.m_Elements[GetIndex(0, 1)] &&
@@ -211,7 +211,7 @@ namespace Dodo { namespace Platform {
                 mat.m_Elements[GetIndex(0, 2)], mat.m_Elements[GetIndex(1, 2)], mat.m_Elements[GetIndex(2, 2)]);
         }
 
-        static const CRHMat3x3 Translate(const Math::TVec2<T> &translation)
+        static const CRHMat3x3 Translate(const Math::TVec2<T>& translation)
         {
             CRHMat3x3 result;
             result.m_Elements[GetIndex(0, 0)] = (T)1;
@@ -222,7 +222,7 @@ namespace Dodo { namespace Platform {
             return result;
         }
 
-        static const CRHMat3x3 Scale(const Math::TVec2<T> &scale)
+        static const CRHMat3x3 Scale(const Math::TVec2<T>& scale)
         {
             CRHMat3x3 result;
 

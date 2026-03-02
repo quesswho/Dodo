@@ -6,7 +6,7 @@
 
 namespace Dodo { namespace Platform {
 
-    OpenGLCubeMapTexture::OpenGLCubeMapTexture(std::vector<std::string> paths, uint index, const TextureSettings &prop)
+    OpenGLCubeMapTexture::OpenGLCubeMapTexture(std::vector<std::string> paths, uint index, const TextureSettings& prop)
         : m_Index(index)
     {
         glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_TextureID);
@@ -65,7 +65,7 @@ namespace Dodo { namespace Platform {
         {
             int channels, width, height;
             stbi_set_flip_vertically_on_load(false);
-            uchar *data = stbi_load(paths[i].c_str(), &width, &height, &channels, 0);
+            uchar* data = stbi_load(paths[i].c_str(), &width, &height, &channels, 0);
             stbi_set_flip_vertically_on_load(true);
             if (data)
             {

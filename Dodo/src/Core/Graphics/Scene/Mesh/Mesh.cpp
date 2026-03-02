@@ -5,7 +5,7 @@
 
 namespace Dodo {
 
-    Mesh::Mesh(VertexBuffer *vertexBuffer, IndexBuffer *indexBuffer, Ref<Material> material)
+    Mesh::Mesh(VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, Ref<Material> material)
         : m_VBuffer(vertexBuffer), m_IBuffer(indexBuffer), m_Material(material)
     {}
 

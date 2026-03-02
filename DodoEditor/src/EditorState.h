@@ -29,10 +29,7 @@ struct Selection {
         }
     }
 
-    void Clear()
-    {
-        entities.clear();
-    }
+    void Clear() { entities.clear(); }
 };
 
 struct EditorState {

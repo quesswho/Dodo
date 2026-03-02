@@ -16,20 +16,20 @@ namespace Dodo {
         std::string m_Name;
 
         // Contains all entities and their components.
-        World *m_World;
+        World* m_World;
 
-        Skybox *m_SkyBox;
+        Skybox* m_SkyBox;
         LightSystem m_LightSystem;
 
       public:
-        Scene(Math::FreeCamera *camera, std::string name = "Unnamed");
+        Scene(Math::FreeCamera* camera, std::string name = "Unnamed");
         ~Scene();
 
-        World &GetWorld();
+        World& GetWorld();
 
-        inline void UpdateCamera(Math::FreeCamera *camera) { m_Camera = camera; }
+        inline void UpdateCamera(Math::FreeCamera* camera) { m_Camera = camera; }
 
       private:
-        Math::FreeCamera *m_Camera;
+        Math::FreeCamera* m_Camera;
     };
 } // namespace Dodo

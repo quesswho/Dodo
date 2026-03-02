@@ -32,7 +32,7 @@ namespace Dodo {
         return static_cast<ShaderBuilderFlags>(static_cast<U>(a) | static_cast<U>(b));
     }
 
-    inline ShaderBuilderFlags &operator|=(ShaderBuilderFlags &a, ShaderBuilderFlags b) noexcept
+    inline ShaderBuilderFlags& operator|=(ShaderBuilderFlags& a, ShaderBuilderFlags b) noexcept
     {
         a = a | b;
         return a;
@@ -47,13 +47,13 @@ namespace Dodo {
             OpenGLShaderBuilder();
             ~OpenGLShaderBuilder();
 
-            Ref<Shader> BuildVertexFragmentShader(const ShaderBuilderFlags flags, const char *name) const;
+            Ref<Shader> BuildVertexFragmentShader(const ShaderBuilderFlags flags, const char* name) const;
             inline Ref<Shader> BuildVertexFragmentShader(const ShaderBuilderFlags flags) const
             {
                 return BuildVertexFragmentShader(flags, std::to_string(flags).c_str());
             }
 
-            uint CompileVertexFragmentShader(const char *vertex, const char *fragment) const;
+            uint CompileVertexFragmentShader(const char* vertex, const char* fragment) const;
 
             inline Ref<Shader> GetFallbackShader() const { return m_FallbackShader; }
 

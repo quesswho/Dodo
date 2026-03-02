@@ -4,7 +4,7 @@
 namespace Dodo {
     MeshFactory::MeshFactory() : m_BasicProperties({{"POSITION", 3}, {"TEXCOORD", 2}}), m_RectangleMesh(0) {}
 
-    Mesh *MeshFactory::GetRectangleMesh(Ref<Material> material)
+    Mesh* MeshFactory::GetRectangleMesh(Ref<Material> material)
     {
         if (!m_RectangleMesh)
         {

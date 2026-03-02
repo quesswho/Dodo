@@ -3,7 +3,7 @@
 
 namespace Dodo { namespace Platform {
 
-    OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferProperties &framebufferProp)
+    OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferProperties& framebufferProp)
         : m_FrameBufferProperties(framebufferProp)
     {
         Create();

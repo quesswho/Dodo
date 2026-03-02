@@ -8,7 +8,7 @@
 
 namespace Dodo {
 
-    Mesh *ModelLoader::LoadMesh(aiMesh *mesh, Ref<Material> material)
+    Mesh* ModelLoader::LoadMesh(aiMesh* mesh, Ref<Material> material)
     {
         std::vector<Vertex> vertices;
         std::vector<uint> indices;
@@ -50,17 +50,17 @@ namespace Dodo {
         }
 
         return new Mesh(
-            new VertexBuffer((float *)&vertices[0], totalVertices * sizeof(Vertex),
+            new VertexBuffer((float*)&vertices[0], totalVertices * sizeof(Vertex),
                              BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 3}})),
             new IndexBuffer(indices.data(), totalIndices), material);
     }
 
-    Model *ModelLoader::LoadModel(const std::string &path)
+    Model* ModelLoader::LoadModel(const std::string& path)
     {
         Assimp::Importer imp;
 
         // Assimp::Importer has ownership of all the memory allocated from ReadFile()
-        const aiScene *model =
+        const aiScene* model =
             imp.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_PreTransformVertices);
 
         if (!model || model->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !model->mRootNode)
@@ -89,7 +89,7 @@ namespace Dodo {
         // Application::s_Application->m_Window->DefaultWorkDirectory();
         DD_INFO("{} materials loaded", materials.size());
 
-        std::vector<Mesh *> meshes;
+        std::vector<Mesh*> meshes;
         meshes.reserve(model->mNumMeshes);
 
         for (uint i = 0; i < model->mNumMeshes; i++)

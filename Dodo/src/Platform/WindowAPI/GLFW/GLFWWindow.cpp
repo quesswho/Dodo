@@ -11,7 +11,7 @@
 
 namespace Dodo::Platform {
 
-    GLFWWindow::GLFWWindow(const WindowProperties &winProp) : m_WindowProperties(winProp), m_Focused(true) { Init(); }
+    GLFWWindow::GLFWWindow(const WindowProperties& winProp) : m_WindowProperties(winProp), m_Focused(true) { Init(); }
 
     GLFWWindow::~GLFWWindow()
     {
@@ -76,7 +76,7 @@ namespace Dodo::Platform {
 
     void GLFWWindow::Update() const { glfwPollEvents(); }
 
-    void GLFWWindow::SetTitle(const char *title) { glfwSetWindowTitle(m_Handle, title); }
+    void GLFWWindow::SetTitle(const char* title) { glfwSetWindowTitle(m_Handle, title); }
 
     void GLFWWindow::SetCursorVisible(bool vis)
     {
@@ -102,8 +102,8 @@ namespace Dodo::Platform {
     void GLFWWindow::FullScreen(bool fullscreen)
     {
         m_WindowProperties.m_Settings.fullscreen = fullscreen;
-        GLFWmonitor *primary = glfwGetPrimaryMonitor();
-        const GLFWvidmode *mode = glfwGetVideoMode(primary);
+        GLFWmonitor* primary = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(primary);
 
         if (fullscreen)
         {
@@ -124,8 +124,8 @@ namespace Dodo::Platform {
     {
         return {
             NativeWindowHandle::WindowBackend::GLFW,
-            (void *)m_Handle, // GLFWwindow*
-            nullptr           // No display needed
+            (void*)m_Handle, // GLFWwindow*
+            nullptr          // No display needed
         };
     }
 
@@ -133,9 +133,9 @@ namespace Dodo::Platform {
 
     void GLFWWindow::ImGuiEndFrame() const { GLFWImGuiBackend::EndFrame(); }
 
-    void GLFWWindow::ErrorCallback(int error, const char *description) { DD_ERR("{0}", description); }
+    void GLFWWindow::ErrorCallback(int error, const char* description) { DD_ERR("{0}", description); }
 
-    void GLFWWindow::KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
+    void GLFWWindow::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
         switch (action)
         {
@@ -149,7 +149,7 @@ namespace Dodo::Platform {
         }
     }
 
-    void GLFWWindow::MouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
+    void GLFWWindow::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
     {
         switch (action)
         {
@@ -162,15 +162,15 @@ namespace Dodo::Platform {
         }
     }
 
-    void GLFWWindow::MouseMovedCallback(GLFWwindow *window, double xpos, double ypos)
+    void GLFWWindow::MouseMovedCallback(GLFWwindow* window, double xpos, double ypos)
     {
         // TODO: support subpixel mouse
         Application::s_Application->m_InputManager.MouseMoved(Math::TVec2<double>(xpos, ypos));
     }
 
-    void GLFWWindow::WindowResizeCallback(GLFWwindow *window, int width, int height)
+    void GLFWWindow::WindowResizeCallback(GLFWwindow* window, int width, int height)
     {
-        GLFWWindow *self = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(window));
+        GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
         if (!self) return;
 
         self->m_WindowProperties.m_Width = width;
@@ -179,9 +179,9 @@ namespace Dodo::Platform {
         // Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
     }
 
-    void GLFWWindow::WindowMovedCallback(GLFWwindow *window, int xpos, int ypos)
+    void GLFWWindow::WindowMovedCallback(GLFWwindow* window, int xpos, int ypos)
     {
-        GLFWWindow *self = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(window));
+        GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
         if (!self) return;
 
         self->m_WindowProperties.m_PosX = xpos;
@@ -190,9 +190,9 @@ namespace Dodo::Platform {
         // Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
     }
 
-    void GLFWWindow::FramebufferResizeCallback(GLFWwindow *window, int width, int height)
+    void GLFWWindow::FramebufferResizeCallback(GLFWwindow* window, int width, int height)
     {
-        GLFWWindow *self = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(window));
+        GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
         if (!self) return;
 
         self->m_WindowProperties.m_FrameBufferWidth = width;
@@ -202,31 +202,31 @@ namespace Dodo::Platform {
         Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
     }
 
-    void GLFWWindow::WindowFocusCallback(GLFWwindow *window, int focus)
+    void GLFWWindow::WindowFocusCallback(GLFWwindow* window, int focus)
     {
-        GLFWWindow *self = static_cast<GLFWWindow *>(glfwGetWindowUserPointer(window));
+        GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
         if (!self) return;
         self->m_Focused = focus > 0;
         Application::s_Application->OnEvent(WindowFocusEvent(self->m_Focused));
     }
 
-    void GLFWWindow::WindowCloseCallback(GLFWwindow *window)
+    void GLFWWindow::WindowCloseCallback(GLFWwindow* window)
     {
         Application::s_Application->Shutdown();
         Application::s_Application->OnEvent(WindowCloseEvent());
     }
 
-    void GLFWWindow::SetWindowProperties(const WindowProperties &winprop) { m_WindowProperties = winprop; }
+    void GLFWWindow::SetWindowProperties(const WindowProperties& winprop) { m_WindowProperties = winprop; }
 
     void GLFWWindow::FocusConsole() const {}
 
     void GLFWWindow::ConfigureMonitor()
     {
-        GLFWmonitor *primary = glfwGetPrimaryMonitor();
+        GLFWmonitor* primary = glfwGetPrimaryMonitor();
         int physical_width_mm, physical_height_mm;
         glfwGetMonitorPhysicalSize(primary, &physical_width_mm, &physical_height_mm);
 
-        const GLFWvidmode *mode = glfwGetVideoMode(primary);
+        const GLFWvidmode* mode = glfwGetVideoMode(primary);
 
         int width = mode->width;
         int height = mode->height;
@@ -236,7 +236,7 @@ namespace Dodo::Platform {
             DD_WARN("Application resolution is more than the resolution of the screen!");
         }
 
-        const char *name = glfwGetMonitorName(primary);
+        const char* name = glfwGetMonitorName(primary);
 
         DD_INFO("Monitor: {0} {1}mmx{2}mm {3}x{4}", name, physical_width_mm, physical_height_mm, width, height);
 

@@ -1,6 +1,6 @@
 #include "WorldRenderer.h"
 
-WorldRenderer::WorldRenderer(Ref<ResourceManager> resourceManager, Dodo::Math::FreeCamera *camera)
+WorldRenderer::WorldRenderer(Ref<ResourceManager> resourceManager, Dodo::Math::FreeCamera* camera)
     : m_Camera(camera), m_ResourceManager(resourceManager)
 {}
 

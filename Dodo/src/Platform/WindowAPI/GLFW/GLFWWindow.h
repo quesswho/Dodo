@@ -17,16 +17,16 @@ namespace Dodo::Platform {
       private:
         WindowProperties m_WindowProperties;
 
-        GLFWwindow *m_Handle;
+        GLFWwindow* m_Handle;
 
       public:
         PCSpecifications m_Pcspecs;
 
-        GLFWWindow(const WindowProperties &);
+        GLFWWindow(const WindowProperties&);
         ~GLFWWindow();
 
         void Update() const;
-        void SetTitle(const char *title);
+        void SetTitle(const char* title);
         void SetCursorPosition(Math::TVec2<double> pos);
         void SetCursorVisible(bool vis);
         void FullScreen(bool fullscreen);
@@ -36,22 +36,22 @@ namespace Dodo::Platform {
         void ImGuiEndFrame() const;
         bool m_Focused;
 
-        const WindowProperties &GetWindowProperties() { return m_WindowProperties; }
-        void SetWindowProperties(const WindowProperties &winprop);
+        const WindowProperties& GetWindowProperties() { return m_WindowProperties; }
+        void SetWindowProperties(const WindowProperties& winprop);
 
         void FocusConsole() const;
 
       private:
         void Init();
-        static void ErrorCallback(int error, const char *description);
-        static void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
-        static void MouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
-        static void MouseMovedCallback(GLFWwindow *window, double xpos, double ypos);
-        static void WindowResizeCallback(GLFWwindow *window, int width, int height);
-        static void WindowMovedCallback(GLFWwindow *window, int xpos, int ypos);
-        static void FramebufferResizeCallback(GLFWwindow *window, int width, int height);
-        static void WindowFocusCallback(GLFWwindow *window, int focused);
-        static void WindowCloseCallback(GLFWwindow *window);
+        static void ErrorCallback(int error, const char* description);
+        static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+        static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+        static void MouseMovedCallback(GLFWwindow* window, double xpos, double ypos);
+        static void WindowResizeCallback(GLFWwindow* window, int width, int height);
+        static void WindowMovedCallback(GLFWwindow* window, int xpos, int ypos);
+        static void FramebufferResizeCallback(GLFWwindow* window, int width, int height);
+        static void WindowFocusCallback(GLFWwindow* window, int focused);
+        static void WindowCloseCallback(GLFWwindow* window);
 
         void ConfigureMonitor();
     };

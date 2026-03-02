@@ -114,17 +114,17 @@ void GameLayer::Render()
     m_Renderer->DrawShadowedScene(m_Scene);
 }
 
-void GameLayer::OnEvent(const Event &event)
+void GameLayer::OnEvent(const Event& event)
 {
     switch (event.GetType())
     {
     case EventType::KEY_PRESSED:
-        if (static_cast<const KeyPressEvent &>(event).m_Key == DODO_KEY_F11)
+        if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_F11)
         {
             Application::s_Application->m_Window->FullScreen();
         }
 
-        if (static_cast<const KeyPressEvent &>(event).m_Key == DODO_KEY_ESCAPE)
+        if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_ESCAPE)
         {
             Application::s_Application->Shutdown();
         }
@@ -166,7 +166,7 @@ class Sandbox : public Application {
 
 int main()
 {
-    Sandbox *sandBox = new Sandbox();
+    Sandbox* sandBox = new Sandbox();
     sandBox->Run();
     delete sandBox;
 }

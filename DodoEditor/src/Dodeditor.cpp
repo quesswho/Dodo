@@ -35,7 +35,7 @@ GameLayer::GameLayer()
     m_Interface = new Interface(m_Scene);
 }
 
-void GameLayer::SetScene(Scene *scene)
+void GameLayer::SetScene(Scene* scene)
 {
     m_Scene = scene;
 }
@@ -83,12 +83,12 @@ void GameLayer::DrawScene()
     Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
 }
 
-void GameLayer::OnEvent(const Event &event)
+void GameLayer::OnEvent(const Event& event)
 {
     switch (event.GetType())
     {
     case EventType::KEY_PRESSED:
-        switch (static_cast<const KeyPressEvent &>(event).m_Key)
+        switch (static_cast<const KeyPressEvent&>(event).m_Key)
         {
         case DODO_KEY_ESCAPE:
             Application::s_Application->Shutdown();
@@ -151,7 +151,7 @@ void Dodeditor::Init()
 
 int main()
 {
-    Dodeditor *sandBox = new Dodeditor();
+    Dodeditor* sandBox = new Dodeditor();
     sandBox->Run();
     delete sandBox;
 }

@@ -12,7 +12,7 @@ namespace Dodo::Platform {
 
         if (enableDocking)
         {
-            ImGuiIO &io = ImGui::GetIO();
+            ImGuiIO& io = ImGui::GetIO();
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         }
     }

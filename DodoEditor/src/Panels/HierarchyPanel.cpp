@@ -5,7 +5,7 @@
 
 void HierarchyPanel::Draw(EditorState& state, InspectorState& inspector)
 {
-    ImGuiIO &io = ImGui::GetIO();
+    ImGuiIO& io = ImGui::GetIO();
     static bool s_ClickHandled = false;
     static uint s_RenamingId = -1; // 4 294 967 295
     ImGui::Begin("Hierarchy");
@@ -28,7 +28,7 @@ void HierarchyPanel::Draw(EditorState& state, InspectorState& inspector)
 
     if (ImGui::TreeNodeEx("Entities", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        World &world = state.scene->GetWorld();
+        World& world = state.scene->GetWorld();
         if (world.GetAliveEntities().empty())
         {
             ImGui::Separator();
@@ -43,12 +43,11 @@ void HierarchyPanel::Draw(EditorState& state, InspectorState& inspector)
                 ImGui::SameLine();
                 ImGui::PushID((int)entityId);
                 std::string entityName = world.HasComponent<NameComponent>(entityId)
-                                                ? world.GetComponent<NameComponent>(entityId).m_Name
-                                                : "Entity_" + std::to_string(entityId);
+                                             ? world.GetComponent<NameComponent>(entityId).m_Name
+                                             : "Entity_" + std::to_string(entityId);
                 bool open = ImGui::TreeNodeEx(
-                    entityName.c_str(),
-                    (state.selection.Contains(entityId) ? ImGuiTreeNodeFlags_Selected : 0) |
-                        ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
+                    entityName.c_str(), (state.selection.Contains(entityId) ? ImGuiTreeNodeFlags_Selected : 0) |
+                                            ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
                 ImGui::PopID();
                 if (state.selection.Contains(entityId))
                 {
@@ -100,9 +99,9 @@ void HierarchyPanel::Draw(EditorState& state, InspectorState& inspector)
                 ImGui::SetKeyboardFocusHere(0);
                 ImGui::Indent();
                 if (ImGui::InputText(std::to_string(entityId).c_str(), s_RenameableHierarchy,
-                                        IM_ARRAYSIZE(s_RenameableHierarchy),
-                                        ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll |
-                                            ImGuiInputTextFlags_CharsNoBlank))
+                                     IM_ARRAYSIZE(s_RenameableHierarchy),
+                                     ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll |
+                                         ImGuiInputTextFlags_CharsNoBlank))
                 {
                     if (s_RenameableHierarchy == nullptr || s_RenameableHierarchy[0] == '\0')
                         strncpy(s_RenameableHierarchy, "Unnamed", 256);
@@ -112,8 +111,7 @@ void HierarchyPanel::Draw(EditorState& state, InspectorState& inspector)
                         world.GetComponent<NameComponent>(entityId).m_Name = std::string(s_RenameableHierarchy);
                     } else
                     {
-                        world.AddComponent<NameComponent>(entityId,
-                                                            NameComponent{std::string(s_RenameableHierarchy)});
+                        world.AddComponent<NameComponent>(entityId, NameComponent{std::string(s_RenameableHierarchy)});
                     }
                     inspector.nameBuffer = std::string(s_RenameableHierarchy);
                     strncpy(s_RenameableHierarchy, "Unnamed", 256);

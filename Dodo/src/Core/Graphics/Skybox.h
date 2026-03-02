@@ -11,15 +11,15 @@ namespace Dodo {
 
     class Skybox {
       private:
-        VertexBuffer *m_VertexBuffer;
+        VertexBuffer* m_VertexBuffer;
         Ref<CubeMapTexture> m_CubeMapTexture;
         Ref<Shader> m_Shader;
 
       public:
         Math::Mat4 m_Projection;
-        Skybox(const Math::Mat4 &projection, std::vector<std::string> paths);
+        Skybox(const Math::Mat4& projection, std::vector<std::string> paths);
         ~Skybox();
 
-        void Draw(const Math::Mat4 &viewMatrix) const;
+        void Draw(const Math::Mat4& viewMatrix) const;
     };
 } // namespace Dodo

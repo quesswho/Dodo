@@ -3,7 +3,7 @@
 
 namespace Dodo {
 
-    bool AsciiDataFile::BeginRead(const std::string &path, bool throwOnFail)
+    bool AsciiDataFile::BeginRead(const std::string& path, bool throwOnFail)
     {
         m_File.clear();
         std::ifstream in(path);
@@ -32,23 +32,23 @@ namespace Dodo {
         m_Offset = 0;
     }
 
-    void AsciiDataFile::EndWrite(const std::string &path)
+    void AsciiDataFile::EndWrite(const std::string& path)
     {
         std::ofstream out(path);
-        for (auto &line : m_File)
+        for (auto& line : m_File)
             out << line << "\n";
     }
 
     std::size_t AsciiDataFile::GetCurrentOffset() const { return m_Offset; }
 
     // Section handling
-    void AsciiDataFile::WriteSection(const std::string &name) { m_File.push_back("[" + name + "]"); }
+    void AsciiDataFile::WriteSection(const std::string& name) { m_File.push_back("[" + name + "]"); }
 
     std::string AsciiDataFile::ReadSection()
     {
         if (m_Offset >= m_File.size()) return "";
 
-        const std::string &line = m_File[m_Offset];
+        const std::string& line = m_File[m_Offset];
         if (line.empty() || line[0] != '[') return "";
 
         size_t end = line.find(']');
@@ -61,35 +61,35 @@ namespace Dodo {
     bool AsciiDataFile::IsSection() const
     {
         if (m_Offset >= m_File.size()) return false;
-        const std::string &line = m_File[m_Offset];
+        const std::string& line = m_File[m_Offset];
         return !line.empty() && line[0] == '[';
     }
 
     // Value writing
-    void AsciiDataFile::WriteString(const std::string &key, const std::string &val)
+    void AsciiDataFile::WriteString(const std::string& key, const std::string& val)
     {
         m_File.push_back(key + "=\"" + val + "\"");
     }
 
-    void AsciiDataFile::WriteInt(const std::string &key, int val) { m_File.push_back(key + "=" + std::to_string(val)); }
+    void AsciiDataFile::WriteInt(const std::string& key, int val) { m_File.push_back(key + "=" + std::to_string(val)); }
 
-    void AsciiDataFile::WriteVec2(const std::string &key, const Math::Vec2 &v)
+    void AsciiDataFile::WriteVec2(const std::string& key, const Math::Vec2& v)
     {
         m_File.push_back(key + "=" + std::to_string(v.x) + "," + std::to_string(v.y));
     }
 
-    void AsciiDataFile::WriteVec3(const std::string &key, const Math::Vec3 &v)
+    void AsciiDataFile::WriteVec3(const std::string& key, const Math::Vec3& v)
     {
         m_File.push_back(key + "=" + std::to_string(v.x) + "," + std::to_string(v.y) + "," + std::to_string(v.z));
     }
 
-    void AsciiDataFile::WriteVec4(const std::string &key, const Math::Vec4 &v)
+    void AsciiDataFile::WriteVec4(const std::string& key, const Math::Vec4& v)
     {
         m_File.push_back(key + "=" + std::to_string(v.x) + "," + std::to_string(v.y) + "," + std::to_string(v.z) + "," +
                          std::to_string(v.w));
     }
 
-    void AsciiDataFile::WriteFloat(const std::string &key, float val)
+    void AsciiDataFile::WriteFloat(const std::string& key, float val)
     {
         m_File.push_back(key + "=" + std::to_string(val));
     }
@@ -204,7 +204,7 @@ namespace Dodo {
     }
 
     // Utility
-    void AsciiDataFile::WriteComment(const std::string &comment) { m_File.push_back("# " + comment); }
+    void AsciiDataFile::WriteComment(const std::string& comment) { m_File.push_back("# " + comment); }
 
     void AsciiDataFile::WriteBlankLine() { m_File.push_back(""); }
 
@@ -224,7 +224,7 @@ namespace Dodo {
         return t;
     }
 
-    void AsciiDataFile::AddValue(const std::string &name, const Math::Transformation &t)
+    void AsciiDataFile::AddValue(const std::string& name, const Math::Transformation& t)
     {
         WriteVec3(name + "_pos", t.m_Position);
         WriteVec3(name + "_scale", t.m_Scale);

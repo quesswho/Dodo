@@ -14,14 +14,8 @@ Interface::Interface(Scene *scene)
     InitInterface();
 }
 
-void Interface::SetChangeSceneCallback(void (*callback)(Scene *))
-{
-    m_ChangeSceneFunc = callback;
-}
-
 void Interface::ChangeScene(Scene *scene)
 {
-
     m_EditorState.scene = scene;
     m_EditorState.scene->m_LightSystem.m_Directional.m_Direction =
         Vec3(0.4f, -1.0f, 0.4f).Normalize(); // Temporary because light direction is not stored in scene file

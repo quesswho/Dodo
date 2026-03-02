@@ -4,6 +4,7 @@
 
 #include "EditorState.h"
 #include "Panels/InspectorPanel.h"
+#include "Panels/HierarchyPanel.h"
 
 struct Component {
     Component() : m_Name("None"), m_Selected(false) {}
@@ -16,15 +17,11 @@ struct Component {
 
 struct EditorProperties {
     bool m_ShowViewport;
-    bool m_ShowHierarchy;
-    bool m_ShowInspector;
 
-    bool m_ViewportHover;
     bool m_ViewportInput;
+    bool m_ViewportHover;
 
-    const char *m_HierarchyName;
     const char *m_ViewportName;
-    const char *m_InspectorName;
 };
 
 
@@ -36,8 +33,10 @@ class Interface {
     EditorState m_EditorState;
     ViewportState m_ViewportState;
     InspectorState m_InspectorState;
+    HierarchyState m_HierarchyState;
 
     InspectorPanel m_InspectorPanel;
+    HierarchyPanel m_HierarchyPanel;
 
   public:
     Interface(Scene *scene);
@@ -50,14 +49,10 @@ class Interface {
 
     void ChangeScene(Scene *scene);
 
-    void SetChangeSceneCallback(void (*scene)(Scene *));
-
   private:
     void InitInterface();
 
     void ResetDockspace(uint dockspace_id);
-
-    void DrawHierarchy();
 
     std::vector<Component> m_HierarchyComponents;
     std::vector<Component> m_InspectorComponents;

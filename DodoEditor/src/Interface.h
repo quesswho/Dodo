@@ -37,7 +37,7 @@ struct Selection {
 struct EditorState {
     Scene* scene = nullptr;
     Selection selection;
-}
+};
 
 struct ViewportState {
     uint width = 0, height = 0;

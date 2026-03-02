@@ -35,12 +35,6 @@ namespace Dodo {
         {
             m_File.WriteSection("Entity:" + std::to_string(entityId));
 
-            // Write entity name
-            if (world.HasComponent<NameComponent>(entityId))
-            {
-                m_File.WriteString("name", world.GetComponent<NameComponent>(entityId).name);
-            }
-
             // Write ModelComponent if entity has one
             if (world.HasComponent<ModelComponent>(entityId))
             {
@@ -110,12 +104,12 @@ namespace Dodo {
             if (section.find("Entity:") == 0)
             {
                 currentEntityId = std::stoi(section.substr(7));
-                std::string name = m_File.ReadString();
+                //std::string name = m_File.ReadString();
 
                 World& world = result->GetWorld();
                 EntityID createdId = world.CreateEntity();
                 currentEntityId = createdId;
-                world.AddComponent<NameComponent>(currentEntityId, NameComponent{name});
+                //world.AddComponent<NameComponent>(currentEntityId, NameComponent{name});
                 continue;
             }
 

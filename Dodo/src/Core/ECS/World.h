@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Core/ECS/Component/ModelComponent.h>
-#include <Core/ECS/Component/NameComponent.h>
 #include <Core/ECS/ComponentPool.h>
 #include <Core/ECS/Entity.h>
 
@@ -73,5 +72,5 @@ namespace Dodo {
         std::unordered_set<EntityID> m_AliveEntities;
     };
 
-    using World = BasicWorld<NameComponent, ModelComponent>;
+    using World = BasicWorld<ModelComponent>;
 } // namespace Dodo

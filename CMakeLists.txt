@@ -19,8 +19,8 @@ option(DD_API_VULKAN "Enable Vulkan loader" OFF)
 option(DD_API_WIN32 "Enable Win32" OFF)
 option(DD_API_GLFW "Enable GLFW" ON)
 
-option(COMPILE_EDITOR "Compile DodoEditor project" OFF)
-option(COMPILE_SANDBOX "Compile Sandbox project" ON)
+option(COMPILE_EDITOR "Compile DodoEditor project" ON)
+option(COMPILE_SANDBOX "Compile Sandbox project" OFF)
 option(COMPILE_GAME "Compile Game project" OFF)
 
 message(STATUS "=== Configuring Dodo ===")

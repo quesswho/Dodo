@@ -6,6 +6,6 @@ namespace Dodo {
     using VertexBuffer = Platform::OpenGLVertexBuffer;
     using IndexBuffer = Platform::OpenGLIndexBuffer;
 } // namespace Dodo
-#elif DD_API_DX11
+#elif DD_API_VULKAN
 
 #endif

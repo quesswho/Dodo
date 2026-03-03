@@ -12,16 +12,16 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 
-# Load Opengl and (or) Vulkan
-option(DD_API_OPENGL "Enable OpenGL loader" ON)
-option(DD_API_VULKAN "Enable Vulkan loader" OFF)
+# Load Opengl or Vulkan
+set(DD_API_OPENGL "Enable OpenGL loader" ON FORCE)
+set(DD_API_VULKAN "Enable Vulkan loader" OFF FORCE)
 
-option(DD_API_WIN32 "Enable Win32" OFF)
-option(DD_API_GLFW "Enable GLFW" ON)
+set(DD_API_WIN32 "Enable Win32" OFF FORCE)
+set(DD_API_GLFW "Enable GLFW" ON FORCE)
 
-option(COMPILE_EDITOR "Compile DodoEditor project" ON)
-option(COMPILE_SANDBOX "Compile Sandbox project" OFF)
-option(COMPILE_GAME "Compile Game project" OFF)
+set(COMPILE_EDITOR "Compile DodoEditor project" OFF FORCE)
+set(COMPILE_SANDBOX "Compile Sandbox project" ON FORCE)
+set(COMPILE_GAME "Compile Game project" OFF FORCE)
 
 message(STATUS "=== Configuring Dodo ===")
 message(STATUS "CMake version: ${CMAKE_VERSION}")

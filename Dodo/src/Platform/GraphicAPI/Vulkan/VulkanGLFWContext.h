@@ -9,9 +9,9 @@
 
 namespace Dodo::Platform {
 
-    class GLFWContext {
+    class VulkanGLFWContext {
       public:
-        explicit GLFWContext() {}
+        explicit VulkanGLFWContext() {}
 
         void CreateContextImpl(const NativeWindowHandle& handle)
         {

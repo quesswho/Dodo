@@ -1,11 +1,12 @@
 #include "Win32Window.h"
-#include "Win32UIHook.h"
+#include "Win32ImGuiBackend.h"
 #include "pch.h"
 
 #include "Core/System/FileUtils.h"
 
 #include "Core/Application/Application.h"
 
+#include <cpuid.h>
 #include <filesystem>
 #include <glad/wgl.h>
 
@@ -97,16 +98,16 @@ namespace Dodo::Platform {
         SYSTEM_INFO sysinfo;
         GetSystemInfo(&sysinfo);
 
-        int cpuInfo[4] = {-1};
+        unsigned int cpuInfo[4] = {};
         char cpuName[0x40];
-        __cpuid(cpuInfo, 0x80000000);
-        int nExIds = cpuInfo[0];
+        __cpuid(0x80000000, cpuInfo[0], cpuInfo[1], cpuInfo[2], cpuInfo[3]);
+        unsigned int nExIds = cpuInfo[0];
 
         memset(cpuName, 0, sizeof(cpuName));
 
-        for (int i = 0x80000000; i <= nExIds; ++i)
+        for (unsigned int i = 0x80000000; i <= nExIds; ++i)
         {
-            __cpuid(cpuInfo, i);
+            __cpuid(i, cpuInfo[0], cpuInfo[1], cpuInfo[2], cpuInfo[3]);
             if (i == 0x80000002)
                 memcpy(cpuName, cpuInfo, sizeof(cpuInfo));
             else if (i == 0x80000003)
@@ -131,12 +132,6 @@ namespace Dodo::Platform {
         GlobalMemoryStatusEx(&memInfo);
         m_Pcspecs.m_TotalPhysicalMemory = memInfo.ullTotalPhys;
 
-        m_MainWorkDirectory = std::filesystem::current_path().string();
-
-        m_CurrentDialogDirectory = m_MainWorkDirectory;
-
-        FileUtils::RemoveDoubleBackslash(m_MainWorkDirectory);
-
         RegisterRawMouse();
 
         SetWindowTextA(m_Hwnd, m_WindowProperties.m_Title);
@@ -147,7 +142,7 @@ namespace Dodo::Platform {
 
         POINT p;
         GetCursorPos(&p);
-        Application::s_Application->m_InputManager.MouseMoved(Math::TVec2<long>(p.x, p.y));
+        Application::s_Application->m_InputManager.MouseMoved(Math::TVec2<double>(p.x, p.y));
 
         if (m_WindowProperties.m_Settings.imgui || m_WindowProperties.m_Settings.imguiDocking)
         {
@@ -281,7 +276,7 @@ namespace Dodo::Platform {
         case WM_LBUTTONUP:
         case WM_RBUTTONUP:
         case WM_MBUTTONUP:
-            Application::s_Application->m_InputManager.MouseReleaseCallback((uint)wParam);
+            Application::s_Application->m_InputManager.MouseReleased((uint)wParam);
             break;
         case WM_SIZE:
             if (!Application::s_Application->m_Initializing)
@@ -304,17 +299,14 @@ namespace Dodo::Platform {
 
     void Win32Window::SetCursorVisible(bool vis) { ShowCursor(vis); }
 
-    void Win32Window::SetCursorPosition(Math::TVec2<long> pos)
+    void Win32Window::SetCursorPosition(Math::TVec2<double> pos)
     {
-        m_MousePos = Math::TVec2<long>(pos.x, pos.y);
         POINT pt;
         pt.x = pos.x;
         pt.y = pos.y;
         ClientToScreen(m_Hwnd, &pt);
         SetCursorPos(pt.x, pt.y);
     }
-
-    void Win32Window::VSync(bool vsync) { wglSwapIntervalEXT(vsync); }
 
     void Win32Window::FullScreen(bool fullscreen)
     {
@@ -327,16 +319,16 @@ namespace Dodo::Platform {
             SetWindowPos(m_Hwnd, HWND_TOP, mi.rcMonitor.left, mi.rcMonitor.top, mi.rcMonitor.right - mi.rcMonitor.left,
                          mi.rcMonitor.bottom - mi.rcMonitor.top, 0);
 
-            Application::s_Application->m_WindowProperties.m_Width = GetSystemMetrics(SM_CXSCREEN);
-            Application::s_Application->m_WindowProperties.m_Height = GetSystemMetrics(SM_CYSCREEN);
+            m_WindowProperties.m_Width = GetSystemMetrics(SM_CXSCREEN);
+            m_WindowProperties.m_Height = GetSystemMetrics(SM_CYSCREEN);
 
             Application::s_Application->m_RenderAPI->ResizeDefaultViewport(
-                Application::s_Application->m_WindowProperties.m_Width,
-                Application::s_Application->m_WindowProperties.m_Height);
+                m_WindowProperties.m_Width,
+                m_WindowProperties.m_Height);
             DD_INFO("{0}, {1}", GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 
             m_WindowProperties.m_Settings.fullscreen = true;
-            Application::s_Application->m_WindowProperties.m_Settings = true;
+            m_WindowProperties.m_Settings.fullscreen = true;
         } else
         {
             SetWindowLongPtr(m_Hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
@@ -357,19 +349,18 @@ namespace Dodo::Platform {
                              GetSystemMetrics(SM_CYEDGE) - GetSystemMetrics(SM_CYFRAME),
                          0);
 
-            Application::s_Application->m_WindowProperties.m_Width =
+            m_WindowProperties.m_Width =
                 m_WindowProperties.m_Width + GetSystemMetrics(SM_CXSMSIZE) - GetSystemMetrics(SM_CXEDGE) -
                 GetSystemMetrics(SM_CXFRAME);
-            Application::s_Application->m_WindowProperties.m_Height =
+            m_WindowProperties.m_Height =
                 m_WindowProperties.m_Height + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYSMSIZE) -
                 GetSystemMetrics(SM_CYEDGE) - GetSystemMetrics(SM_CYFRAME);
 
             Application::s_Application->m_RenderAPI->ResizeDefaultViewport(
-                Application::s_Application->m_WindowProperties.m_Width,
-                Application::s_Application->m_WindowProperties.m_Height);
+                m_WindowProperties.m_Width,
+                m_WindowProperties.m_Height);
 
             m_WindowProperties.m_Settings.fullscreen = false;
-            Application::s_Application->m_WindowProperties.m_Settings.fullscreen = false;
         }
 
         ShowWindow(m_Hwnd, SW_SHOW);
@@ -377,36 +368,6 @@ namespace Dodo::Platform {
 
     void Win32Window::ImGuiNewFrame() const { Win32ImGuiBackend::NewFrame(); }
     void Win32Window::ImGuiEndFrame() const { Win32ImGuiBackend::EndFrame(); }
-
-    void Win32Window::KeyPressCallback(uint keycode)
-    {
-        m_Keys[keycode] = true;
-        Application::s_Application->OnEvent(KeyPressEvent(keycode));
-    }
-
-    void Win32Window::KeyReleaseCallback(uint keycode)
-    {
-        m_Keys[keycode] = false;
-        Application::s_Application->OnEvent(KeyReleaseEvent(keycode));
-    }
-
-    void Win32Window::MousePressCallback(uint keycode)
-    {
-        m_Keys[keycode] = true;
-        Application::s_Application->OnEvent(MousePressEvent(keycode));
-    }
-
-    void Win32Window::MouseReleaseCallback(uint keycode)
-    {
-        m_Keys[keycode] = false;
-        Application::s_Application->OnEvent(MouseReleaseEvent(keycode));
-    }
-
-    void Win32Window::MouseMoveCallback(Math::TVec2<long> pos)
-    {
-        m_MousePos += pos;
-        Application::s_Application->OnEvent(MouseMoveEvent(m_MousePos));
-    }
 
     void Win32Window::WindowResizeCallback(Math::TVec2<int> size)
     {

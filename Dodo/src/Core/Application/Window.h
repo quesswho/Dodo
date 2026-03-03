@@ -5,7 +5,7 @@
 namespace Dodo {
     using Window = Platform::Win32Window;
 }
-#elif DD_API_GLFW
+#elif defined(DD_API_GLFW)
 #include "Platform/WindowAPI/GLFW/GLFWWindow.h"
 namespace Dodo {
     using Window = Platform::GLFWWindow;

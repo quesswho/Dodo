@@ -5,6 +5,6 @@
 namespace Dodo {
     using Texture = Platform::OpenGLTexture;
 }
-#elif DD_API_VULKAN
+#elif defined(DD_API_VULKAN)
 
 #endif

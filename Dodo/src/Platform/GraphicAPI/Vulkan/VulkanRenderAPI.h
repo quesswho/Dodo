@@ -7,10 +7,10 @@
 #include <Platform/WindowAPI/NativeWindowHandle.h>
 #ifdef DD_API_WIN32
 #include "WGLContext.h"
-using VulkanContext = Dodo::Platform::WGLContext;
+using VulkanContext = Dodo::Platform::VulkanWGLContext;
 #elif DD_API_GLFW
 #include "GLFWContext.h"
-using VulkanContext = Dodo::Platform::GLFWContext;
+using VulkanContext = Dodo::Platform::VulkanGLFWContext;
 #endif
 
 namespace Dodo::Platform {

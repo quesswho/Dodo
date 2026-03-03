@@ -27,118 +27,393 @@ int GLAD_VK_VERSION_1_0 = 0;
 int GLAD_VK_VERSION_1_1 = 0;
 int GLAD_VK_VERSION_1_2 = 0;
 int GLAD_VK_VERSION_1_3 = 0;
-int GLAD_VK_VERSION_1_4 = 0;
+int GLAD_VK_AMD_draw_indirect_count = 0;
+int GLAD_VK_EXT_buffer_device_address = 0;
+int GLAD_VK_EXT_calibrated_timestamps = 0;
+int GLAD_VK_EXT_extended_dynamic_state = 0;
+int GLAD_VK_EXT_extended_dynamic_state2 = 0;
+int GLAD_VK_EXT_host_query_reset = 0;
+int GLAD_VK_EXT_private_data = 0;
+int GLAD_VK_EXT_shader_object = 0;
+int GLAD_VK_EXT_swapchain_maintenance1 = 0;
+int GLAD_VK_EXT_tooling_info = 0;
+int GLAD_VK_KHR_16bit_storage = 0;
+int GLAD_VK_KHR_8bit_storage = 0;
+int GLAD_VK_KHR_acceleration_structure = 0;
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+int GLAD_VK_KHR_android_surface = 0;
+
+#endif
+int GLAD_VK_KHR_bind_memory2 = 0;
+int GLAD_VK_KHR_buffer_device_address = 0;
+int GLAD_VK_KHR_calibrated_timestamps = 0;
+int GLAD_VK_KHR_compute_shader_derivatives = 0;
+int GLAD_VK_KHR_cooperative_matrix = 0;
+int GLAD_VK_KHR_copy_commands2 = 0;
+int GLAD_VK_KHR_copy_memory_indirect = 0;
+int GLAD_VK_KHR_create_renderpass2 = 0;
+int GLAD_VK_KHR_dedicated_allocation = 0;
+int GLAD_VK_KHR_deferred_host_operations = 0;
+int GLAD_VK_KHR_depth_clamp_zero_one = 0;
+int GLAD_VK_KHR_depth_stencil_resolve = 0;
+int GLAD_VK_KHR_descriptor_update_template = 0;
+int GLAD_VK_KHR_device_group = 0;
+int GLAD_VK_KHR_device_group_creation = 0;
+int GLAD_VK_KHR_display = 0;
+int GLAD_VK_KHR_display_swapchain = 0;
+int GLAD_VK_KHR_draw_indirect_count = 0;
+int GLAD_VK_KHR_driver_properties = 0;
+int GLAD_VK_KHR_dynamic_rendering = 0;
+int GLAD_VK_KHR_dynamic_rendering_local_read = 0;
+int GLAD_VK_KHR_external_fence = 0;
+int GLAD_VK_KHR_external_fence_capabilities = 0;
+int GLAD_VK_KHR_external_fence_fd = 0;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+int GLAD_VK_KHR_external_fence_win32 = 0;
+
+#endif
+int GLAD_VK_KHR_external_memory = 0;
+int GLAD_VK_KHR_external_memory_capabilities = 0;
+int GLAD_VK_KHR_external_memory_fd = 0;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+int GLAD_VK_KHR_external_memory_win32 = 0;
+
+#endif
+int GLAD_VK_KHR_external_semaphore = 0;
+int GLAD_VK_KHR_external_semaphore_capabilities = 0;
+int GLAD_VK_KHR_external_semaphore_fd = 0;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+int GLAD_VK_KHR_external_semaphore_win32 = 0;
+
+#endif
+int GLAD_VK_KHR_format_feature_flags2 = 0;
+int GLAD_VK_KHR_fragment_shader_barycentric = 0;
+int GLAD_VK_KHR_fragment_shading_rate = 0;
+int GLAD_VK_KHR_get_display_properties2 = 0;
+int GLAD_VK_KHR_get_memory_requirements2 = 0;
+int GLAD_VK_KHR_get_physical_device_properties2 = 0;
+int GLAD_VK_KHR_get_surface_capabilities2 = 0;
+int GLAD_VK_KHR_global_priority = 0;
+int GLAD_VK_KHR_image_format_list = 0;
+int GLAD_VK_KHR_imageless_framebuffer = 0;
+int GLAD_VK_KHR_incremental_present = 0;
+int GLAD_VK_KHR_index_type_uint8 = 0;
+int GLAD_VK_KHR_line_rasterization = 0;
+int GLAD_VK_KHR_load_store_op_none = 0;
+int GLAD_VK_KHR_maintenance1 = 0;
+int GLAD_VK_KHR_maintenance2 = 0;
+int GLAD_VK_KHR_maintenance3 = 0;
+int GLAD_VK_KHR_maintenance4 = 0;
+int GLAD_VK_KHR_maintenance5 = 0;
+int GLAD_VK_KHR_maintenance6 = 0;
+int GLAD_VK_KHR_maintenance7 = 0;
+int GLAD_VK_KHR_maintenance8 = 0;
+int GLAD_VK_KHR_maintenance9 = 0;
+int GLAD_VK_KHR_map_memory2 = 0;
+int GLAD_VK_KHR_multiview = 0;
+int GLAD_VK_KHR_performance_query = 0;
+int GLAD_VK_KHR_pipeline_binary = 0;
+int GLAD_VK_KHR_pipeline_executable_properties = 0;
+int GLAD_VK_KHR_pipeline_library = 0;
+int GLAD_VK_KHR_portability_enumeration = 0;
+#if defined(VK_ENABLE_BETA_EXTENSIONS)
+int GLAD_VK_KHR_portability_subset = 0;
+
+#endif
+int GLAD_VK_KHR_present_id = 0;
+int GLAD_VK_KHR_present_id2 = 0;
+int GLAD_VK_KHR_present_mode_fifo_latest_ready = 0;
+int GLAD_VK_KHR_present_wait = 0;
+int GLAD_VK_KHR_present_wait2 = 0;
+int GLAD_VK_KHR_push_descriptor = 0;
+int GLAD_VK_KHR_ray_query = 0;
+int GLAD_VK_KHR_ray_tracing_maintenance1 = 0;
+int GLAD_VK_KHR_ray_tracing_pipeline = 0;
+int GLAD_VK_KHR_ray_tracing_position_fetch = 0;
+int GLAD_VK_KHR_relaxed_block_layout = 0;
+int GLAD_VK_KHR_robustness2 = 0;
+int GLAD_VK_KHR_sampler_mirror_clamp_to_edge = 0;
+int GLAD_VK_KHR_sampler_ycbcr_conversion = 0;
+int GLAD_VK_KHR_separate_depth_stencil_layouts = 0;
+int GLAD_VK_KHR_shader_atomic_int64 = 0;
+int GLAD_VK_KHR_shader_bfloat16 = 0;
+int GLAD_VK_KHR_shader_clock = 0;
+int GLAD_VK_KHR_shader_draw_parameters = 0;
+int GLAD_VK_KHR_shader_expect_assume = 0;
+int GLAD_VK_KHR_shader_float16_int8 = 0;
+int GLAD_VK_KHR_shader_float_controls = 0;
+int GLAD_VK_KHR_shader_float_controls2 = 0;
+int GLAD_VK_KHR_shader_fma = 0;
+int GLAD_VK_KHR_shader_integer_dot_product = 0;
+int GLAD_VK_KHR_shader_maximal_reconvergence = 0;
+int GLAD_VK_KHR_shader_non_semantic_info = 0;
+int GLAD_VK_KHR_shader_quad_control = 0;
+int GLAD_VK_KHR_shader_relaxed_extended_instruction = 0;
+int GLAD_VK_KHR_shader_subgroup_extended_types = 0;
+int GLAD_VK_KHR_shader_subgroup_rotate = 0;
+int GLAD_VK_KHR_shader_subgroup_uniform_control_flow = 0;
+int GLAD_VK_KHR_shader_terminate_invocation = 0;
+int GLAD_VK_KHR_shader_untyped_pointers = 0;
+int GLAD_VK_KHR_shared_presentable_image = 0;
+int GLAD_VK_KHR_spirv_1_4 = 0;
+int GLAD_VK_KHR_storage_buffer_storage_class = 0;
+int GLAD_VK_KHR_surface = 0;
+int GLAD_VK_KHR_surface_maintenance1 = 0;
+int GLAD_VK_KHR_surface_protected_capabilities = 0;
+int GLAD_VK_KHR_swapchain = 0;
+int GLAD_VK_KHR_swapchain_maintenance1 = 0;
+int GLAD_VK_KHR_swapchain_mutable_format = 0;
+int GLAD_VK_KHR_synchronization2 = 0;
+int GLAD_VK_KHR_timeline_semaphore = 0;
+int GLAD_VK_KHR_unified_image_layouts = 0;
+int GLAD_VK_KHR_uniform_buffer_standard_layout = 0;
+int GLAD_VK_KHR_variable_pointers = 0;
+int GLAD_VK_KHR_vertex_attribute_divisor = 0;
+int GLAD_VK_KHR_vulkan_memory_model = 0;
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+int GLAD_VK_KHR_wayland_surface = 0;
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+int GLAD_VK_KHR_win32_keyed_mutex = 0;
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+int GLAD_VK_KHR_win32_surface = 0;
+
+#endif
+int GLAD_VK_KHR_workgroup_memory_explicit_layout = 0;
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+int GLAD_VK_KHR_xcb_surface = 0;
+
+#endif
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+int GLAD_VK_KHR_xlib_surface = 0;
+
+#endif
+int GLAD_VK_KHR_zero_initialize_workgroup_memory = 0;
+int GLAD_VK_NV_ray_tracing = 0;
 
 
 
+PFN_vkAcquireNextImage2KHR glad_vkAcquireNextImage2KHR = NULL;
+PFN_vkAcquireNextImageKHR glad_vkAcquireNextImageKHR = NULL;
+PFN_vkAcquireProfilingLockKHR glad_vkAcquireProfilingLockKHR = NULL;
 PFN_vkAllocateCommandBuffers glad_vkAllocateCommandBuffers = NULL;
 PFN_vkAllocateDescriptorSets glad_vkAllocateDescriptorSets = NULL;
 PFN_vkAllocateMemory glad_vkAllocateMemory = NULL;
 PFN_vkBeginCommandBuffer glad_vkBeginCommandBuffer = NULL;
+PFN_vkBindAccelerationStructureMemoryNV glad_vkBindAccelerationStructureMemoryNV = NULL;
 PFN_vkBindBufferMemory glad_vkBindBufferMemory = NULL;
 PFN_vkBindBufferMemory2 glad_vkBindBufferMemory2 = NULL;
+PFN_vkBindBufferMemory2KHR glad_vkBindBufferMemory2KHR = NULL;
 PFN_vkBindImageMemory glad_vkBindImageMemory = NULL;
 PFN_vkBindImageMemory2 glad_vkBindImageMemory2 = NULL;
+PFN_vkBindImageMemory2KHR glad_vkBindImageMemory2KHR = NULL;
+PFN_vkBuildAccelerationStructuresKHR glad_vkBuildAccelerationStructuresKHR = NULL;
 PFN_vkCmdBeginQuery glad_vkCmdBeginQuery = NULL;
 PFN_vkCmdBeginRenderPass glad_vkCmdBeginRenderPass = NULL;
 PFN_vkCmdBeginRenderPass2 glad_vkCmdBeginRenderPass2 = NULL;
+PFN_vkCmdBeginRenderPass2KHR glad_vkCmdBeginRenderPass2KHR = NULL;
 PFN_vkCmdBeginRendering glad_vkCmdBeginRendering = NULL;
+PFN_vkCmdBeginRenderingKHR glad_vkCmdBeginRenderingKHR = NULL;
+PFN_vkCmdBindDescriptorBufferEmbeddedSamplers2EXT glad_vkCmdBindDescriptorBufferEmbeddedSamplers2EXT = NULL;
 PFN_vkCmdBindDescriptorSets glad_vkCmdBindDescriptorSets = NULL;
-PFN_vkCmdBindDescriptorSets2 glad_vkCmdBindDescriptorSets2 = NULL;
+PFN_vkCmdBindDescriptorSets2KHR glad_vkCmdBindDescriptorSets2KHR = NULL;
 PFN_vkCmdBindIndexBuffer glad_vkCmdBindIndexBuffer = NULL;
-PFN_vkCmdBindIndexBuffer2 glad_vkCmdBindIndexBuffer2 = NULL;
+PFN_vkCmdBindIndexBuffer2KHR glad_vkCmdBindIndexBuffer2KHR = NULL;
 PFN_vkCmdBindPipeline glad_vkCmdBindPipeline = NULL;
+PFN_vkCmdBindShadersEXT glad_vkCmdBindShadersEXT = NULL;
 PFN_vkCmdBindVertexBuffers glad_vkCmdBindVertexBuffers = NULL;
 PFN_vkCmdBindVertexBuffers2 glad_vkCmdBindVertexBuffers2 = NULL;
+PFN_vkCmdBindVertexBuffers2EXT glad_vkCmdBindVertexBuffers2EXT = NULL;
 PFN_vkCmdBlitImage glad_vkCmdBlitImage = NULL;
 PFN_vkCmdBlitImage2 glad_vkCmdBlitImage2 = NULL;
+PFN_vkCmdBlitImage2KHR glad_vkCmdBlitImage2KHR = NULL;
+PFN_vkCmdBuildAccelerationStructureNV glad_vkCmdBuildAccelerationStructureNV = NULL;
+PFN_vkCmdBuildAccelerationStructuresIndirectKHR glad_vkCmdBuildAccelerationStructuresIndirectKHR = NULL;
+PFN_vkCmdBuildAccelerationStructuresKHR glad_vkCmdBuildAccelerationStructuresKHR = NULL;
 PFN_vkCmdClearAttachments glad_vkCmdClearAttachments = NULL;
 PFN_vkCmdClearColorImage glad_vkCmdClearColorImage = NULL;
 PFN_vkCmdClearDepthStencilImage glad_vkCmdClearDepthStencilImage = NULL;
+PFN_vkCmdCopyAccelerationStructureKHR glad_vkCmdCopyAccelerationStructureKHR = NULL;
+PFN_vkCmdCopyAccelerationStructureNV glad_vkCmdCopyAccelerationStructureNV = NULL;
+PFN_vkCmdCopyAccelerationStructureToMemoryKHR glad_vkCmdCopyAccelerationStructureToMemoryKHR = NULL;
 PFN_vkCmdCopyBuffer glad_vkCmdCopyBuffer = NULL;
 PFN_vkCmdCopyBuffer2 glad_vkCmdCopyBuffer2 = NULL;
+PFN_vkCmdCopyBuffer2KHR glad_vkCmdCopyBuffer2KHR = NULL;
 PFN_vkCmdCopyBufferToImage glad_vkCmdCopyBufferToImage = NULL;
 PFN_vkCmdCopyBufferToImage2 glad_vkCmdCopyBufferToImage2 = NULL;
+PFN_vkCmdCopyBufferToImage2KHR glad_vkCmdCopyBufferToImage2KHR = NULL;
 PFN_vkCmdCopyImage glad_vkCmdCopyImage = NULL;
 PFN_vkCmdCopyImage2 glad_vkCmdCopyImage2 = NULL;
+PFN_vkCmdCopyImage2KHR glad_vkCmdCopyImage2KHR = NULL;
 PFN_vkCmdCopyImageToBuffer glad_vkCmdCopyImageToBuffer = NULL;
 PFN_vkCmdCopyImageToBuffer2 glad_vkCmdCopyImageToBuffer2 = NULL;
+PFN_vkCmdCopyImageToBuffer2KHR glad_vkCmdCopyImageToBuffer2KHR = NULL;
+PFN_vkCmdCopyMemoryIndirectKHR glad_vkCmdCopyMemoryIndirectKHR = NULL;
+PFN_vkCmdCopyMemoryToAccelerationStructureKHR glad_vkCmdCopyMemoryToAccelerationStructureKHR = NULL;
+PFN_vkCmdCopyMemoryToImageIndirectKHR glad_vkCmdCopyMemoryToImageIndirectKHR = NULL;
 PFN_vkCmdCopyQueryPoolResults glad_vkCmdCopyQueryPoolResults = NULL;
 PFN_vkCmdDispatch glad_vkCmdDispatch = NULL;
 PFN_vkCmdDispatchBase glad_vkCmdDispatchBase = NULL;
+PFN_vkCmdDispatchBaseKHR glad_vkCmdDispatchBaseKHR = NULL;
 PFN_vkCmdDispatchIndirect glad_vkCmdDispatchIndirect = NULL;
 PFN_vkCmdDraw glad_vkCmdDraw = NULL;
 PFN_vkCmdDrawIndexed glad_vkCmdDrawIndexed = NULL;
 PFN_vkCmdDrawIndexedIndirect glad_vkCmdDrawIndexedIndirect = NULL;
 PFN_vkCmdDrawIndexedIndirectCount glad_vkCmdDrawIndexedIndirectCount = NULL;
+PFN_vkCmdDrawIndexedIndirectCountAMD glad_vkCmdDrawIndexedIndirectCountAMD = NULL;
+PFN_vkCmdDrawIndexedIndirectCountKHR glad_vkCmdDrawIndexedIndirectCountKHR = NULL;
 PFN_vkCmdDrawIndirect glad_vkCmdDrawIndirect = NULL;
 PFN_vkCmdDrawIndirectCount glad_vkCmdDrawIndirectCount = NULL;
+PFN_vkCmdDrawIndirectCountAMD glad_vkCmdDrawIndirectCountAMD = NULL;
+PFN_vkCmdDrawIndirectCountKHR glad_vkCmdDrawIndirectCountKHR = NULL;
 PFN_vkCmdEndQuery glad_vkCmdEndQuery = NULL;
 PFN_vkCmdEndRenderPass glad_vkCmdEndRenderPass = NULL;
 PFN_vkCmdEndRenderPass2 glad_vkCmdEndRenderPass2 = NULL;
+PFN_vkCmdEndRenderPass2KHR glad_vkCmdEndRenderPass2KHR = NULL;
 PFN_vkCmdEndRendering glad_vkCmdEndRendering = NULL;
+PFN_vkCmdEndRenderingKHR glad_vkCmdEndRenderingKHR = NULL;
 PFN_vkCmdExecuteCommands glad_vkCmdExecuteCommands = NULL;
 PFN_vkCmdFillBuffer glad_vkCmdFillBuffer = NULL;
 PFN_vkCmdNextSubpass glad_vkCmdNextSubpass = NULL;
 PFN_vkCmdNextSubpass2 glad_vkCmdNextSubpass2 = NULL;
+PFN_vkCmdNextSubpass2KHR glad_vkCmdNextSubpass2KHR = NULL;
 PFN_vkCmdPipelineBarrier glad_vkCmdPipelineBarrier = NULL;
 PFN_vkCmdPipelineBarrier2 glad_vkCmdPipelineBarrier2 = NULL;
+PFN_vkCmdPipelineBarrier2KHR glad_vkCmdPipelineBarrier2KHR = NULL;
 PFN_vkCmdPushConstants glad_vkCmdPushConstants = NULL;
-PFN_vkCmdPushConstants2 glad_vkCmdPushConstants2 = NULL;
-PFN_vkCmdPushDescriptorSet glad_vkCmdPushDescriptorSet = NULL;
-PFN_vkCmdPushDescriptorSet2 glad_vkCmdPushDescriptorSet2 = NULL;
-PFN_vkCmdPushDescriptorSetWithTemplate glad_vkCmdPushDescriptorSetWithTemplate = NULL;
-PFN_vkCmdPushDescriptorSetWithTemplate2 glad_vkCmdPushDescriptorSetWithTemplate2 = NULL;
+PFN_vkCmdPushConstants2KHR glad_vkCmdPushConstants2KHR = NULL;
+PFN_vkCmdPushDescriptorSet2KHR glad_vkCmdPushDescriptorSet2KHR = NULL;
+PFN_vkCmdPushDescriptorSetKHR glad_vkCmdPushDescriptorSetKHR = NULL;
+PFN_vkCmdPushDescriptorSetWithTemplate2KHR glad_vkCmdPushDescriptorSetWithTemplate2KHR = NULL;
+PFN_vkCmdPushDescriptorSetWithTemplateKHR glad_vkCmdPushDescriptorSetWithTemplateKHR = NULL;
 PFN_vkCmdResetEvent glad_vkCmdResetEvent = NULL;
 PFN_vkCmdResetEvent2 glad_vkCmdResetEvent2 = NULL;
+PFN_vkCmdResetEvent2KHR glad_vkCmdResetEvent2KHR = NULL;
 PFN_vkCmdResetQueryPool glad_vkCmdResetQueryPool = NULL;
 PFN_vkCmdResolveImage glad_vkCmdResolveImage = NULL;
 PFN_vkCmdResolveImage2 glad_vkCmdResolveImage2 = NULL;
+PFN_vkCmdResolveImage2KHR glad_vkCmdResolveImage2KHR = NULL;
+PFN_vkCmdSetAlphaToCoverageEnableEXT glad_vkCmdSetAlphaToCoverageEnableEXT = NULL;
+PFN_vkCmdSetAlphaToOneEnableEXT glad_vkCmdSetAlphaToOneEnableEXT = NULL;
 PFN_vkCmdSetBlendConstants glad_vkCmdSetBlendConstants = NULL;
+PFN_vkCmdSetColorBlendAdvancedEXT glad_vkCmdSetColorBlendAdvancedEXT = NULL;
+PFN_vkCmdSetColorBlendEnableEXT glad_vkCmdSetColorBlendEnableEXT = NULL;
+PFN_vkCmdSetColorBlendEquationEXT glad_vkCmdSetColorBlendEquationEXT = NULL;
+PFN_vkCmdSetColorWriteMaskEXT glad_vkCmdSetColorWriteMaskEXT = NULL;
+PFN_vkCmdSetConservativeRasterizationModeEXT glad_vkCmdSetConservativeRasterizationModeEXT = NULL;
+PFN_vkCmdSetCoverageModulationModeNV glad_vkCmdSetCoverageModulationModeNV = NULL;
+PFN_vkCmdSetCoverageModulationTableEnableNV glad_vkCmdSetCoverageModulationTableEnableNV = NULL;
+PFN_vkCmdSetCoverageModulationTableNV glad_vkCmdSetCoverageModulationTableNV = NULL;
+PFN_vkCmdSetCoverageReductionModeNV glad_vkCmdSetCoverageReductionModeNV = NULL;
+PFN_vkCmdSetCoverageToColorEnableNV glad_vkCmdSetCoverageToColorEnableNV = NULL;
+PFN_vkCmdSetCoverageToColorLocationNV glad_vkCmdSetCoverageToColorLocationNV = NULL;
 PFN_vkCmdSetCullMode glad_vkCmdSetCullMode = NULL;
+PFN_vkCmdSetCullModeEXT glad_vkCmdSetCullModeEXT = NULL;
 PFN_vkCmdSetDepthBias glad_vkCmdSetDepthBias = NULL;
 PFN_vkCmdSetDepthBiasEnable glad_vkCmdSetDepthBiasEnable = NULL;
+PFN_vkCmdSetDepthBiasEnableEXT glad_vkCmdSetDepthBiasEnableEXT = NULL;
 PFN_vkCmdSetDepthBounds glad_vkCmdSetDepthBounds = NULL;
 PFN_vkCmdSetDepthBoundsTestEnable glad_vkCmdSetDepthBoundsTestEnable = NULL;
+PFN_vkCmdSetDepthBoundsTestEnableEXT glad_vkCmdSetDepthBoundsTestEnableEXT = NULL;
+PFN_vkCmdSetDepthClampEnableEXT glad_vkCmdSetDepthClampEnableEXT = NULL;
+PFN_vkCmdSetDepthClampRangeEXT glad_vkCmdSetDepthClampRangeEXT = NULL;
+PFN_vkCmdSetDepthClipEnableEXT glad_vkCmdSetDepthClipEnableEXT = NULL;
+PFN_vkCmdSetDepthClipNegativeOneToOneEXT glad_vkCmdSetDepthClipNegativeOneToOneEXT = NULL;
 PFN_vkCmdSetDepthCompareOp glad_vkCmdSetDepthCompareOp = NULL;
+PFN_vkCmdSetDepthCompareOpEXT glad_vkCmdSetDepthCompareOpEXT = NULL;
 PFN_vkCmdSetDepthTestEnable glad_vkCmdSetDepthTestEnable = NULL;
+PFN_vkCmdSetDepthTestEnableEXT glad_vkCmdSetDepthTestEnableEXT = NULL;
 PFN_vkCmdSetDepthWriteEnable glad_vkCmdSetDepthWriteEnable = NULL;
+PFN_vkCmdSetDepthWriteEnableEXT glad_vkCmdSetDepthWriteEnableEXT = NULL;
+PFN_vkCmdSetDescriptorBufferOffsets2EXT glad_vkCmdSetDescriptorBufferOffsets2EXT = NULL;
 PFN_vkCmdSetDeviceMask glad_vkCmdSetDeviceMask = NULL;
+PFN_vkCmdSetDeviceMaskKHR glad_vkCmdSetDeviceMaskKHR = NULL;
 PFN_vkCmdSetEvent glad_vkCmdSetEvent = NULL;
 PFN_vkCmdSetEvent2 glad_vkCmdSetEvent2 = NULL;
+PFN_vkCmdSetEvent2KHR glad_vkCmdSetEvent2KHR = NULL;
+PFN_vkCmdSetExtraPrimitiveOverestimationSizeEXT glad_vkCmdSetExtraPrimitiveOverestimationSizeEXT = NULL;
+PFN_vkCmdSetFragmentShadingRateKHR glad_vkCmdSetFragmentShadingRateKHR = NULL;
 PFN_vkCmdSetFrontFace glad_vkCmdSetFrontFace = NULL;
-PFN_vkCmdSetLineStipple glad_vkCmdSetLineStipple = NULL;
+PFN_vkCmdSetFrontFaceEXT glad_vkCmdSetFrontFaceEXT = NULL;
+PFN_vkCmdSetLineRasterizationModeEXT glad_vkCmdSetLineRasterizationModeEXT = NULL;
+PFN_vkCmdSetLineStippleEnableEXT glad_vkCmdSetLineStippleEnableEXT = NULL;
+PFN_vkCmdSetLineStippleKHR glad_vkCmdSetLineStippleKHR = NULL;
 PFN_vkCmdSetLineWidth glad_vkCmdSetLineWidth = NULL;
+PFN_vkCmdSetLogicOpEXT glad_vkCmdSetLogicOpEXT = NULL;
+PFN_vkCmdSetLogicOpEnableEXT glad_vkCmdSetLogicOpEnableEXT = NULL;
+PFN_vkCmdSetPatchControlPointsEXT glad_vkCmdSetPatchControlPointsEXT = NULL;
+PFN_vkCmdSetPolygonModeEXT glad_vkCmdSetPolygonModeEXT = NULL;
 PFN_vkCmdSetPrimitiveRestartEnable glad_vkCmdSetPrimitiveRestartEnable = NULL;
+PFN_vkCmdSetPrimitiveRestartEnableEXT glad_vkCmdSetPrimitiveRestartEnableEXT = NULL;
 PFN_vkCmdSetPrimitiveTopology glad_vkCmdSetPrimitiveTopology = NULL;
+PFN_vkCmdSetPrimitiveTopologyEXT glad_vkCmdSetPrimitiveTopologyEXT = NULL;
+PFN_vkCmdSetProvokingVertexModeEXT glad_vkCmdSetProvokingVertexModeEXT = NULL;
+PFN_vkCmdSetRasterizationSamplesEXT glad_vkCmdSetRasterizationSamplesEXT = NULL;
+PFN_vkCmdSetRasterizationStreamEXT glad_vkCmdSetRasterizationStreamEXT = NULL;
 PFN_vkCmdSetRasterizerDiscardEnable glad_vkCmdSetRasterizerDiscardEnable = NULL;
-PFN_vkCmdSetRenderingAttachmentLocations glad_vkCmdSetRenderingAttachmentLocations = NULL;
-PFN_vkCmdSetRenderingInputAttachmentIndices glad_vkCmdSetRenderingInputAttachmentIndices = NULL;
+PFN_vkCmdSetRasterizerDiscardEnableEXT glad_vkCmdSetRasterizerDiscardEnableEXT = NULL;
+PFN_vkCmdSetRayTracingPipelineStackSizeKHR glad_vkCmdSetRayTracingPipelineStackSizeKHR = NULL;
+PFN_vkCmdSetRenderingAttachmentLocationsKHR glad_vkCmdSetRenderingAttachmentLocationsKHR = NULL;
+PFN_vkCmdSetRenderingInputAttachmentIndicesKHR glad_vkCmdSetRenderingInputAttachmentIndicesKHR = NULL;
+PFN_vkCmdSetRepresentativeFragmentTestEnableNV glad_vkCmdSetRepresentativeFragmentTestEnableNV = NULL;
+PFN_vkCmdSetSampleLocationsEnableEXT glad_vkCmdSetSampleLocationsEnableEXT = NULL;
+PFN_vkCmdSetSampleMaskEXT glad_vkCmdSetSampleMaskEXT = NULL;
 PFN_vkCmdSetScissor glad_vkCmdSetScissor = NULL;
 PFN_vkCmdSetScissorWithCount glad_vkCmdSetScissorWithCount = NULL;
+PFN_vkCmdSetScissorWithCountEXT glad_vkCmdSetScissorWithCountEXT = NULL;
+PFN_vkCmdSetShadingRateImageEnableNV glad_vkCmdSetShadingRateImageEnableNV = NULL;
 PFN_vkCmdSetStencilCompareMask glad_vkCmdSetStencilCompareMask = NULL;
 PFN_vkCmdSetStencilOp glad_vkCmdSetStencilOp = NULL;
+PFN_vkCmdSetStencilOpEXT glad_vkCmdSetStencilOpEXT = NULL;
 PFN_vkCmdSetStencilReference glad_vkCmdSetStencilReference = NULL;
 PFN_vkCmdSetStencilTestEnable glad_vkCmdSetStencilTestEnable = NULL;
+PFN_vkCmdSetStencilTestEnableEXT glad_vkCmdSetStencilTestEnableEXT = NULL;
 PFN_vkCmdSetStencilWriteMask glad_vkCmdSetStencilWriteMask = NULL;
+PFN_vkCmdSetTessellationDomainOriginEXT glad_vkCmdSetTessellationDomainOriginEXT = NULL;
+PFN_vkCmdSetVertexInputEXT glad_vkCmdSetVertexInputEXT = NULL;
 PFN_vkCmdSetViewport glad_vkCmdSetViewport = NULL;
+PFN_vkCmdSetViewportSwizzleNV glad_vkCmdSetViewportSwizzleNV = NULL;
+PFN_vkCmdSetViewportWScalingEnableNV glad_vkCmdSetViewportWScalingEnableNV = NULL;
 PFN_vkCmdSetViewportWithCount glad_vkCmdSetViewportWithCount = NULL;
+PFN_vkCmdSetViewportWithCountEXT glad_vkCmdSetViewportWithCountEXT = NULL;
+PFN_vkCmdTraceRaysIndirect2KHR glad_vkCmdTraceRaysIndirect2KHR = NULL;
+PFN_vkCmdTraceRaysIndirectKHR glad_vkCmdTraceRaysIndirectKHR = NULL;
+PFN_vkCmdTraceRaysKHR glad_vkCmdTraceRaysKHR = NULL;
+PFN_vkCmdTraceRaysNV glad_vkCmdTraceRaysNV = NULL;
 PFN_vkCmdUpdateBuffer glad_vkCmdUpdateBuffer = NULL;
 PFN_vkCmdWaitEvents glad_vkCmdWaitEvents = NULL;
 PFN_vkCmdWaitEvents2 glad_vkCmdWaitEvents2 = NULL;
+PFN_vkCmdWaitEvents2KHR glad_vkCmdWaitEvents2KHR = NULL;
+PFN_vkCmdWriteAccelerationStructuresPropertiesKHR glad_vkCmdWriteAccelerationStructuresPropertiesKHR = NULL;
+PFN_vkCmdWriteAccelerationStructuresPropertiesNV glad_vkCmdWriteAccelerationStructuresPropertiesNV = NULL;
 PFN_vkCmdWriteTimestamp glad_vkCmdWriteTimestamp = NULL;
 PFN_vkCmdWriteTimestamp2 glad_vkCmdWriteTimestamp2 = NULL;
-PFN_vkCopyImageToImage glad_vkCopyImageToImage = NULL;
-PFN_vkCopyImageToMemory glad_vkCopyImageToMemory = NULL;
-PFN_vkCopyMemoryToImage glad_vkCopyMemoryToImage = NULL;
+PFN_vkCmdWriteTimestamp2KHR glad_vkCmdWriteTimestamp2KHR = NULL;
+PFN_vkCompileDeferredNV glad_vkCompileDeferredNV = NULL;
+PFN_vkCopyAccelerationStructureKHR glad_vkCopyAccelerationStructureKHR = NULL;
+PFN_vkCopyAccelerationStructureToMemoryKHR glad_vkCopyAccelerationStructureToMemoryKHR = NULL;
+PFN_vkCopyMemoryToAccelerationStructureKHR glad_vkCopyMemoryToAccelerationStructureKHR = NULL;
+PFN_vkCreateAccelerationStructureKHR glad_vkCreateAccelerationStructureKHR = NULL;
+PFN_vkCreateAccelerationStructureNV glad_vkCreateAccelerationStructureNV = NULL;
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+PFN_vkCreateAndroidSurfaceKHR glad_vkCreateAndroidSurfaceKHR = NULL;
+
+#endif
 PFN_vkCreateBuffer glad_vkCreateBuffer = NULL;
 PFN_vkCreateBufferView glad_vkCreateBufferView = NULL;
 PFN_vkCreateCommandPool glad_vkCreateCommandPool = NULL;
 PFN_vkCreateComputePipelines glad_vkCreateComputePipelines = NULL;
+PFN_vkCreateDeferredOperationKHR glad_vkCreateDeferredOperationKHR = NULL;
 PFN_vkCreateDescriptorPool glad_vkCreateDescriptorPool = NULL;
 PFN_vkCreateDescriptorSetLayout glad_vkCreateDescriptorSetLayout = NULL;
 PFN_vkCreateDescriptorUpdateTemplate glad_vkCreateDescriptorUpdateTemplate = NULL;
+PFN_vkCreateDescriptorUpdateTemplateKHR glad_vkCreateDescriptorUpdateTemplateKHR = NULL;
 PFN_vkCreateDevice glad_vkCreateDevice = NULL;
+PFN_vkCreateDisplayModeKHR glad_vkCreateDisplayModeKHR = NULL;
+PFN_vkCreateDisplayPlaneSurfaceKHR glad_vkCreateDisplayPlaneSurfaceKHR = NULL;
 PFN_vkCreateEvent glad_vkCreateEvent = NULL;
 PFN_vkCreateFence glad_vkCreateFence = NULL;
 PFN_vkCreateFramebuffer glad_vkCreateFramebuffer = NULL;
@@ -146,22 +421,52 @@ PFN_vkCreateGraphicsPipelines glad_vkCreateGraphicsPipelines = NULL;
 PFN_vkCreateImage glad_vkCreateImage = NULL;
 PFN_vkCreateImageView glad_vkCreateImageView = NULL;
 PFN_vkCreateInstance glad_vkCreateInstance = NULL;
+PFN_vkCreatePipelineBinariesKHR glad_vkCreatePipelineBinariesKHR = NULL;
 PFN_vkCreatePipelineCache glad_vkCreatePipelineCache = NULL;
 PFN_vkCreatePipelineLayout glad_vkCreatePipelineLayout = NULL;
 PFN_vkCreatePrivateDataSlot glad_vkCreatePrivateDataSlot = NULL;
+PFN_vkCreatePrivateDataSlotEXT glad_vkCreatePrivateDataSlotEXT = NULL;
 PFN_vkCreateQueryPool glad_vkCreateQueryPool = NULL;
+PFN_vkCreateRayTracingPipelinesKHR glad_vkCreateRayTracingPipelinesKHR = NULL;
+PFN_vkCreateRayTracingPipelinesNV glad_vkCreateRayTracingPipelinesNV = NULL;
 PFN_vkCreateRenderPass glad_vkCreateRenderPass = NULL;
 PFN_vkCreateRenderPass2 glad_vkCreateRenderPass2 = NULL;
+PFN_vkCreateRenderPass2KHR glad_vkCreateRenderPass2KHR = NULL;
 PFN_vkCreateSampler glad_vkCreateSampler = NULL;
 PFN_vkCreateSamplerYcbcrConversion glad_vkCreateSamplerYcbcrConversion = NULL;
+PFN_vkCreateSamplerYcbcrConversionKHR glad_vkCreateSamplerYcbcrConversionKHR = NULL;
 PFN_vkCreateSemaphore glad_vkCreateSemaphore = NULL;
 PFN_vkCreateShaderModule glad_vkCreateShaderModule = NULL;
+PFN_vkCreateShadersEXT glad_vkCreateShadersEXT = NULL;
+PFN_vkCreateSharedSwapchainsKHR glad_vkCreateSharedSwapchainsKHR = NULL;
+PFN_vkCreateSwapchainKHR glad_vkCreateSwapchainKHR = NULL;
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+PFN_vkCreateWaylandSurfaceKHR glad_vkCreateWaylandSurfaceKHR = NULL;
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+PFN_vkCreateWin32SurfaceKHR glad_vkCreateWin32SurfaceKHR = NULL;
+
+#endif
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+PFN_vkCreateXcbSurfaceKHR glad_vkCreateXcbSurfaceKHR = NULL;
+
+#endif
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+PFN_vkCreateXlibSurfaceKHR glad_vkCreateXlibSurfaceKHR = NULL;
+
+#endif
+PFN_vkDeferredOperationJoinKHR glad_vkDeferredOperationJoinKHR = NULL;
+PFN_vkDestroyAccelerationStructureKHR glad_vkDestroyAccelerationStructureKHR = NULL;
+PFN_vkDestroyAccelerationStructureNV glad_vkDestroyAccelerationStructureNV = NULL;
 PFN_vkDestroyBuffer glad_vkDestroyBuffer = NULL;
 PFN_vkDestroyBufferView glad_vkDestroyBufferView = NULL;
 PFN_vkDestroyCommandPool glad_vkDestroyCommandPool = NULL;
+PFN_vkDestroyDeferredOperationKHR glad_vkDestroyDeferredOperationKHR = NULL;
 PFN_vkDestroyDescriptorPool glad_vkDestroyDescriptorPool = NULL;
 PFN_vkDestroyDescriptorSetLayout glad_vkDestroyDescriptorSetLayout = NULL;
 PFN_vkDestroyDescriptorUpdateTemplate glad_vkDestroyDescriptorUpdateTemplate = NULL;
+PFN_vkDestroyDescriptorUpdateTemplateKHR glad_vkDestroyDescriptorUpdateTemplateKHR = NULL;
 PFN_vkDestroyDevice glad_vkDestroyDevice = NULL;
 PFN_vkDestroyEvent glad_vkDestroyEvent = NULL;
 PFN_vkDestroyFence glad_vkDestroyFence = NULL;
@@ -170,15 +475,21 @@ PFN_vkDestroyImage glad_vkDestroyImage = NULL;
 PFN_vkDestroyImageView glad_vkDestroyImageView = NULL;
 PFN_vkDestroyInstance glad_vkDestroyInstance = NULL;
 PFN_vkDestroyPipeline glad_vkDestroyPipeline = NULL;
+PFN_vkDestroyPipelineBinaryKHR glad_vkDestroyPipelineBinaryKHR = NULL;
 PFN_vkDestroyPipelineCache glad_vkDestroyPipelineCache = NULL;
 PFN_vkDestroyPipelineLayout glad_vkDestroyPipelineLayout = NULL;
 PFN_vkDestroyPrivateDataSlot glad_vkDestroyPrivateDataSlot = NULL;
+PFN_vkDestroyPrivateDataSlotEXT glad_vkDestroyPrivateDataSlotEXT = NULL;
 PFN_vkDestroyQueryPool glad_vkDestroyQueryPool = NULL;
 PFN_vkDestroyRenderPass glad_vkDestroyRenderPass = NULL;
 PFN_vkDestroySampler glad_vkDestroySampler = NULL;
 PFN_vkDestroySamplerYcbcrConversion glad_vkDestroySamplerYcbcrConversion = NULL;
+PFN_vkDestroySamplerYcbcrConversionKHR glad_vkDestroySamplerYcbcrConversionKHR = NULL;
 PFN_vkDestroySemaphore glad_vkDestroySemaphore = NULL;
+PFN_vkDestroyShaderEXT glad_vkDestroyShaderEXT = NULL;
 PFN_vkDestroyShaderModule glad_vkDestroyShaderModule = NULL;
+PFN_vkDestroySurfaceKHR glad_vkDestroySurfaceKHR = NULL;
+PFN_vkDestroySwapchainKHR glad_vkDestroySwapchainKHR = NULL;
 PFN_vkDeviceWaitIdle glad_vkDeviceWaitIdle = NULL;
 PFN_vkEndCommandBuffer glad_vkEndCommandBuffer = NULL;
 PFN_vkEnumerateDeviceExtensionProperties glad_vkEnumerateDeviceExtensionProperties = NULL;
@@ -187,84 +498,215 @@ PFN_vkEnumerateInstanceExtensionProperties glad_vkEnumerateInstanceExtensionProp
 PFN_vkEnumerateInstanceLayerProperties glad_vkEnumerateInstanceLayerProperties = NULL;
 PFN_vkEnumerateInstanceVersion glad_vkEnumerateInstanceVersion = NULL;
 PFN_vkEnumeratePhysicalDeviceGroups glad_vkEnumeratePhysicalDeviceGroups = NULL;
+PFN_vkEnumeratePhysicalDeviceGroupsKHR glad_vkEnumeratePhysicalDeviceGroupsKHR = NULL;
+PFN_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR glad_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR = NULL;
 PFN_vkEnumeratePhysicalDevices glad_vkEnumeratePhysicalDevices = NULL;
 PFN_vkFlushMappedMemoryRanges glad_vkFlushMappedMemoryRanges = NULL;
 PFN_vkFreeCommandBuffers glad_vkFreeCommandBuffers = NULL;
 PFN_vkFreeDescriptorSets glad_vkFreeDescriptorSets = NULL;
 PFN_vkFreeMemory glad_vkFreeMemory = NULL;
+PFN_vkGetAccelerationStructureBuildSizesKHR glad_vkGetAccelerationStructureBuildSizesKHR = NULL;
+PFN_vkGetAccelerationStructureDeviceAddressKHR glad_vkGetAccelerationStructureDeviceAddressKHR = NULL;
+PFN_vkGetAccelerationStructureHandleNV glad_vkGetAccelerationStructureHandleNV = NULL;
+PFN_vkGetAccelerationStructureMemoryRequirementsNV glad_vkGetAccelerationStructureMemoryRequirementsNV = NULL;
 PFN_vkGetBufferDeviceAddress glad_vkGetBufferDeviceAddress = NULL;
+PFN_vkGetBufferDeviceAddressEXT glad_vkGetBufferDeviceAddressEXT = NULL;
+PFN_vkGetBufferDeviceAddressKHR glad_vkGetBufferDeviceAddressKHR = NULL;
 PFN_vkGetBufferMemoryRequirements glad_vkGetBufferMemoryRequirements = NULL;
 PFN_vkGetBufferMemoryRequirements2 glad_vkGetBufferMemoryRequirements2 = NULL;
+PFN_vkGetBufferMemoryRequirements2KHR glad_vkGetBufferMemoryRequirements2KHR = NULL;
 PFN_vkGetBufferOpaqueCaptureAddress glad_vkGetBufferOpaqueCaptureAddress = NULL;
+PFN_vkGetBufferOpaqueCaptureAddressKHR glad_vkGetBufferOpaqueCaptureAddressKHR = NULL;
+PFN_vkGetCalibratedTimestampsEXT glad_vkGetCalibratedTimestampsEXT = NULL;
+PFN_vkGetCalibratedTimestampsKHR glad_vkGetCalibratedTimestampsKHR = NULL;
+PFN_vkGetDeferredOperationMaxConcurrencyKHR glad_vkGetDeferredOperationMaxConcurrencyKHR = NULL;
+PFN_vkGetDeferredOperationResultKHR glad_vkGetDeferredOperationResultKHR = NULL;
 PFN_vkGetDescriptorSetLayoutSupport glad_vkGetDescriptorSetLayoutSupport = NULL;
+PFN_vkGetDescriptorSetLayoutSupportKHR glad_vkGetDescriptorSetLayoutSupportKHR = NULL;
+PFN_vkGetDeviceAccelerationStructureCompatibilityKHR glad_vkGetDeviceAccelerationStructureCompatibilityKHR = NULL;
 PFN_vkGetDeviceBufferMemoryRequirements glad_vkGetDeviceBufferMemoryRequirements = NULL;
+PFN_vkGetDeviceBufferMemoryRequirementsKHR glad_vkGetDeviceBufferMemoryRequirementsKHR = NULL;
 PFN_vkGetDeviceGroupPeerMemoryFeatures glad_vkGetDeviceGroupPeerMemoryFeatures = NULL;
+PFN_vkGetDeviceGroupPeerMemoryFeaturesKHR glad_vkGetDeviceGroupPeerMemoryFeaturesKHR = NULL;
+PFN_vkGetDeviceGroupPresentCapabilitiesKHR glad_vkGetDeviceGroupPresentCapabilitiesKHR = NULL;
+PFN_vkGetDeviceGroupSurfacePresentModesKHR glad_vkGetDeviceGroupSurfacePresentModesKHR = NULL;
 PFN_vkGetDeviceImageMemoryRequirements glad_vkGetDeviceImageMemoryRequirements = NULL;
+PFN_vkGetDeviceImageMemoryRequirementsKHR glad_vkGetDeviceImageMemoryRequirementsKHR = NULL;
 PFN_vkGetDeviceImageSparseMemoryRequirements glad_vkGetDeviceImageSparseMemoryRequirements = NULL;
-PFN_vkGetDeviceImageSubresourceLayout glad_vkGetDeviceImageSubresourceLayout = NULL;
+PFN_vkGetDeviceImageSparseMemoryRequirementsKHR glad_vkGetDeviceImageSparseMemoryRequirementsKHR = NULL;
+PFN_vkGetDeviceImageSubresourceLayoutKHR glad_vkGetDeviceImageSubresourceLayoutKHR = NULL;
 PFN_vkGetDeviceMemoryCommitment glad_vkGetDeviceMemoryCommitment = NULL;
 PFN_vkGetDeviceMemoryOpaqueCaptureAddress glad_vkGetDeviceMemoryOpaqueCaptureAddress = NULL;
+PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR glad_vkGetDeviceMemoryOpaqueCaptureAddressKHR = NULL;
 PFN_vkGetDeviceProcAddr glad_vkGetDeviceProcAddr = NULL;
 PFN_vkGetDeviceQueue glad_vkGetDeviceQueue = NULL;
 PFN_vkGetDeviceQueue2 glad_vkGetDeviceQueue2 = NULL;
+PFN_vkGetDisplayModeProperties2KHR glad_vkGetDisplayModeProperties2KHR = NULL;
+PFN_vkGetDisplayModePropertiesKHR glad_vkGetDisplayModePropertiesKHR = NULL;
+PFN_vkGetDisplayPlaneCapabilities2KHR glad_vkGetDisplayPlaneCapabilities2KHR = NULL;
+PFN_vkGetDisplayPlaneCapabilitiesKHR glad_vkGetDisplayPlaneCapabilitiesKHR = NULL;
+PFN_vkGetDisplayPlaneSupportedDisplaysKHR glad_vkGetDisplayPlaneSupportedDisplaysKHR = NULL;
 PFN_vkGetEventStatus glad_vkGetEventStatus = NULL;
+PFN_vkGetFenceFdKHR glad_vkGetFenceFdKHR = NULL;
 PFN_vkGetFenceStatus glad_vkGetFenceStatus = NULL;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+PFN_vkGetFenceWin32HandleKHR glad_vkGetFenceWin32HandleKHR = NULL;
+
+#endif
 PFN_vkGetImageMemoryRequirements glad_vkGetImageMemoryRequirements = NULL;
 PFN_vkGetImageMemoryRequirements2 glad_vkGetImageMemoryRequirements2 = NULL;
+PFN_vkGetImageMemoryRequirements2KHR glad_vkGetImageMemoryRequirements2KHR = NULL;
 PFN_vkGetImageSparseMemoryRequirements glad_vkGetImageSparseMemoryRequirements = NULL;
 PFN_vkGetImageSparseMemoryRequirements2 glad_vkGetImageSparseMemoryRequirements2 = NULL;
+PFN_vkGetImageSparseMemoryRequirements2KHR glad_vkGetImageSparseMemoryRequirements2KHR = NULL;
 PFN_vkGetImageSubresourceLayout glad_vkGetImageSubresourceLayout = NULL;
-PFN_vkGetImageSubresourceLayout2 glad_vkGetImageSubresourceLayout2 = NULL;
+PFN_vkGetImageSubresourceLayout2KHR glad_vkGetImageSubresourceLayout2KHR = NULL;
 PFN_vkGetInstanceProcAddr glad_vkGetInstanceProcAddr = NULL;
+PFN_vkGetMemoryFdKHR glad_vkGetMemoryFdKHR = NULL;
+PFN_vkGetMemoryFdPropertiesKHR glad_vkGetMemoryFdPropertiesKHR = NULL;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+PFN_vkGetMemoryWin32HandleKHR glad_vkGetMemoryWin32HandleKHR = NULL;
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+PFN_vkGetMemoryWin32HandlePropertiesKHR glad_vkGetMemoryWin32HandlePropertiesKHR = NULL;
+
+#endif
+PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT glad_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT = NULL;
+PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR glad_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR = NULL;
+PFN_vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR glad_vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR = NULL;
+PFN_vkGetPhysicalDeviceDisplayPlaneProperties2KHR glad_vkGetPhysicalDeviceDisplayPlaneProperties2KHR = NULL;
+PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR glad_vkGetPhysicalDeviceDisplayPlanePropertiesKHR = NULL;
+PFN_vkGetPhysicalDeviceDisplayProperties2KHR glad_vkGetPhysicalDeviceDisplayProperties2KHR = NULL;
+PFN_vkGetPhysicalDeviceDisplayPropertiesKHR glad_vkGetPhysicalDeviceDisplayPropertiesKHR = NULL;
 PFN_vkGetPhysicalDeviceExternalBufferProperties glad_vkGetPhysicalDeviceExternalBufferProperties = NULL;
+PFN_vkGetPhysicalDeviceExternalBufferPropertiesKHR glad_vkGetPhysicalDeviceExternalBufferPropertiesKHR = NULL;
 PFN_vkGetPhysicalDeviceExternalFenceProperties glad_vkGetPhysicalDeviceExternalFenceProperties = NULL;
+PFN_vkGetPhysicalDeviceExternalFencePropertiesKHR glad_vkGetPhysicalDeviceExternalFencePropertiesKHR = NULL;
 PFN_vkGetPhysicalDeviceExternalSemaphoreProperties glad_vkGetPhysicalDeviceExternalSemaphoreProperties = NULL;
+PFN_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR glad_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR = NULL;
 PFN_vkGetPhysicalDeviceFeatures glad_vkGetPhysicalDeviceFeatures = NULL;
 PFN_vkGetPhysicalDeviceFeatures2 glad_vkGetPhysicalDeviceFeatures2 = NULL;
+PFN_vkGetPhysicalDeviceFeatures2KHR glad_vkGetPhysicalDeviceFeatures2KHR = NULL;
 PFN_vkGetPhysicalDeviceFormatProperties glad_vkGetPhysicalDeviceFormatProperties = NULL;
 PFN_vkGetPhysicalDeviceFormatProperties2 glad_vkGetPhysicalDeviceFormatProperties2 = NULL;
+PFN_vkGetPhysicalDeviceFormatProperties2KHR glad_vkGetPhysicalDeviceFormatProperties2KHR = NULL;
+PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR glad_vkGetPhysicalDeviceFragmentShadingRatesKHR = NULL;
 PFN_vkGetPhysicalDeviceImageFormatProperties glad_vkGetPhysicalDeviceImageFormatProperties = NULL;
 PFN_vkGetPhysicalDeviceImageFormatProperties2 glad_vkGetPhysicalDeviceImageFormatProperties2 = NULL;
+PFN_vkGetPhysicalDeviceImageFormatProperties2KHR glad_vkGetPhysicalDeviceImageFormatProperties2KHR = NULL;
 PFN_vkGetPhysicalDeviceMemoryProperties glad_vkGetPhysicalDeviceMemoryProperties = NULL;
 PFN_vkGetPhysicalDeviceMemoryProperties2 glad_vkGetPhysicalDeviceMemoryProperties2 = NULL;
+PFN_vkGetPhysicalDeviceMemoryProperties2KHR glad_vkGetPhysicalDeviceMemoryProperties2KHR = NULL;
+PFN_vkGetPhysicalDevicePresentRectanglesKHR glad_vkGetPhysicalDevicePresentRectanglesKHR = NULL;
 PFN_vkGetPhysicalDeviceProperties glad_vkGetPhysicalDeviceProperties = NULL;
 PFN_vkGetPhysicalDeviceProperties2 glad_vkGetPhysicalDeviceProperties2 = NULL;
+PFN_vkGetPhysicalDeviceProperties2KHR glad_vkGetPhysicalDeviceProperties2KHR = NULL;
+PFN_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR glad_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR = NULL;
 PFN_vkGetPhysicalDeviceQueueFamilyProperties glad_vkGetPhysicalDeviceQueueFamilyProperties = NULL;
 PFN_vkGetPhysicalDeviceQueueFamilyProperties2 glad_vkGetPhysicalDeviceQueueFamilyProperties2 = NULL;
+PFN_vkGetPhysicalDeviceQueueFamilyProperties2KHR glad_vkGetPhysicalDeviceQueueFamilyProperties2KHR = NULL;
 PFN_vkGetPhysicalDeviceSparseImageFormatProperties glad_vkGetPhysicalDeviceSparseImageFormatProperties = NULL;
 PFN_vkGetPhysicalDeviceSparseImageFormatProperties2 glad_vkGetPhysicalDeviceSparseImageFormatProperties2 = NULL;
+PFN_vkGetPhysicalDeviceSparseImageFormatProperties2KHR glad_vkGetPhysicalDeviceSparseImageFormatProperties2KHR = NULL;
+PFN_vkGetPhysicalDeviceSurfaceCapabilities2KHR glad_vkGetPhysicalDeviceSurfaceCapabilities2KHR = NULL;
+PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR glad_vkGetPhysicalDeviceSurfaceCapabilitiesKHR = NULL;
+PFN_vkGetPhysicalDeviceSurfaceFormats2KHR glad_vkGetPhysicalDeviceSurfaceFormats2KHR = NULL;
+PFN_vkGetPhysicalDeviceSurfaceFormatsKHR glad_vkGetPhysicalDeviceSurfaceFormatsKHR = NULL;
+PFN_vkGetPhysicalDeviceSurfacePresentModesKHR glad_vkGetPhysicalDeviceSurfacePresentModesKHR = NULL;
+PFN_vkGetPhysicalDeviceSurfaceSupportKHR glad_vkGetPhysicalDeviceSurfaceSupportKHR = NULL;
 PFN_vkGetPhysicalDeviceToolProperties glad_vkGetPhysicalDeviceToolProperties = NULL;
+PFN_vkGetPhysicalDeviceToolPropertiesEXT glad_vkGetPhysicalDeviceToolPropertiesEXT = NULL;
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR glad_vkGetPhysicalDeviceWaylandPresentationSupportKHR = NULL;
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR glad_vkGetPhysicalDeviceWin32PresentationSupportKHR = NULL;
+
+#endif
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR glad_vkGetPhysicalDeviceXcbPresentationSupportKHR = NULL;
+
+#endif
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR glad_vkGetPhysicalDeviceXlibPresentationSupportKHR = NULL;
+
+#endif
+PFN_vkGetPipelineBinaryDataKHR glad_vkGetPipelineBinaryDataKHR = NULL;
 PFN_vkGetPipelineCacheData glad_vkGetPipelineCacheData = NULL;
+PFN_vkGetPipelineExecutableInternalRepresentationsKHR glad_vkGetPipelineExecutableInternalRepresentationsKHR = NULL;
+PFN_vkGetPipelineExecutablePropertiesKHR glad_vkGetPipelineExecutablePropertiesKHR = NULL;
+PFN_vkGetPipelineExecutableStatisticsKHR glad_vkGetPipelineExecutableStatisticsKHR = NULL;
+PFN_vkGetPipelineKeyKHR glad_vkGetPipelineKeyKHR = NULL;
 PFN_vkGetPrivateData glad_vkGetPrivateData = NULL;
+PFN_vkGetPrivateDataEXT glad_vkGetPrivateDataEXT = NULL;
 PFN_vkGetQueryPoolResults glad_vkGetQueryPoolResults = NULL;
+PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR glad_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR = NULL;
+PFN_vkGetRayTracingShaderGroupHandlesKHR glad_vkGetRayTracingShaderGroupHandlesKHR = NULL;
+PFN_vkGetRayTracingShaderGroupHandlesNV glad_vkGetRayTracingShaderGroupHandlesNV = NULL;
+PFN_vkGetRayTracingShaderGroupStackSizeKHR glad_vkGetRayTracingShaderGroupStackSizeKHR = NULL;
 PFN_vkGetRenderAreaGranularity glad_vkGetRenderAreaGranularity = NULL;
-PFN_vkGetRenderingAreaGranularity glad_vkGetRenderingAreaGranularity = NULL;
+PFN_vkGetRenderingAreaGranularityKHR glad_vkGetRenderingAreaGranularityKHR = NULL;
 PFN_vkGetSemaphoreCounterValue glad_vkGetSemaphoreCounterValue = NULL;
+PFN_vkGetSemaphoreCounterValueKHR glad_vkGetSemaphoreCounterValueKHR = NULL;
+PFN_vkGetSemaphoreFdKHR glad_vkGetSemaphoreFdKHR = NULL;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+PFN_vkGetSemaphoreWin32HandleKHR glad_vkGetSemaphoreWin32HandleKHR = NULL;
+
+#endif
+PFN_vkGetShaderBinaryDataEXT glad_vkGetShaderBinaryDataEXT = NULL;
+PFN_vkGetSwapchainImagesKHR glad_vkGetSwapchainImagesKHR = NULL;
+PFN_vkGetSwapchainStatusKHR glad_vkGetSwapchainStatusKHR = NULL;
+PFN_vkImportFenceFdKHR glad_vkImportFenceFdKHR = NULL;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+PFN_vkImportFenceWin32HandleKHR glad_vkImportFenceWin32HandleKHR = NULL;
+
+#endif
+PFN_vkImportSemaphoreFdKHR glad_vkImportSemaphoreFdKHR = NULL;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+PFN_vkImportSemaphoreWin32HandleKHR glad_vkImportSemaphoreWin32HandleKHR = NULL;
+
+#endif
 PFN_vkInvalidateMappedMemoryRanges glad_vkInvalidateMappedMemoryRanges = NULL;
 PFN_vkMapMemory glad_vkMapMemory = NULL;
-PFN_vkMapMemory2 glad_vkMapMemory2 = NULL;
+PFN_vkMapMemory2KHR glad_vkMapMemory2KHR = NULL;
 PFN_vkMergePipelineCaches glad_vkMergePipelineCaches = NULL;
 PFN_vkQueueBindSparse glad_vkQueueBindSparse = NULL;
+PFN_vkQueuePresentKHR glad_vkQueuePresentKHR = NULL;
 PFN_vkQueueSubmit glad_vkQueueSubmit = NULL;
 PFN_vkQueueSubmit2 glad_vkQueueSubmit2 = NULL;
+PFN_vkQueueSubmit2KHR glad_vkQueueSubmit2KHR = NULL;
 PFN_vkQueueWaitIdle glad_vkQueueWaitIdle = NULL;
+PFN_vkReleaseCapturedPipelineDataKHR glad_vkReleaseCapturedPipelineDataKHR = NULL;
+PFN_vkReleaseProfilingLockKHR glad_vkReleaseProfilingLockKHR = NULL;
+PFN_vkReleaseSwapchainImagesEXT glad_vkReleaseSwapchainImagesEXT = NULL;
+PFN_vkReleaseSwapchainImagesKHR glad_vkReleaseSwapchainImagesKHR = NULL;
 PFN_vkResetCommandBuffer glad_vkResetCommandBuffer = NULL;
 PFN_vkResetCommandPool glad_vkResetCommandPool = NULL;
 PFN_vkResetDescriptorPool glad_vkResetDescriptorPool = NULL;
 PFN_vkResetEvent glad_vkResetEvent = NULL;
 PFN_vkResetFences glad_vkResetFences = NULL;
 PFN_vkResetQueryPool glad_vkResetQueryPool = NULL;
+PFN_vkResetQueryPoolEXT glad_vkResetQueryPoolEXT = NULL;
 PFN_vkSetEvent glad_vkSetEvent = NULL;
 PFN_vkSetPrivateData glad_vkSetPrivateData = NULL;
+PFN_vkSetPrivateDataEXT glad_vkSetPrivateDataEXT = NULL;
 PFN_vkSignalSemaphore glad_vkSignalSemaphore = NULL;
-PFN_vkTransitionImageLayout glad_vkTransitionImageLayout = NULL;
+PFN_vkSignalSemaphoreKHR glad_vkSignalSemaphoreKHR = NULL;
 PFN_vkTrimCommandPool glad_vkTrimCommandPool = NULL;
+PFN_vkTrimCommandPoolKHR glad_vkTrimCommandPoolKHR = NULL;
 PFN_vkUnmapMemory glad_vkUnmapMemory = NULL;
-PFN_vkUnmapMemory2 glad_vkUnmapMemory2 = NULL;
+PFN_vkUnmapMemory2KHR glad_vkUnmapMemory2KHR = NULL;
 PFN_vkUpdateDescriptorSetWithTemplate glad_vkUpdateDescriptorSetWithTemplate = NULL;
+PFN_vkUpdateDescriptorSetWithTemplateKHR glad_vkUpdateDescriptorSetWithTemplateKHR = NULL;
 PFN_vkUpdateDescriptorSets glad_vkUpdateDescriptorSets = NULL;
 PFN_vkWaitForFences glad_vkWaitForFences = NULL;
+PFN_vkWaitForPresent2KHR glad_vkWaitForPresent2KHR = NULL;
+PFN_vkWaitForPresentKHR glad_vkWaitForPresentKHR = NULL;
 PFN_vkWaitSemaphores glad_vkWaitSemaphores = NULL;
+PFN_vkWaitSemaphoresKHR glad_vkWaitSemaphoresKHR = NULL;
+PFN_vkWriteAccelerationStructuresPropertiesKHR glad_vkWriteAccelerationStructuresPropertiesKHR = NULL;
 
 
 static void glad_vk_load_VK_VERSION_1_0( GLADuserptrloadfunc load, void* userptr) {
@@ -494,30 +936,731 @@ static void glad_vk_load_VK_VERSION_1_3( GLADuserptrloadfunc load, void* userptr
     glad_vkQueueSubmit2 = (PFN_vkQueueSubmit2) load(userptr, "vkQueueSubmit2");
     glad_vkSetPrivateData = (PFN_vkSetPrivateData) load(userptr, "vkSetPrivateData");
 }
-static void glad_vk_load_VK_VERSION_1_4( GLADuserptrloadfunc load, void* userptr) {
-    if(!GLAD_VK_VERSION_1_4) return;
-    glad_vkCmdBindDescriptorSets2 = (PFN_vkCmdBindDescriptorSets2) load(userptr, "vkCmdBindDescriptorSets2");
-    glad_vkCmdBindIndexBuffer2 = (PFN_vkCmdBindIndexBuffer2) load(userptr, "vkCmdBindIndexBuffer2");
-    glad_vkCmdPushConstants2 = (PFN_vkCmdPushConstants2) load(userptr, "vkCmdPushConstants2");
-    glad_vkCmdPushDescriptorSet = (PFN_vkCmdPushDescriptorSet) load(userptr, "vkCmdPushDescriptorSet");
-    glad_vkCmdPushDescriptorSet2 = (PFN_vkCmdPushDescriptorSet2) load(userptr, "vkCmdPushDescriptorSet2");
-    glad_vkCmdPushDescriptorSetWithTemplate = (PFN_vkCmdPushDescriptorSetWithTemplate) load(userptr, "vkCmdPushDescriptorSetWithTemplate");
-    glad_vkCmdPushDescriptorSetWithTemplate2 = (PFN_vkCmdPushDescriptorSetWithTemplate2) load(userptr, "vkCmdPushDescriptorSetWithTemplate2");
-    glad_vkCmdSetLineStipple = (PFN_vkCmdSetLineStipple) load(userptr, "vkCmdSetLineStipple");
-    glad_vkCmdSetRenderingAttachmentLocations = (PFN_vkCmdSetRenderingAttachmentLocations) load(userptr, "vkCmdSetRenderingAttachmentLocations");
-    glad_vkCmdSetRenderingInputAttachmentIndices = (PFN_vkCmdSetRenderingInputAttachmentIndices) load(userptr, "vkCmdSetRenderingInputAttachmentIndices");
-    glad_vkCopyImageToImage = (PFN_vkCopyImageToImage) load(userptr, "vkCopyImageToImage");
-    glad_vkCopyImageToMemory = (PFN_vkCopyImageToMemory) load(userptr, "vkCopyImageToMemory");
-    glad_vkCopyMemoryToImage = (PFN_vkCopyMemoryToImage) load(userptr, "vkCopyMemoryToImage");
-    glad_vkGetDeviceImageSubresourceLayout = (PFN_vkGetDeviceImageSubresourceLayout) load(userptr, "vkGetDeviceImageSubresourceLayout");
-    glad_vkGetImageSubresourceLayout2 = (PFN_vkGetImageSubresourceLayout2) load(userptr, "vkGetImageSubresourceLayout2");
-    glad_vkGetRenderingAreaGranularity = (PFN_vkGetRenderingAreaGranularity) load(userptr, "vkGetRenderingAreaGranularity");
-    glad_vkMapMemory2 = (PFN_vkMapMemory2) load(userptr, "vkMapMemory2");
-    glad_vkTransitionImageLayout = (PFN_vkTransitionImageLayout) load(userptr, "vkTransitionImageLayout");
-    glad_vkUnmapMemory2 = (PFN_vkUnmapMemory2) load(userptr, "vkUnmapMemory2");
+static void glad_vk_load_VK_AMD_draw_indirect_count( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_AMD_draw_indirect_count) return;
+    glad_vkCmdDrawIndexedIndirectCountAMD = (PFN_vkCmdDrawIndexedIndirectCountAMD) load(userptr, "vkCmdDrawIndexedIndirectCountAMD");
+    glad_vkCmdDrawIndirectCountAMD = (PFN_vkCmdDrawIndirectCountAMD) load(userptr, "vkCmdDrawIndirectCountAMD");
+}
+static void glad_vk_load_VK_EXT_buffer_device_address( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_EXT_buffer_device_address) return;
+    glad_vkGetBufferDeviceAddressEXT = (PFN_vkGetBufferDeviceAddressEXT) load(userptr, "vkGetBufferDeviceAddressEXT");
+}
+static void glad_vk_load_VK_EXT_calibrated_timestamps( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_EXT_calibrated_timestamps) return;
+    glad_vkGetCalibratedTimestampsEXT = (PFN_vkGetCalibratedTimestampsEXT) load(userptr, "vkGetCalibratedTimestampsEXT");
+    glad_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT = (PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT) load(userptr, "vkGetPhysicalDeviceCalibrateableTimeDomainsEXT");
+}
+static void glad_vk_load_VK_EXT_extended_dynamic_state( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_EXT_extended_dynamic_state) return;
+    glad_vkCmdBindVertexBuffers2EXT = (PFN_vkCmdBindVertexBuffers2EXT) load(userptr, "vkCmdBindVertexBuffers2EXT");
+    glad_vkCmdSetCullModeEXT = (PFN_vkCmdSetCullModeEXT) load(userptr, "vkCmdSetCullModeEXT");
+    glad_vkCmdSetDepthBoundsTestEnableEXT = (PFN_vkCmdSetDepthBoundsTestEnableEXT) load(userptr, "vkCmdSetDepthBoundsTestEnableEXT");
+    glad_vkCmdSetDepthCompareOpEXT = (PFN_vkCmdSetDepthCompareOpEXT) load(userptr, "vkCmdSetDepthCompareOpEXT");
+    glad_vkCmdSetDepthTestEnableEXT = (PFN_vkCmdSetDepthTestEnableEXT) load(userptr, "vkCmdSetDepthTestEnableEXT");
+    glad_vkCmdSetDepthWriteEnableEXT = (PFN_vkCmdSetDepthWriteEnableEXT) load(userptr, "vkCmdSetDepthWriteEnableEXT");
+    glad_vkCmdSetFrontFaceEXT = (PFN_vkCmdSetFrontFaceEXT) load(userptr, "vkCmdSetFrontFaceEXT");
+    glad_vkCmdSetPrimitiveTopologyEXT = (PFN_vkCmdSetPrimitiveTopologyEXT) load(userptr, "vkCmdSetPrimitiveTopologyEXT");
+    glad_vkCmdSetScissorWithCountEXT = (PFN_vkCmdSetScissorWithCountEXT) load(userptr, "vkCmdSetScissorWithCountEXT");
+    glad_vkCmdSetStencilOpEXT = (PFN_vkCmdSetStencilOpEXT) load(userptr, "vkCmdSetStencilOpEXT");
+    glad_vkCmdSetStencilTestEnableEXT = (PFN_vkCmdSetStencilTestEnableEXT) load(userptr, "vkCmdSetStencilTestEnableEXT");
+    glad_vkCmdSetViewportWithCountEXT = (PFN_vkCmdSetViewportWithCountEXT) load(userptr, "vkCmdSetViewportWithCountEXT");
+}
+static void glad_vk_load_VK_EXT_extended_dynamic_state2( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_EXT_extended_dynamic_state2) return;
+    glad_vkCmdSetDepthBiasEnableEXT = (PFN_vkCmdSetDepthBiasEnableEXT) load(userptr, "vkCmdSetDepthBiasEnableEXT");
+    glad_vkCmdSetLogicOpEXT = (PFN_vkCmdSetLogicOpEXT) load(userptr, "vkCmdSetLogicOpEXT");
+    glad_vkCmdSetPatchControlPointsEXT = (PFN_vkCmdSetPatchControlPointsEXT) load(userptr, "vkCmdSetPatchControlPointsEXT");
+    glad_vkCmdSetPrimitiveRestartEnableEXT = (PFN_vkCmdSetPrimitiveRestartEnableEXT) load(userptr, "vkCmdSetPrimitiveRestartEnableEXT");
+    glad_vkCmdSetRasterizerDiscardEnableEXT = (PFN_vkCmdSetRasterizerDiscardEnableEXT) load(userptr, "vkCmdSetRasterizerDiscardEnableEXT");
+}
+static void glad_vk_load_VK_EXT_host_query_reset( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_EXT_host_query_reset) return;
+    glad_vkResetQueryPoolEXT = (PFN_vkResetQueryPoolEXT) load(userptr, "vkResetQueryPoolEXT");
+}
+static void glad_vk_load_VK_EXT_private_data( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_EXT_private_data) return;
+    glad_vkCreatePrivateDataSlotEXT = (PFN_vkCreatePrivateDataSlotEXT) load(userptr, "vkCreatePrivateDataSlotEXT");
+    glad_vkDestroyPrivateDataSlotEXT = (PFN_vkDestroyPrivateDataSlotEXT) load(userptr, "vkDestroyPrivateDataSlotEXT");
+    glad_vkGetPrivateDataEXT = (PFN_vkGetPrivateDataEXT) load(userptr, "vkGetPrivateDataEXT");
+    glad_vkSetPrivateDataEXT = (PFN_vkSetPrivateDataEXT) load(userptr, "vkSetPrivateDataEXT");
+}
+static void glad_vk_load_VK_EXT_shader_object( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_EXT_shader_object) return;
+    glad_vkCmdBindShadersEXT = (PFN_vkCmdBindShadersEXT) load(userptr, "vkCmdBindShadersEXT");
+    glad_vkCmdBindVertexBuffers2EXT = (PFN_vkCmdBindVertexBuffers2EXT) load(userptr, "vkCmdBindVertexBuffers2EXT");
+    glad_vkCmdSetAlphaToCoverageEnableEXT = (PFN_vkCmdSetAlphaToCoverageEnableEXT) load(userptr, "vkCmdSetAlphaToCoverageEnableEXT");
+    glad_vkCmdSetAlphaToOneEnableEXT = (PFN_vkCmdSetAlphaToOneEnableEXT) load(userptr, "vkCmdSetAlphaToOneEnableEXT");
+    glad_vkCmdSetColorBlendAdvancedEXT = (PFN_vkCmdSetColorBlendAdvancedEXT) load(userptr, "vkCmdSetColorBlendAdvancedEXT");
+    glad_vkCmdSetColorBlendEnableEXT = (PFN_vkCmdSetColorBlendEnableEXT) load(userptr, "vkCmdSetColorBlendEnableEXT");
+    glad_vkCmdSetColorBlendEquationEXT = (PFN_vkCmdSetColorBlendEquationEXT) load(userptr, "vkCmdSetColorBlendEquationEXT");
+    glad_vkCmdSetColorWriteMaskEXT = (PFN_vkCmdSetColorWriteMaskEXT) load(userptr, "vkCmdSetColorWriteMaskEXT");
+    glad_vkCmdSetConservativeRasterizationModeEXT = (PFN_vkCmdSetConservativeRasterizationModeEXT) load(userptr, "vkCmdSetConservativeRasterizationModeEXT");
+    glad_vkCmdSetCoverageModulationModeNV = (PFN_vkCmdSetCoverageModulationModeNV) load(userptr, "vkCmdSetCoverageModulationModeNV");
+    glad_vkCmdSetCoverageModulationTableEnableNV = (PFN_vkCmdSetCoverageModulationTableEnableNV) load(userptr, "vkCmdSetCoverageModulationTableEnableNV");
+    glad_vkCmdSetCoverageModulationTableNV = (PFN_vkCmdSetCoverageModulationTableNV) load(userptr, "vkCmdSetCoverageModulationTableNV");
+    glad_vkCmdSetCoverageReductionModeNV = (PFN_vkCmdSetCoverageReductionModeNV) load(userptr, "vkCmdSetCoverageReductionModeNV");
+    glad_vkCmdSetCoverageToColorEnableNV = (PFN_vkCmdSetCoverageToColorEnableNV) load(userptr, "vkCmdSetCoverageToColorEnableNV");
+    glad_vkCmdSetCoverageToColorLocationNV = (PFN_vkCmdSetCoverageToColorLocationNV) load(userptr, "vkCmdSetCoverageToColorLocationNV");
+    glad_vkCmdSetCullModeEXT = (PFN_vkCmdSetCullModeEXT) load(userptr, "vkCmdSetCullModeEXT");
+    glad_vkCmdSetDepthBiasEnableEXT = (PFN_vkCmdSetDepthBiasEnableEXT) load(userptr, "vkCmdSetDepthBiasEnableEXT");
+    glad_vkCmdSetDepthBoundsTestEnableEXT = (PFN_vkCmdSetDepthBoundsTestEnableEXT) load(userptr, "vkCmdSetDepthBoundsTestEnableEXT");
+    glad_vkCmdSetDepthClampEnableEXT = (PFN_vkCmdSetDepthClampEnableEXT) load(userptr, "vkCmdSetDepthClampEnableEXT");
+    glad_vkCmdSetDepthClampRangeEXT = (PFN_vkCmdSetDepthClampRangeEXT) load(userptr, "vkCmdSetDepthClampRangeEXT");
+    glad_vkCmdSetDepthClipEnableEXT = (PFN_vkCmdSetDepthClipEnableEXT) load(userptr, "vkCmdSetDepthClipEnableEXT");
+    glad_vkCmdSetDepthClipNegativeOneToOneEXT = (PFN_vkCmdSetDepthClipNegativeOneToOneEXT) load(userptr, "vkCmdSetDepthClipNegativeOneToOneEXT");
+    glad_vkCmdSetDepthCompareOpEXT = (PFN_vkCmdSetDepthCompareOpEXT) load(userptr, "vkCmdSetDepthCompareOpEXT");
+    glad_vkCmdSetDepthTestEnableEXT = (PFN_vkCmdSetDepthTestEnableEXT) load(userptr, "vkCmdSetDepthTestEnableEXT");
+    glad_vkCmdSetDepthWriteEnableEXT = (PFN_vkCmdSetDepthWriteEnableEXT) load(userptr, "vkCmdSetDepthWriteEnableEXT");
+    glad_vkCmdSetExtraPrimitiveOverestimationSizeEXT = (PFN_vkCmdSetExtraPrimitiveOverestimationSizeEXT) load(userptr, "vkCmdSetExtraPrimitiveOverestimationSizeEXT");
+    glad_vkCmdSetFrontFaceEXT = (PFN_vkCmdSetFrontFaceEXT) load(userptr, "vkCmdSetFrontFaceEXT");
+    glad_vkCmdSetLineRasterizationModeEXT = (PFN_vkCmdSetLineRasterizationModeEXT) load(userptr, "vkCmdSetLineRasterizationModeEXT");
+    glad_vkCmdSetLineStippleEnableEXT = (PFN_vkCmdSetLineStippleEnableEXT) load(userptr, "vkCmdSetLineStippleEnableEXT");
+    glad_vkCmdSetLogicOpEXT = (PFN_vkCmdSetLogicOpEXT) load(userptr, "vkCmdSetLogicOpEXT");
+    glad_vkCmdSetLogicOpEnableEXT = (PFN_vkCmdSetLogicOpEnableEXT) load(userptr, "vkCmdSetLogicOpEnableEXT");
+    glad_vkCmdSetPatchControlPointsEXT = (PFN_vkCmdSetPatchControlPointsEXT) load(userptr, "vkCmdSetPatchControlPointsEXT");
+    glad_vkCmdSetPolygonModeEXT = (PFN_vkCmdSetPolygonModeEXT) load(userptr, "vkCmdSetPolygonModeEXT");
+    glad_vkCmdSetPrimitiveRestartEnableEXT = (PFN_vkCmdSetPrimitiveRestartEnableEXT) load(userptr, "vkCmdSetPrimitiveRestartEnableEXT");
+    glad_vkCmdSetPrimitiveTopologyEXT = (PFN_vkCmdSetPrimitiveTopologyEXT) load(userptr, "vkCmdSetPrimitiveTopologyEXT");
+    glad_vkCmdSetProvokingVertexModeEXT = (PFN_vkCmdSetProvokingVertexModeEXT) load(userptr, "vkCmdSetProvokingVertexModeEXT");
+    glad_vkCmdSetRasterizationSamplesEXT = (PFN_vkCmdSetRasterizationSamplesEXT) load(userptr, "vkCmdSetRasterizationSamplesEXT");
+    glad_vkCmdSetRasterizationStreamEXT = (PFN_vkCmdSetRasterizationStreamEXT) load(userptr, "vkCmdSetRasterizationStreamEXT");
+    glad_vkCmdSetRasterizerDiscardEnableEXT = (PFN_vkCmdSetRasterizerDiscardEnableEXT) load(userptr, "vkCmdSetRasterizerDiscardEnableEXT");
+    glad_vkCmdSetRepresentativeFragmentTestEnableNV = (PFN_vkCmdSetRepresentativeFragmentTestEnableNV) load(userptr, "vkCmdSetRepresentativeFragmentTestEnableNV");
+    glad_vkCmdSetSampleLocationsEnableEXT = (PFN_vkCmdSetSampleLocationsEnableEXT) load(userptr, "vkCmdSetSampleLocationsEnableEXT");
+    glad_vkCmdSetSampleMaskEXT = (PFN_vkCmdSetSampleMaskEXT) load(userptr, "vkCmdSetSampleMaskEXT");
+    glad_vkCmdSetScissorWithCountEXT = (PFN_vkCmdSetScissorWithCountEXT) load(userptr, "vkCmdSetScissorWithCountEXT");
+    glad_vkCmdSetShadingRateImageEnableNV = (PFN_vkCmdSetShadingRateImageEnableNV) load(userptr, "vkCmdSetShadingRateImageEnableNV");
+    glad_vkCmdSetStencilOpEXT = (PFN_vkCmdSetStencilOpEXT) load(userptr, "vkCmdSetStencilOpEXT");
+    glad_vkCmdSetStencilTestEnableEXT = (PFN_vkCmdSetStencilTestEnableEXT) load(userptr, "vkCmdSetStencilTestEnableEXT");
+    glad_vkCmdSetTessellationDomainOriginEXT = (PFN_vkCmdSetTessellationDomainOriginEXT) load(userptr, "vkCmdSetTessellationDomainOriginEXT");
+    glad_vkCmdSetVertexInputEXT = (PFN_vkCmdSetVertexInputEXT) load(userptr, "vkCmdSetVertexInputEXT");
+    glad_vkCmdSetViewportSwizzleNV = (PFN_vkCmdSetViewportSwizzleNV) load(userptr, "vkCmdSetViewportSwizzleNV");
+    glad_vkCmdSetViewportWScalingEnableNV = (PFN_vkCmdSetViewportWScalingEnableNV) load(userptr, "vkCmdSetViewportWScalingEnableNV");
+    glad_vkCmdSetViewportWithCountEXT = (PFN_vkCmdSetViewportWithCountEXT) load(userptr, "vkCmdSetViewportWithCountEXT");
+    glad_vkCreateShadersEXT = (PFN_vkCreateShadersEXT) load(userptr, "vkCreateShadersEXT");
+    glad_vkDestroyShaderEXT = (PFN_vkDestroyShaderEXT) load(userptr, "vkDestroyShaderEXT");
+    glad_vkGetShaderBinaryDataEXT = (PFN_vkGetShaderBinaryDataEXT) load(userptr, "vkGetShaderBinaryDataEXT");
+}
+static void glad_vk_load_VK_EXT_swapchain_maintenance1( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_EXT_swapchain_maintenance1) return;
+    glad_vkReleaseSwapchainImagesEXT = (PFN_vkReleaseSwapchainImagesEXT) load(userptr, "vkReleaseSwapchainImagesEXT");
+}
+static void glad_vk_load_VK_EXT_tooling_info( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_EXT_tooling_info) return;
+    glad_vkGetPhysicalDeviceToolPropertiesEXT = (PFN_vkGetPhysicalDeviceToolPropertiesEXT) load(userptr, "vkGetPhysicalDeviceToolPropertiesEXT");
+}
+static void glad_vk_load_VK_KHR_acceleration_structure( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_acceleration_structure) return;
+    glad_vkBuildAccelerationStructuresKHR = (PFN_vkBuildAccelerationStructuresKHR) load(userptr, "vkBuildAccelerationStructuresKHR");
+    glad_vkCmdBuildAccelerationStructuresIndirectKHR = (PFN_vkCmdBuildAccelerationStructuresIndirectKHR) load(userptr, "vkCmdBuildAccelerationStructuresIndirectKHR");
+    glad_vkCmdBuildAccelerationStructuresKHR = (PFN_vkCmdBuildAccelerationStructuresKHR) load(userptr, "vkCmdBuildAccelerationStructuresKHR");
+    glad_vkCmdCopyAccelerationStructureKHR = (PFN_vkCmdCopyAccelerationStructureKHR) load(userptr, "vkCmdCopyAccelerationStructureKHR");
+    glad_vkCmdCopyAccelerationStructureToMemoryKHR = (PFN_vkCmdCopyAccelerationStructureToMemoryKHR) load(userptr, "vkCmdCopyAccelerationStructureToMemoryKHR");
+    glad_vkCmdCopyMemoryToAccelerationStructureKHR = (PFN_vkCmdCopyMemoryToAccelerationStructureKHR) load(userptr, "vkCmdCopyMemoryToAccelerationStructureKHR");
+    glad_vkCmdWriteAccelerationStructuresPropertiesKHR = (PFN_vkCmdWriteAccelerationStructuresPropertiesKHR) load(userptr, "vkCmdWriteAccelerationStructuresPropertiesKHR");
+    glad_vkCopyAccelerationStructureKHR = (PFN_vkCopyAccelerationStructureKHR) load(userptr, "vkCopyAccelerationStructureKHR");
+    glad_vkCopyAccelerationStructureToMemoryKHR = (PFN_vkCopyAccelerationStructureToMemoryKHR) load(userptr, "vkCopyAccelerationStructureToMemoryKHR");
+    glad_vkCopyMemoryToAccelerationStructureKHR = (PFN_vkCopyMemoryToAccelerationStructureKHR) load(userptr, "vkCopyMemoryToAccelerationStructureKHR");
+    glad_vkCreateAccelerationStructureKHR = (PFN_vkCreateAccelerationStructureKHR) load(userptr, "vkCreateAccelerationStructureKHR");
+    glad_vkDestroyAccelerationStructureKHR = (PFN_vkDestroyAccelerationStructureKHR) load(userptr, "vkDestroyAccelerationStructureKHR");
+    glad_vkGetAccelerationStructureBuildSizesKHR = (PFN_vkGetAccelerationStructureBuildSizesKHR) load(userptr, "vkGetAccelerationStructureBuildSizesKHR");
+    glad_vkGetAccelerationStructureDeviceAddressKHR = (PFN_vkGetAccelerationStructureDeviceAddressKHR) load(userptr, "vkGetAccelerationStructureDeviceAddressKHR");
+    glad_vkGetDeviceAccelerationStructureCompatibilityKHR = (PFN_vkGetDeviceAccelerationStructureCompatibilityKHR) load(userptr, "vkGetDeviceAccelerationStructureCompatibilityKHR");
+    glad_vkWriteAccelerationStructuresPropertiesKHR = (PFN_vkWriteAccelerationStructuresPropertiesKHR) load(userptr, "vkWriteAccelerationStructuresPropertiesKHR");
+}
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+static void glad_vk_load_VK_KHR_android_surface( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_android_surface) return;
+    glad_vkCreateAndroidSurfaceKHR = (PFN_vkCreateAndroidSurfaceKHR) load(userptr, "vkCreateAndroidSurfaceKHR");
+}
+
+#endif
+static void glad_vk_load_VK_KHR_bind_memory2( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_bind_memory2) return;
+    glad_vkBindBufferMemory2KHR = (PFN_vkBindBufferMemory2KHR) load(userptr, "vkBindBufferMemory2KHR");
+    glad_vkBindImageMemory2KHR = (PFN_vkBindImageMemory2KHR) load(userptr, "vkBindImageMemory2KHR");
+}
+static void glad_vk_load_VK_KHR_buffer_device_address( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_buffer_device_address) return;
+    glad_vkGetBufferDeviceAddressKHR = (PFN_vkGetBufferDeviceAddressKHR) load(userptr, "vkGetBufferDeviceAddressKHR");
+    glad_vkGetBufferOpaqueCaptureAddressKHR = (PFN_vkGetBufferOpaqueCaptureAddressKHR) load(userptr, "vkGetBufferOpaqueCaptureAddressKHR");
+    glad_vkGetDeviceMemoryOpaqueCaptureAddressKHR = (PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR) load(userptr, "vkGetDeviceMemoryOpaqueCaptureAddressKHR");
+}
+static void glad_vk_load_VK_KHR_calibrated_timestamps( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_calibrated_timestamps) return;
+    glad_vkGetCalibratedTimestampsKHR = (PFN_vkGetCalibratedTimestampsKHR) load(userptr, "vkGetCalibratedTimestampsKHR");
+    glad_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR = (PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR) load(userptr, "vkGetPhysicalDeviceCalibrateableTimeDomainsKHR");
+}
+static void glad_vk_load_VK_KHR_cooperative_matrix( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_cooperative_matrix) return;
+    glad_vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR = (PFN_vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR) load(userptr, "vkGetPhysicalDeviceCooperativeMatrixPropertiesKHR");
+}
+static void glad_vk_load_VK_KHR_copy_commands2( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_copy_commands2) return;
+    glad_vkCmdBlitImage2KHR = (PFN_vkCmdBlitImage2KHR) load(userptr, "vkCmdBlitImage2KHR");
+    glad_vkCmdCopyBuffer2KHR = (PFN_vkCmdCopyBuffer2KHR) load(userptr, "vkCmdCopyBuffer2KHR");
+    glad_vkCmdCopyBufferToImage2KHR = (PFN_vkCmdCopyBufferToImage2KHR) load(userptr, "vkCmdCopyBufferToImage2KHR");
+    glad_vkCmdCopyImage2KHR = (PFN_vkCmdCopyImage2KHR) load(userptr, "vkCmdCopyImage2KHR");
+    glad_vkCmdCopyImageToBuffer2KHR = (PFN_vkCmdCopyImageToBuffer2KHR) load(userptr, "vkCmdCopyImageToBuffer2KHR");
+    glad_vkCmdResolveImage2KHR = (PFN_vkCmdResolveImage2KHR) load(userptr, "vkCmdResolveImage2KHR");
+}
+static void glad_vk_load_VK_KHR_copy_memory_indirect( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_copy_memory_indirect) return;
+    glad_vkCmdCopyMemoryIndirectKHR = (PFN_vkCmdCopyMemoryIndirectKHR) load(userptr, "vkCmdCopyMemoryIndirectKHR");
+    glad_vkCmdCopyMemoryToImageIndirectKHR = (PFN_vkCmdCopyMemoryToImageIndirectKHR) load(userptr, "vkCmdCopyMemoryToImageIndirectKHR");
+}
+static void glad_vk_load_VK_KHR_create_renderpass2( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_create_renderpass2) return;
+    glad_vkCmdBeginRenderPass2KHR = (PFN_vkCmdBeginRenderPass2KHR) load(userptr, "vkCmdBeginRenderPass2KHR");
+    glad_vkCmdEndRenderPass2KHR = (PFN_vkCmdEndRenderPass2KHR) load(userptr, "vkCmdEndRenderPass2KHR");
+    glad_vkCmdNextSubpass2KHR = (PFN_vkCmdNextSubpass2KHR) load(userptr, "vkCmdNextSubpass2KHR");
+    glad_vkCreateRenderPass2KHR = (PFN_vkCreateRenderPass2KHR) load(userptr, "vkCreateRenderPass2KHR");
+}
+static void glad_vk_load_VK_KHR_deferred_host_operations( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_deferred_host_operations) return;
+    glad_vkCreateDeferredOperationKHR = (PFN_vkCreateDeferredOperationKHR) load(userptr, "vkCreateDeferredOperationKHR");
+    glad_vkDeferredOperationJoinKHR = (PFN_vkDeferredOperationJoinKHR) load(userptr, "vkDeferredOperationJoinKHR");
+    glad_vkDestroyDeferredOperationKHR = (PFN_vkDestroyDeferredOperationKHR) load(userptr, "vkDestroyDeferredOperationKHR");
+    glad_vkGetDeferredOperationMaxConcurrencyKHR = (PFN_vkGetDeferredOperationMaxConcurrencyKHR) load(userptr, "vkGetDeferredOperationMaxConcurrencyKHR");
+    glad_vkGetDeferredOperationResultKHR = (PFN_vkGetDeferredOperationResultKHR) load(userptr, "vkGetDeferredOperationResultKHR");
+}
+static void glad_vk_load_VK_KHR_descriptor_update_template( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_descriptor_update_template) return;
+    glad_vkCmdPushDescriptorSetWithTemplateKHR = (PFN_vkCmdPushDescriptorSetWithTemplateKHR) load(userptr, "vkCmdPushDescriptorSetWithTemplateKHR");
+    glad_vkCreateDescriptorUpdateTemplateKHR = (PFN_vkCreateDescriptorUpdateTemplateKHR) load(userptr, "vkCreateDescriptorUpdateTemplateKHR");
+    glad_vkDestroyDescriptorUpdateTemplateKHR = (PFN_vkDestroyDescriptorUpdateTemplateKHR) load(userptr, "vkDestroyDescriptorUpdateTemplateKHR");
+    glad_vkUpdateDescriptorSetWithTemplateKHR = (PFN_vkUpdateDescriptorSetWithTemplateKHR) load(userptr, "vkUpdateDescriptorSetWithTemplateKHR");
+}
+static void glad_vk_load_VK_KHR_device_group( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_device_group) return;
+    glad_vkAcquireNextImage2KHR = (PFN_vkAcquireNextImage2KHR) load(userptr, "vkAcquireNextImage2KHR");
+    glad_vkCmdDispatchBaseKHR = (PFN_vkCmdDispatchBaseKHR) load(userptr, "vkCmdDispatchBaseKHR");
+    glad_vkCmdSetDeviceMaskKHR = (PFN_vkCmdSetDeviceMaskKHR) load(userptr, "vkCmdSetDeviceMaskKHR");
+    glad_vkGetDeviceGroupPeerMemoryFeaturesKHR = (PFN_vkGetDeviceGroupPeerMemoryFeaturesKHR) load(userptr, "vkGetDeviceGroupPeerMemoryFeaturesKHR");
+    glad_vkGetDeviceGroupPresentCapabilitiesKHR = (PFN_vkGetDeviceGroupPresentCapabilitiesKHR) load(userptr, "vkGetDeviceGroupPresentCapabilitiesKHR");
+    glad_vkGetDeviceGroupSurfacePresentModesKHR = (PFN_vkGetDeviceGroupSurfacePresentModesKHR) load(userptr, "vkGetDeviceGroupSurfacePresentModesKHR");
+    glad_vkGetPhysicalDevicePresentRectanglesKHR = (PFN_vkGetPhysicalDevicePresentRectanglesKHR) load(userptr, "vkGetPhysicalDevicePresentRectanglesKHR");
+}
+static void glad_vk_load_VK_KHR_device_group_creation( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_device_group_creation) return;
+    glad_vkEnumeratePhysicalDeviceGroupsKHR = (PFN_vkEnumeratePhysicalDeviceGroupsKHR) load(userptr, "vkEnumeratePhysicalDeviceGroupsKHR");
+}
+static void glad_vk_load_VK_KHR_display( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_display) return;
+    glad_vkCreateDisplayModeKHR = (PFN_vkCreateDisplayModeKHR) load(userptr, "vkCreateDisplayModeKHR");
+    glad_vkCreateDisplayPlaneSurfaceKHR = (PFN_vkCreateDisplayPlaneSurfaceKHR) load(userptr, "vkCreateDisplayPlaneSurfaceKHR");
+    glad_vkGetDisplayModePropertiesKHR = (PFN_vkGetDisplayModePropertiesKHR) load(userptr, "vkGetDisplayModePropertiesKHR");
+    glad_vkGetDisplayPlaneCapabilitiesKHR = (PFN_vkGetDisplayPlaneCapabilitiesKHR) load(userptr, "vkGetDisplayPlaneCapabilitiesKHR");
+    glad_vkGetDisplayPlaneSupportedDisplaysKHR = (PFN_vkGetDisplayPlaneSupportedDisplaysKHR) load(userptr, "vkGetDisplayPlaneSupportedDisplaysKHR");
+    glad_vkGetPhysicalDeviceDisplayPlanePropertiesKHR = (PFN_vkGetPhysicalDeviceDisplayPlanePropertiesKHR) load(userptr, "vkGetPhysicalDeviceDisplayPlanePropertiesKHR");
+    glad_vkGetPhysicalDeviceDisplayPropertiesKHR = (PFN_vkGetPhysicalDeviceDisplayPropertiesKHR) load(userptr, "vkGetPhysicalDeviceDisplayPropertiesKHR");
+}
+static void glad_vk_load_VK_KHR_display_swapchain( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_display_swapchain) return;
+    glad_vkCreateSharedSwapchainsKHR = (PFN_vkCreateSharedSwapchainsKHR) load(userptr, "vkCreateSharedSwapchainsKHR");
+}
+static void glad_vk_load_VK_KHR_draw_indirect_count( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_draw_indirect_count) return;
+    glad_vkCmdDrawIndexedIndirectCountKHR = (PFN_vkCmdDrawIndexedIndirectCountKHR) load(userptr, "vkCmdDrawIndexedIndirectCountKHR");
+    glad_vkCmdDrawIndirectCountKHR = (PFN_vkCmdDrawIndirectCountKHR) load(userptr, "vkCmdDrawIndirectCountKHR");
+}
+static void glad_vk_load_VK_KHR_dynamic_rendering( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_dynamic_rendering) return;
+    glad_vkCmdBeginRenderingKHR = (PFN_vkCmdBeginRenderingKHR) load(userptr, "vkCmdBeginRenderingKHR");
+    glad_vkCmdEndRenderingKHR = (PFN_vkCmdEndRenderingKHR) load(userptr, "vkCmdEndRenderingKHR");
+}
+static void glad_vk_load_VK_KHR_dynamic_rendering_local_read( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_dynamic_rendering_local_read) return;
+    glad_vkCmdSetRenderingAttachmentLocationsKHR = (PFN_vkCmdSetRenderingAttachmentLocationsKHR) load(userptr, "vkCmdSetRenderingAttachmentLocationsKHR");
+    glad_vkCmdSetRenderingInputAttachmentIndicesKHR = (PFN_vkCmdSetRenderingInputAttachmentIndicesKHR) load(userptr, "vkCmdSetRenderingInputAttachmentIndicesKHR");
+}
+static void glad_vk_load_VK_KHR_external_fence_capabilities( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_external_fence_capabilities) return;
+    glad_vkGetPhysicalDeviceExternalFencePropertiesKHR = (PFN_vkGetPhysicalDeviceExternalFencePropertiesKHR) load(userptr, "vkGetPhysicalDeviceExternalFencePropertiesKHR");
+}
+static void glad_vk_load_VK_KHR_external_fence_fd( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_external_fence_fd) return;
+    glad_vkGetFenceFdKHR = (PFN_vkGetFenceFdKHR) load(userptr, "vkGetFenceFdKHR");
+    glad_vkImportFenceFdKHR = (PFN_vkImportFenceFdKHR) load(userptr, "vkImportFenceFdKHR");
+}
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+static void glad_vk_load_VK_KHR_external_fence_win32( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_external_fence_win32) return;
+    glad_vkGetFenceWin32HandleKHR = (PFN_vkGetFenceWin32HandleKHR) load(userptr, "vkGetFenceWin32HandleKHR");
+    glad_vkImportFenceWin32HandleKHR = (PFN_vkImportFenceWin32HandleKHR) load(userptr, "vkImportFenceWin32HandleKHR");
+}
+
+#endif
+static void glad_vk_load_VK_KHR_external_memory_capabilities( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_external_memory_capabilities) return;
+    glad_vkGetPhysicalDeviceExternalBufferPropertiesKHR = (PFN_vkGetPhysicalDeviceExternalBufferPropertiesKHR) load(userptr, "vkGetPhysicalDeviceExternalBufferPropertiesKHR");
+}
+static void glad_vk_load_VK_KHR_external_memory_fd( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_external_memory_fd) return;
+    glad_vkGetMemoryFdKHR = (PFN_vkGetMemoryFdKHR) load(userptr, "vkGetMemoryFdKHR");
+    glad_vkGetMemoryFdPropertiesKHR = (PFN_vkGetMemoryFdPropertiesKHR) load(userptr, "vkGetMemoryFdPropertiesKHR");
+}
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+static void glad_vk_load_VK_KHR_external_memory_win32( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_external_memory_win32) return;
+    glad_vkGetMemoryWin32HandleKHR = (PFN_vkGetMemoryWin32HandleKHR) load(userptr, "vkGetMemoryWin32HandleKHR");
+    glad_vkGetMemoryWin32HandlePropertiesKHR = (PFN_vkGetMemoryWin32HandlePropertiesKHR) load(userptr, "vkGetMemoryWin32HandlePropertiesKHR");
+}
+
+#endif
+static void glad_vk_load_VK_KHR_external_semaphore_capabilities( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_external_semaphore_capabilities) return;
+    glad_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR = (PFN_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR) load(userptr, "vkGetPhysicalDeviceExternalSemaphorePropertiesKHR");
+}
+static void glad_vk_load_VK_KHR_external_semaphore_fd( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_external_semaphore_fd) return;
+    glad_vkGetSemaphoreFdKHR = (PFN_vkGetSemaphoreFdKHR) load(userptr, "vkGetSemaphoreFdKHR");
+    glad_vkImportSemaphoreFdKHR = (PFN_vkImportSemaphoreFdKHR) load(userptr, "vkImportSemaphoreFdKHR");
+}
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+static void glad_vk_load_VK_KHR_external_semaphore_win32( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_external_semaphore_win32) return;
+    glad_vkGetSemaphoreWin32HandleKHR = (PFN_vkGetSemaphoreWin32HandleKHR) load(userptr, "vkGetSemaphoreWin32HandleKHR");
+    glad_vkImportSemaphoreWin32HandleKHR = (PFN_vkImportSemaphoreWin32HandleKHR) load(userptr, "vkImportSemaphoreWin32HandleKHR");
+}
+
+#endif
+static void glad_vk_load_VK_KHR_fragment_shading_rate( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_fragment_shading_rate) return;
+    glad_vkCmdSetFragmentShadingRateKHR = (PFN_vkCmdSetFragmentShadingRateKHR) load(userptr, "vkCmdSetFragmentShadingRateKHR");
+    glad_vkGetPhysicalDeviceFragmentShadingRatesKHR = (PFN_vkGetPhysicalDeviceFragmentShadingRatesKHR) load(userptr, "vkGetPhysicalDeviceFragmentShadingRatesKHR");
+}
+static void glad_vk_load_VK_KHR_get_display_properties2( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_get_display_properties2) return;
+    glad_vkGetDisplayModeProperties2KHR = (PFN_vkGetDisplayModeProperties2KHR) load(userptr, "vkGetDisplayModeProperties2KHR");
+    glad_vkGetDisplayPlaneCapabilities2KHR = (PFN_vkGetDisplayPlaneCapabilities2KHR) load(userptr, "vkGetDisplayPlaneCapabilities2KHR");
+    glad_vkGetPhysicalDeviceDisplayPlaneProperties2KHR = (PFN_vkGetPhysicalDeviceDisplayPlaneProperties2KHR) load(userptr, "vkGetPhysicalDeviceDisplayPlaneProperties2KHR");
+    glad_vkGetPhysicalDeviceDisplayProperties2KHR = (PFN_vkGetPhysicalDeviceDisplayProperties2KHR) load(userptr, "vkGetPhysicalDeviceDisplayProperties2KHR");
+}
+static void glad_vk_load_VK_KHR_get_memory_requirements2( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_get_memory_requirements2) return;
+    glad_vkGetBufferMemoryRequirements2KHR = (PFN_vkGetBufferMemoryRequirements2KHR) load(userptr, "vkGetBufferMemoryRequirements2KHR");
+    glad_vkGetImageMemoryRequirements2KHR = (PFN_vkGetImageMemoryRequirements2KHR) load(userptr, "vkGetImageMemoryRequirements2KHR");
+    glad_vkGetImageSparseMemoryRequirements2KHR = (PFN_vkGetImageSparseMemoryRequirements2KHR) load(userptr, "vkGetImageSparseMemoryRequirements2KHR");
+}
+static void glad_vk_load_VK_KHR_get_physical_device_properties2( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_get_physical_device_properties2) return;
+    glad_vkGetPhysicalDeviceFeatures2KHR = (PFN_vkGetPhysicalDeviceFeatures2KHR) load(userptr, "vkGetPhysicalDeviceFeatures2KHR");
+    glad_vkGetPhysicalDeviceFormatProperties2KHR = (PFN_vkGetPhysicalDeviceFormatProperties2KHR) load(userptr, "vkGetPhysicalDeviceFormatProperties2KHR");
+    glad_vkGetPhysicalDeviceImageFormatProperties2KHR = (PFN_vkGetPhysicalDeviceImageFormatProperties2KHR) load(userptr, "vkGetPhysicalDeviceImageFormatProperties2KHR");
+    glad_vkGetPhysicalDeviceMemoryProperties2KHR = (PFN_vkGetPhysicalDeviceMemoryProperties2KHR) load(userptr, "vkGetPhysicalDeviceMemoryProperties2KHR");
+    glad_vkGetPhysicalDeviceProperties2KHR = (PFN_vkGetPhysicalDeviceProperties2KHR) load(userptr, "vkGetPhysicalDeviceProperties2KHR");
+    glad_vkGetPhysicalDeviceQueueFamilyProperties2KHR = (PFN_vkGetPhysicalDeviceQueueFamilyProperties2KHR) load(userptr, "vkGetPhysicalDeviceQueueFamilyProperties2KHR");
+    glad_vkGetPhysicalDeviceSparseImageFormatProperties2KHR = (PFN_vkGetPhysicalDeviceSparseImageFormatProperties2KHR) load(userptr, "vkGetPhysicalDeviceSparseImageFormatProperties2KHR");
+}
+static void glad_vk_load_VK_KHR_get_surface_capabilities2( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_get_surface_capabilities2) return;
+    glad_vkGetPhysicalDeviceSurfaceCapabilities2KHR = (PFN_vkGetPhysicalDeviceSurfaceCapabilities2KHR) load(userptr, "vkGetPhysicalDeviceSurfaceCapabilities2KHR");
+    glad_vkGetPhysicalDeviceSurfaceFormats2KHR = (PFN_vkGetPhysicalDeviceSurfaceFormats2KHR) load(userptr, "vkGetPhysicalDeviceSurfaceFormats2KHR");
+}
+static void glad_vk_load_VK_KHR_line_rasterization( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_line_rasterization) return;
+    glad_vkCmdSetLineStippleKHR = (PFN_vkCmdSetLineStippleKHR) load(userptr, "vkCmdSetLineStippleKHR");
+}
+static void glad_vk_load_VK_KHR_maintenance1( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_maintenance1) return;
+    glad_vkTrimCommandPoolKHR = (PFN_vkTrimCommandPoolKHR) load(userptr, "vkTrimCommandPoolKHR");
+}
+static void glad_vk_load_VK_KHR_maintenance3( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_maintenance3) return;
+    glad_vkGetDescriptorSetLayoutSupportKHR = (PFN_vkGetDescriptorSetLayoutSupportKHR) load(userptr, "vkGetDescriptorSetLayoutSupportKHR");
+}
+static void glad_vk_load_VK_KHR_maintenance4( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_maintenance4) return;
+    glad_vkGetDeviceBufferMemoryRequirementsKHR = (PFN_vkGetDeviceBufferMemoryRequirementsKHR) load(userptr, "vkGetDeviceBufferMemoryRequirementsKHR");
+    glad_vkGetDeviceImageMemoryRequirementsKHR = (PFN_vkGetDeviceImageMemoryRequirementsKHR) load(userptr, "vkGetDeviceImageMemoryRequirementsKHR");
+    glad_vkGetDeviceImageSparseMemoryRequirementsKHR = (PFN_vkGetDeviceImageSparseMemoryRequirementsKHR) load(userptr, "vkGetDeviceImageSparseMemoryRequirementsKHR");
+}
+static void glad_vk_load_VK_KHR_maintenance5( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_maintenance5) return;
+    glad_vkCmdBindIndexBuffer2KHR = (PFN_vkCmdBindIndexBuffer2KHR) load(userptr, "vkCmdBindIndexBuffer2KHR");
+    glad_vkGetDeviceImageSubresourceLayoutKHR = (PFN_vkGetDeviceImageSubresourceLayoutKHR) load(userptr, "vkGetDeviceImageSubresourceLayoutKHR");
+    glad_vkGetImageSubresourceLayout2KHR = (PFN_vkGetImageSubresourceLayout2KHR) load(userptr, "vkGetImageSubresourceLayout2KHR");
+    glad_vkGetRenderingAreaGranularityKHR = (PFN_vkGetRenderingAreaGranularityKHR) load(userptr, "vkGetRenderingAreaGranularityKHR");
+}
+static void glad_vk_load_VK_KHR_maintenance6( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_maintenance6) return;
+    glad_vkCmdBindDescriptorBufferEmbeddedSamplers2EXT = (PFN_vkCmdBindDescriptorBufferEmbeddedSamplers2EXT) load(userptr, "vkCmdBindDescriptorBufferEmbeddedSamplers2EXT");
+    glad_vkCmdBindDescriptorSets2KHR = (PFN_vkCmdBindDescriptorSets2KHR) load(userptr, "vkCmdBindDescriptorSets2KHR");
+    glad_vkCmdPushConstants2KHR = (PFN_vkCmdPushConstants2KHR) load(userptr, "vkCmdPushConstants2KHR");
+    glad_vkCmdPushDescriptorSet2KHR = (PFN_vkCmdPushDescriptorSet2KHR) load(userptr, "vkCmdPushDescriptorSet2KHR");
+    glad_vkCmdPushDescriptorSetWithTemplate2KHR = (PFN_vkCmdPushDescriptorSetWithTemplate2KHR) load(userptr, "vkCmdPushDescriptorSetWithTemplate2KHR");
+    glad_vkCmdSetDescriptorBufferOffsets2EXT = (PFN_vkCmdSetDescriptorBufferOffsets2EXT) load(userptr, "vkCmdSetDescriptorBufferOffsets2EXT");
+}
+static void glad_vk_load_VK_KHR_map_memory2( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_map_memory2) return;
+    glad_vkMapMemory2KHR = (PFN_vkMapMemory2KHR) load(userptr, "vkMapMemory2KHR");
+    glad_vkUnmapMemory2KHR = (PFN_vkUnmapMemory2KHR) load(userptr, "vkUnmapMemory2KHR");
+}
+static void glad_vk_load_VK_KHR_performance_query( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_performance_query) return;
+    glad_vkAcquireProfilingLockKHR = (PFN_vkAcquireProfilingLockKHR) load(userptr, "vkAcquireProfilingLockKHR");
+    glad_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR = (PFN_vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR) load(userptr, "vkEnumeratePhysicalDeviceQueueFamilyPerformanceQueryCountersKHR");
+    glad_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR = (PFN_vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR) load(userptr, "vkGetPhysicalDeviceQueueFamilyPerformanceQueryPassesKHR");
+    glad_vkReleaseProfilingLockKHR = (PFN_vkReleaseProfilingLockKHR) load(userptr, "vkReleaseProfilingLockKHR");
+}
+static void glad_vk_load_VK_KHR_pipeline_binary( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_pipeline_binary) return;
+    glad_vkCreatePipelineBinariesKHR = (PFN_vkCreatePipelineBinariesKHR) load(userptr, "vkCreatePipelineBinariesKHR");
+    glad_vkDestroyPipelineBinaryKHR = (PFN_vkDestroyPipelineBinaryKHR) load(userptr, "vkDestroyPipelineBinaryKHR");
+    glad_vkGetPipelineBinaryDataKHR = (PFN_vkGetPipelineBinaryDataKHR) load(userptr, "vkGetPipelineBinaryDataKHR");
+    glad_vkGetPipelineKeyKHR = (PFN_vkGetPipelineKeyKHR) load(userptr, "vkGetPipelineKeyKHR");
+    glad_vkReleaseCapturedPipelineDataKHR = (PFN_vkReleaseCapturedPipelineDataKHR) load(userptr, "vkReleaseCapturedPipelineDataKHR");
+}
+static void glad_vk_load_VK_KHR_pipeline_executable_properties( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_pipeline_executable_properties) return;
+    glad_vkGetPipelineExecutableInternalRepresentationsKHR = (PFN_vkGetPipelineExecutableInternalRepresentationsKHR) load(userptr, "vkGetPipelineExecutableInternalRepresentationsKHR");
+    glad_vkGetPipelineExecutablePropertiesKHR = (PFN_vkGetPipelineExecutablePropertiesKHR) load(userptr, "vkGetPipelineExecutablePropertiesKHR");
+    glad_vkGetPipelineExecutableStatisticsKHR = (PFN_vkGetPipelineExecutableStatisticsKHR) load(userptr, "vkGetPipelineExecutableStatisticsKHR");
+}
+static void glad_vk_load_VK_KHR_present_wait( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_present_wait) return;
+    glad_vkWaitForPresentKHR = (PFN_vkWaitForPresentKHR) load(userptr, "vkWaitForPresentKHR");
+}
+static void glad_vk_load_VK_KHR_present_wait2( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_present_wait2) return;
+    glad_vkWaitForPresent2KHR = (PFN_vkWaitForPresent2KHR) load(userptr, "vkWaitForPresent2KHR");
+}
+static void glad_vk_load_VK_KHR_push_descriptor( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_push_descriptor) return;
+    glad_vkCmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR) load(userptr, "vkCmdPushDescriptorSetKHR");
+    glad_vkCmdPushDescriptorSetWithTemplateKHR = (PFN_vkCmdPushDescriptorSetWithTemplateKHR) load(userptr, "vkCmdPushDescriptorSetWithTemplateKHR");
+}
+static void glad_vk_load_VK_KHR_ray_tracing_maintenance1( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_ray_tracing_maintenance1) return;
+    glad_vkCmdTraceRaysIndirect2KHR = (PFN_vkCmdTraceRaysIndirect2KHR) load(userptr, "vkCmdTraceRaysIndirect2KHR");
+}
+static void glad_vk_load_VK_KHR_ray_tracing_pipeline( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_ray_tracing_pipeline) return;
+    glad_vkCmdSetRayTracingPipelineStackSizeKHR = (PFN_vkCmdSetRayTracingPipelineStackSizeKHR) load(userptr, "vkCmdSetRayTracingPipelineStackSizeKHR");
+    glad_vkCmdTraceRaysIndirectKHR = (PFN_vkCmdTraceRaysIndirectKHR) load(userptr, "vkCmdTraceRaysIndirectKHR");
+    glad_vkCmdTraceRaysKHR = (PFN_vkCmdTraceRaysKHR) load(userptr, "vkCmdTraceRaysKHR");
+    glad_vkCreateRayTracingPipelinesKHR = (PFN_vkCreateRayTracingPipelinesKHR) load(userptr, "vkCreateRayTracingPipelinesKHR");
+    glad_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR = (PFN_vkGetRayTracingCaptureReplayShaderGroupHandlesKHR) load(userptr, "vkGetRayTracingCaptureReplayShaderGroupHandlesKHR");
+    glad_vkGetRayTracingShaderGroupHandlesKHR = (PFN_vkGetRayTracingShaderGroupHandlesKHR) load(userptr, "vkGetRayTracingShaderGroupHandlesKHR");
+    glad_vkGetRayTracingShaderGroupStackSizeKHR = (PFN_vkGetRayTracingShaderGroupStackSizeKHR) load(userptr, "vkGetRayTracingShaderGroupStackSizeKHR");
+}
+static void glad_vk_load_VK_KHR_sampler_ycbcr_conversion( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_sampler_ycbcr_conversion) return;
+    glad_vkCreateSamplerYcbcrConversionKHR = (PFN_vkCreateSamplerYcbcrConversionKHR) load(userptr, "vkCreateSamplerYcbcrConversionKHR");
+    glad_vkDestroySamplerYcbcrConversionKHR = (PFN_vkDestroySamplerYcbcrConversionKHR) load(userptr, "vkDestroySamplerYcbcrConversionKHR");
+}
+static void glad_vk_load_VK_KHR_shared_presentable_image( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_shared_presentable_image) return;
+    glad_vkGetSwapchainStatusKHR = (PFN_vkGetSwapchainStatusKHR) load(userptr, "vkGetSwapchainStatusKHR");
+}
+static void glad_vk_load_VK_KHR_surface( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_surface) return;
+    glad_vkDestroySurfaceKHR = (PFN_vkDestroySurfaceKHR) load(userptr, "vkDestroySurfaceKHR");
+    glad_vkGetPhysicalDeviceSurfaceCapabilitiesKHR = (PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR) load(userptr, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR");
+    glad_vkGetPhysicalDeviceSurfaceFormatsKHR = (PFN_vkGetPhysicalDeviceSurfaceFormatsKHR) load(userptr, "vkGetPhysicalDeviceSurfaceFormatsKHR");
+    glad_vkGetPhysicalDeviceSurfacePresentModesKHR = (PFN_vkGetPhysicalDeviceSurfacePresentModesKHR) load(userptr, "vkGetPhysicalDeviceSurfacePresentModesKHR");
+    glad_vkGetPhysicalDeviceSurfaceSupportKHR = (PFN_vkGetPhysicalDeviceSurfaceSupportKHR) load(userptr, "vkGetPhysicalDeviceSurfaceSupportKHR");
+}
+static void glad_vk_load_VK_KHR_swapchain( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_swapchain) return;
+    glad_vkAcquireNextImage2KHR = (PFN_vkAcquireNextImage2KHR) load(userptr, "vkAcquireNextImage2KHR");
+    glad_vkAcquireNextImageKHR = (PFN_vkAcquireNextImageKHR) load(userptr, "vkAcquireNextImageKHR");
+    glad_vkCreateSwapchainKHR = (PFN_vkCreateSwapchainKHR) load(userptr, "vkCreateSwapchainKHR");
+    glad_vkDestroySwapchainKHR = (PFN_vkDestroySwapchainKHR) load(userptr, "vkDestroySwapchainKHR");
+    glad_vkGetDeviceGroupPresentCapabilitiesKHR = (PFN_vkGetDeviceGroupPresentCapabilitiesKHR) load(userptr, "vkGetDeviceGroupPresentCapabilitiesKHR");
+    glad_vkGetDeviceGroupSurfacePresentModesKHR = (PFN_vkGetDeviceGroupSurfacePresentModesKHR) load(userptr, "vkGetDeviceGroupSurfacePresentModesKHR");
+    glad_vkGetPhysicalDevicePresentRectanglesKHR = (PFN_vkGetPhysicalDevicePresentRectanglesKHR) load(userptr, "vkGetPhysicalDevicePresentRectanglesKHR");
+    glad_vkGetSwapchainImagesKHR = (PFN_vkGetSwapchainImagesKHR) load(userptr, "vkGetSwapchainImagesKHR");
+    glad_vkQueuePresentKHR = (PFN_vkQueuePresentKHR) load(userptr, "vkQueuePresentKHR");
+}
+static void glad_vk_load_VK_KHR_swapchain_maintenance1( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_swapchain_maintenance1) return;
+    glad_vkReleaseSwapchainImagesKHR = (PFN_vkReleaseSwapchainImagesKHR) load(userptr, "vkReleaseSwapchainImagesKHR");
+}
+static void glad_vk_load_VK_KHR_synchronization2( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_synchronization2) return;
+    glad_vkCmdPipelineBarrier2KHR = (PFN_vkCmdPipelineBarrier2KHR) load(userptr, "vkCmdPipelineBarrier2KHR");
+    glad_vkCmdResetEvent2KHR = (PFN_vkCmdResetEvent2KHR) load(userptr, "vkCmdResetEvent2KHR");
+    glad_vkCmdSetEvent2KHR = (PFN_vkCmdSetEvent2KHR) load(userptr, "vkCmdSetEvent2KHR");
+    glad_vkCmdWaitEvents2KHR = (PFN_vkCmdWaitEvents2KHR) load(userptr, "vkCmdWaitEvents2KHR");
+    glad_vkCmdWriteTimestamp2KHR = (PFN_vkCmdWriteTimestamp2KHR) load(userptr, "vkCmdWriteTimestamp2KHR");
+    glad_vkQueueSubmit2KHR = (PFN_vkQueueSubmit2KHR) load(userptr, "vkQueueSubmit2KHR");
+}
+static void glad_vk_load_VK_KHR_timeline_semaphore( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_timeline_semaphore) return;
+    glad_vkGetSemaphoreCounterValueKHR = (PFN_vkGetSemaphoreCounterValueKHR) load(userptr, "vkGetSemaphoreCounterValueKHR");
+    glad_vkSignalSemaphoreKHR = (PFN_vkSignalSemaphoreKHR) load(userptr, "vkSignalSemaphoreKHR");
+    glad_vkWaitSemaphoresKHR = (PFN_vkWaitSemaphoresKHR) load(userptr, "vkWaitSemaphoresKHR");
+}
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+static void glad_vk_load_VK_KHR_wayland_surface( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_wayland_surface) return;
+    glad_vkCreateWaylandSurfaceKHR = (PFN_vkCreateWaylandSurfaceKHR) load(userptr, "vkCreateWaylandSurfaceKHR");
+    glad_vkGetPhysicalDeviceWaylandPresentationSupportKHR = (PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR) load(userptr, "vkGetPhysicalDeviceWaylandPresentationSupportKHR");
+}
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+static void glad_vk_load_VK_KHR_win32_surface( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_win32_surface) return;
+    glad_vkCreateWin32SurfaceKHR = (PFN_vkCreateWin32SurfaceKHR) load(userptr, "vkCreateWin32SurfaceKHR");
+    glad_vkGetPhysicalDeviceWin32PresentationSupportKHR = (PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR) load(userptr, "vkGetPhysicalDeviceWin32PresentationSupportKHR");
+}
+
+#endif
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+static void glad_vk_load_VK_KHR_xcb_surface( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_xcb_surface) return;
+    glad_vkCreateXcbSurfaceKHR = (PFN_vkCreateXcbSurfaceKHR) load(userptr, "vkCreateXcbSurfaceKHR");
+    glad_vkGetPhysicalDeviceXcbPresentationSupportKHR = (PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR) load(userptr, "vkGetPhysicalDeviceXcbPresentationSupportKHR");
+}
+
+#endif
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+static void glad_vk_load_VK_KHR_xlib_surface( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_KHR_xlib_surface) return;
+    glad_vkCreateXlibSurfaceKHR = (PFN_vkCreateXlibSurfaceKHR) load(userptr, "vkCreateXlibSurfaceKHR");
+    glad_vkGetPhysicalDeviceXlibPresentationSupportKHR = (PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR) load(userptr, "vkGetPhysicalDeviceXlibPresentationSupportKHR");
+}
+
+#endif
+static void glad_vk_load_VK_NV_ray_tracing( GLADuserptrloadfunc load, void* userptr) {
+    if(!GLAD_VK_NV_ray_tracing) return;
+    glad_vkBindAccelerationStructureMemoryNV = (PFN_vkBindAccelerationStructureMemoryNV) load(userptr, "vkBindAccelerationStructureMemoryNV");
+    glad_vkCmdBuildAccelerationStructureNV = (PFN_vkCmdBuildAccelerationStructureNV) load(userptr, "vkCmdBuildAccelerationStructureNV");
+    glad_vkCmdCopyAccelerationStructureNV = (PFN_vkCmdCopyAccelerationStructureNV) load(userptr, "vkCmdCopyAccelerationStructureNV");
+    glad_vkCmdTraceRaysNV = (PFN_vkCmdTraceRaysNV) load(userptr, "vkCmdTraceRaysNV");
+    glad_vkCmdWriteAccelerationStructuresPropertiesNV = (PFN_vkCmdWriteAccelerationStructuresPropertiesNV) load(userptr, "vkCmdWriteAccelerationStructuresPropertiesNV");
+    glad_vkCompileDeferredNV = (PFN_vkCompileDeferredNV) load(userptr, "vkCompileDeferredNV");
+    glad_vkCreateAccelerationStructureNV = (PFN_vkCreateAccelerationStructureNV) load(userptr, "vkCreateAccelerationStructureNV");
+    glad_vkCreateRayTracingPipelinesNV = (PFN_vkCreateRayTracingPipelinesNV) load(userptr, "vkCreateRayTracingPipelinesNV");
+    glad_vkDestroyAccelerationStructureNV = (PFN_vkDestroyAccelerationStructureNV) load(userptr, "vkDestroyAccelerationStructureNV");
+    glad_vkGetAccelerationStructureHandleNV = (PFN_vkGetAccelerationStructureHandleNV) load(userptr, "vkGetAccelerationStructureHandleNV");
+    glad_vkGetAccelerationStructureMemoryRequirementsNV = (PFN_vkGetAccelerationStructureMemoryRequirementsNV) load(userptr, "vkGetAccelerationStructureMemoryRequirementsNV");
+    glad_vkGetRayTracingShaderGroupHandlesNV = (PFN_vkGetRayTracingShaderGroupHandlesNV) load(userptr, "vkGetRayTracingShaderGroupHandlesNV");
 }
 
 
+static void glad_vk_resolve_aliases(void) {
+    if (glad_vkBindBufferMemory2 == NULL && glad_vkBindBufferMemory2KHR != NULL) glad_vkBindBufferMemory2 = (PFN_vkBindBufferMemory2)glad_vkBindBufferMemory2KHR;
+    if (glad_vkBindBufferMemory2KHR == NULL && glad_vkBindBufferMemory2 != NULL) glad_vkBindBufferMemory2KHR = (PFN_vkBindBufferMemory2KHR)glad_vkBindBufferMemory2;
+    if (glad_vkBindImageMemory2 == NULL && glad_vkBindImageMemory2KHR != NULL) glad_vkBindImageMemory2 = (PFN_vkBindImageMemory2)glad_vkBindImageMemory2KHR;
+    if (glad_vkBindImageMemory2KHR == NULL && glad_vkBindImageMemory2 != NULL) glad_vkBindImageMemory2KHR = (PFN_vkBindImageMemory2KHR)glad_vkBindImageMemory2;
+    if (glad_vkCmdBeginRendering == NULL && glad_vkCmdBeginRenderingKHR != NULL) glad_vkCmdBeginRendering = (PFN_vkCmdBeginRendering)glad_vkCmdBeginRenderingKHR;
+    if (glad_vkCmdBeginRenderingKHR == NULL && glad_vkCmdBeginRendering != NULL) glad_vkCmdBeginRenderingKHR = (PFN_vkCmdBeginRenderingKHR)glad_vkCmdBeginRendering;
+    if (glad_vkCmdBeginRenderPass2 == NULL && glad_vkCmdBeginRenderPass2KHR != NULL) glad_vkCmdBeginRenderPass2 = (PFN_vkCmdBeginRenderPass2)glad_vkCmdBeginRenderPass2KHR;
+    if (glad_vkCmdBeginRenderPass2KHR == NULL && glad_vkCmdBeginRenderPass2 != NULL) glad_vkCmdBeginRenderPass2KHR = (PFN_vkCmdBeginRenderPass2KHR)glad_vkCmdBeginRenderPass2;
+    if (glad_vkCmdBindVertexBuffers2 == NULL && glad_vkCmdBindVertexBuffers2EXT != NULL) glad_vkCmdBindVertexBuffers2 = (PFN_vkCmdBindVertexBuffers2)glad_vkCmdBindVertexBuffers2EXT;
+    if (glad_vkCmdBindVertexBuffers2EXT == NULL && glad_vkCmdBindVertexBuffers2 != NULL) glad_vkCmdBindVertexBuffers2EXT = (PFN_vkCmdBindVertexBuffers2EXT)glad_vkCmdBindVertexBuffers2;
+    if (glad_vkCmdBlitImage2 == NULL && glad_vkCmdBlitImage2KHR != NULL) glad_vkCmdBlitImage2 = (PFN_vkCmdBlitImage2)glad_vkCmdBlitImage2KHR;
+    if (glad_vkCmdBlitImage2KHR == NULL && glad_vkCmdBlitImage2 != NULL) glad_vkCmdBlitImage2KHR = (PFN_vkCmdBlitImage2KHR)glad_vkCmdBlitImage2;
+    if (glad_vkCmdCopyBuffer2 == NULL && glad_vkCmdCopyBuffer2KHR != NULL) glad_vkCmdCopyBuffer2 = (PFN_vkCmdCopyBuffer2)glad_vkCmdCopyBuffer2KHR;
+    if (glad_vkCmdCopyBuffer2KHR == NULL && glad_vkCmdCopyBuffer2 != NULL) glad_vkCmdCopyBuffer2KHR = (PFN_vkCmdCopyBuffer2KHR)glad_vkCmdCopyBuffer2;
+    if (glad_vkCmdCopyBufferToImage2 == NULL && glad_vkCmdCopyBufferToImage2KHR != NULL) glad_vkCmdCopyBufferToImage2 = (PFN_vkCmdCopyBufferToImage2)glad_vkCmdCopyBufferToImage2KHR;
+    if (glad_vkCmdCopyBufferToImage2KHR == NULL && glad_vkCmdCopyBufferToImage2 != NULL) glad_vkCmdCopyBufferToImage2KHR = (PFN_vkCmdCopyBufferToImage2KHR)glad_vkCmdCopyBufferToImage2;
+    if (glad_vkCmdCopyImage2 == NULL && glad_vkCmdCopyImage2KHR != NULL) glad_vkCmdCopyImage2 = (PFN_vkCmdCopyImage2)glad_vkCmdCopyImage2KHR;
+    if (glad_vkCmdCopyImage2KHR == NULL && glad_vkCmdCopyImage2 != NULL) glad_vkCmdCopyImage2KHR = (PFN_vkCmdCopyImage2KHR)glad_vkCmdCopyImage2;
+    if (glad_vkCmdCopyImageToBuffer2 == NULL && glad_vkCmdCopyImageToBuffer2KHR != NULL) glad_vkCmdCopyImageToBuffer2 = (PFN_vkCmdCopyImageToBuffer2)glad_vkCmdCopyImageToBuffer2KHR;
+    if (glad_vkCmdCopyImageToBuffer2KHR == NULL && glad_vkCmdCopyImageToBuffer2 != NULL) glad_vkCmdCopyImageToBuffer2KHR = (PFN_vkCmdCopyImageToBuffer2KHR)glad_vkCmdCopyImageToBuffer2;
+    if (glad_vkCmdDispatchBase == NULL && glad_vkCmdDispatchBaseKHR != NULL) glad_vkCmdDispatchBase = (PFN_vkCmdDispatchBase)glad_vkCmdDispatchBaseKHR;
+    if (glad_vkCmdDispatchBaseKHR == NULL && glad_vkCmdDispatchBase != NULL) glad_vkCmdDispatchBaseKHR = (PFN_vkCmdDispatchBaseKHR)glad_vkCmdDispatchBase;
+    if (glad_vkCmdDrawIndexedIndirectCount == NULL && glad_vkCmdDrawIndexedIndirectCountAMD != NULL) glad_vkCmdDrawIndexedIndirectCount = (PFN_vkCmdDrawIndexedIndirectCount)glad_vkCmdDrawIndexedIndirectCountAMD;
+    if (glad_vkCmdDrawIndexedIndirectCount == NULL && glad_vkCmdDrawIndexedIndirectCountKHR != NULL) glad_vkCmdDrawIndexedIndirectCount = (PFN_vkCmdDrawIndexedIndirectCount)glad_vkCmdDrawIndexedIndirectCountKHR;
+    if (glad_vkCmdDrawIndexedIndirectCountAMD == NULL && glad_vkCmdDrawIndexedIndirectCount != NULL) glad_vkCmdDrawIndexedIndirectCountAMD = (PFN_vkCmdDrawIndexedIndirectCountAMD)glad_vkCmdDrawIndexedIndirectCount;
+    if (glad_vkCmdDrawIndexedIndirectCountAMD == NULL && glad_vkCmdDrawIndexedIndirectCountKHR != NULL) glad_vkCmdDrawIndexedIndirectCountAMD = (PFN_vkCmdDrawIndexedIndirectCountAMD)glad_vkCmdDrawIndexedIndirectCountKHR;
+    if (glad_vkCmdDrawIndexedIndirectCountKHR == NULL && glad_vkCmdDrawIndexedIndirectCount != NULL) glad_vkCmdDrawIndexedIndirectCountKHR = (PFN_vkCmdDrawIndexedIndirectCountKHR)glad_vkCmdDrawIndexedIndirectCount;
+    if (glad_vkCmdDrawIndexedIndirectCountKHR == NULL && glad_vkCmdDrawIndexedIndirectCountAMD != NULL) glad_vkCmdDrawIndexedIndirectCountKHR = (PFN_vkCmdDrawIndexedIndirectCountKHR)glad_vkCmdDrawIndexedIndirectCountAMD;
+    if (glad_vkCmdDrawIndirectCount == NULL && glad_vkCmdDrawIndirectCountAMD != NULL) glad_vkCmdDrawIndirectCount = (PFN_vkCmdDrawIndirectCount)glad_vkCmdDrawIndirectCountAMD;
+    if (glad_vkCmdDrawIndirectCount == NULL && glad_vkCmdDrawIndirectCountKHR != NULL) glad_vkCmdDrawIndirectCount = (PFN_vkCmdDrawIndirectCount)glad_vkCmdDrawIndirectCountKHR;
+    if (glad_vkCmdDrawIndirectCountAMD == NULL && glad_vkCmdDrawIndirectCount != NULL) glad_vkCmdDrawIndirectCountAMD = (PFN_vkCmdDrawIndirectCountAMD)glad_vkCmdDrawIndirectCount;
+    if (glad_vkCmdDrawIndirectCountAMD == NULL && glad_vkCmdDrawIndirectCountKHR != NULL) glad_vkCmdDrawIndirectCountAMD = (PFN_vkCmdDrawIndirectCountAMD)glad_vkCmdDrawIndirectCountKHR;
+    if (glad_vkCmdDrawIndirectCountKHR == NULL && glad_vkCmdDrawIndirectCount != NULL) glad_vkCmdDrawIndirectCountKHR = (PFN_vkCmdDrawIndirectCountKHR)glad_vkCmdDrawIndirectCount;
+    if (glad_vkCmdDrawIndirectCountKHR == NULL && glad_vkCmdDrawIndirectCountAMD != NULL) glad_vkCmdDrawIndirectCountKHR = (PFN_vkCmdDrawIndirectCountKHR)glad_vkCmdDrawIndirectCountAMD;
+    if (glad_vkCmdEndRendering == NULL && glad_vkCmdEndRenderingKHR != NULL) glad_vkCmdEndRendering = (PFN_vkCmdEndRendering)glad_vkCmdEndRenderingKHR;
+    if (glad_vkCmdEndRenderingKHR == NULL && glad_vkCmdEndRendering != NULL) glad_vkCmdEndRenderingKHR = (PFN_vkCmdEndRenderingKHR)glad_vkCmdEndRendering;
+    if (glad_vkCmdEndRenderPass2 == NULL && glad_vkCmdEndRenderPass2KHR != NULL) glad_vkCmdEndRenderPass2 = (PFN_vkCmdEndRenderPass2)glad_vkCmdEndRenderPass2KHR;
+    if (glad_vkCmdEndRenderPass2KHR == NULL && glad_vkCmdEndRenderPass2 != NULL) glad_vkCmdEndRenderPass2KHR = (PFN_vkCmdEndRenderPass2KHR)glad_vkCmdEndRenderPass2;
+    if (glad_vkCmdNextSubpass2 == NULL && glad_vkCmdNextSubpass2KHR != NULL) glad_vkCmdNextSubpass2 = (PFN_vkCmdNextSubpass2)glad_vkCmdNextSubpass2KHR;
+    if (glad_vkCmdNextSubpass2KHR == NULL && glad_vkCmdNextSubpass2 != NULL) glad_vkCmdNextSubpass2KHR = (PFN_vkCmdNextSubpass2KHR)glad_vkCmdNextSubpass2;
+    if (glad_vkCmdPipelineBarrier2 == NULL && glad_vkCmdPipelineBarrier2KHR != NULL) glad_vkCmdPipelineBarrier2 = (PFN_vkCmdPipelineBarrier2)glad_vkCmdPipelineBarrier2KHR;
+    if (glad_vkCmdPipelineBarrier2KHR == NULL && glad_vkCmdPipelineBarrier2 != NULL) glad_vkCmdPipelineBarrier2KHR = (PFN_vkCmdPipelineBarrier2KHR)glad_vkCmdPipelineBarrier2;
+    if (glad_vkCmdResetEvent2 == NULL && glad_vkCmdResetEvent2KHR != NULL) glad_vkCmdResetEvent2 = (PFN_vkCmdResetEvent2)glad_vkCmdResetEvent2KHR;
+    if (glad_vkCmdResetEvent2KHR == NULL && glad_vkCmdResetEvent2 != NULL) glad_vkCmdResetEvent2KHR = (PFN_vkCmdResetEvent2KHR)glad_vkCmdResetEvent2;
+    if (glad_vkCmdResolveImage2 == NULL && glad_vkCmdResolveImage2KHR != NULL) glad_vkCmdResolveImage2 = (PFN_vkCmdResolveImage2)glad_vkCmdResolveImage2KHR;
+    if (glad_vkCmdResolveImage2KHR == NULL && glad_vkCmdResolveImage2 != NULL) glad_vkCmdResolveImage2KHR = (PFN_vkCmdResolveImage2KHR)glad_vkCmdResolveImage2;
+    if (glad_vkCmdSetCullMode == NULL && glad_vkCmdSetCullModeEXT != NULL) glad_vkCmdSetCullMode = (PFN_vkCmdSetCullMode)glad_vkCmdSetCullModeEXT;
+    if (glad_vkCmdSetCullModeEXT == NULL && glad_vkCmdSetCullMode != NULL) glad_vkCmdSetCullModeEXT = (PFN_vkCmdSetCullModeEXT)glad_vkCmdSetCullMode;
+    if (glad_vkCmdSetDepthBiasEnable == NULL && glad_vkCmdSetDepthBiasEnableEXT != NULL) glad_vkCmdSetDepthBiasEnable = (PFN_vkCmdSetDepthBiasEnable)glad_vkCmdSetDepthBiasEnableEXT;
+    if (glad_vkCmdSetDepthBiasEnableEXT == NULL && glad_vkCmdSetDepthBiasEnable != NULL) glad_vkCmdSetDepthBiasEnableEXT = (PFN_vkCmdSetDepthBiasEnableEXT)glad_vkCmdSetDepthBiasEnable;
+    if (glad_vkCmdSetDepthBoundsTestEnable == NULL && glad_vkCmdSetDepthBoundsTestEnableEXT != NULL) glad_vkCmdSetDepthBoundsTestEnable = (PFN_vkCmdSetDepthBoundsTestEnable)glad_vkCmdSetDepthBoundsTestEnableEXT;
+    if (glad_vkCmdSetDepthBoundsTestEnableEXT == NULL && glad_vkCmdSetDepthBoundsTestEnable != NULL) glad_vkCmdSetDepthBoundsTestEnableEXT = (PFN_vkCmdSetDepthBoundsTestEnableEXT)glad_vkCmdSetDepthBoundsTestEnable;
+    if (glad_vkCmdSetDepthCompareOp == NULL && glad_vkCmdSetDepthCompareOpEXT != NULL) glad_vkCmdSetDepthCompareOp = (PFN_vkCmdSetDepthCompareOp)glad_vkCmdSetDepthCompareOpEXT;
+    if (glad_vkCmdSetDepthCompareOpEXT == NULL && glad_vkCmdSetDepthCompareOp != NULL) glad_vkCmdSetDepthCompareOpEXT = (PFN_vkCmdSetDepthCompareOpEXT)glad_vkCmdSetDepthCompareOp;
+    if (glad_vkCmdSetDepthTestEnable == NULL && glad_vkCmdSetDepthTestEnableEXT != NULL) glad_vkCmdSetDepthTestEnable = (PFN_vkCmdSetDepthTestEnable)glad_vkCmdSetDepthTestEnableEXT;
+    if (glad_vkCmdSetDepthTestEnableEXT == NULL && glad_vkCmdSetDepthTestEnable != NULL) glad_vkCmdSetDepthTestEnableEXT = (PFN_vkCmdSetDepthTestEnableEXT)glad_vkCmdSetDepthTestEnable;
+    if (glad_vkCmdSetDepthWriteEnable == NULL && glad_vkCmdSetDepthWriteEnableEXT != NULL) glad_vkCmdSetDepthWriteEnable = (PFN_vkCmdSetDepthWriteEnable)glad_vkCmdSetDepthWriteEnableEXT;
+    if (glad_vkCmdSetDepthWriteEnableEXT == NULL && glad_vkCmdSetDepthWriteEnable != NULL) glad_vkCmdSetDepthWriteEnableEXT = (PFN_vkCmdSetDepthWriteEnableEXT)glad_vkCmdSetDepthWriteEnable;
+    if (glad_vkCmdSetDeviceMask == NULL && glad_vkCmdSetDeviceMaskKHR != NULL) glad_vkCmdSetDeviceMask = (PFN_vkCmdSetDeviceMask)glad_vkCmdSetDeviceMaskKHR;
+    if (glad_vkCmdSetDeviceMaskKHR == NULL && glad_vkCmdSetDeviceMask != NULL) glad_vkCmdSetDeviceMaskKHR = (PFN_vkCmdSetDeviceMaskKHR)glad_vkCmdSetDeviceMask;
+    if (glad_vkCmdSetEvent2 == NULL && glad_vkCmdSetEvent2KHR != NULL) glad_vkCmdSetEvent2 = (PFN_vkCmdSetEvent2)glad_vkCmdSetEvent2KHR;
+    if (glad_vkCmdSetEvent2KHR == NULL && glad_vkCmdSetEvent2 != NULL) glad_vkCmdSetEvent2KHR = (PFN_vkCmdSetEvent2KHR)glad_vkCmdSetEvent2;
+    if (glad_vkCmdSetFrontFace == NULL && glad_vkCmdSetFrontFaceEXT != NULL) glad_vkCmdSetFrontFace = (PFN_vkCmdSetFrontFace)glad_vkCmdSetFrontFaceEXT;
+    if (glad_vkCmdSetFrontFaceEXT == NULL && glad_vkCmdSetFrontFace != NULL) glad_vkCmdSetFrontFaceEXT = (PFN_vkCmdSetFrontFaceEXT)glad_vkCmdSetFrontFace;
+    if (glad_vkCmdSetPrimitiveRestartEnable == NULL && glad_vkCmdSetPrimitiveRestartEnableEXT != NULL) glad_vkCmdSetPrimitiveRestartEnable = (PFN_vkCmdSetPrimitiveRestartEnable)glad_vkCmdSetPrimitiveRestartEnableEXT;
+    if (glad_vkCmdSetPrimitiveRestartEnableEXT == NULL && glad_vkCmdSetPrimitiveRestartEnable != NULL) glad_vkCmdSetPrimitiveRestartEnableEXT = (PFN_vkCmdSetPrimitiveRestartEnableEXT)glad_vkCmdSetPrimitiveRestartEnable;
+    if (glad_vkCmdSetPrimitiveTopology == NULL && glad_vkCmdSetPrimitiveTopologyEXT != NULL) glad_vkCmdSetPrimitiveTopology = (PFN_vkCmdSetPrimitiveTopology)glad_vkCmdSetPrimitiveTopologyEXT;
+    if (glad_vkCmdSetPrimitiveTopologyEXT == NULL && glad_vkCmdSetPrimitiveTopology != NULL) glad_vkCmdSetPrimitiveTopologyEXT = (PFN_vkCmdSetPrimitiveTopologyEXT)glad_vkCmdSetPrimitiveTopology;
+    if (glad_vkCmdSetRasterizerDiscardEnable == NULL && glad_vkCmdSetRasterizerDiscardEnableEXT != NULL) glad_vkCmdSetRasterizerDiscardEnable = (PFN_vkCmdSetRasterizerDiscardEnable)glad_vkCmdSetRasterizerDiscardEnableEXT;
+    if (glad_vkCmdSetRasterizerDiscardEnableEXT == NULL && glad_vkCmdSetRasterizerDiscardEnable != NULL) glad_vkCmdSetRasterizerDiscardEnableEXT = (PFN_vkCmdSetRasterizerDiscardEnableEXT)glad_vkCmdSetRasterizerDiscardEnable;
+    if (glad_vkCmdSetScissorWithCount == NULL && glad_vkCmdSetScissorWithCountEXT != NULL) glad_vkCmdSetScissorWithCount = (PFN_vkCmdSetScissorWithCount)glad_vkCmdSetScissorWithCountEXT;
+    if (glad_vkCmdSetScissorWithCountEXT == NULL && glad_vkCmdSetScissorWithCount != NULL) glad_vkCmdSetScissorWithCountEXT = (PFN_vkCmdSetScissorWithCountEXT)glad_vkCmdSetScissorWithCount;
+    if (glad_vkCmdSetStencilOp == NULL && glad_vkCmdSetStencilOpEXT != NULL) glad_vkCmdSetStencilOp = (PFN_vkCmdSetStencilOp)glad_vkCmdSetStencilOpEXT;
+    if (glad_vkCmdSetStencilOpEXT == NULL && glad_vkCmdSetStencilOp != NULL) glad_vkCmdSetStencilOpEXT = (PFN_vkCmdSetStencilOpEXT)glad_vkCmdSetStencilOp;
+    if (glad_vkCmdSetStencilTestEnable == NULL && glad_vkCmdSetStencilTestEnableEXT != NULL) glad_vkCmdSetStencilTestEnable = (PFN_vkCmdSetStencilTestEnable)glad_vkCmdSetStencilTestEnableEXT;
+    if (glad_vkCmdSetStencilTestEnableEXT == NULL && glad_vkCmdSetStencilTestEnable != NULL) glad_vkCmdSetStencilTestEnableEXT = (PFN_vkCmdSetStencilTestEnableEXT)glad_vkCmdSetStencilTestEnable;
+    if (glad_vkCmdSetViewportWithCount == NULL && glad_vkCmdSetViewportWithCountEXT != NULL) glad_vkCmdSetViewportWithCount = (PFN_vkCmdSetViewportWithCount)glad_vkCmdSetViewportWithCountEXT;
+    if (glad_vkCmdSetViewportWithCountEXT == NULL && glad_vkCmdSetViewportWithCount != NULL) glad_vkCmdSetViewportWithCountEXT = (PFN_vkCmdSetViewportWithCountEXT)glad_vkCmdSetViewportWithCount;
+    if (glad_vkCmdWaitEvents2 == NULL && glad_vkCmdWaitEvents2KHR != NULL) glad_vkCmdWaitEvents2 = (PFN_vkCmdWaitEvents2)glad_vkCmdWaitEvents2KHR;
+    if (glad_vkCmdWaitEvents2KHR == NULL && glad_vkCmdWaitEvents2 != NULL) glad_vkCmdWaitEvents2KHR = (PFN_vkCmdWaitEvents2KHR)glad_vkCmdWaitEvents2;
+    if (glad_vkCmdWriteTimestamp2 == NULL && glad_vkCmdWriteTimestamp2KHR != NULL) glad_vkCmdWriteTimestamp2 = (PFN_vkCmdWriteTimestamp2)glad_vkCmdWriteTimestamp2KHR;
+    if (glad_vkCmdWriteTimestamp2KHR == NULL && glad_vkCmdWriteTimestamp2 != NULL) glad_vkCmdWriteTimestamp2KHR = (PFN_vkCmdWriteTimestamp2KHR)glad_vkCmdWriteTimestamp2;
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+
+#endif
+    if (glad_vkCreateDescriptorUpdateTemplate == NULL && glad_vkCreateDescriptorUpdateTemplateKHR != NULL) glad_vkCreateDescriptorUpdateTemplate = (PFN_vkCreateDescriptorUpdateTemplate)glad_vkCreateDescriptorUpdateTemplateKHR;
+    if (glad_vkCreateDescriptorUpdateTemplateKHR == NULL && glad_vkCreateDescriptorUpdateTemplate != NULL) glad_vkCreateDescriptorUpdateTemplateKHR = (PFN_vkCreateDescriptorUpdateTemplateKHR)glad_vkCreateDescriptorUpdateTemplate;
+    if (glad_vkCreatePrivateDataSlot == NULL && glad_vkCreatePrivateDataSlotEXT != NULL) glad_vkCreatePrivateDataSlot = (PFN_vkCreatePrivateDataSlot)glad_vkCreatePrivateDataSlotEXT;
+    if (glad_vkCreatePrivateDataSlotEXT == NULL && glad_vkCreatePrivateDataSlot != NULL) glad_vkCreatePrivateDataSlotEXT = (PFN_vkCreatePrivateDataSlotEXT)glad_vkCreatePrivateDataSlot;
+    if (glad_vkCreateRenderPass2 == NULL && glad_vkCreateRenderPass2KHR != NULL) glad_vkCreateRenderPass2 = (PFN_vkCreateRenderPass2)glad_vkCreateRenderPass2KHR;
+    if (glad_vkCreateRenderPass2KHR == NULL && glad_vkCreateRenderPass2 != NULL) glad_vkCreateRenderPass2KHR = (PFN_vkCreateRenderPass2KHR)glad_vkCreateRenderPass2;
+    if (glad_vkCreateSamplerYcbcrConversion == NULL && glad_vkCreateSamplerYcbcrConversionKHR != NULL) glad_vkCreateSamplerYcbcrConversion = (PFN_vkCreateSamplerYcbcrConversion)glad_vkCreateSamplerYcbcrConversionKHR;
+    if (glad_vkCreateSamplerYcbcrConversionKHR == NULL && glad_vkCreateSamplerYcbcrConversion != NULL) glad_vkCreateSamplerYcbcrConversionKHR = (PFN_vkCreateSamplerYcbcrConversionKHR)glad_vkCreateSamplerYcbcrConversion;
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+
+#endif
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+
+#endif
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+
+#endif
+    if (glad_vkDestroyDescriptorUpdateTemplate == NULL && glad_vkDestroyDescriptorUpdateTemplateKHR != NULL) glad_vkDestroyDescriptorUpdateTemplate = (PFN_vkDestroyDescriptorUpdateTemplate)glad_vkDestroyDescriptorUpdateTemplateKHR;
+    if (glad_vkDestroyDescriptorUpdateTemplateKHR == NULL && glad_vkDestroyDescriptorUpdateTemplate != NULL) glad_vkDestroyDescriptorUpdateTemplateKHR = (PFN_vkDestroyDescriptorUpdateTemplateKHR)glad_vkDestroyDescriptorUpdateTemplate;
+    if (glad_vkDestroyPrivateDataSlot == NULL && glad_vkDestroyPrivateDataSlotEXT != NULL) glad_vkDestroyPrivateDataSlot = (PFN_vkDestroyPrivateDataSlot)glad_vkDestroyPrivateDataSlotEXT;
+    if (glad_vkDestroyPrivateDataSlotEXT == NULL && glad_vkDestroyPrivateDataSlot != NULL) glad_vkDestroyPrivateDataSlotEXT = (PFN_vkDestroyPrivateDataSlotEXT)glad_vkDestroyPrivateDataSlot;
+    if (glad_vkDestroySamplerYcbcrConversion == NULL && glad_vkDestroySamplerYcbcrConversionKHR != NULL) glad_vkDestroySamplerYcbcrConversion = (PFN_vkDestroySamplerYcbcrConversion)glad_vkDestroySamplerYcbcrConversionKHR;
+    if (glad_vkDestroySamplerYcbcrConversionKHR == NULL && glad_vkDestroySamplerYcbcrConversion != NULL) glad_vkDestroySamplerYcbcrConversionKHR = (PFN_vkDestroySamplerYcbcrConversionKHR)glad_vkDestroySamplerYcbcrConversion;
+    if (glad_vkEnumeratePhysicalDeviceGroups == NULL && glad_vkEnumeratePhysicalDeviceGroupsKHR != NULL) glad_vkEnumeratePhysicalDeviceGroups = (PFN_vkEnumeratePhysicalDeviceGroups)glad_vkEnumeratePhysicalDeviceGroupsKHR;
+    if (glad_vkEnumeratePhysicalDeviceGroupsKHR == NULL && glad_vkEnumeratePhysicalDeviceGroups != NULL) glad_vkEnumeratePhysicalDeviceGroupsKHR = (PFN_vkEnumeratePhysicalDeviceGroupsKHR)glad_vkEnumeratePhysicalDeviceGroups;
+    if (glad_vkGetBufferDeviceAddress == NULL && glad_vkGetBufferDeviceAddressEXT != NULL) glad_vkGetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)glad_vkGetBufferDeviceAddressEXT;
+    if (glad_vkGetBufferDeviceAddress == NULL && glad_vkGetBufferDeviceAddressKHR != NULL) glad_vkGetBufferDeviceAddress = (PFN_vkGetBufferDeviceAddress)glad_vkGetBufferDeviceAddressKHR;
+    if (glad_vkGetBufferDeviceAddressEXT == NULL && glad_vkGetBufferDeviceAddress != NULL) glad_vkGetBufferDeviceAddressEXT = (PFN_vkGetBufferDeviceAddressEXT)glad_vkGetBufferDeviceAddress;
+    if (glad_vkGetBufferDeviceAddressEXT == NULL && glad_vkGetBufferDeviceAddressKHR != NULL) glad_vkGetBufferDeviceAddressEXT = (PFN_vkGetBufferDeviceAddressEXT)glad_vkGetBufferDeviceAddressKHR;
+    if (glad_vkGetBufferDeviceAddressKHR == NULL && glad_vkGetBufferDeviceAddress != NULL) glad_vkGetBufferDeviceAddressKHR = (PFN_vkGetBufferDeviceAddressKHR)glad_vkGetBufferDeviceAddress;
+    if (glad_vkGetBufferDeviceAddressKHR == NULL && glad_vkGetBufferDeviceAddressEXT != NULL) glad_vkGetBufferDeviceAddressKHR = (PFN_vkGetBufferDeviceAddressKHR)glad_vkGetBufferDeviceAddressEXT;
+    if (glad_vkGetBufferMemoryRequirements2 == NULL && glad_vkGetBufferMemoryRequirements2KHR != NULL) glad_vkGetBufferMemoryRequirements2 = (PFN_vkGetBufferMemoryRequirements2)glad_vkGetBufferMemoryRequirements2KHR;
+    if (glad_vkGetBufferMemoryRequirements2KHR == NULL && glad_vkGetBufferMemoryRequirements2 != NULL) glad_vkGetBufferMemoryRequirements2KHR = (PFN_vkGetBufferMemoryRequirements2KHR)glad_vkGetBufferMemoryRequirements2;
+    if (glad_vkGetBufferOpaqueCaptureAddress == NULL && glad_vkGetBufferOpaqueCaptureAddressKHR != NULL) glad_vkGetBufferOpaqueCaptureAddress = (PFN_vkGetBufferOpaqueCaptureAddress)glad_vkGetBufferOpaqueCaptureAddressKHR;
+    if (glad_vkGetBufferOpaqueCaptureAddressKHR == NULL && glad_vkGetBufferOpaqueCaptureAddress != NULL) glad_vkGetBufferOpaqueCaptureAddressKHR = (PFN_vkGetBufferOpaqueCaptureAddressKHR)glad_vkGetBufferOpaqueCaptureAddress;
+    if (glad_vkGetCalibratedTimestampsEXT == NULL && glad_vkGetCalibratedTimestampsKHR != NULL) glad_vkGetCalibratedTimestampsEXT = (PFN_vkGetCalibratedTimestampsEXT)glad_vkGetCalibratedTimestampsKHR;
+    if (glad_vkGetCalibratedTimestampsKHR == NULL && glad_vkGetCalibratedTimestampsEXT != NULL) glad_vkGetCalibratedTimestampsKHR = (PFN_vkGetCalibratedTimestampsKHR)glad_vkGetCalibratedTimestampsEXT;
+    if (glad_vkGetDescriptorSetLayoutSupport == NULL && glad_vkGetDescriptorSetLayoutSupportKHR != NULL) glad_vkGetDescriptorSetLayoutSupport = (PFN_vkGetDescriptorSetLayoutSupport)glad_vkGetDescriptorSetLayoutSupportKHR;
+    if (glad_vkGetDescriptorSetLayoutSupportKHR == NULL && glad_vkGetDescriptorSetLayoutSupport != NULL) glad_vkGetDescriptorSetLayoutSupportKHR = (PFN_vkGetDescriptorSetLayoutSupportKHR)glad_vkGetDescriptorSetLayoutSupport;
+    if (glad_vkGetDeviceBufferMemoryRequirements == NULL && glad_vkGetDeviceBufferMemoryRequirementsKHR != NULL) glad_vkGetDeviceBufferMemoryRequirements = (PFN_vkGetDeviceBufferMemoryRequirements)glad_vkGetDeviceBufferMemoryRequirementsKHR;
+    if (glad_vkGetDeviceBufferMemoryRequirementsKHR == NULL && glad_vkGetDeviceBufferMemoryRequirements != NULL) glad_vkGetDeviceBufferMemoryRequirementsKHR = (PFN_vkGetDeviceBufferMemoryRequirementsKHR)glad_vkGetDeviceBufferMemoryRequirements;
+    if (glad_vkGetDeviceGroupPeerMemoryFeatures == NULL && glad_vkGetDeviceGroupPeerMemoryFeaturesKHR != NULL) glad_vkGetDeviceGroupPeerMemoryFeatures = (PFN_vkGetDeviceGroupPeerMemoryFeatures)glad_vkGetDeviceGroupPeerMemoryFeaturesKHR;
+    if (glad_vkGetDeviceGroupPeerMemoryFeaturesKHR == NULL && glad_vkGetDeviceGroupPeerMemoryFeatures != NULL) glad_vkGetDeviceGroupPeerMemoryFeaturesKHR = (PFN_vkGetDeviceGroupPeerMemoryFeaturesKHR)glad_vkGetDeviceGroupPeerMemoryFeatures;
+    if (glad_vkGetDeviceImageMemoryRequirements == NULL && glad_vkGetDeviceImageMemoryRequirementsKHR != NULL) glad_vkGetDeviceImageMemoryRequirements = (PFN_vkGetDeviceImageMemoryRequirements)glad_vkGetDeviceImageMemoryRequirementsKHR;
+    if (glad_vkGetDeviceImageMemoryRequirementsKHR == NULL && glad_vkGetDeviceImageMemoryRequirements != NULL) glad_vkGetDeviceImageMemoryRequirementsKHR = (PFN_vkGetDeviceImageMemoryRequirementsKHR)glad_vkGetDeviceImageMemoryRequirements;
+    if (glad_vkGetDeviceImageSparseMemoryRequirements == NULL && glad_vkGetDeviceImageSparseMemoryRequirementsKHR != NULL) glad_vkGetDeviceImageSparseMemoryRequirements = (PFN_vkGetDeviceImageSparseMemoryRequirements)glad_vkGetDeviceImageSparseMemoryRequirementsKHR;
+    if (glad_vkGetDeviceImageSparseMemoryRequirementsKHR == NULL && glad_vkGetDeviceImageSparseMemoryRequirements != NULL) glad_vkGetDeviceImageSparseMemoryRequirementsKHR = (PFN_vkGetDeviceImageSparseMemoryRequirementsKHR)glad_vkGetDeviceImageSparseMemoryRequirements;
+    if (glad_vkGetDeviceMemoryOpaqueCaptureAddress == NULL && glad_vkGetDeviceMemoryOpaqueCaptureAddressKHR != NULL) glad_vkGetDeviceMemoryOpaqueCaptureAddress = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress)glad_vkGetDeviceMemoryOpaqueCaptureAddressKHR;
+    if (glad_vkGetDeviceMemoryOpaqueCaptureAddressKHR == NULL && glad_vkGetDeviceMemoryOpaqueCaptureAddress != NULL) glad_vkGetDeviceMemoryOpaqueCaptureAddressKHR = (PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR)glad_vkGetDeviceMemoryOpaqueCaptureAddress;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+
+#endif
+    if (glad_vkGetImageMemoryRequirements2 == NULL && glad_vkGetImageMemoryRequirements2KHR != NULL) glad_vkGetImageMemoryRequirements2 = (PFN_vkGetImageMemoryRequirements2)glad_vkGetImageMemoryRequirements2KHR;
+    if (glad_vkGetImageMemoryRequirements2KHR == NULL && glad_vkGetImageMemoryRequirements2 != NULL) glad_vkGetImageMemoryRequirements2KHR = (PFN_vkGetImageMemoryRequirements2KHR)glad_vkGetImageMemoryRequirements2;
+    if (glad_vkGetImageSparseMemoryRequirements2 == NULL && glad_vkGetImageSparseMemoryRequirements2KHR != NULL) glad_vkGetImageSparseMemoryRequirements2 = (PFN_vkGetImageSparseMemoryRequirements2)glad_vkGetImageSparseMemoryRequirements2KHR;
+    if (glad_vkGetImageSparseMemoryRequirements2KHR == NULL && glad_vkGetImageSparseMemoryRequirements2 != NULL) glad_vkGetImageSparseMemoryRequirements2KHR = (PFN_vkGetImageSparseMemoryRequirements2KHR)glad_vkGetImageSparseMemoryRequirements2;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+
+#endif
+    if (glad_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT == NULL && glad_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR != NULL) glad_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT = (PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT)glad_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR;
+    if (glad_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR == NULL && glad_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT != NULL) glad_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR = (PFN_vkGetPhysicalDeviceCalibrateableTimeDomainsKHR)glad_vkGetPhysicalDeviceCalibrateableTimeDomainsEXT;
+    if (glad_vkGetPhysicalDeviceExternalBufferProperties == NULL && glad_vkGetPhysicalDeviceExternalBufferPropertiesKHR != NULL) glad_vkGetPhysicalDeviceExternalBufferProperties = (PFN_vkGetPhysicalDeviceExternalBufferProperties)glad_vkGetPhysicalDeviceExternalBufferPropertiesKHR;
+    if (glad_vkGetPhysicalDeviceExternalBufferPropertiesKHR == NULL && glad_vkGetPhysicalDeviceExternalBufferProperties != NULL) glad_vkGetPhysicalDeviceExternalBufferPropertiesKHR = (PFN_vkGetPhysicalDeviceExternalBufferPropertiesKHR)glad_vkGetPhysicalDeviceExternalBufferProperties;
+    if (glad_vkGetPhysicalDeviceExternalFenceProperties == NULL && glad_vkGetPhysicalDeviceExternalFencePropertiesKHR != NULL) glad_vkGetPhysicalDeviceExternalFenceProperties = (PFN_vkGetPhysicalDeviceExternalFenceProperties)glad_vkGetPhysicalDeviceExternalFencePropertiesKHR;
+    if (glad_vkGetPhysicalDeviceExternalFencePropertiesKHR == NULL && glad_vkGetPhysicalDeviceExternalFenceProperties != NULL) glad_vkGetPhysicalDeviceExternalFencePropertiesKHR = (PFN_vkGetPhysicalDeviceExternalFencePropertiesKHR)glad_vkGetPhysicalDeviceExternalFenceProperties;
+    if (glad_vkGetPhysicalDeviceExternalSemaphoreProperties == NULL && glad_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR != NULL) glad_vkGetPhysicalDeviceExternalSemaphoreProperties = (PFN_vkGetPhysicalDeviceExternalSemaphoreProperties)glad_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR;
+    if (glad_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR == NULL && glad_vkGetPhysicalDeviceExternalSemaphoreProperties != NULL) glad_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR = (PFN_vkGetPhysicalDeviceExternalSemaphorePropertiesKHR)glad_vkGetPhysicalDeviceExternalSemaphoreProperties;
+    if (glad_vkGetPhysicalDeviceFeatures2 == NULL && glad_vkGetPhysicalDeviceFeatures2KHR != NULL) glad_vkGetPhysicalDeviceFeatures2 = (PFN_vkGetPhysicalDeviceFeatures2)glad_vkGetPhysicalDeviceFeatures2KHR;
+    if (glad_vkGetPhysicalDeviceFeatures2KHR == NULL && glad_vkGetPhysicalDeviceFeatures2 != NULL) glad_vkGetPhysicalDeviceFeatures2KHR = (PFN_vkGetPhysicalDeviceFeatures2KHR)glad_vkGetPhysicalDeviceFeatures2;
+    if (glad_vkGetPhysicalDeviceFormatProperties2 == NULL && glad_vkGetPhysicalDeviceFormatProperties2KHR != NULL) glad_vkGetPhysicalDeviceFormatProperties2 = (PFN_vkGetPhysicalDeviceFormatProperties2)glad_vkGetPhysicalDeviceFormatProperties2KHR;
+    if (glad_vkGetPhysicalDeviceFormatProperties2KHR == NULL && glad_vkGetPhysicalDeviceFormatProperties2 != NULL) glad_vkGetPhysicalDeviceFormatProperties2KHR = (PFN_vkGetPhysicalDeviceFormatProperties2KHR)glad_vkGetPhysicalDeviceFormatProperties2;
+    if (glad_vkGetPhysicalDeviceImageFormatProperties2 == NULL && glad_vkGetPhysicalDeviceImageFormatProperties2KHR != NULL) glad_vkGetPhysicalDeviceImageFormatProperties2 = (PFN_vkGetPhysicalDeviceImageFormatProperties2)glad_vkGetPhysicalDeviceImageFormatProperties2KHR;
+    if (glad_vkGetPhysicalDeviceImageFormatProperties2KHR == NULL && glad_vkGetPhysicalDeviceImageFormatProperties2 != NULL) glad_vkGetPhysicalDeviceImageFormatProperties2KHR = (PFN_vkGetPhysicalDeviceImageFormatProperties2KHR)glad_vkGetPhysicalDeviceImageFormatProperties2;
+    if (glad_vkGetPhysicalDeviceMemoryProperties2 == NULL && glad_vkGetPhysicalDeviceMemoryProperties2KHR != NULL) glad_vkGetPhysicalDeviceMemoryProperties2 = (PFN_vkGetPhysicalDeviceMemoryProperties2)glad_vkGetPhysicalDeviceMemoryProperties2KHR;
+    if (glad_vkGetPhysicalDeviceMemoryProperties2KHR == NULL && glad_vkGetPhysicalDeviceMemoryProperties2 != NULL) glad_vkGetPhysicalDeviceMemoryProperties2KHR = (PFN_vkGetPhysicalDeviceMemoryProperties2KHR)glad_vkGetPhysicalDeviceMemoryProperties2;
+    if (glad_vkGetPhysicalDeviceProperties2 == NULL && glad_vkGetPhysicalDeviceProperties2KHR != NULL) glad_vkGetPhysicalDeviceProperties2 = (PFN_vkGetPhysicalDeviceProperties2)glad_vkGetPhysicalDeviceProperties2KHR;
+    if (glad_vkGetPhysicalDeviceProperties2KHR == NULL && glad_vkGetPhysicalDeviceProperties2 != NULL) glad_vkGetPhysicalDeviceProperties2KHR = (PFN_vkGetPhysicalDeviceProperties2KHR)glad_vkGetPhysicalDeviceProperties2;
+    if (glad_vkGetPhysicalDeviceQueueFamilyProperties2 == NULL && glad_vkGetPhysicalDeviceQueueFamilyProperties2KHR != NULL) glad_vkGetPhysicalDeviceQueueFamilyProperties2 = (PFN_vkGetPhysicalDeviceQueueFamilyProperties2)glad_vkGetPhysicalDeviceQueueFamilyProperties2KHR;
+    if (glad_vkGetPhysicalDeviceQueueFamilyProperties2KHR == NULL && glad_vkGetPhysicalDeviceQueueFamilyProperties2 != NULL) glad_vkGetPhysicalDeviceQueueFamilyProperties2KHR = (PFN_vkGetPhysicalDeviceQueueFamilyProperties2KHR)glad_vkGetPhysicalDeviceQueueFamilyProperties2;
+    if (glad_vkGetPhysicalDeviceSparseImageFormatProperties2 == NULL && glad_vkGetPhysicalDeviceSparseImageFormatProperties2KHR != NULL) glad_vkGetPhysicalDeviceSparseImageFormatProperties2 = (PFN_vkGetPhysicalDeviceSparseImageFormatProperties2)glad_vkGetPhysicalDeviceSparseImageFormatProperties2KHR;
+    if (glad_vkGetPhysicalDeviceSparseImageFormatProperties2KHR == NULL && glad_vkGetPhysicalDeviceSparseImageFormatProperties2 != NULL) glad_vkGetPhysicalDeviceSparseImageFormatProperties2KHR = (PFN_vkGetPhysicalDeviceSparseImageFormatProperties2KHR)glad_vkGetPhysicalDeviceSparseImageFormatProperties2;
+    if (glad_vkGetPhysicalDeviceToolProperties == NULL && glad_vkGetPhysicalDeviceToolPropertiesEXT != NULL) glad_vkGetPhysicalDeviceToolProperties = (PFN_vkGetPhysicalDeviceToolProperties)glad_vkGetPhysicalDeviceToolPropertiesEXT;
+    if (glad_vkGetPhysicalDeviceToolPropertiesEXT == NULL && glad_vkGetPhysicalDeviceToolProperties != NULL) glad_vkGetPhysicalDeviceToolPropertiesEXT = (PFN_vkGetPhysicalDeviceToolPropertiesEXT)glad_vkGetPhysicalDeviceToolProperties;
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+
+#endif
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+
+#endif
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+
+#endif
+    if (glad_vkGetPrivateData == NULL && glad_vkGetPrivateDataEXT != NULL) glad_vkGetPrivateData = (PFN_vkGetPrivateData)glad_vkGetPrivateDataEXT;
+    if (glad_vkGetPrivateDataEXT == NULL && glad_vkGetPrivateData != NULL) glad_vkGetPrivateDataEXT = (PFN_vkGetPrivateDataEXT)glad_vkGetPrivateData;
+    if (glad_vkGetRayTracingShaderGroupHandlesKHR == NULL && glad_vkGetRayTracingShaderGroupHandlesNV != NULL) glad_vkGetRayTracingShaderGroupHandlesKHR = (PFN_vkGetRayTracingShaderGroupHandlesKHR)glad_vkGetRayTracingShaderGroupHandlesNV;
+    if (glad_vkGetRayTracingShaderGroupHandlesNV == NULL && glad_vkGetRayTracingShaderGroupHandlesKHR != NULL) glad_vkGetRayTracingShaderGroupHandlesNV = (PFN_vkGetRayTracingShaderGroupHandlesNV)glad_vkGetRayTracingShaderGroupHandlesKHR;
+    if (glad_vkGetSemaphoreCounterValue == NULL && glad_vkGetSemaphoreCounterValueKHR != NULL) glad_vkGetSemaphoreCounterValue = (PFN_vkGetSemaphoreCounterValue)glad_vkGetSemaphoreCounterValueKHR;
+    if (glad_vkGetSemaphoreCounterValueKHR == NULL && glad_vkGetSemaphoreCounterValue != NULL) glad_vkGetSemaphoreCounterValueKHR = (PFN_vkGetSemaphoreCounterValueKHR)glad_vkGetSemaphoreCounterValue;
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+
+#endif
+    if (glad_vkQueueSubmit2 == NULL && glad_vkQueueSubmit2KHR != NULL) glad_vkQueueSubmit2 = (PFN_vkQueueSubmit2)glad_vkQueueSubmit2KHR;
+    if (glad_vkQueueSubmit2KHR == NULL && glad_vkQueueSubmit2 != NULL) glad_vkQueueSubmit2KHR = (PFN_vkQueueSubmit2KHR)glad_vkQueueSubmit2;
+    if (glad_vkReleaseSwapchainImagesEXT == NULL && glad_vkReleaseSwapchainImagesKHR != NULL) glad_vkReleaseSwapchainImagesEXT = (PFN_vkReleaseSwapchainImagesEXT)glad_vkReleaseSwapchainImagesKHR;
+    if (glad_vkReleaseSwapchainImagesKHR == NULL && glad_vkReleaseSwapchainImagesEXT != NULL) glad_vkReleaseSwapchainImagesKHR = (PFN_vkReleaseSwapchainImagesKHR)glad_vkReleaseSwapchainImagesEXT;
+    if (glad_vkResetQueryPool == NULL && glad_vkResetQueryPoolEXT != NULL) glad_vkResetQueryPool = (PFN_vkResetQueryPool)glad_vkResetQueryPoolEXT;
+    if (glad_vkResetQueryPoolEXT == NULL && glad_vkResetQueryPool != NULL) glad_vkResetQueryPoolEXT = (PFN_vkResetQueryPoolEXT)glad_vkResetQueryPool;
+    if (glad_vkSetPrivateData == NULL && glad_vkSetPrivateDataEXT != NULL) glad_vkSetPrivateData = (PFN_vkSetPrivateData)glad_vkSetPrivateDataEXT;
+    if (glad_vkSetPrivateDataEXT == NULL && glad_vkSetPrivateData != NULL) glad_vkSetPrivateDataEXT = (PFN_vkSetPrivateDataEXT)glad_vkSetPrivateData;
+    if (glad_vkSignalSemaphore == NULL && glad_vkSignalSemaphoreKHR != NULL) glad_vkSignalSemaphore = (PFN_vkSignalSemaphore)glad_vkSignalSemaphoreKHR;
+    if (glad_vkSignalSemaphoreKHR == NULL && glad_vkSignalSemaphore != NULL) glad_vkSignalSemaphoreKHR = (PFN_vkSignalSemaphoreKHR)glad_vkSignalSemaphore;
+    if (glad_vkTrimCommandPool == NULL && glad_vkTrimCommandPoolKHR != NULL) glad_vkTrimCommandPool = (PFN_vkTrimCommandPool)glad_vkTrimCommandPoolKHR;
+    if (glad_vkTrimCommandPoolKHR == NULL && glad_vkTrimCommandPool != NULL) glad_vkTrimCommandPoolKHR = (PFN_vkTrimCommandPoolKHR)glad_vkTrimCommandPool;
+    if (glad_vkUpdateDescriptorSetWithTemplate == NULL && glad_vkUpdateDescriptorSetWithTemplateKHR != NULL) glad_vkUpdateDescriptorSetWithTemplate = (PFN_vkUpdateDescriptorSetWithTemplate)glad_vkUpdateDescriptorSetWithTemplateKHR;
+    if (glad_vkUpdateDescriptorSetWithTemplateKHR == NULL && glad_vkUpdateDescriptorSetWithTemplate != NULL) glad_vkUpdateDescriptorSetWithTemplateKHR = (PFN_vkUpdateDescriptorSetWithTemplateKHR)glad_vkUpdateDescriptorSetWithTemplate;
+    if (glad_vkWaitSemaphores == NULL && glad_vkWaitSemaphoresKHR != NULL) glad_vkWaitSemaphores = (PFN_vkWaitSemaphores)glad_vkWaitSemaphoresKHR;
+    if (glad_vkWaitSemaphoresKHR == NULL && glad_vkWaitSemaphores != NULL) glad_vkWaitSemaphoresKHR = (PFN_vkWaitSemaphoresKHR)glad_vkWaitSemaphores;
+}
 
 static int glad_vk_get_extensions( VkPhysicalDevice physical_device, uint32_t *out_extension_count, char ***out_extensions) {
     uint32_t i;
@@ -646,6 +1789,172 @@ static int glad_vk_find_extensions_vulkan( VkPhysicalDevice physical_device) {
     char **extensions = NULL;
     if (!glad_vk_get_extensions(physical_device, &extension_count, &extensions)) return 0;
 
+    GLAD_VK_AMD_draw_indirect_count = glad_vk_has_extension("VK_AMD_draw_indirect_count", extension_count, extensions);
+    GLAD_VK_EXT_buffer_device_address = glad_vk_has_extension("VK_EXT_buffer_device_address", extension_count, extensions);
+    GLAD_VK_EXT_calibrated_timestamps = glad_vk_has_extension("VK_EXT_calibrated_timestamps", extension_count, extensions);
+    GLAD_VK_EXT_extended_dynamic_state = glad_vk_has_extension("VK_EXT_extended_dynamic_state", extension_count, extensions);
+    GLAD_VK_EXT_extended_dynamic_state2 = glad_vk_has_extension("VK_EXT_extended_dynamic_state2", extension_count, extensions);
+    GLAD_VK_EXT_host_query_reset = glad_vk_has_extension("VK_EXT_host_query_reset", extension_count, extensions);
+    GLAD_VK_EXT_private_data = glad_vk_has_extension("VK_EXT_private_data", extension_count, extensions);
+    GLAD_VK_EXT_shader_object = glad_vk_has_extension("VK_EXT_shader_object", extension_count, extensions);
+    GLAD_VK_EXT_swapchain_maintenance1 = glad_vk_has_extension("VK_EXT_swapchain_maintenance1", extension_count, extensions);
+    GLAD_VK_EXT_tooling_info = glad_vk_has_extension("VK_EXT_tooling_info", extension_count, extensions);
+    GLAD_VK_KHR_16bit_storage = glad_vk_has_extension("VK_KHR_16bit_storage", extension_count, extensions);
+    GLAD_VK_KHR_8bit_storage = glad_vk_has_extension("VK_KHR_8bit_storage", extension_count, extensions);
+    GLAD_VK_KHR_acceleration_structure = glad_vk_has_extension("VK_KHR_acceleration_structure", extension_count, extensions);
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+    GLAD_VK_KHR_android_surface = glad_vk_has_extension("VK_KHR_android_surface", extension_count, extensions);
+
+#endif
+    GLAD_VK_KHR_bind_memory2 = glad_vk_has_extension("VK_KHR_bind_memory2", extension_count, extensions);
+    GLAD_VK_KHR_buffer_device_address = glad_vk_has_extension("VK_KHR_buffer_device_address", extension_count, extensions);
+    GLAD_VK_KHR_calibrated_timestamps = glad_vk_has_extension("VK_KHR_calibrated_timestamps", extension_count, extensions);
+    GLAD_VK_KHR_compute_shader_derivatives = glad_vk_has_extension("VK_KHR_compute_shader_derivatives", extension_count, extensions);
+    GLAD_VK_KHR_cooperative_matrix = glad_vk_has_extension("VK_KHR_cooperative_matrix", extension_count, extensions);
+    GLAD_VK_KHR_copy_commands2 = glad_vk_has_extension("VK_KHR_copy_commands2", extension_count, extensions);
+    GLAD_VK_KHR_copy_memory_indirect = glad_vk_has_extension("VK_KHR_copy_memory_indirect", extension_count, extensions);
+    GLAD_VK_KHR_create_renderpass2 = glad_vk_has_extension("VK_KHR_create_renderpass2", extension_count, extensions);
+    GLAD_VK_KHR_dedicated_allocation = glad_vk_has_extension("VK_KHR_dedicated_allocation", extension_count, extensions);
+    GLAD_VK_KHR_deferred_host_operations = glad_vk_has_extension("VK_KHR_deferred_host_operations", extension_count, extensions);
+    GLAD_VK_KHR_depth_clamp_zero_one = glad_vk_has_extension("VK_KHR_depth_clamp_zero_one", extension_count, extensions);
+    GLAD_VK_KHR_depth_stencil_resolve = glad_vk_has_extension("VK_KHR_depth_stencil_resolve", extension_count, extensions);
+    GLAD_VK_KHR_descriptor_update_template = glad_vk_has_extension("VK_KHR_descriptor_update_template", extension_count, extensions);
+    GLAD_VK_KHR_device_group = glad_vk_has_extension("VK_KHR_device_group", extension_count, extensions);
+    GLAD_VK_KHR_device_group_creation = glad_vk_has_extension("VK_KHR_device_group_creation", extension_count, extensions);
+    GLAD_VK_KHR_display = glad_vk_has_extension("VK_KHR_display", extension_count, extensions);
+    GLAD_VK_KHR_display_swapchain = glad_vk_has_extension("VK_KHR_display_swapchain", extension_count, extensions);
+    GLAD_VK_KHR_draw_indirect_count = glad_vk_has_extension("VK_KHR_draw_indirect_count", extension_count, extensions);
+    GLAD_VK_KHR_driver_properties = glad_vk_has_extension("VK_KHR_driver_properties", extension_count, extensions);
+    GLAD_VK_KHR_dynamic_rendering = glad_vk_has_extension("VK_KHR_dynamic_rendering", extension_count, extensions);
+    GLAD_VK_KHR_dynamic_rendering_local_read = glad_vk_has_extension("VK_KHR_dynamic_rendering_local_read", extension_count, extensions);
+    GLAD_VK_KHR_external_fence = glad_vk_has_extension("VK_KHR_external_fence", extension_count, extensions);
+    GLAD_VK_KHR_external_fence_capabilities = glad_vk_has_extension("VK_KHR_external_fence_capabilities", extension_count, extensions);
+    GLAD_VK_KHR_external_fence_fd = glad_vk_has_extension("VK_KHR_external_fence_fd", extension_count, extensions);
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    GLAD_VK_KHR_external_fence_win32 = glad_vk_has_extension("VK_KHR_external_fence_win32", extension_count, extensions);
+
+#endif
+    GLAD_VK_KHR_external_memory = glad_vk_has_extension("VK_KHR_external_memory", extension_count, extensions);
+    GLAD_VK_KHR_external_memory_capabilities = glad_vk_has_extension("VK_KHR_external_memory_capabilities", extension_count, extensions);
+    GLAD_VK_KHR_external_memory_fd = glad_vk_has_extension("VK_KHR_external_memory_fd", extension_count, extensions);
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    GLAD_VK_KHR_external_memory_win32 = glad_vk_has_extension("VK_KHR_external_memory_win32", extension_count, extensions);
+
+#endif
+    GLAD_VK_KHR_external_semaphore = glad_vk_has_extension("VK_KHR_external_semaphore", extension_count, extensions);
+    GLAD_VK_KHR_external_semaphore_capabilities = glad_vk_has_extension("VK_KHR_external_semaphore_capabilities", extension_count, extensions);
+    GLAD_VK_KHR_external_semaphore_fd = glad_vk_has_extension("VK_KHR_external_semaphore_fd", extension_count, extensions);
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    GLAD_VK_KHR_external_semaphore_win32 = glad_vk_has_extension("VK_KHR_external_semaphore_win32", extension_count, extensions);
+
+#endif
+    GLAD_VK_KHR_format_feature_flags2 = glad_vk_has_extension("VK_KHR_format_feature_flags2", extension_count, extensions);
+    GLAD_VK_KHR_fragment_shader_barycentric = glad_vk_has_extension("VK_KHR_fragment_shader_barycentric", extension_count, extensions);
+    GLAD_VK_KHR_fragment_shading_rate = glad_vk_has_extension("VK_KHR_fragment_shading_rate", extension_count, extensions);
+    GLAD_VK_KHR_get_display_properties2 = glad_vk_has_extension("VK_KHR_get_display_properties2", extension_count, extensions);
+    GLAD_VK_KHR_get_memory_requirements2 = glad_vk_has_extension("VK_KHR_get_memory_requirements2", extension_count, extensions);
+    GLAD_VK_KHR_get_physical_device_properties2 = glad_vk_has_extension("VK_KHR_get_physical_device_properties2", extension_count, extensions);
+    GLAD_VK_KHR_get_surface_capabilities2 = glad_vk_has_extension("VK_KHR_get_surface_capabilities2", extension_count, extensions);
+    GLAD_VK_KHR_global_priority = glad_vk_has_extension("VK_KHR_global_priority", extension_count, extensions);
+    GLAD_VK_KHR_image_format_list = glad_vk_has_extension("VK_KHR_image_format_list", extension_count, extensions);
+    GLAD_VK_KHR_imageless_framebuffer = glad_vk_has_extension("VK_KHR_imageless_framebuffer", extension_count, extensions);
+    GLAD_VK_KHR_incremental_present = glad_vk_has_extension("VK_KHR_incremental_present", extension_count, extensions);
+    GLAD_VK_KHR_index_type_uint8 = glad_vk_has_extension("VK_KHR_index_type_uint8", extension_count, extensions);
+    GLAD_VK_KHR_line_rasterization = glad_vk_has_extension("VK_KHR_line_rasterization", extension_count, extensions);
+    GLAD_VK_KHR_load_store_op_none = glad_vk_has_extension("VK_KHR_load_store_op_none", extension_count, extensions);
+    GLAD_VK_KHR_maintenance1 = glad_vk_has_extension("VK_KHR_maintenance1", extension_count, extensions);
+    GLAD_VK_KHR_maintenance2 = glad_vk_has_extension("VK_KHR_maintenance2", extension_count, extensions);
+    GLAD_VK_KHR_maintenance3 = glad_vk_has_extension("VK_KHR_maintenance3", extension_count, extensions);
+    GLAD_VK_KHR_maintenance4 = glad_vk_has_extension("VK_KHR_maintenance4", extension_count, extensions);
+    GLAD_VK_KHR_maintenance5 = glad_vk_has_extension("VK_KHR_maintenance5", extension_count, extensions);
+    GLAD_VK_KHR_maintenance6 = glad_vk_has_extension("VK_KHR_maintenance6", extension_count, extensions);
+    GLAD_VK_KHR_maintenance7 = glad_vk_has_extension("VK_KHR_maintenance7", extension_count, extensions);
+    GLAD_VK_KHR_maintenance8 = glad_vk_has_extension("VK_KHR_maintenance8", extension_count, extensions);
+    GLAD_VK_KHR_maintenance9 = glad_vk_has_extension("VK_KHR_maintenance9", extension_count, extensions);
+    GLAD_VK_KHR_map_memory2 = glad_vk_has_extension("VK_KHR_map_memory2", extension_count, extensions);
+    GLAD_VK_KHR_multiview = glad_vk_has_extension("VK_KHR_multiview", extension_count, extensions);
+    GLAD_VK_KHR_performance_query = glad_vk_has_extension("VK_KHR_performance_query", extension_count, extensions);
+    GLAD_VK_KHR_pipeline_binary = glad_vk_has_extension("VK_KHR_pipeline_binary", extension_count, extensions);
+    GLAD_VK_KHR_pipeline_executable_properties = glad_vk_has_extension("VK_KHR_pipeline_executable_properties", extension_count, extensions);
+    GLAD_VK_KHR_pipeline_library = glad_vk_has_extension("VK_KHR_pipeline_library", extension_count, extensions);
+    GLAD_VK_KHR_portability_enumeration = glad_vk_has_extension("VK_KHR_portability_enumeration", extension_count, extensions);
+#if defined(VK_ENABLE_BETA_EXTENSIONS)
+    GLAD_VK_KHR_portability_subset = glad_vk_has_extension("VK_KHR_portability_subset", extension_count, extensions);
+
+#endif
+    GLAD_VK_KHR_present_id = glad_vk_has_extension("VK_KHR_present_id", extension_count, extensions);
+    GLAD_VK_KHR_present_id2 = glad_vk_has_extension("VK_KHR_present_id2", extension_count, extensions);
+    GLAD_VK_KHR_present_mode_fifo_latest_ready = glad_vk_has_extension("VK_KHR_present_mode_fifo_latest_ready", extension_count, extensions);
+    GLAD_VK_KHR_present_wait = glad_vk_has_extension("VK_KHR_present_wait", extension_count, extensions);
+    GLAD_VK_KHR_present_wait2 = glad_vk_has_extension("VK_KHR_present_wait2", extension_count, extensions);
+    GLAD_VK_KHR_push_descriptor = glad_vk_has_extension("VK_KHR_push_descriptor", extension_count, extensions);
+    GLAD_VK_KHR_ray_query = glad_vk_has_extension("VK_KHR_ray_query", extension_count, extensions);
+    GLAD_VK_KHR_ray_tracing_maintenance1 = glad_vk_has_extension("VK_KHR_ray_tracing_maintenance1", extension_count, extensions);
+    GLAD_VK_KHR_ray_tracing_pipeline = glad_vk_has_extension("VK_KHR_ray_tracing_pipeline", extension_count, extensions);
+    GLAD_VK_KHR_ray_tracing_position_fetch = glad_vk_has_extension("VK_KHR_ray_tracing_position_fetch", extension_count, extensions);
+    GLAD_VK_KHR_relaxed_block_layout = glad_vk_has_extension("VK_KHR_relaxed_block_layout", extension_count, extensions);
+    GLAD_VK_KHR_robustness2 = glad_vk_has_extension("VK_KHR_robustness2", extension_count, extensions);
+    GLAD_VK_KHR_sampler_mirror_clamp_to_edge = glad_vk_has_extension("VK_KHR_sampler_mirror_clamp_to_edge", extension_count, extensions);
+    GLAD_VK_KHR_sampler_ycbcr_conversion = glad_vk_has_extension("VK_KHR_sampler_ycbcr_conversion", extension_count, extensions);
+    GLAD_VK_KHR_separate_depth_stencil_layouts = glad_vk_has_extension("VK_KHR_separate_depth_stencil_layouts", extension_count, extensions);
+    GLAD_VK_KHR_shader_atomic_int64 = glad_vk_has_extension("VK_KHR_shader_atomic_int64", extension_count, extensions);
+    GLAD_VK_KHR_shader_bfloat16 = glad_vk_has_extension("VK_KHR_shader_bfloat16", extension_count, extensions);
+    GLAD_VK_KHR_shader_clock = glad_vk_has_extension("VK_KHR_shader_clock", extension_count, extensions);
+    GLAD_VK_KHR_shader_draw_parameters = glad_vk_has_extension("VK_KHR_shader_draw_parameters", extension_count, extensions);
+    GLAD_VK_KHR_shader_expect_assume = glad_vk_has_extension("VK_KHR_shader_expect_assume", extension_count, extensions);
+    GLAD_VK_KHR_shader_float16_int8 = glad_vk_has_extension("VK_KHR_shader_float16_int8", extension_count, extensions);
+    GLAD_VK_KHR_shader_float_controls = glad_vk_has_extension("VK_KHR_shader_float_controls", extension_count, extensions);
+    GLAD_VK_KHR_shader_float_controls2 = glad_vk_has_extension("VK_KHR_shader_float_controls2", extension_count, extensions);
+    GLAD_VK_KHR_shader_fma = glad_vk_has_extension("VK_KHR_shader_fma", extension_count, extensions);
+    GLAD_VK_KHR_shader_integer_dot_product = glad_vk_has_extension("VK_KHR_shader_integer_dot_product", extension_count, extensions);
+    GLAD_VK_KHR_shader_maximal_reconvergence = glad_vk_has_extension("VK_KHR_shader_maximal_reconvergence", extension_count, extensions);
+    GLAD_VK_KHR_shader_non_semantic_info = glad_vk_has_extension("VK_KHR_shader_non_semantic_info", extension_count, extensions);
+    GLAD_VK_KHR_shader_quad_control = glad_vk_has_extension("VK_KHR_shader_quad_control", extension_count, extensions);
+    GLAD_VK_KHR_shader_relaxed_extended_instruction = glad_vk_has_extension("VK_KHR_shader_relaxed_extended_instruction", extension_count, extensions);
+    GLAD_VK_KHR_shader_subgroup_extended_types = glad_vk_has_extension("VK_KHR_shader_subgroup_extended_types", extension_count, extensions);
+    GLAD_VK_KHR_shader_subgroup_rotate = glad_vk_has_extension("VK_KHR_shader_subgroup_rotate", extension_count, extensions);
+    GLAD_VK_KHR_shader_subgroup_uniform_control_flow = glad_vk_has_extension("VK_KHR_shader_subgroup_uniform_control_flow", extension_count, extensions);
+    GLAD_VK_KHR_shader_terminate_invocation = glad_vk_has_extension("VK_KHR_shader_terminate_invocation", extension_count, extensions);
+    GLAD_VK_KHR_shader_untyped_pointers = glad_vk_has_extension("VK_KHR_shader_untyped_pointers", extension_count, extensions);
+    GLAD_VK_KHR_shared_presentable_image = glad_vk_has_extension("VK_KHR_shared_presentable_image", extension_count, extensions);
+    GLAD_VK_KHR_spirv_1_4 = glad_vk_has_extension("VK_KHR_spirv_1_4", extension_count, extensions);
+    GLAD_VK_KHR_storage_buffer_storage_class = glad_vk_has_extension("VK_KHR_storage_buffer_storage_class", extension_count, extensions);
+    GLAD_VK_KHR_surface = glad_vk_has_extension("VK_KHR_surface", extension_count, extensions);
+    GLAD_VK_KHR_surface_maintenance1 = glad_vk_has_extension("VK_KHR_surface_maintenance1", extension_count, extensions);
+    GLAD_VK_KHR_surface_protected_capabilities = glad_vk_has_extension("VK_KHR_surface_protected_capabilities", extension_count, extensions);
+    GLAD_VK_KHR_swapchain = glad_vk_has_extension("VK_KHR_swapchain", extension_count, extensions);
+    GLAD_VK_KHR_swapchain_maintenance1 = glad_vk_has_extension("VK_KHR_swapchain_maintenance1", extension_count, extensions);
+    GLAD_VK_KHR_swapchain_mutable_format = glad_vk_has_extension("VK_KHR_swapchain_mutable_format", extension_count, extensions);
+    GLAD_VK_KHR_synchronization2 = glad_vk_has_extension("VK_KHR_synchronization2", extension_count, extensions);
+    GLAD_VK_KHR_timeline_semaphore = glad_vk_has_extension("VK_KHR_timeline_semaphore", extension_count, extensions);
+    GLAD_VK_KHR_unified_image_layouts = glad_vk_has_extension("VK_KHR_unified_image_layouts", extension_count, extensions);
+    GLAD_VK_KHR_uniform_buffer_standard_layout = glad_vk_has_extension("VK_KHR_uniform_buffer_standard_layout", extension_count, extensions);
+    GLAD_VK_KHR_variable_pointers = glad_vk_has_extension("VK_KHR_variable_pointers", extension_count, extensions);
+    GLAD_VK_KHR_vertex_attribute_divisor = glad_vk_has_extension("VK_KHR_vertex_attribute_divisor", extension_count, extensions);
+    GLAD_VK_KHR_vulkan_memory_model = glad_vk_has_extension("VK_KHR_vulkan_memory_model", extension_count, extensions);
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+    GLAD_VK_KHR_wayland_surface = glad_vk_has_extension("VK_KHR_wayland_surface", extension_count, extensions);
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    GLAD_VK_KHR_win32_keyed_mutex = glad_vk_has_extension("VK_KHR_win32_keyed_mutex", extension_count, extensions);
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    GLAD_VK_KHR_win32_surface = glad_vk_has_extension("VK_KHR_win32_surface", extension_count, extensions);
+
+#endif
+    GLAD_VK_KHR_workgroup_memory_explicit_layout = glad_vk_has_extension("VK_KHR_workgroup_memory_explicit_layout", extension_count, extensions);
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+    GLAD_VK_KHR_xcb_surface = glad_vk_has_extension("VK_KHR_xcb_surface", extension_count, extensions);
+
+#endif
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+    GLAD_VK_KHR_xlib_surface = glad_vk_has_extension("VK_KHR_xlib_surface", extension_count, extensions);
+
+#endif
+    GLAD_VK_KHR_zero_initialize_workgroup_memory = glad_vk_has_extension("VK_KHR_zero_initialize_workgroup_memory", extension_count, extensions);
+    GLAD_VK_NV_ray_tracing = glad_vk_has_extension("VK_NV_ray_tracing", extension_count, extensions);
 
     GLAD_UNUSED(&glad_vk_has_extension);
 
@@ -683,7 +1992,6 @@ static int glad_vk_find_core_vulkan( VkPhysicalDevice physical_device) {
     GLAD_VK_VERSION_1_1 = (major == 1 && minor >= 1) || major > 1;
     GLAD_VK_VERSION_1_2 = (major == 1 && minor >= 2) || major > 1;
     GLAD_VK_VERSION_1_3 = (major == 1 && minor >= 3) || major > 1;
-    GLAD_VK_VERSION_1_4 = (major == 1 && minor >= 4) || major > 1;
 
     return GLAD_MAKE_VERSION(major, minor);
 }
@@ -703,10 +2011,103 @@ int gladLoadVulkanUserPtr( VkPhysicalDevice physical_device, GLADuserptrloadfunc
     glad_vk_load_VK_VERSION_1_1(load, userptr);
     glad_vk_load_VK_VERSION_1_2(load, userptr);
     glad_vk_load_VK_VERSION_1_3(load, userptr);
-    glad_vk_load_VK_VERSION_1_4(load, userptr);
 
     if (!glad_vk_find_extensions_vulkan( physical_device)) return 0;
+    glad_vk_load_VK_AMD_draw_indirect_count(load, userptr);
+    glad_vk_load_VK_EXT_buffer_device_address(load, userptr);
+    glad_vk_load_VK_EXT_calibrated_timestamps(load, userptr);
+    glad_vk_load_VK_EXT_extended_dynamic_state(load, userptr);
+    glad_vk_load_VK_EXT_extended_dynamic_state2(load, userptr);
+    glad_vk_load_VK_EXT_host_query_reset(load, userptr);
+    glad_vk_load_VK_EXT_private_data(load, userptr);
+    glad_vk_load_VK_EXT_shader_object(load, userptr);
+    glad_vk_load_VK_EXT_swapchain_maintenance1(load, userptr);
+    glad_vk_load_VK_EXT_tooling_info(load, userptr);
+    glad_vk_load_VK_KHR_acceleration_structure(load, userptr);
+#if defined(VK_USE_PLATFORM_ANDROID_KHR)
+    glad_vk_load_VK_KHR_android_surface(load, userptr);
 
+#endif
+    glad_vk_load_VK_KHR_bind_memory2(load, userptr);
+    glad_vk_load_VK_KHR_buffer_device_address(load, userptr);
+    glad_vk_load_VK_KHR_calibrated_timestamps(load, userptr);
+    glad_vk_load_VK_KHR_cooperative_matrix(load, userptr);
+    glad_vk_load_VK_KHR_copy_commands2(load, userptr);
+    glad_vk_load_VK_KHR_copy_memory_indirect(load, userptr);
+    glad_vk_load_VK_KHR_create_renderpass2(load, userptr);
+    glad_vk_load_VK_KHR_deferred_host_operations(load, userptr);
+    glad_vk_load_VK_KHR_descriptor_update_template(load, userptr);
+    glad_vk_load_VK_KHR_device_group(load, userptr);
+    glad_vk_load_VK_KHR_device_group_creation(load, userptr);
+    glad_vk_load_VK_KHR_display(load, userptr);
+    glad_vk_load_VK_KHR_display_swapchain(load, userptr);
+    glad_vk_load_VK_KHR_draw_indirect_count(load, userptr);
+    glad_vk_load_VK_KHR_dynamic_rendering(load, userptr);
+    glad_vk_load_VK_KHR_dynamic_rendering_local_read(load, userptr);
+    glad_vk_load_VK_KHR_external_fence_capabilities(load, userptr);
+    glad_vk_load_VK_KHR_external_fence_fd(load, userptr);
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    glad_vk_load_VK_KHR_external_fence_win32(load, userptr);
+
+#endif
+    glad_vk_load_VK_KHR_external_memory_capabilities(load, userptr);
+    glad_vk_load_VK_KHR_external_memory_fd(load, userptr);
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    glad_vk_load_VK_KHR_external_memory_win32(load, userptr);
+
+#endif
+    glad_vk_load_VK_KHR_external_semaphore_capabilities(load, userptr);
+    glad_vk_load_VK_KHR_external_semaphore_fd(load, userptr);
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    glad_vk_load_VK_KHR_external_semaphore_win32(load, userptr);
+
+#endif
+    glad_vk_load_VK_KHR_fragment_shading_rate(load, userptr);
+    glad_vk_load_VK_KHR_get_display_properties2(load, userptr);
+    glad_vk_load_VK_KHR_get_memory_requirements2(load, userptr);
+    glad_vk_load_VK_KHR_get_physical_device_properties2(load, userptr);
+    glad_vk_load_VK_KHR_get_surface_capabilities2(load, userptr);
+    glad_vk_load_VK_KHR_line_rasterization(load, userptr);
+    glad_vk_load_VK_KHR_maintenance1(load, userptr);
+    glad_vk_load_VK_KHR_maintenance3(load, userptr);
+    glad_vk_load_VK_KHR_maintenance4(load, userptr);
+    glad_vk_load_VK_KHR_maintenance5(load, userptr);
+    glad_vk_load_VK_KHR_maintenance6(load, userptr);
+    glad_vk_load_VK_KHR_map_memory2(load, userptr);
+    glad_vk_load_VK_KHR_performance_query(load, userptr);
+    glad_vk_load_VK_KHR_pipeline_binary(load, userptr);
+    glad_vk_load_VK_KHR_pipeline_executable_properties(load, userptr);
+    glad_vk_load_VK_KHR_present_wait(load, userptr);
+    glad_vk_load_VK_KHR_present_wait2(load, userptr);
+    glad_vk_load_VK_KHR_push_descriptor(load, userptr);
+    glad_vk_load_VK_KHR_ray_tracing_maintenance1(load, userptr);
+    glad_vk_load_VK_KHR_ray_tracing_pipeline(load, userptr);
+    glad_vk_load_VK_KHR_sampler_ycbcr_conversion(load, userptr);
+    glad_vk_load_VK_KHR_shared_presentable_image(load, userptr);
+    glad_vk_load_VK_KHR_surface(load, userptr);
+    glad_vk_load_VK_KHR_swapchain(load, userptr);
+    glad_vk_load_VK_KHR_swapchain_maintenance1(load, userptr);
+    glad_vk_load_VK_KHR_synchronization2(load, userptr);
+    glad_vk_load_VK_KHR_timeline_semaphore(load, userptr);
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+    glad_vk_load_VK_KHR_wayland_surface(load, userptr);
+
+#endif
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    glad_vk_load_VK_KHR_win32_surface(load, userptr);
+
+#endif
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+    glad_vk_load_VK_KHR_xcb_surface(load, userptr);
+
+#endif
+#if defined(VK_USE_PLATFORM_XLIB_KHR)
+    glad_vk_load_VK_KHR_xlib_surface(load, userptr);
+
+#endif
+    glad_vk_load_VK_NV_ray_tracing(load, userptr);
+
+    glad_vk_resolve_aliases();
 
     return version;
 }
@@ -791,135 +2192,253 @@ static GLADapiproc glad_dlsym_handle(void* handle, const char *name) {
 
 
 static const char* DEVICE_FUNCTIONS[] = {
+    "vkAcquireNextImage2KHR",
+    "vkAcquireNextImageKHR",
+    "vkAcquireProfilingLockKHR",
     "vkAllocateCommandBuffers",
     "vkAllocateDescriptorSets",
     "vkAllocateMemory",
     "vkBeginCommandBuffer",
+    "vkBindAccelerationStructureMemoryNV",
     "vkBindBufferMemory",
     "vkBindBufferMemory2",
+    "vkBindBufferMemory2KHR",
     "vkBindImageMemory",
     "vkBindImageMemory2",
+    "vkBindImageMemory2KHR",
+    "vkBuildAccelerationStructuresKHR",
     "vkCmdBeginQuery",
     "vkCmdBeginRenderPass",
     "vkCmdBeginRenderPass2",
+    "vkCmdBeginRenderPass2KHR",
     "vkCmdBeginRendering",
+    "vkCmdBeginRenderingKHR",
+    "vkCmdBindDescriptorBufferEmbeddedSamplers2EXT",
     "vkCmdBindDescriptorSets",
-    "vkCmdBindDescriptorSets2",
+    "vkCmdBindDescriptorSets2KHR",
     "vkCmdBindIndexBuffer",
-    "vkCmdBindIndexBuffer2",
+    "vkCmdBindIndexBuffer2KHR",
     "vkCmdBindPipeline",
+    "vkCmdBindShadersEXT",
     "vkCmdBindVertexBuffers",
     "vkCmdBindVertexBuffers2",
+    "vkCmdBindVertexBuffers2EXT",
     "vkCmdBlitImage",
     "vkCmdBlitImage2",
+    "vkCmdBlitImage2KHR",
+    "vkCmdBuildAccelerationStructureNV",
+    "vkCmdBuildAccelerationStructuresIndirectKHR",
+    "vkCmdBuildAccelerationStructuresKHR",
     "vkCmdClearAttachments",
     "vkCmdClearColorImage",
     "vkCmdClearDepthStencilImage",
+    "vkCmdCopyAccelerationStructureKHR",
+    "vkCmdCopyAccelerationStructureNV",
+    "vkCmdCopyAccelerationStructureToMemoryKHR",
     "vkCmdCopyBuffer",
     "vkCmdCopyBuffer2",
+    "vkCmdCopyBuffer2KHR",
     "vkCmdCopyBufferToImage",
     "vkCmdCopyBufferToImage2",
+    "vkCmdCopyBufferToImage2KHR",
     "vkCmdCopyImage",
     "vkCmdCopyImage2",
+    "vkCmdCopyImage2KHR",
     "vkCmdCopyImageToBuffer",
     "vkCmdCopyImageToBuffer2",
+    "vkCmdCopyImageToBuffer2KHR",
+    "vkCmdCopyMemoryIndirectKHR",
+    "vkCmdCopyMemoryToAccelerationStructureKHR",
+    "vkCmdCopyMemoryToImageIndirectKHR",
     "vkCmdCopyQueryPoolResults",
     "vkCmdDispatch",
     "vkCmdDispatchBase",
+    "vkCmdDispatchBaseKHR",
     "vkCmdDispatchIndirect",
     "vkCmdDraw",
     "vkCmdDrawIndexed",
     "vkCmdDrawIndexedIndirect",
     "vkCmdDrawIndexedIndirectCount",
+    "vkCmdDrawIndexedIndirectCountAMD",
+    "vkCmdDrawIndexedIndirectCountKHR",
     "vkCmdDrawIndirect",
     "vkCmdDrawIndirectCount",
+    "vkCmdDrawIndirectCountAMD",
+    "vkCmdDrawIndirectCountKHR",
     "vkCmdEndQuery",
     "vkCmdEndRenderPass",
     "vkCmdEndRenderPass2",
+    "vkCmdEndRenderPass2KHR",
     "vkCmdEndRendering",
+    "vkCmdEndRenderingKHR",
     "vkCmdExecuteCommands",
     "vkCmdFillBuffer",
     "vkCmdNextSubpass",
     "vkCmdNextSubpass2",
+    "vkCmdNextSubpass2KHR",
     "vkCmdPipelineBarrier",
     "vkCmdPipelineBarrier2",
+    "vkCmdPipelineBarrier2KHR",
     "vkCmdPushConstants",
-    "vkCmdPushConstants2",
-    "vkCmdPushDescriptorSet",
-    "vkCmdPushDescriptorSet2",
-    "vkCmdPushDescriptorSetWithTemplate",
-    "vkCmdPushDescriptorSetWithTemplate2",
+    "vkCmdPushConstants2KHR",
+    "vkCmdPushDescriptorSet2KHR",
+    "vkCmdPushDescriptorSetKHR",
+    "vkCmdPushDescriptorSetWithTemplate2KHR",
+    "vkCmdPushDescriptorSetWithTemplateKHR",
     "vkCmdResetEvent",
     "vkCmdResetEvent2",
+    "vkCmdResetEvent2KHR",
     "vkCmdResetQueryPool",
     "vkCmdResolveImage",
     "vkCmdResolveImage2",
+    "vkCmdResolveImage2KHR",
+    "vkCmdSetAlphaToCoverageEnableEXT",
+    "vkCmdSetAlphaToOneEnableEXT",
     "vkCmdSetBlendConstants",
+    "vkCmdSetColorBlendAdvancedEXT",
+    "vkCmdSetColorBlendEnableEXT",
+    "vkCmdSetColorBlendEquationEXT",
+    "vkCmdSetColorWriteMaskEXT",
+    "vkCmdSetConservativeRasterizationModeEXT",
+    "vkCmdSetCoverageModulationModeNV",
+    "vkCmdSetCoverageModulationTableEnableNV",
+    "vkCmdSetCoverageModulationTableNV",
+    "vkCmdSetCoverageReductionModeNV",
+    "vkCmdSetCoverageToColorEnableNV",
+    "vkCmdSetCoverageToColorLocationNV",
     "vkCmdSetCullMode",
+    "vkCmdSetCullModeEXT",
     "vkCmdSetDepthBias",
     "vkCmdSetDepthBiasEnable",
+    "vkCmdSetDepthBiasEnableEXT",
     "vkCmdSetDepthBounds",
     "vkCmdSetDepthBoundsTestEnable",
+    "vkCmdSetDepthBoundsTestEnableEXT",
+    "vkCmdSetDepthClampEnableEXT",
+    "vkCmdSetDepthClampRangeEXT",
+    "vkCmdSetDepthClipEnableEXT",
+    "vkCmdSetDepthClipNegativeOneToOneEXT",
     "vkCmdSetDepthCompareOp",
+    "vkCmdSetDepthCompareOpEXT",
     "vkCmdSetDepthTestEnable",
+    "vkCmdSetDepthTestEnableEXT",
     "vkCmdSetDepthWriteEnable",
+    "vkCmdSetDepthWriteEnableEXT",
+    "vkCmdSetDescriptorBufferOffsets2EXT",
     "vkCmdSetDeviceMask",
+    "vkCmdSetDeviceMaskKHR",
     "vkCmdSetEvent",
     "vkCmdSetEvent2",
+    "vkCmdSetEvent2KHR",
+    "vkCmdSetExtraPrimitiveOverestimationSizeEXT",
+    "vkCmdSetFragmentShadingRateKHR",
     "vkCmdSetFrontFace",
-    "vkCmdSetLineStipple",
+    "vkCmdSetFrontFaceEXT",
+    "vkCmdSetLineRasterizationModeEXT",
+    "vkCmdSetLineStippleEnableEXT",
+    "vkCmdSetLineStippleKHR",
     "vkCmdSetLineWidth",
+    "vkCmdSetLogicOpEXT",
+    "vkCmdSetLogicOpEnableEXT",
+    "vkCmdSetPatchControlPointsEXT",
+    "vkCmdSetPolygonModeEXT",
     "vkCmdSetPrimitiveRestartEnable",
+    "vkCmdSetPrimitiveRestartEnableEXT",
     "vkCmdSetPrimitiveTopology",
+    "vkCmdSetPrimitiveTopologyEXT",
+    "vkCmdSetProvokingVertexModeEXT",
+    "vkCmdSetRasterizationSamplesEXT",
+    "vkCmdSetRasterizationStreamEXT",
     "vkCmdSetRasterizerDiscardEnable",
-    "vkCmdSetRenderingAttachmentLocations",
-    "vkCmdSetRenderingInputAttachmentIndices",
+    "vkCmdSetRasterizerDiscardEnableEXT",
+    "vkCmdSetRayTracingPipelineStackSizeKHR",
+    "vkCmdSetRenderingAttachmentLocationsKHR",
+    "vkCmdSetRenderingInputAttachmentIndicesKHR",
+    "vkCmdSetRepresentativeFragmentTestEnableNV",
+    "vkCmdSetSampleLocationsEnableEXT",
+    "vkCmdSetSampleMaskEXT",
     "vkCmdSetScissor",
     "vkCmdSetScissorWithCount",
+    "vkCmdSetScissorWithCountEXT",
+    "vkCmdSetShadingRateImageEnableNV",
     "vkCmdSetStencilCompareMask",
     "vkCmdSetStencilOp",
+    "vkCmdSetStencilOpEXT",
     "vkCmdSetStencilReference",
     "vkCmdSetStencilTestEnable",
+    "vkCmdSetStencilTestEnableEXT",
     "vkCmdSetStencilWriteMask",
+    "vkCmdSetTessellationDomainOriginEXT",
+    "vkCmdSetVertexInputEXT",
     "vkCmdSetViewport",
+    "vkCmdSetViewportSwizzleNV",
+    "vkCmdSetViewportWScalingEnableNV",
     "vkCmdSetViewportWithCount",
+    "vkCmdSetViewportWithCountEXT",
+    "vkCmdTraceRaysIndirect2KHR",
+    "vkCmdTraceRaysIndirectKHR",
+    "vkCmdTraceRaysKHR",
+    "vkCmdTraceRaysNV",
     "vkCmdUpdateBuffer",
     "vkCmdWaitEvents",
     "vkCmdWaitEvents2",
+    "vkCmdWaitEvents2KHR",
+    "vkCmdWriteAccelerationStructuresPropertiesKHR",
+    "vkCmdWriteAccelerationStructuresPropertiesNV",
     "vkCmdWriteTimestamp",
     "vkCmdWriteTimestamp2",
-    "vkCopyImageToImage",
-    "vkCopyImageToMemory",
-    "vkCopyMemoryToImage",
+    "vkCmdWriteTimestamp2KHR",
+    "vkCompileDeferredNV",
+    "vkCopyAccelerationStructureKHR",
+    "vkCopyAccelerationStructureToMemoryKHR",
+    "vkCopyMemoryToAccelerationStructureKHR",
+    "vkCreateAccelerationStructureKHR",
+    "vkCreateAccelerationStructureNV",
     "vkCreateBuffer",
     "vkCreateBufferView",
     "vkCreateCommandPool",
     "vkCreateComputePipelines",
+    "vkCreateDeferredOperationKHR",
     "vkCreateDescriptorPool",
     "vkCreateDescriptorSetLayout",
     "vkCreateDescriptorUpdateTemplate",
+    "vkCreateDescriptorUpdateTemplateKHR",
     "vkCreateEvent",
     "vkCreateFence",
     "vkCreateFramebuffer",
     "vkCreateGraphicsPipelines",
     "vkCreateImage",
     "vkCreateImageView",
+    "vkCreatePipelineBinariesKHR",
     "vkCreatePipelineCache",
     "vkCreatePipelineLayout",
     "vkCreatePrivateDataSlot",
+    "vkCreatePrivateDataSlotEXT",
     "vkCreateQueryPool",
+    "vkCreateRayTracingPipelinesKHR",
+    "vkCreateRayTracingPipelinesNV",
     "vkCreateRenderPass",
     "vkCreateRenderPass2",
+    "vkCreateRenderPass2KHR",
     "vkCreateSampler",
     "vkCreateSamplerYcbcrConversion",
+    "vkCreateSamplerYcbcrConversionKHR",
     "vkCreateSemaphore",
     "vkCreateShaderModule",
+    "vkCreateShadersEXT",
+    "vkCreateSharedSwapchainsKHR",
+    "vkCreateSwapchainKHR",
+    "vkDeferredOperationJoinKHR",
+    "vkDestroyAccelerationStructureKHR",
+    "vkDestroyAccelerationStructureNV",
     "vkDestroyBuffer",
     "vkDestroyBufferView",
     "vkDestroyCommandPool",
+    "vkDestroyDeferredOperationKHR",
     "vkDestroyDescriptorPool",
     "vkDestroyDescriptorSetLayout",
     "vkDestroyDescriptorUpdateTemplate",
+    "vkDestroyDescriptorUpdateTemplateKHR",
     "vkDestroyDevice",
     "vkDestroyEvent",
     "vkDestroyFence",
@@ -927,75 +2446,143 @@ static const char* DEVICE_FUNCTIONS[] = {
     "vkDestroyImage",
     "vkDestroyImageView",
     "vkDestroyPipeline",
+    "vkDestroyPipelineBinaryKHR",
     "vkDestroyPipelineCache",
     "vkDestroyPipelineLayout",
     "vkDestroyPrivateDataSlot",
+    "vkDestroyPrivateDataSlotEXT",
     "vkDestroyQueryPool",
     "vkDestroyRenderPass",
     "vkDestroySampler",
     "vkDestroySamplerYcbcrConversion",
+    "vkDestroySamplerYcbcrConversionKHR",
     "vkDestroySemaphore",
+    "vkDestroyShaderEXT",
     "vkDestroyShaderModule",
+    "vkDestroySwapchainKHR",
     "vkDeviceWaitIdle",
     "vkEndCommandBuffer",
     "vkFlushMappedMemoryRanges",
     "vkFreeCommandBuffers",
     "vkFreeDescriptorSets",
     "vkFreeMemory",
+    "vkGetAccelerationStructureBuildSizesKHR",
+    "vkGetAccelerationStructureDeviceAddressKHR",
+    "vkGetAccelerationStructureHandleNV",
+    "vkGetAccelerationStructureMemoryRequirementsNV",
     "vkGetBufferDeviceAddress",
+    "vkGetBufferDeviceAddressEXT",
+    "vkGetBufferDeviceAddressKHR",
     "vkGetBufferMemoryRequirements",
     "vkGetBufferMemoryRequirements2",
+    "vkGetBufferMemoryRequirements2KHR",
     "vkGetBufferOpaqueCaptureAddress",
+    "vkGetBufferOpaqueCaptureAddressKHR",
+    "vkGetCalibratedTimestampsEXT",
+    "vkGetCalibratedTimestampsKHR",
+    "vkGetDeferredOperationMaxConcurrencyKHR",
+    "vkGetDeferredOperationResultKHR",
     "vkGetDescriptorSetLayoutSupport",
+    "vkGetDescriptorSetLayoutSupportKHR",
+    "vkGetDeviceAccelerationStructureCompatibilityKHR",
     "vkGetDeviceBufferMemoryRequirements",
+    "vkGetDeviceBufferMemoryRequirementsKHR",
     "vkGetDeviceGroupPeerMemoryFeatures",
+    "vkGetDeviceGroupPeerMemoryFeaturesKHR",
+    "vkGetDeviceGroupPresentCapabilitiesKHR",
+    "vkGetDeviceGroupSurfacePresentModesKHR",
     "vkGetDeviceImageMemoryRequirements",
+    "vkGetDeviceImageMemoryRequirementsKHR",
     "vkGetDeviceImageSparseMemoryRequirements",
-    "vkGetDeviceImageSubresourceLayout",
+    "vkGetDeviceImageSparseMemoryRequirementsKHR",
+    "vkGetDeviceImageSubresourceLayoutKHR",
     "vkGetDeviceMemoryCommitment",
     "vkGetDeviceMemoryOpaqueCaptureAddress",
+    "vkGetDeviceMemoryOpaqueCaptureAddressKHR",
     "vkGetDeviceProcAddr",
     "vkGetDeviceQueue",
     "vkGetDeviceQueue2",
     "vkGetEventStatus",
+    "vkGetFenceFdKHR",
     "vkGetFenceStatus",
+    "vkGetFenceWin32HandleKHR",
     "vkGetImageMemoryRequirements",
     "vkGetImageMemoryRequirements2",
+    "vkGetImageMemoryRequirements2KHR",
     "vkGetImageSparseMemoryRequirements",
     "vkGetImageSparseMemoryRequirements2",
+    "vkGetImageSparseMemoryRequirements2KHR",
     "vkGetImageSubresourceLayout",
-    "vkGetImageSubresourceLayout2",
+    "vkGetImageSubresourceLayout2KHR",
+    "vkGetMemoryFdKHR",
+    "vkGetMemoryFdPropertiesKHR",
+    "vkGetMemoryWin32HandleKHR",
+    "vkGetMemoryWin32HandlePropertiesKHR",
+    "vkGetPipelineBinaryDataKHR",
     "vkGetPipelineCacheData",
+    "vkGetPipelineExecutableInternalRepresentationsKHR",
+    "vkGetPipelineExecutablePropertiesKHR",
+    "vkGetPipelineExecutableStatisticsKHR",
+    "vkGetPipelineKeyKHR",
     "vkGetPrivateData",
+    "vkGetPrivateDataEXT",
     "vkGetQueryPoolResults",
+    "vkGetRayTracingCaptureReplayShaderGroupHandlesKHR",
+    "vkGetRayTracingShaderGroupHandlesKHR",
+    "vkGetRayTracingShaderGroupHandlesNV",
+    "vkGetRayTracingShaderGroupStackSizeKHR",
     "vkGetRenderAreaGranularity",
-    "vkGetRenderingAreaGranularity",
+    "vkGetRenderingAreaGranularityKHR",
     "vkGetSemaphoreCounterValue",
+    "vkGetSemaphoreCounterValueKHR",
+    "vkGetSemaphoreFdKHR",
+    "vkGetSemaphoreWin32HandleKHR",
+    "vkGetShaderBinaryDataEXT",
+    "vkGetSwapchainImagesKHR",
+    "vkGetSwapchainStatusKHR",
+    "vkImportFenceFdKHR",
+    "vkImportFenceWin32HandleKHR",
+    "vkImportSemaphoreFdKHR",
+    "vkImportSemaphoreWin32HandleKHR",
     "vkInvalidateMappedMemoryRanges",
     "vkMapMemory",
-    "vkMapMemory2",
+    "vkMapMemory2KHR",
     "vkMergePipelineCaches",
     "vkQueueBindSparse",
+    "vkQueuePresentKHR",
     "vkQueueSubmit",
     "vkQueueSubmit2",
+    "vkQueueSubmit2KHR",
     "vkQueueWaitIdle",
+    "vkReleaseCapturedPipelineDataKHR",
+    "vkReleaseProfilingLockKHR",
+    "vkReleaseSwapchainImagesEXT",
+    "vkReleaseSwapchainImagesKHR",
     "vkResetCommandBuffer",
     "vkResetCommandPool",
     "vkResetDescriptorPool",
     "vkResetEvent",
     "vkResetFences",
     "vkResetQueryPool",
+    "vkResetQueryPoolEXT",
     "vkSetEvent",
     "vkSetPrivateData",
+    "vkSetPrivateDataEXT",
     "vkSignalSemaphore",
-    "vkTransitionImageLayout",
+    "vkSignalSemaphoreKHR",
     "vkTrimCommandPool",
+    "vkTrimCommandPoolKHR",
     "vkUnmapMemory",
-    "vkUnmapMemory2",
+    "vkUnmapMemory2KHR",
     "vkUpdateDescriptorSetWithTemplate",
+    "vkUpdateDescriptorSetWithTemplateKHR",
     "vkUpdateDescriptorSets",
     "vkWaitForFences",
+    "vkWaitForPresent2KHR",
+    "vkWaitForPresentKHR",
     "vkWaitSemaphores",
+    "vkWaitSemaphoresKHR",
+    "vkWriteAccelerationStructuresPropertiesKHR",
 };
 
 static int glad_vulkan_is_device_function(const char *name) {

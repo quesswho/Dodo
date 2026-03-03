@@ -42,7 +42,7 @@ Dodo uses the following libraries:
 ## Compilation
 
 ### Requirements
-- CMake $\geq 3.23$ (although probably works with older versions)
+- CMake $>=$ 3.23 (although probably works with older versions)
 - Ninja
 - A C++20-compatible compiler
 - OpenGL 3.3-capable GPU

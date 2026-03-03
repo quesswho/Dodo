@@ -6,7 +6,7 @@ set_target_properties(glad PROPERTIES LINKER_LANGUAGE C)
 
 ## SOURCES ##
 set(GLAD_SOURCES src/gl.c)
-if (DODO_API_VULKAN)
+if (DD_API_VULKAN)
     list(APPEND GLAD_SOURCES src/vulkan.c)
 endif()
 
@@ -30,7 +30,7 @@ find_package(OpenGL REQUIRED)
 target_link_libraries(glad PUBLIC OpenGL::GL)
 
 # Link Vulkan
-if (DODO_RENDER_VULKAN)
+if (DD_API_VULKAN)
     find_package(Vulkan REQUIRED)
     target_link_libraries(glad PUBLIC Vulkan::Vulkan)
 endif()

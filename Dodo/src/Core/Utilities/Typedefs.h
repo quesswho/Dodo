@@ -12,7 +12,11 @@ using int64 = long long int;           // -9 223 372 036 854 775 807 - 9 223 372
 template <typename T>
 using Ref = std::shared_ptr<T>;
 
-#if !defined(DD_API_OPENGL) //|| !defined(DD_API_DX11)
-#define DD_API_OPENGL
+// Default to OpenGL if no graphics API is specified
+#if defined(DD_API_OPENGL)
 #define DD_MATH_CRH
+#elif defined(DD_API_VULKAN)
+#define DD_MATH_CRH
+#else
+#error "No graphics API defined! Define either DD_API_OPENGL or DD_API_VULKAN!"
 #endif

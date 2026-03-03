@@ -5,6 +5,6 @@
 namespace Dodo {
     using FrameBuffer = Platform::OpenGLFrameBuffer;
 }
-#elif DD_API_DX11
+#elif DD_API_VULKAN
 
 #endif

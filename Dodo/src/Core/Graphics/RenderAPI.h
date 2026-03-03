@@ -5,6 +5,10 @@
 namespace Dodo {
     using RenderAPI = Platform::OpenGLRenderAPI;
 }
-#elif DD_API_DX11
+#elif DD_API_VULKAN
+#include "Platform/GraphicAPI/Vulkan/VulkanRenderAPI.h"
+namespace Dodo {
+    using RenderAPI = Platform::VulkanRenderAPI;
+}
 
 #endif

@@ -5,6 +5,6 @@
 namespace Dodo {
     using CubeMapTexture = Platform::OpenGLCubeMapTexture;
 }
-#elif DD_API_VULKAN
+#elif defined(DD_API_VULKAN)
 
 #endif

@@ -9,8 +9,12 @@
 
 #include <string>
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #undef NOGDI
 #include <Windows.h>
 #define NOGDI
@@ -33,7 +37,7 @@ namespace Dodo::Platform {
 
         void Update() const;
         void SetTitle(const char* title);
-        void SetCursorPosition(Math::TVec2<long> pos);
+        void SetCursorPosition(Math::TVec2<double> pos);
         void SetCursorVisible(bool vis);
         void FullScreen(bool fullscreen);
         void FullScreen() { FullScreen(!m_WindowProperties.m_Settings.fullscreen); }
@@ -193,4 +197,3 @@ namespace Dodo::Platform {
 #define DODO_MOUSE_BUTTON_LEFT   DODO_MOUSE_BUTTON_1
 #define DODO_MOUSE_BUTTON_RIGHT  DODO_MOUSE_BUTTON_2
 #define DODO_MOUSE_BUTTON_MIDDLE DODO_MOUSE_BUTTON_3
-}

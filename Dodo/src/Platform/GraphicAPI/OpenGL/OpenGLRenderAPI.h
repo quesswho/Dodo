@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Core/Common.h"
 #include "Core/Graphics/Shader/ShaderBuilder.h"
-
 #include "Core/Application/WindowProperties.h"
 #include "Core/Graphics/RenderInitResult.h"
 
@@ -11,7 +11,7 @@
 #ifdef DD_API_WIN32
 #include "WGLContext.h"
 using OpenGLContext = Dodo::Platform::WGLContext;
-#elif DD_API_GLFW
+#elif defined(DD_API_GLFW)
 #include "GLFWContext.h"
 using OpenGLContext = Dodo::Platform::GLFWContext;
 #endif

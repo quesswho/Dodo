@@ -2,9 +2,14 @@
 
 #include <Platform/WindowAPI/NativeWindowHandle.h>
 #include <glad/gl.h>
+#include <glad/wgl.h>
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <Windows.h>
 
 #include <backends/imgui_impl_win32.h>
@@ -37,7 +42,7 @@ namespace Dodo::Platform {
         }
 
         int LoadGlad() { return gladLoaderLoadWGL(m_Hdc); }
-        void SwapBuffers() { ::SwapBuffers(m_Hdc); }
+        void SwapBuffer() { ::SwapBuffers(m_Hdc); }
         void SetVSync(bool enabled) { wglSwapIntervalEXT(enabled ? 1 : 0); }
 
         void InitializeImGui() { ImGui_ImplWin32_InitForOpenGL(m_HWND); }

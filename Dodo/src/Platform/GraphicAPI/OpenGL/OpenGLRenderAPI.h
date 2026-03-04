@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Core/Common.h"
-#include "Core/Graphics/Shader/ShaderBuilder.h"
 #include "Core/Application/WindowProperties.h"
+#include "Core/Common.h"
 #include "Core/Graphics/RenderInitResult.h"
+#include "Core/Graphics/Shader/ShaderBuilder.h"
 
 #include <glad/gl.h>
 

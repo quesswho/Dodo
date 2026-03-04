@@ -18,28 +18,15 @@ namespace Dodo { namespace Platform {
         return RenderInitError(RenderInitStatus::Success, "");
     }
 
-    void VulkanRenderAPI::DefaultFrameBuffer() const
-    {
-    }
+    void VulkanRenderAPI::DefaultFrameBuffer() const {}
 
-    void VulkanRenderAPI::Blending(bool blending) const
-    {
-    }
+    void VulkanRenderAPI::Blending(bool blending) const {}
 
-    void VulkanRenderAPI::Culling(bool cull, bool backface)
-    {
-        
-    }
+    void VulkanRenderAPI::Culling(bool cull, bool backface) {}
 
-    void VulkanRenderAPI::ResizeDefaultViewport(uint width, uint height)
-    {
-        
-    }
+    void VulkanRenderAPI::ResizeDefaultViewport(uint width, uint height) {}
 
-    void VulkanRenderAPI::ResizeDefaultViewport(uint width, uint height, uint posX, uint posY)
-    {
-        
-    }
+    void VulkanRenderAPI::ResizeDefaultViewport(uint width, uint height, uint posX, uint posY) {}
 
     void VulkanRenderAPI::ImGuiNewFrame() const { ImGui_ImplVulkan_NewFrame(); }
 

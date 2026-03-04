@@ -98,8 +98,7 @@ namespace Dodo { namespace Platform {
 
         const CRHMat4x4& operator+=(const float scalar)
         {
-            for (int i = 0; i < 16; i++)
-            {
+            for (int i = 0; i < 16; i++) {
                 this->m_Elements[i] += scalar;
             }
             return *this;
@@ -109,8 +108,7 @@ namespace Dodo { namespace Platform {
 
         const CRHMat4x4& operator+=(const CRHMat4x4& other)
         {
-            for (int i = 0; i < 16; i++)
-            {
+            for (int i = 0; i < 16; i++) {
                 this->m_Elements[i] += other.m_Elements[i];
             }
             return *this;
@@ -122,8 +120,7 @@ namespace Dodo { namespace Platform {
 
         const CRHMat4x4& operator-=(const float scalar)
         {
-            for (int i = 0; i < 16; i++)
-            {
+            for (int i = 0; i < 16; i++) {
                 this->m_Elements[i] -= scalar;
             }
             return *this;
@@ -133,8 +130,7 @@ namespace Dodo { namespace Platform {
 
         const CRHMat4x4& operator-=(const CRHMat4x4& other)
         {
-            for (int i = 0; i < 16; i++)
-            {
+            for (int i = 0; i < 16; i++) {
                 this->m_Elements[i] -= other.m_Elements[i];
             }
             return *this;

@@ -12,12 +12,14 @@
 
 namespace Dodo::Platform {
 
-    Win32Window::Win32Window(const WindowProperties& winProp) : m_WindowProperties(winProp), m_Focused(true) { Init(); }
+    Win32Window::Win32Window(const WindowProperties& winProp) : m_WindowProperties(winProp), m_Focused(true)
+    {
+        Init();
+    }
 
     Win32Window::~Win32Window()
     {
-        if (m_WindowProperties.m_Settings.imgui)
-        {
+        if (m_WindowProperties.m_Settings.imgui) {
             Win32ImGuiBackend::Shutdown();
         }
         ShowCursor(true);
@@ -43,14 +45,12 @@ namespace Dodo::Platform {
         wc.lpszMenuName = NULL;
         wc.lpszClassName = "WindowsWindowClass";
 
-        if (!RegisterClassEx(&wc))
-        {
+        if (!RegisterClassEx(&wc)) {
             DD_FATAL("Could not register Window class!");
         }
 
         if (GetSystemMetrics(SM_CXSCREEN) < (int)m_WindowProperties.m_Width ||
-            GetSystemMetrics(SM_CYSCREEN) < (int)m_WindowProperties.m_Height)
-        {
+            GetSystemMetrics(SM_CYSCREEN) < (int)m_WindowProperties.m_Height) {
             DD_WARN("Application resolution is more than the resolution of the screen!");
         }
 
@@ -61,16 +61,14 @@ namespace Dodo::Platform {
 
         int posX, posY;
 
-        if (m_WindowProperties.m_Settings.fullscreen)
-        {
+        if (m_WindowProperties.m_Settings.fullscreen) {
             m_Hwnd = CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, wc.lpszClassName, "",
                                     WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP, 0, 0, m_WindowProperties.m_Width,
                                     m_WindowProperties.m_Height, NULL, NULL, m_HInstance, NULL);
 
             posX = (GetSystemMetrics(SM_CXSCREEN) - m_WindowProperties.m_Width) / 2;
             posY = (GetSystemMetrics(SM_CYSCREEN) - m_WindowProperties.m_Height) / 2;
-        } else
-        {
+        } else {
 
             m_Hwnd =
                 CreateWindowEx(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, wc.lpszClassName, "", WS_OVERLAPPEDWINDOW, 0, 0,
@@ -89,8 +87,7 @@ namespace Dodo::Platform {
                          0);
         }
 
-        if (!m_Hwnd)
-        {
+        if (!m_Hwnd) {
             DD_FATAL("Could not create window!");
             return;
         }
@@ -105,8 +102,7 @@ namespace Dodo::Platform {
 
         memset(cpuName, 0, sizeof(cpuName));
 
-        for (unsigned int i = 0x80000000; i <= nExIds; ++i)
-        {
+        for (unsigned int i = 0x80000000; i <= nExIds; ++i) {
             __cpuid(i, cpuInfo[0], cpuInfo[1], cpuInfo[2], cpuInfo[3]);
             if (i == 0x80000002)
                 memcpy(cpuName, cpuInfo, sizeof(cpuInfo));
@@ -144,8 +140,7 @@ namespace Dodo::Platform {
         GetCursorPos(&p);
         Application::s_Application->m_InputManager.MouseMoved(Math::TVec2<double>(p.x, p.y));
 
-        if (m_WindowProperties.m_Settings.imgui || m_WindowProperties.m_Settings.imguiDocking)
-        {
+        if (m_WindowProperties.m_Settings.imgui || m_WindowProperties.m_Settings.imguiDocking) {
             m_WindowProperties.m_Settings.imgui = true;
             Win32ImGuiBackend::Init(m_Hwnd, m_WindowProperties.m_Settings.imguiDocking);
         }
@@ -154,10 +149,8 @@ namespace Dodo::Platform {
     void Win32Window::Update() const
     {
         MSG message;
-        while (PeekMessage(&message, NULL, NULL, NULL, PM_REMOVE) > 0)
-        {
-            if (message.message == WM_QUIT)
-            {
+        while (PeekMessage(&message, NULL, NULL, NULL, PM_REMOVE) > 0) {
+            if (message.message == WM_QUIT) {
                 Application::s_Application->m_Window->WindowCloseCallback(); // Keep update function const
                 return;
             }
@@ -204,27 +197,23 @@ namespace Dodo::Platform {
 
         if (Win32ImGuiBackend::WndProcHandler(hwnd, msg, wParam, lParam)) return true;
 
-        switch (msg)
-        {
+        switch (msg) {
         case WM_ACTIVATE: {
-            if (!HIWORD(wParam))
-            {
+            if (!HIWORD(wParam)) {
             } // Is minimized
-            else
-            {}
+            else {
+            }
 
             return 0;
         }
         case WM_SYSCOMMAND: {
-            switch (wParam)
-            {
+            switch (wParam) {
             case SC_SCREENSAVE:
             case SC_MONITORPOWER:
                 return 0;
             }
             result = DefWindowProc(hwnd, msg, wParam, lParam);
-        }
-        break;
+        } break;
         case WM_SETFOCUS:
             if (!Application::s_Application->m_Initializing)
                 Application::s_Application->m_Window->WindowFocusCallback(true);
@@ -251,8 +240,7 @@ namespace Dodo::Platform {
             UINT dwSize;
             GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &dwSize, sizeof(RAWINPUTHEADER));
             LPBYTE lpb = new BYTE[dwSize];
-            if (lpb == NULL)
-            {
+            if (lpb == NULL) {
                 return 0;
             }
 
@@ -260,8 +248,7 @@ namespace Dodo::Platform {
 
             RAWINPUT* raw = (RAWINPUT*)lpb;
 
-            if (raw->header.dwType == RIM_TYPEMOUSE)
-            {
+            if (raw->header.dwType == RIM_TYPEMOUSE) {
                 Application::s_Application->m_InputManager.MouseMoved(
                     Math::TVec2<double>(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
             }
@@ -279,8 +266,7 @@ namespace Dodo::Platform {
             Application::s_Application->m_InputManager.MouseReleased((uint)wParam);
             break;
         case WM_SIZE:
-            if (!Application::s_Application->m_Initializing)
-            {
+            if (!Application::s_Application->m_Initializing) {
                 Application::s_Application->m_Window->WindowResizeCallback(
                     Math::TVec2<int>(LOWORD(lParam), HIWORD(lParam)));
             }
@@ -297,7 +283,10 @@ namespace Dodo::Platform {
         SetWindowTextA(m_Hwnd, m_WindowProperties.m_Title);
     }
 
-    void Win32Window::SetCursorVisible(bool vis) { ShowCursor(vis); }
+    void Win32Window::SetCursorVisible(bool vis)
+    {
+        ShowCursor(vis);
+    }
 
     void Win32Window::SetCursorPosition(Math::TVec2<double> pos)
     {
@@ -310,8 +299,7 @@ namespace Dodo::Platform {
 
     void Win32Window::FullScreen(bool fullscreen)
     {
-        if (fullscreen)
-        {
+        if (fullscreen) {
             SetWindowLongPtr(m_Hwnd, GWL_STYLE, WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_POPUP);
             HMONITOR hmon = MonitorFromWindow(m_Hwnd, MONITOR_DEFAULTTONEAREST);
             MONITORINFO mi = {sizeof(mi)};
@@ -328,8 +316,7 @@ namespace Dodo::Platform {
 
             m_WindowProperties.m_Settings.fullscreen = true;
             m_WindowProperties.m_Settings.fullscreen = true;
-        } else
-        {
+        } else {
             SetWindowLongPtr(m_Hwnd, GWL_STYLE, WS_OVERLAPPEDWINDOW);
 
             HMONITOR hmon = MonitorFromWindow(m_Hwnd, MONITOR_DEFAULTTONEAREST);
@@ -363,8 +350,14 @@ namespace Dodo::Platform {
         ShowWindow(m_Hwnd, SW_SHOW);
     }
 
-    void Win32Window::ImGuiNewFrame() const { Win32ImGuiBackend::NewFrame(); }
-    void Win32Window::ImGuiEndFrame() const { Win32ImGuiBackend::EndFrame(); }
+    void Win32Window::ImGuiNewFrame() const
+    {
+        Win32ImGuiBackend::NewFrame();
+    }
+    void Win32Window::ImGuiEndFrame() const
+    {
+        Win32ImGuiBackend::EndFrame();
+    }
 
     void Win32Window::WindowResizeCallback(Math::TVec2<int> size)
     {
@@ -385,7 +378,10 @@ namespace Dodo::Platform {
         Application::s_Application->OnEvent(WindowCloseEvent());
     }
 
-    void Win32Window::SetWindowProperties(const WindowProperties& winprop) { m_WindowProperties = winprop; }
+    void Win32Window::SetWindowProperties(const WindowProperties& winprop)
+    {
+        m_WindowProperties = winprop;
+    }
 
     void Win32Window::FocusConsole() const
     {

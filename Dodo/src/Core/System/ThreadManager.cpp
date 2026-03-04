@@ -12,7 +12,10 @@ namespace Dodo {
             m_WorkThreads[i] = std::thread(&ThreadManager::Loop, this);
     }
 
-    ThreadManager::~ThreadManager() { Terminate(); }
+    ThreadManager::~ThreadManager()
+    {
+        Terminate();
+    }
 
     void ThreadManager::WaitMain()
     {
@@ -49,8 +52,7 @@ namespace Dodo {
     void ThreadManager::Loop()
     {
         std::function<void()> job;
-        while (true)
-        {
+        while (true) {
             {
                 std::unique_lock<std::mutex> lock(m_Mutex);
                 m_WorkConditional.wait(lock, [&]() { return !m_Queue.empty() || m_Terminate; });

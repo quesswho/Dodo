@@ -22,8 +22,7 @@ namespace Dodo {
         indices.reserve(totalIndices);
 
         // Populate vertices
-        for (uint j = 0; j < totalVertices; j++)
-        {
+        for (uint j = 0; j < totalVertices; j++) {
             Vertex vertex;
             vertex.m_Position.x = mesh->mVertices[j].x;
             vertex.m_Position.y = mesh->mVertices[j].y;
@@ -43,8 +42,7 @@ namespace Dodo {
         }
 
         // Populate indices
-        for (uint k = 0; k < mesh->mNumFaces; k++)
-        {
+        for (uint k = 0; k < mesh->mNumFaces; k++) {
             aiFace face = mesh->mFaces[k];
             for (uint j = 0; j < face.mNumIndices; j++) // mNumIndices = 3, by aiProcess_Triangulate flag
                 indices.push_back(face.mIndices[j]);
@@ -64,8 +62,7 @@ namespace Dodo {
         const aiScene* model =
             imp.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_PreTransformVertices);
 
-        if (!model || model->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !model->mRootNode)
-        {
+        if (!model || model->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !model->mRootNode) {
             DD_WARN("Unable to load model: {}", path);
             return nullptr; // TODO: Replace with error model
         }
@@ -75,14 +72,12 @@ namespace Dodo {
 
         std::vector<Ref<Material>> materials;
         materials.reserve(model->mNumMaterials);
-        if (!model->HasMaterials())
-        {
+        if (!model->HasMaterials()) {
             materials.push_back(std::make_shared<Material>());
             DD_WARN("No materials found for {}", path);
         }
 
-        for (int i = 0; i < model->mNumMaterials; i++)
-        {
+        for (int i = 0; i < model->mNumMaterials; i++) {
             materials.push_back(
                 Application::s_Application->m_AssetManager->m_MaterialLoader->LoadMaterial(path, model->mMaterials[i]));
         }
@@ -93,8 +88,7 @@ namespace Dodo {
         std::vector<Mesh*> meshes;
         meshes.reserve(model->mNumMeshes);
 
-        for (uint i = 0; i < model->mNumMeshes; i++)
-        {
+        for (uint i = 0; i < model->mNumMeshes; i++) {
             meshes.push_back(LoadMesh(model->mMeshes[i], materials[model->mMeshes[i]->mMaterialIndex]));
         }
 

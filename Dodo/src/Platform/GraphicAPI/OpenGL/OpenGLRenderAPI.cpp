@@ -25,8 +25,7 @@ namespace Dodo { namespace Platform {
         m_Version = m_Context.LoadGlad();
         std::string versionStr = reinterpret_cast<const char*>(glGetString(GL_VERSION));
         DD_INFO("OPENGL: {0}", versionStr);
-        if (GLAD_VERSION_MAJOR(m_Version) <= 3)
-        {
+        if (GLAD_VERSION_MAJOR(m_Version) <= 3) {
             return RenderInitError(RenderInitStatus::Failed, "OpenGL version < 4.0 is not supported!");
         }
 
@@ -51,8 +50,7 @@ namespace Dodo { namespace Platform {
 
         DD_INFO("{}", m_GPUInfo);
 
-        if (winprop.m_Settings.imgui)
-        {
+        if (winprop.m_Settings.imgui) {
             m_Context.InitializeImGui();
             ImGui_ImplOpenGL3_Init();
         }
@@ -71,24 +69,20 @@ namespace Dodo { namespace Platform {
 
     void OpenGLRenderAPI::Blending(bool blending) const
     {
-        if (blending)
-        {
+        if (blending) {
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glEnable(GL_BLEND);
-        } else
-        {
+        } else {
             glDisable(GL_BLEND);
         }
     }
 
     void OpenGLRenderAPI::Culling(bool cull, bool backface)
     {
-        if (cull)
-        {
+        if (cull) {
             glEnable(GL_CULL_FACE);
             glCullFace(backface ? GL_BACK : GL_FRONT);
-        } else
-        {
+        } else {
             glDisable(GL_CULL_FACE);
         }
     }
@@ -107,7 +101,13 @@ namespace Dodo { namespace Platform {
         ResizeDefaultViewport(width, height);
     }
 
-    void OpenGLRenderAPI::ImGuiNewFrame() const { ImGui_ImplOpenGL3_NewFrame(); }
+    void OpenGLRenderAPI::ImGuiNewFrame() const
+    {
+        ImGui_ImplOpenGL3_NewFrame();
+    }
 
-    void OpenGLRenderAPI::ImGuiEndFrame() const { ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); }
+    void OpenGLRenderAPI::ImGuiEndFrame() const
+    {
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
 }} // namespace Dodo::Platform

@@ -37,22 +37,18 @@ namespace Dodo {
         if (tex) textures.push_back(tex);
 
         // Create material
-        if (!textures.empty())
-        {
+        if (!textures.empty()) {
             Ref<Shader> shader = Application::s_Application->m_AssetManager->GetShader(flags);
-            if (!shader)
-            {
+            if (!shader) {
                 DD_WARN("Could not create Shader");
             }
             return std::make_shared<Material>(Application::s_Application->m_AssetManager->GetShader(flags), textures);
         }
 
         aiString name;
-        if (material->Get(AI_MATKEY_NAME, name) == AI_SUCCESS)
-        {
+        if (material->Get(AI_MATKEY_NAME, name) == AI_SUCCESS) {
             DD_WARN("Material {0} does not have any textures!", name.C_Str());
-        } else
-        {
+        } else {
             DD_WARN("Material (unnamed) does not have any textures!");
         }
         return std::make_shared<Material>(); // Fallback shader
@@ -64,10 +60,8 @@ namespace Dodo {
     {
         aiTextureType typeEnum = static_cast<aiTextureType>(type);
         aiString str;
-        if (material->GetTexture(typeEnum, 0, &str) == AI_SUCCESS && str.length > 0)
-        {
-            switch (typeEnum)
-            {
+        if (material->GetTexture(typeEnum, 0, &str) == AI_SUCCESS && str.length > 0) {
+            switch (typeEnum) {
             case aiTextureType_DIFFUSE:
                 shaderFlags |= ShaderBuilderFlagDiffuseMap;
                 break;

@@ -37,11 +37,9 @@ namespace Dodo {
     {
         // Draw ModelComponent
         const auto& modelPool = world.GetPool<ModelComponent>();
-        for (const auto& modelComponent : modelPool.GetComponents())
-        {
+        for (const auto& modelComponent : modelPool.GetComponents()) {
             Model* model = assets.GetModel(modelComponent.m_ModelID);
-            for (auto mesh : model->GetMeshes())
-            {
+            for (auto mesh : model->GetMeshes()) {
                 Ref<Material> mat = mesh->GetMaterial();
                 mat->Bind();
                 mat->SetUniform("u_LightCamera", lightSystem.m_Directional.m_LightCamera);
@@ -60,8 +58,7 @@ namespace Dodo {
 
         // Draw ModelComponents with custom material
         const auto& modelPool = world.GetPool<ModelComponent>();
-        for (const auto& modelComponent : modelPool.GetComponents())
-        {
+        for (const auto& modelComponent : modelPool.GetComponents()) {
             material->SetUniform("u_Model", modelComponent.m_Transformation.m_Model);
             Model* model = assets.GetModel(modelComponent.m_ModelID);
             model->DrawGeometry();

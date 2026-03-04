@@ -12,8 +12,7 @@ namespace Dodo { namespace Platform {
         glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_TextureID);
         glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
 
-        switch (prop.m_WrapU)
-        {
+        switch (prop.m_WrapU) {
         case TextureWrapMode::WRAP_REPEAT:
             glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_REPEAT);
             break;
@@ -28,8 +27,7 @@ namespace Dodo { namespace Platform {
             break;
         }
 
-        switch (prop.m_WrapV)
-        {
+        switch (prop.m_WrapV) {
         case TextureWrapMode::WRAP_REPEAT:
             glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_REPEAT);
             break;
@@ -55,23 +53,19 @@ namespace Dodo { namespace Platform {
             glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
         if (prop.m_WrapU == TextureWrapMode::WRAP_CLAMP_TO_BORDER ||
-            prop.m_WrapV == TextureWrapMode::WRAP_CLAMP_TO_BORDER)
-        {
+            prop.m_WrapV == TextureWrapMode::WRAP_CLAMP_TO_BORDER) {
             float borderColor[] = {1.0f, 0.4f, 0.8f, 1.0f};
             glTexParameterfv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BORDER_COLOR, borderColor);
         }
 
-        for (int i = 0; i < paths.size(); i++)
-        {
+        for (int i = 0; i < paths.size(); i++) {
             int channels, width, height;
             stbi_set_flip_vertically_on_load(false);
             uchar* data = stbi_load(paths[i].c_str(), &width, &height, &channels, 0);
             stbi_set_flip_vertically_on_load(true);
-            if (data)
-            {
+            if (data) {
                 int internalFormat = 0;
-                switch (channels)
-                {
+                switch (channels) {
                 case 3:
                     internalFormat = GL_RGB;
                     break;
@@ -84,15 +78,17 @@ namespace Dodo { namespace Platform {
 
                 glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, width, height, 0, internalFormat,
                              GL_UNSIGNED_BYTE, data);
-            } else
-            {
+            } else {
                 DD_ERR("Could not load texture: {}", paths[i]);
             }
             stbi_image_free(data);
         }
     }
 
-    OpenGLCubeMapTexture::~OpenGLCubeMapTexture() { glDeleteTextures(1, &m_TextureID); }
+    OpenGLCubeMapTexture::~OpenGLCubeMapTexture()
+    {
+        glDeleteTextures(1, &m_TextureID);
+    }
 
     void OpenGLCubeMapTexture::Bind() const
     {

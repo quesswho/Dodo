@@ -58,8 +58,7 @@ FaceData ResourceManager::GetTopFace(BlockType type, BlockPos pos)
     ChunkPos texcoord = m_TopTexture.find(type)->second;
 
     FaceData result;
-    for (int i = 0; i < 4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         result.verts[i * 8] = pos.x + top_verts[i * 8];
         result.verts[i * 8 + 1] = pos.y + top_verts[i * 8 + 1];
         result.verts[i * 8 + 2] = pos.z + top_verts[i * 8 + 2];
@@ -77,8 +76,7 @@ FaceData ResourceManager::GetBottomFace(BlockType type, BlockPos pos)
     ChunkPos texcoord = m_BottomTexture.find(type)->second;
 
     FaceData result;
-    for (int i = 0; i < 4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         result.verts[i * 8] = pos.x + bottom_verts[i * 8];
         result.verts[i * 8 + 1] = pos.y + bottom_verts[i * 8 + 1];
         result.verts[i * 8 + 2] = pos.z + bottom_verts[i * 8 + 2];
@@ -96,8 +94,7 @@ FaceData ResourceManager::GetFrontFace(BlockType type, BlockPos pos)
     ChunkPos texcoord = m_FrontTexture.find(type)->second;
 
     FaceData result;
-    for (int i = 0; i < 4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         result.verts[i * 8] = pos.x + front_verts[i * 8];
         result.verts[i * 8 + 1] = pos.y + front_verts[i * 8 + 1];
         result.verts[i * 8 + 2] = pos.z + front_verts[i * 8 + 2];
@@ -115,8 +112,7 @@ FaceData ResourceManager::GetBackFace(BlockType type, BlockPos pos)
     ChunkPos texcoord = m_BackTexture.find(type)->second;
 
     FaceData result;
-    for (int i = 0; i < 4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         result.verts[i * 8] = pos.x + back_verts[i * 8];
         result.verts[i * 8 + 1] = pos.y + back_verts[i * 8 + 1];
         result.verts[i * 8 + 2] = pos.z + back_verts[i * 8 + 2];
@@ -134,8 +130,7 @@ FaceData ResourceManager::GetLeftFace(BlockType type, BlockPos pos)
     ChunkPos texcoord = m_LeftTexture.find(type)->second;
 
     FaceData result;
-    for (int i = 0; i < 4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         result.verts[i * 8] = pos.x + left_verts[i * 8];
         result.verts[i * 8 + 1] = pos.y + left_verts[i * 8 + 1];
         result.verts[i * 8 + 2] = pos.z + left_verts[i * 8 + 2];
@@ -153,8 +148,7 @@ FaceData ResourceManager::GetRightFace(BlockType type, BlockPos pos)
     ChunkPos texcoord = m_RightTexture.find(type)->second;
 
     FaceData result;
-    for (int i = 0; i < 4; i++)
-    {
+    for (int i = 0; i < 4; i++) {
         result.verts[i * 8] = pos.x + right_verts[i * 8];
         result.verts[i * 8 + 1] = pos.y + right_verts[i * 8 + 1];
         result.verts[i * 8 + 2] = pos.z + right_verts[i * 8 + 2];

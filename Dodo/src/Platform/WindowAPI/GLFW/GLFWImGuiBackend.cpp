@@ -9,8 +9,7 @@ namespace Dodo::Platform {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
 
-        if (enableDocking)
-        {
+        if (enableDocking) {
             ImGuiIO& io = ImGui::GetIO();
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         }
@@ -28,6 +27,9 @@ namespace Dodo::Platform {
         ImGui::NewFrame();
     }
 
-    void GLFWImGuiBackend::EndFrame() { ImGui::Render(); }
+    void GLFWImGuiBackend::EndFrame()
+    {
+        ImGui::Render();
+    }
 
 } // namespace Dodo::Platform

@@ -68,23 +68,20 @@ namespace Dodo { namespace Math {
 
     void FreeCamera::UpdateRotation()
     {
-        if (Application::s_Application->m_Window->m_Focused)
-        {
+        if (Application::s_Application->m_Window->m_Focused) {
             Math::TVec2<double> mousePos = Application::s_Application->GetInput().GetMousePosition();
             double movementX = mousePos.x - m_LastMousePos.x;
             double movementY = m_LastMousePos.y - mousePos.y;
 
             // Keep mouse inside rectangle
             if (m_LastMousePos.x < m_MouseRect.x || m_LastMousePos.x > m_MouseRect.y ||
-                m_LastMousePos.y < m_MouseRect.z || m_LastMousePos.y > m_MouseRect.w)
-            {
+                m_LastMousePos.y < m_MouseRect.z || m_LastMousePos.y > m_MouseRect.w) {
                 m_LastMousePos = TVec2<double>(Application::s_Application->m_RenderAPI->m_ViewportPosX +
                                                    Application::s_Application->m_RenderAPI->m_ViewportWidth / 2,
                                                Application::s_Application->m_RenderAPI->m_ViewportPosY +
                                                    Application::s_Application->m_RenderAPI->m_ViewportHeight / 2);
                 Application::s_Application->m_Window->SetCursorPosition(m_LastMousePos);
-            } else
-            {
+            } else {
                 m_LastMousePos = mousePos;
             }
 

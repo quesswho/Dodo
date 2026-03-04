@@ -17,10 +17,8 @@ namespace Dodo { namespace Platform {
 
         glBindBuffer(GL_ARRAY_BUFFER, m_VBufferID);
 
-        if (const uchar stride = m_BufferProperties.m_Stride; stride > 0)
-        {
-            for (const auto& element : m_BufferProperties.m_Elements)
-            {
+        if (const uchar stride = m_BufferProperties.m_Stride; stride > 0) {
+            for (const auto& element : m_BufferProperties.m_Elements) {
                 glEnableVertexAttribArray(element.m_Index);
                 glVertexAttribPointer(element.m_Index, element.GetComponentCount(), GL_FLOAT, GL_FALSE,
                                       stride * sizeof(float), (const void*)(element.m_Offset * sizeof(float)));
@@ -43,5 +41,8 @@ namespace Dodo { namespace Platform {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint), indices, GL_STATIC_DRAW);
     }
 
-    OpenGLIndexBuffer::~OpenGLIndexBuffer() { glDeleteBuffers(1, &m_BufferID); }
+    OpenGLIndexBuffer::~OpenGLIndexBuffer()
+    {
+        glDeleteBuffers(1, &m_BufferID);
+    }
 }} // namespace Dodo::Platform

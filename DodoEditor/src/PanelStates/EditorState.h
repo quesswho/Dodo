@@ -19,12 +19,10 @@ struct Selection {
 
     void Toggle(EntityID e)
     {
-        if (Contains(e))
-        {
+        if (Contains(e)) {
             // We want to keep the order of the entities in the selection, so we can't swap and delete the last element.
             entities.erase(std::remove(entities.begin(), entities.end(), e), entities.end());
-        } else
-        {
+        } else {
             entities.push_back(e);
         }
     }

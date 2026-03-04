@@ -12,8 +12,7 @@ namespace Dodo { namespace Platform {
 
     class OpenGLShader {
       private:
-        enum class ShaderType
-        {
+        enum class ShaderType {
             UNKNOWN = -1,
             VERTEX = 0,
             FRAGMENT = 1

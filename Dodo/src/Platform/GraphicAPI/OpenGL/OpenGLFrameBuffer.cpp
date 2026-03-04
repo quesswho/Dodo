@@ -16,8 +16,7 @@ namespace Dodo { namespace Platform {
 
         glGenTextures(1, &m_TextureID);
         glBindTexture(GL_TEXTURE_2D, m_TextureID);
-        if (m_FrameBufferProperties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL)
-        {
+        if (m_FrameBufferProperties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL) {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, m_FrameBufferProperties.m_Width, m_FrameBufferProperties.m_Height,
                          0, GL_RGB, GL_UNSIGNED_BYTE, 0);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -30,8 +29,7 @@ namespace Dodo { namespace Platform {
                                   m_FrameBufferProperties.m_Height);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RenderBuffer);
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        } else if (m_FrameBufferProperties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_DEPTH)
-        {
+        } else if (m_FrameBufferProperties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_DEPTH) {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_FrameBufferProperties.m_Width,
                          m_FrameBufferProperties.m_Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

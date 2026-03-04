@@ -6,7 +6,10 @@
 #include <glad/gl.h>
 
 namespace Dodo { namespace Platform {
-    OpenGLShaderBuilder::OpenGLShaderBuilder() { InitFallbackShader(); }
+    OpenGLShaderBuilder::OpenGLShaderBuilder()
+    {
+        InitFallbackShader();
+    }
 
     void OpenGLShaderBuilder::InitFallbackShader()
     {
@@ -54,22 +57,18 @@ namespace Dodo { namespace Platform {
 
         // Buffer layout //
 
-        if (!(flags & ShaderBuilderFlagNoTexcoord))
-        {
+        if (!(flags & ShaderBuilderFlagNoTexcoord)) {
             if (flags & ShaderBuilderFlagCubeMap)
                 vertex.append("layout (location = 1) in vec3 a_Texcoord;\n");
             else
                 vertex.append("layout (location = 1) in vec2 a_Texcoord;\n");
-            if (flags & ShaderBuilderFlagTangentSpace || flags & ShaderBuilderFlagNormalMap)
-            {
+            if (flags & ShaderBuilderFlagTangentSpace || flags & ShaderBuilderFlagNormalMap) {
                 vertex.append("layout (location = 2) in vec3 a_Normal;\n");
                 vertex.append("layout (location = 3) in vec3 a_Tangent;\n");
             } else
                 vertex.append("layout (location = 2) in vec3 a_Normal;\n");
-        } else
-        {
-            if (flags & ShaderBuilderFlagTangentSpace || flags & ShaderBuilderFlagNormalMap)
-            {
+        } else {
+            if (flags & ShaderBuilderFlagTangentSpace || flags & ShaderBuilderFlagNormalMap) {
                 vertex.append("layout (location = 1) in vec3 a_Normal;\n");
                 vertex.append("layout (location = 2) in vec3 a_Tangent;\n");
             } else if (!(flags & ShaderBuilderFlagCubeMap))
@@ -83,20 +82,17 @@ namespace Dodo { namespace Platform {
 
         if (flags & ShaderBuilderFlagsCameraPositionUniform || flags & ShaderBuilderFlagSpecularUniform ||
             flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap ||
-            flags & ShaderBuilderFlagNormalMap)
-        {
+            flags & ShaderBuilderFlagNormalMap) {
             vertex.append("uniform vec3 u_CameraPos = vec3(0.0f, 0.0f, 0.0f);\n");
         }
 
         if (flags & ShaderBuilderFlagLightDirectionUniform || flags & ShaderBuilderFlagSpecularUniform ||
             flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap ||
-            flags & ShaderBuilderFlagNormalMap)
-        {
+            flags & ShaderBuilderFlagNormalMap) {
             vertex.append("uniform vec3 u_LightDir = vec3(0.2f, -0.5f, -0.5f);\n");
         }
 
-        if (flags & ShaderBuilderFlagShadowMap)
-        {
+        if (flags & ShaderBuilderFlagShadowMap) {
             vertex.append("		uniform mat4 u_LightCamera;\n");
         }
 
@@ -117,20 +113,17 @@ namespace Dodo { namespace Platform {
             flags & ShaderBuilderFlagNormalMap)
             vertex.append("		vec3 LightDirection;\n");
 
-        if (flags & ShaderBuilderFlagNormalMap)
-        {
+        if (flags & ShaderBuilderFlagNormalMap) {
             vertex.append("		vec3 TangentCameraPos;\n"
                           "		vec3 TangentFragPos;\n");
-        } else if (!(flags & ShaderBuilderFlagCubeMap))
-        {
+        } else if (!(flags & ShaderBuilderFlagCubeMap)) {
             vertex.append("		vec3 Normal;\n");
         }
         if (flags & ShaderBuilderFlagsCameraPositionUniform || flags & ShaderBuilderFlagSpecularUniform ||
             flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap ||
             flags & ShaderBuilderFlagNormalMap)
             vertex.append("		vec3 CameraPos;\n");
-        if (flags & ShaderBuilderFlagShadowMap)
-        {
+        if (flags & ShaderBuilderFlagShadowMap) {
             vertex.append("		vec4 LightFragPos;\n");
         }
 
@@ -146,14 +139,12 @@ namespace Dodo { namespace Platform {
         else if (flags & ShaderBuilderFlagCubeMap) // No texcoord & with cubemap
             vertex.append("		vertex_out.TexCoord = a_Position;\n");
         if (flags & ShaderBuilderFlagLightDirectionUniform || flags & ShaderBuilderFlagSpecularUniform ||
-            flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap)
-        {
+            flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap) {
             if (!(flags & ShaderBuilderFlagNormalMap))
                 vertex.append("		vertex_out.LightDirection = normalize(-u_LightDir);\n");
         }
 
-        if (flags & ShaderBuilderFlagNormalMap)
-        {
+        if (flags & ShaderBuilderFlagNormalMap) {
             vertex.append("	mat3 normalMatrix = transpose(inverse(mat3(u_Model)));\n"
                           "	vec3 T = normalize(normalMatrix * a_Tangent);\n"
                           "	vec3 N = normalize(normalMatrix * a_Normal);\n"
@@ -163,23 +154,19 @@ namespace Dodo { namespace Platform {
                           "	vertex_out.TangentCameraPos = TBN * u_CameraPos;\n"
                           "	vertex_out.TangentFragPos = TBN * vertex_out.FragPos;\n"
                           "	vertex_out.LightDirection = TBN * normalize(-u_LightDir);\n");
-        } else if (!(flags & ShaderBuilderFlagCubeMap))
-        {
+        } else if (!(flags & ShaderBuilderFlagCubeMap)) {
             vertex.append("		vertex_out.Normal = a_Normal;\n");
             if (flags & ShaderBuilderFlagsCameraPositionUniform || flags & ShaderBuilderFlagSpecularUniform ||
                 flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap ||
                 flags & ShaderBuilderFlagNormalMap)
                 vertex.append("		vertex_out.CameraPos = u_CameraPos;\n");
         }
-        if (flags & ShaderBuilderFlagShadowMap)
-        {
+        if (flags & ShaderBuilderFlagShadowMap) {
             vertex.append("		vertex_out.LightFragPos = u_LightCamera * u_Model * vec4(a_Position, 1.0);\n");
         }
-        if (flags & ShaderBuilderFlagMaxDepth)
-        {
+        if (flags & ShaderBuilderFlagMaxDepth) {
             vertex.append("		gl_Position = vec4(u_Camera * u_Model * vec4(a_Position, 1.0f)).xyww;\n");
-        } else
-        {
+        } else {
             vertex.append("		gl_Position = u_Camera * u_Model * vec4(a_Position, 1.0f);\n");
         }
         vertex.append("}\0");
@@ -203,8 +190,7 @@ namespace Dodo { namespace Platform {
             fragment.append("uniform samplerCube u_CubeMap;\n");
         else if (flags & ShaderBuilderFlagBasicTexture)
             fragment.append("uniform sampler2D u_TextureMap;\n");
-        if (flags & ShaderBuilderFlagShadowMap)
-        {
+        if (flags & ShaderBuilderFlagShadowMap) {
             fragment.append("uniform sampler2D u_DepthMap;\n");
             fragment.append("float ShadowCalculation(vec3 normal);\n");
         }
@@ -223,8 +209,7 @@ namespace Dodo { namespace Platform {
             flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap ||
             flags & ShaderBuilderFlagNormalMap)
             fragment.append("		vec3 LightDirection;\n");
-        if (flags & ShaderBuilderFlagNormalMap)
-        {
+        if (flags & ShaderBuilderFlagNormalMap) {
             fragment.append("		vec3 TangentCameraPos;\n"
                             "		vec3 TangentFragPos;\n");
         } else if (!(flags & ShaderBuilderFlagCubeMap))
@@ -234,8 +219,7 @@ namespace Dodo { namespace Platform {
             flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap ||
             flags & ShaderBuilderFlagNormalMap)
             fragment.append("		vec3 CameraPos;\n");
-        if (flags & ShaderBuilderFlagShadowMap)
-        {
+        if (flags & ShaderBuilderFlagShadowMap) {
             fragment.append("		vec4 LightFragPos;\n");
         }
 
@@ -254,19 +238,15 @@ namespace Dodo { namespace Platform {
         else if (!(flags & ShaderBuilderFlagCubeMap))
             fragment.append("	vec3 normal = frag_in.Normal;\n");
 
-        if (flags & ShaderBuilderFlagDiffuseMap)
-        { // What will the color be assigned to
-            if (flags & ShaderBuilderFlagColorUniform)
-            {
+        if (flags & ShaderBuilderFlagDiffuseMap) { // What will the color be assigned to
+            if (flags & ShaderBuilderFlagColorUniform) {
                 fragment.append("	vec4 color = vec4(texture(u_DiffuseMap, frag_in.TexCoord.xy).rgba * "
                                 "vec4(u_Color, 1.0f);\n");
-            } else
-            {
+            } else {
                 fragment.append("	vec4 color = texture(u_DiffuseMap, frag_in.TexCoord.xy).rgba;\n");
             }
             fragment.append("	if(color.a < 0.85) discard;\n");
-        } else if (!(flags & ShaderBuilderFlagCubeMap))
-        {
+        } else if (!(flags & ShaderBuilderFlagCubeMap)) {
             if (flags & ShaderBuilderFlagColorUniform)
                 fragment.append("	vec4 color = vec4(u_Color, 1.0f);\n");
             else if (flags & ShaderBuilderFlagBasicTexture)
@@ -275,20 +255,16 @@ namespace Dodo { namespace Platform {
                 fragment.append("	vec4 color = vec4(1.0f, 0.0f, 0.0f, 1.0f);\n");
         }
 
-        if (flags & ShaderBuilderFlagShadowMap)
-        {
+        if (flags & ShaderBuilderFlagShadowMap) {
             fragment.append("	float shadow = ShadowCalculation(normal);\n");
-        } else
-        {
+        } else {
             fragment.append("	float shadow = 0.0;\n");
         }
 
         if (flags & ShaderBuilderFlagLightDirectionUniform || flags & ShaderBuilderFlagSpecularUniform ||
             flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap ||
-            flags & ShaderBuilderFlagNormalMap)
-        {
-            if (flags & ShaderBuilderFlagNormalMap)
-            {
+            flags & ShaderBuilderFlagNormalMap) {
+            if (flags & ShaderBuilderFlagNormalMap) {
                 fragment.append(
                     "	vec3 ambient = color.rgb * 0.1f;\n"
                     "	vec4 diffuse = vec4(max(dot(frag_in.LightDirection, normal), 0.0f) * color.rgb, color.a);\n"
@@ -300,35 +276,29 @@ namespace Dodo { namespace Platform {
                 else if (flags & ShaderBuilderFlagSpecularMap)
                     fragment.append("	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * "
                                     "texture(u_SpecularMap, frag_in.TexCoord.xy).rrr;\n");
-                if (flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagSpecularUniform)
-                {
+                if (flags & ShaderBuilderFlagSpecularMap || flags & ShaderBuilderFlagSpecularUniform) {
                     fragment.append(
                         "	result = vec4(ambient + (1.0f - shadow) * (diffuse.rgb + specular), diffuse.a);\n");
-                } else
-                {
+                } else {
                     fragment.append("	result = vec4(ambient + (1.0f - shadow) * (diffuse.rgb), diffuse.a);\n");
                 }
-            } else
-            {
+            } else {
                 fragment.append(
                     "	vec3 ambient = color.rgb * 0.1f;\n"
                     "	vec4 diffuse = vec4(max(dot(frag_in.LightDirection, normal), 0.0f) * color.rgb, color.a);\n"
                     "	vec3 viewDir = normalize(frag_in.CameraPos - frag_in.FragPos);\n"
                     "	vec3 halfwayDir = normalize(frag_in.LightDirection + viewDir);\n");
 
-                if (flags & ShaderBuilderFlagSpecularUniform)
-                {
+                if (flags & ShaderBuilderFlagSpecularUniform) {
                     fragment.append(
                         "	vec4 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * vec3(u_Specular);\n"
                         "	result = vec4(ambient + (1.0f - shadow) * (diffuse.rgb + specular), diffuse.a);\n");
-                } else if (flags & ShaderBuilderFlagSpecularMap)
-                {
+                } else if (flags & ShaderBuilderFlagSpecularMap) {
                     fragment.append(
                         "	vec3 specular = pow(max(dot(normal, halfwayDir), 0.0f), 32.0f) * "
                         "texture(u_SpecularMap, frag_in.TexCoord.xy).rrr;\n"
                         "	result = vec4(ambient + (1.0f - shadow) * (diffuse.rgb + specular), diffuse.a);\n");
-                } else
-                {
+                } else {
                     fragment.append("	result = vec4(ambient + (1.0f - shadow) * (diffuse.rgb), diffuse.a);\n");
                 }
             }
@@ -338,8 +308,7 @@ namespace Dodo { namespace Platform {
 
         fragment.append("	pixel = result;\n"
                         "}\n");
-        if (flags & ShaderBuilderFlagShadowMap)
-        {
+        if (flags & ShaderBuilderFlagShadowMap) {
             /*fragment.append(
                 "float ShadowCalculation(vec3 normal) {\n"
                 "	vec3 projCoords = frag_in.LightFragPos.xyz / frag_in.LightFragPos.w;\n"
@@ -384,8 +353,7 @@ namespace Dodo { namespace Platform {
         fragment.append("\0");
 
         uint shaderid = CompileVertexFragmentShader(vertex.c_str(), fragment.c_str());
-        if (!shaderid)
-        {
+        if (!shaderid) {
             DD_ERR("Failed to build shader with flag {}", flags);
             DD_ERR("Vertex Shader: \n{}", vertex.c_str());
             DD_ERR("Fragment Shader: \n{}", fragment.c_str());
@@ -417,8 +385,7 @@ namespace Dodo { namespace Platform {
         char infoLog[512];
         bool failed = false;
         glGetShaderiv(vertexID, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
+        if (!success) {
             glGetShaderInfoLog(vertexID, 512, NULL, infoLog);
             std::string stringlog = "Vertex Shader: ";
             stringlog.append(infoLog);
@@ -434,8 +401,7 @@ namespace Dodo { namespace Platform {
         glCompileShader(fragmentID);
 
         glGetShaderiv(fragmentID, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
+        if (!success) {
             glGetShaderInfoLog(fragmentID, 512, NULL, infoLog);
             std::string stringlog = "Fragment Shader: ";
             stringlog.append(infoLog);
@@ -444,8 +410,7 @@ namespace Dodo { namespace Platform {
             failed = true;
         }
 
-        if (failed)
-        {
+        if (failed) {
             DD_ERR("{}", fragment);
             Application::s_Application->m_Window->FocusConsole(); // Make the error more noticeable
             return 0;                                             // Get error from both shaders
@@ -458,8 +423,7 @@ namespace Dodo { namespace Platform {
         glLinkProgram(result);
 
         glGetProgramiv(result, GL_LINK_STATUS, &success);
-        if (!success)
-        {
+        if (!success) {
             glGetProgramInfoLog(result, 512, NULL, infoLog);
             std::string stringlog = infoLog;
             stringlog.append("Linking Shader: ");

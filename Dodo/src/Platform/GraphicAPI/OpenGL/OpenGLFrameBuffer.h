@@ -6,8 +6,7 @@
 
 namespace Dodo {
 
-    enum class FrameBufferType
-    {
+    enum class FrameBufferType {
         FRAMEBUFFER_COLOR_DEPTH_STENCIL,
         FRAMEBUFFER_DEPTH
     };

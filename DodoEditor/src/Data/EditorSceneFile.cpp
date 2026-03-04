@@ -2,8 +2,7 @@
 
 SceneFileError EditorSceneFile::Write(EditorScene* scene)
 {
-    if (!HasPath())
-    {
+    if (!HasPath()) {
         SetError(SceneFileError::IOError);
         return m_LastError;
     }
@@ -16,8 +15,7 @@ SceneFileError EditorSceneFile::WriteAs(const std::string& path, EditorScene* sc
 
     // Pass 1: write core/runtime data
     SceneFileError coreErr = m_Core.WriteEntities(path, &scene->GetRuntimeScene());
-    if (coreErr != SceneFileError::None)
-    {
+    if (coreErr != SceneFileError::None) {
         m_LastError = coreErr;
         return m_LastError;
     }
@@ -28,8 +26,7 @@ SceneFileError EditorSceneFile::WriteAs(const std::string& path, EditorScene* sc
     file.WriteSection("Editor");
 
     auto& world = scene->GetWorld();
-    for (EntityID entityId : world.GetAliveEntities())
-    {
+    for (EntityID entityId : world.GetAliveEntities()) {
         if (!world.HasComponent<NameComponent>(entityId)) continue;
 
         const auto& name = world.GetComponent<NameComponent>(entityId).name;
@@ -48,8 +45,7 @@ SceneFileError EditorSceneFile::WriteAs(const std::string& path, EditorScene* sc
 
 EditorScene* EditorSceneFile::Read()
 {
-    if (!HasPath())
-    {
+    if (!HasPath()) {
         SetError(SceneFileError::FileNotFound);
         return nullptr;
     }
@@ -62,8 +58,7 @@ EditorScene* EditorSceneFile::Read(const std::string& path)
 
     // Pass 1: read core/runtime data
     Scene* runtimeScene = m_Core.ReadEntities(path);
-    if (!runtimeScene)
-    {
+    if (!runtimeScene) {
         SetError(m_Core.GetLastError());
         return nullptr;
     }
@@ -77,18 +72,15 @@ EditorScene* EditorSceneFile::Read(const std::string& path)
     auto& world = editorScene->GetWorld();
     bool inEditor = false;
 
-    while (file.HasMore())
-    {
-        if (!file.IsSection())
-        {
+    while (file.HasMore()) {
+        if (!file.IsSection()) {
             file.SkipLine();
             continue;
         }
 
         std::string section = file.ReadSection();
 
-        if (section == "Editor")
-        {
+        if (section == "Editor") {
             inEditor = true;
             continue;
         }
@@ -96,8 +88,7 @@ EditorScene* EditorSceneFile::Read(const std::string& path)
         // Skip core components
         if (!inEditor) continue;
 
-        if (section == "NameComponent")
-        {
+        if (section == "NameComponent") {
             EntityID id = (EntityID)file.ReadInt();
             std::string name = file.ReadString();
             world.AddComponent<NameComponent>(id, NameComponent{name});

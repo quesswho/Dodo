@@ -8,13 +8,10 @@ Chunk::Chunk(ChunkPos chunkpos, const std::unordered_map<int, std::array<Ref<Blo
 
 BlockType Chunk::GetBlockType(int x, int y, int z)
 {
-    if (x >= 0 && x < 16 && y >= 0 && z >= 0 && z < 16)
-    {
+    if (x >= 0 && x < 16 && y >= 0 && z >= 0 && z < 16) {
         auto subchunk = m_Blocks.find(y / 16);
-        if (subchunk != m_Blocks.end())
-        {
-            if (subchunk->second[(x << 8) + ((y % 16) << 4) + z] != nullptr)
-            {
+        if (subchunk != m_Blocks.end()) {
+            if (subchunk->second[(x << 8) + ((y % 16) << 4) + z] != nullptr) {
                 return subchunk->second[(x << 8) + ((y % 16) << 4) + z]->m_Type;
             }
         }
@@ -24,14 +21,11 @@ BlockType Chunk::GetBlockType(int x, int y, int z)
 
 void Chunk::SetBlockType(int x, int y, int z, BlockType type)
 {
-    if (x >= 0 && x < 16 && y >= 0 && z >= 0 && z < 16)
-    {
+    if (x >= 0 && x < 16 && y >= 0 && z >= 0 && z < 16) {
         auto subchunk = m_Blocks.find(y / 16);
-        if (subchunk != m_Blocks.end())
-        {
+        if (subchunk != m_Blocks.end()) {
             subchunk->second[(x << 8) + (y << 4) + z]->m_Type = type;
-        } else
-        {
+        } else {
             std::array<Ref<Block>, 4096> subchunk;
             subchunk[(x << 8) + ((y % 16) << 4) + z]->m_Type = type;
             m_Blocks.emplace(y / 16, subchunk);

@@ -6,11 +6,11 @@
 
 /* Application */
 #include "Core/Application/Application.h"
-//#include "Core/Application/Window.h"
-//#include "Core/Application/Layer.h"
+// #include "Core/Application/Window.h"
+// #include "Core/Application/Layer.h"
 /* Common */
-//#include "Core/Common/Common.h"
-//#include "Core/Common/Macros.h"
+// #include "Core/Common/Common.h"
+// #include "Core/Common/Macros.h"
 /* Data */
 #include "Core/Data/SceneFile/SceneFile.h"
 

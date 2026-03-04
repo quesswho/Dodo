@@ -16,8 +16,7 @@ namespace Dodo {
         static std::string ReadTextFile(const char* path)
         {
             std::ifstream file(path);
-            if (file.good())
-            {
+            if (file.good()) {
                 std::string result;
                 const uint64 size = std::filesystem::file_size(path);
                 result.resize(size);
@@ -46,8 +45,7 @@ namespace Dodo {
         static void RemoveDoubleBackslash(std::string& str)
         {
             auto it = std::find(str.begin(), str.end(), '\\');
-            while (it != str.end())
-            {
+            while (it != str.end()) {
                 str.replace(it, it + 1, "/");
 
                 it = std::find(it + 2, str.end(), '\\');

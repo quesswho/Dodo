@@ -18,8 +18,7 @@ namespace Dodo {
         template <typename T>
         void SetUniform(const char* location, T value)
         {
-            for (auto mesh : m_Meshes)
-            {
+            for (auto mesh : m_Meshes) {
                 mesh->SetUniform(location, value);
             }
         }

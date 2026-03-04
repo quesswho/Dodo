@@ -3,8 +3,7 @@
 
 namespace Dodo {
 
-    enum class RenderInitStatus
-    {
+    enum class RenderInitStatus {
         Success,
         Failed
     };

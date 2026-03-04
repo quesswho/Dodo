@@ -30,8 +30,7 @@ namespace Dodo {
         BufferProperties(std::initializer_list<BufferElement> elements) : m_Elements(elements), m_Stride(0)
         {
             // TODO: if component count is greater than 4, divide it because of limitation in opengl
-            for (int i = 0; i < m_Elements.size(); i++)
-            {
+            for (int i = 0; i < m_Elements.size(); i++) {
                 m_Elements[i].m_Index = i;
                 m_Elements[i].m_Offset = m_Stride;
                 m_Stride += m_Elements[i].GetComponentCount();

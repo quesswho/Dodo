@@ -16,8 +16,7 @@ namespace Dodo {
 
     using MaterialID = uint64_t;
 
-    enum class BuiltinModel
-    {
+    enum class BuiltinModel {
         Cube,
     };
 

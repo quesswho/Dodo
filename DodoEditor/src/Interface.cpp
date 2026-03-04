@@ -51,11 +51,9 @@ void Interface::InitInterface()
     style.TabRounding = 0.0f;
 
     ImGuiIO& io = ImGui::GetIO();
-    if (FileUtils::FileExists("res/font/opensans/opensans.ttf"))
-    {
+    if (FileUtils::FileExists("res/font/opensans/opensans.ttf")) {
         io.Fonts->AddFontFromFileTTF("res/font/opensans/opensans.ttf", 16);
-    } else
-    {
+    } else {
         DD_WARN("Could not find: res/font/opensans/opensans.ttf, using default font.");
     }
 
@@ -102,36 +100,28 @@ bool Interface::BeginDraw()
     ImGui::PopStyleVar();
     ImGui::PopStyleVar(2);
 
-    if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-    {
+    if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
         ImGuiID dockspace_id = ImGui::GetID("DockSpace");
-        if (ImGui::DockBuilderGetNode(dockspace_id) == NULL || s_ResetDockspace)
-        {
+        if (ImGui::DockBuilderGetNode(dockspace_id) == NULL || s_ResetDockspace) {
             ResetDockspace(dockspace_id);
             s_ResetDockspace = false;
         }
         ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), 0);
     }
 
-    if (ImGui::BeginMenuBar())
-    {
+    if (ImGui::BeginMenuBar()) {
         ImGui::PushStyleColor(ImGuiCol_Button, ImGuiCol_MenuBarBg);
-        if (ImGui::BeginMenu("File"))
-        {
-            if (ImGui::BeginMenu("New"))
-            {
-                if (ImGui::MenuItem("Scene"))
-                {}
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::BeginMenu("New")) {
+                if (ImGui::MenuItem("Scene")) {
+                }
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("Open"))
-            {
-                if (ImGui::MenuItem("Scene"))
-                {
+            if (ImGui::BeginMenu("Open")) {
+                if (ImGui::MenuItem("Scene")) {
                     std::filesystem::path path = FileDialog::OpenFile("Open Scene", "Dodo Ascii Scene File\0*.das\0");
-                    if (!path.empty())
-                    {
+                    if (!path.empty()) {
                         EditorScene* scene = fileReader.Read(path.string());
                         // Move skybox ownership to the new scene.
                         scene->m_SkyBox = m_EditorState.scene->m_SkyBox;
@@ -148,35 +138,29 @@ bool Interface::BeginDraw()
                 m_File.Write(m_EditorState.scene);
             }*/
 
-            if (ImGui::MenuItem("Save As..."))
-            {
+            if (ImGui::MenuItem("Save As...")) {
                 std::filesystem::path path = FileDialog::SaveFile("Save As", "Dodo Ascii Scene File\0*.das\0");
-                if (!path.empty())
-                {
+                if (!path.empty()) {
                     fileReader.WriteAs(path.string(), m_EditorState.scene);
                 }
             }
 
-            if (ImGui::BeginMenu("Import/Export"))
-            {
+            if (ImGui::BeginMenu("Import/Export")) {
                 ImGui::MenuItem("Model");
                 ImGui::EndMenu();
             }
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Edit"))
-        {
+        if (ImGui::BeginMenu("Edit")) {
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Window"))
-        {
+        if (ImGui::BeginMenu("Window")) {
             ImGui::MenuItem(m_EditorProperties.m_ViewportName, "", &m_EditorProperties.m_ShowViewport);
             ImGui::MenuItem(m_EditorProperties.m_HierarchyName, "", &m_HierarchyState.visible);
             ImGui::MenuItem(m_EditorProperties.m_InspectorName, "", &m_InspectorState.visible);
             ImGui::Separator();
-            if (ImGui::Button("Reset DockSpace"))
-            {
+            if (ImGui::Button("Reset DockSpace")) {
                 s_ResetDockspace = true;
             }
             ImGui::EndMenu();
@@ -222,8 +206,7 @@ void Interface::ResetDockspace(uint dockspace_id)
 bool Interface::ViewportResize()
 {
     if (m_ViewportState.width != ImGui::GetWindowWidth() || m_ViewportState.height != ImGui::GetWindowHeight() ||
-        m_ViewportState.x != ImGui::GetWindowPos().x || m_ViewportState.y != ImGui::GetWindowPos().y)
-    {
+        m_ViewportState.x != ImGui::GetWindowPos().x || m_ViewportState.y != ImGui::GetWindowPos().y) {
         m_ViewportState.width = (uint)ImGui::GetWindowWidth();
         m_ViewportState.height = (uint)ImGui::GetWindowHeight();
         m_ViewportState.x = (uint)ImGui::GetWindowPos().x;
@@ -237,8 +220,7 @@ bool Interface::ViewportResize()
 }
 bool Interface::BeginViewport()
 {
-    if (m_EditorProperties.m_ShowViewport)
-    {
+    if (m_EditorProperties.m_ShowViewport) {
         static ImGuiWindowFlags s_ViewportWindow = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
         ImGui::Begin("Viewport", 0, s_ViewportWindow);
 
@@ -253,8 +235,7 @@ bool Interface::BeginViewport()
 
 void Interface::EndViewport(FrameBuffer* framebuffer)
 {
-    if (m_EditorProperties.m_ShowViewport)
-    {
+    if (m_EditorProperties.m_ShowViewport) {
         ImGui::Image((void*)(intptr_t)framebuffer->GetTextureHandle(),
                      ImVec2((float)m_ViewportState.width, (float)m_ViewportState.height), ImVec2(0, 1), ImVec2(1, 0));
         ImGui::End();

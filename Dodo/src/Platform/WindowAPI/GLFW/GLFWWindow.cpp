@@ -11,12 +11,14 @@
 
 namespace Dodo::Platform {
 
-    GLFWWindow::GLFWWindow(const WindowProperties& winProp) : m_WindowProperties(winProp), m_Focused(true) { Init(); }
+    GLFWWindow::GLFWWindow(const WindowProperties& winProp) : m_WindowProperties(winProp), m_Focused(true)
+    {
+        Init();
+    }
 
     GLFWWindow::~GLFWWindow()
     {
-        if (m_WindowProperties.m_Settings.imgui)
-        {
+        if (m_WindowProperties.m_Settings.imgui) {
             GLFWImGuiBackend::Shutdown();
         }
         glfwDestroyWindow(m_Handle);
@@ -26,8 +28,7 @@ namespace Dodo::Platform {
     void GLFWWindow::Init()
     {
         // Fail if we can not initialize
-        if (!glfwInit())
-        {
+        if (!glfwInit()) {
             DD_FATAL("Could not initialize GLFW!");
             return;
         }
@@ -37,8 +38,7 @@ namespace Dodo::Platform {
         ConfigureMonitor();
         m_Handle = glfwCreateWindow(m_WindowProperties.m_Width, m_WindowProperties.m_Height, m_WindowProperties.m_Title,
                                     NULL, NULL);
-        if (!m_Handle)
-        {
+        if (!m_Handle) {
             DD_FATAL("Could not create GLFW window!");
             return;
         }
@@ -67,37 +67,41 @@ namespace Dodo::Platform {
         glfwSetWindowFocusCallback(m_Handle, WindowFocusCallback);
         glfwSetWindowCloseCallback(m_Handle, WindowCloseCallback);
 
-        if (m_WindowProperties.m_Settings.imgui || m_WindowProperties.m_Settings.imguiDocking)
-        {
+        if (m_WindowProperties.m_Settings.imgui || m_WindowProperties.m_Settings.imguiDocking) {
             m_WindowProperties.m_Settings.imgui = true;
             GLFWImGuiBackend::Init(m_Handle, m_WindowProperties.m_Settings.imguiDocking);
         }
     }
 
-    void GLFWWindow::Update() const { glfwPollEvents(); }
+    void GLFWWindow::Update() const
+    {
+        glfwPollEvents();
+    }
 
-    void GLFWWindow::SetTitle(const char* title) { glfwSetWindowTitle(m_Handle, title); }
+    void GLFWWindow::SetTitle(const char* title)
+    {
+        glfwSetWindowTitle(m_Handle, title);
+    }
 
     void GLFWWindow::SetCursorVisible(bool vis)
     {
-        if (vis)
-        {
+        if (vis) {
             glfwSetInputMode(m_Handle, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE);
             glfwSetInputMode(m_Handle, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        } else
-        {
+        } else {
             glfwSetInputMode(m_Handle, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-            if (glfwRawMouseMotionSupported())
-            {
+            if (glfwRawMouseMotionSupported()) {
                 glfwSetInputMode(m_Handle, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
-            } else
-            {
+            } else {
                 DD_WARN("Raw Mouse is not supported!");
             }
         }
     }
 
-    void GLFWWindow::SetCursorPosition(Math::TVec2<double> pos) { glfwSetCursorPos(m_Handle, pos.x, pos.y); }
+    void GLFWWindow::SetCursorPosition(Math::TVec2<double> pos)
+    {
+        glfwSetCursorPos(m_Handle, pos.x, pos.y);
+    }
 
     void GLFWWindow::FullScreen(bool fullscreen)
     {
@@ -105,16 +109,14 @@ namespace Dodo::Platform {
         GLFWmonitor* primary = glfwGetPrimaryMonitor();
         const GLFWvidmode* mode = glfwGetVideoMode(primary);
 
-        if (fullscreen)
-        {
+        if (fullscreen) {
             int xpos, ypos;
             glfwGetWindowPos(m_Handle, &xpos, &ypos);
             m_WindowProperties.m_PosX = xpos;
             m_WindowProperties.m_PosY = ypos;
 
             glfwSetWindowMonitor(m_Handle, primary, 0, 0, mode->width, mode->height, mode->refreshRate);
-        } else
-        {
+        } else {
             glfwSetWindowMonitor(m_Handle, NULL, m_WindowProperties.m_PosX, m_WindowProperties.m_PosY,
                                  m_WindowProperties.m_Width, m_WindowProperties.m_Height, 0);
         }
@@ -129,16 +131,24 @@ namespace Dodo::Platform {
         };
     }
 
-    void GLFWWindow::ImGuiNewFrame() const { GLFWImGuiBackend::NewFrame(); }
+    void GLFWWindow::ImGuiNewFrame() const
+    {
+        GLFWImGuiBackend::NewFrame();
+    }
 
-    void GLFWWindow::ImGuiEndFrame() const { GLFWImGuiBackend::EndFrame(); }
+    void GLFWWindow::ImGuiEndFrame() const
+    {
+        GLFWImGuiBackend::EndFrame();
+    }
 
-    void GLFWWindow::ErrorCallback(int error, const char* description) { DD_ERR("{0}", description); }
+    void GLFWWindow::ErrorCallback(int error, const char* description)
+    {
+        DD_ERR("{0}", description);
+    }
 
     void GLFWWindow::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
-        switch (action)
-        {
+        switch (action) {
         case GLFW_PRESS:
         case GLFW_REPEAT:
             Application::s_Application->m_InputManager.KeyPressed(key);
@@ -151,8 +161,7 @@ namespace Dodo::Platform {
 
     void GLFWWindow::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
     {
-        switch (action)
-        {
+        switch (action) {
         case GLFW_PRESS:
             Application::s_Application->m_InputManager.MousePressed(button);
             break;
@@ -216,7 +225,10 @@ namespace Dodo::Platform {
         Application::s_Application->OnEvent(WindowCloseEvent());
     }
 
-    void GLFWWindow::SetWindowProperties(const WindowProperties& winprop) { m_WindowProperties = winprop; }
+    void GLFWWindow::SetWindowProperties(const WindowProperties& winprop)
+    {
+        m_WindowProperties = winprop;
+    }
 
     void GLFWWindow::FocusConsole() const {}
 
@@ -231,8 +243,7 @@ namespace Dodo::Platform {
         int width = mode->width;
         int height = mode->height;
 
-        if (width < (int)m_WindowProperties.m_Width || height < (int)m_WindowProperties.m_Height)
-        {
+        if (width < (int)m_WindowProperties.m_Width || height < (int)m_WindowProperties.m_Height) {
             DD_WARN("Application resolution is more than the resolution of the screen!");
         }
 

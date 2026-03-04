@@ -55,14 +55,12 @@ void GameLayer::Update(float elapsed)
 
 void GameLayer::Render()
 {
-    if (m_Interface->BeginDraw())
-    {
+    if (m_Interface->BeginDraw()) {
         m_Scene = m_Interface->m_EditorState.scene; // Maybe work out something better when changing scene
     }
 
     m_Interface->BeginViewport();
-    if (m_Interface->ViewportResize())
-    {
+    if (m_Interface->ViewportResize()) {
         m_Camera->Resize(m_Interface->m_ViewportState.width, m_Interface->m_ViewportState.height);
         m_FrameBuffer->Resize(m_Interface->m_ViewportState.width, m_Interface->m_ViewportState.height);
 
@@ -85,34 +83,28 @@ void GameLayer::DrawScene()
 
 void GameLayer::OnEvent(const Event& event)
 {
-    switch (event.GetType())
-    {
+    switch (event.GetType()) {
     case EventType::KEY_PRESSED:
-        switch (static_cast<const KeyPressEvent&>(event).m_Key)
-        {
+        switch (static_cast<const KeyPressEvent&>(event).m_Key) {
         case DODO_KEY_ESCAPE:
             Application::s_Application->Shutdown();
             break;
         case DODO_KEY_Z:
-            if (m_Interface->m_EditorProperties.m_ViewportHover && !m_Interface->m_EditorProperties.m_ViewportInput)
-            {
+            if (m_Interface->m_EditorProperties.m_ViewportHover && !m_Interface->m_EditorProperties.m_ViewportInput) {
                 m_Interface->m_EditorProperties.m_ViewportInput = true;
                 Application::s_Application->m_Window->SetCursorVisible(false);
                 m_Camera->ResetMouse();
-            } else if (m_Interface->m_EditorProperties.m_ViewportInput)
-            {
+            } else if (m_Interface->m_EditorProperties.m_ViewportInput) {
                 m_Interface->m_EditorProperties.m_ViewportInput = false;
                 Application::s_Application->m_Window->SetCursorVisible(true);
             }
             break;
         case DODO_KEY_DELETE:
-            if (!Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_LEFT_CONTROL))
-            {
+            if (!Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_LEFT_CONTROL)) {
                 break;
             }
 
-            for (int entityId : m_Interface->m_EditorState.selection.entities)
-            {
+            for (int entityId : m_Interface->m_EditorState.selection.entities) {
                 m_Interface->m_EditorState.scene->GetWorld().DeleteEntity(entityId);
             }
             break;

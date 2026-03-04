@@ -20,15 +20,20 @@ namespace Dodo { namespace Platform {
             newpath[strlen(path) - 1] = 'g';
             CompileInit(FileUtils::ReadTextFile(strcat(newpath, "lsl"))); // turning .x into .glsl
             delete[] newpath;
-        } else
-        {
+        } else {
             CompileInit(FileUtils::ReadTextFile(path));
         }
     }
 
-    OpenGLShader::OpenGLShader(const char* name, std::string& source) : m_Name(name) { CompileInit(source); }
+    OpenGLShader::OpenGLShader(const char* name, std::string& source) : m_Name(name)
+    {
+        CompileInit(source);
+    }
 
-    OpenGLShader::~OpenGLShader() { glDeleteProgram(m_ShaderID); }
+    OpenGLShader::~OpenGLShader()
+    {
+        glDeleteProgram(m_ShaderID);
+    }
 
     void OpenGLShader::CompileVFShader(const char* vertex, const char* fragment)
     {
@@ -43,8 +48,7 @@ namespace Dodo { namespace Platform {
         char infoLog[512];
         bool failed = false;
         glGetShaderiv(vertexID, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
+        if (!success) {
             glGetShaderInfoLog(vertexID, 512, NULL, infoLog);
             std::string stringlog = "Vertex Shader: ";
             stringlog.append(infoLog);
@@ -60,8 +64,7 @@ namespace Dodo { namespace Platform {
         glCompileShader(fragmentID);
 
         glGetShaderiv(fragmentID, GL_COMPILE_STATUS, &success);
-        if (!success)
-        {
+        if (!success) {
             glGetShaderInfoLog(fragmentID, 512, NULL, infoLog);
             std::string stringlog = "Fragment Shader: ";
             stringlog.append(infoLog);
@@ -70,8 +73,7 @@ namespace Dodo { namespace Platform {
             failed = true;
         }
 
-        if (failed)
-        {
+        if (failed) {
             Application::s_Application->m_Window->FocusConsole(); // Make the error more noticeable
             return;                                               // Get error from both shaders
         }
@@ -83,8 +85,7 @@ namespace Dodo { namespace Platform {
         glLinkProgram(m_ShaderID);
 
         glGetProgramiv(m_ShaderID, GL_LINK_STATUS, &success);
-        if (!success)
-        {
+        if (!success) {
             glGetProgramInfoLog(m_ShaderID, 512, NULL, infoLog);
             std::string stringlog = infoLog;
             stringlog.append("Linking Shader: ");
@@ -106,27 +107,23 @@ namespace Dodo { namespace Platform {
 
         std::istringstream source(fileSource);
         std::string line;
-        while (std::getline(source, line))
-        {
+        while (std::getline(source, line)) {
             // Trim beginning of line
             const auto strBegin = line.find_first_not_of(" \t");
             if (strBegin != std::string::npos) line = line.substr(strBegin);
 
             // Check for type
-            if (line == "#shader fragment")
-            {
+            if (line == "#shader fragment") {
                 type = ShaderType::FRAGMENT;
                 continue;
             }
 
-            if (line == "#shader vertex")
-            {
+            if (line == "#shader vertex") {
                 type = ShaderType::VERTEX;
                 continue;
             }
 
-            switch (type)
-            {
+            switch (type) {
             case ShaderType::FRAGMENT:
                 stringFragmentSource.append(line).append("\n");
                 break;
@@ -136,8 +133,7 @@ namespace Dodo { namespace Platform {
             }
         }
 
-        if (stringFragmentSource == "" || stringVertexSource == "")
-        {
+        if (stringFragmentSource == "" || stringVertexSource == "") {
             DD_ERR("{0}: Source needs to be in a specific format! Add \"#shader fragment\" or \"#shader vertex\" "
                    "as the first line of the different shaders to differentiate between between the differnt "
                    "shader types!",
@@ -167,9 +163,15 @@ namespace Dodo { namespace Platform {
         CompileVFShader(vertex, fragment);
     }
 
-    void OpenGLShader::Bind() const { glUseProgram(m_ShaderID); }
+    void OpenGLShader::Bind() const
+    {
+        glUseProgram(m_ShaderID);
+    }
 
-    void OpenGLShader::Unbind() const { glUseProgram(0); }
+    void OpenGLShader::Unbind() const
+    {
+        glUseProgram(0);
+    }
 
     int OpenGLShader::GetLocation(const char* location)
     {

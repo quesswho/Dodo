@@ -11,7 +11,10 @@ namespace Dodo { namespace Math {
     //////////// Vec2 ////////////
 
     // Sum of Vec2
-    static inline float Sum(const TVec2<float>& vec) { return vec.x + vec.y; }
+    static inline float Sum(const TVec2<float>& vec)
+    {
+        return vec.x + vec.y;
+    }
 
     // Dot product of two Vec2
     static inline float Dot(const TVec2<float>& first, const TVec2<float>& second)
@@ -34,15 +37,24 @@ namespace Dodo { namespace Math {
     }
 
     // Turn vec2 using degrees into vec2 using radians
-    static inline const TVec2<float> ToRadians(const TVec2<float>& degrees) { return degrees * MATH_PI / 180.0f; }
+    static inline const TVec2<float> ToRadians(const TVec2<float>& degrees)
+    {
+        return degrees * MATH_PI / 180.0f;
+    }
 
     // Turn vec2 using radians into vec2 using degrees
-    static inline const TVec2<float> ToDegrees(const TVec2<float>& radians) { return radians * 180.0f / MATH_PI; }
+    static inline const TVec2<float> ToDegrees(const TVec2<float>& radians)
+    {
+        return radians * 180.0f / MATH_PI;
+    }
 
     //////////// Vec3 ////////////
 
     // Sum of Vec3
-    static inline float Sum(const TVec3<float>& vec) { return vec.x + vec.y + vec.z; }
+    static inline float Sum(const TVec3<float>& vec)
+    {
+        return vec.x + vec.y + vec.z;
+    }
 
     // Dot product of two Vec3
     static inline float Dot(const TVec3<float>& first, const TVec3<float>& second)
@@ -58,7 +70,10 @@ namespace Dodo { namespace Math {
     }
 
     // Normalize a Vec3
-    static inline const TVec3<float> Normalize(const TVec3<float>& vec) { return vec.Normalize(); }
+    static inline const TVec3<float> Normalize(const TVec3<float>& vec)
+    {
+        return vec.Normalize();
+    }
 
     // Normalize and negate a Vec3
     static inline const TVec3<float> NegativeNormalize(const TVec3<float>& vec)
@@ -76,15 +91,24 @@ namespace Dodo { namespace Math {
     }
 
     // Turn vec3 using degrees into vec3 using radians
-    static inline const TVec3<float> ToRadians(const TVec3<float>& degrees) { return degrees * MATH_PI / 180.0f; }
+    static inline const TVec3<float> ToRadians(const TVec3<float>& degrees)
+    {
+        return degrees * MATH_PI / 180.0f;
+    }
 
     // Turn vec3 using radians into vec3 using degrees
-    static inline const TVec3<float> ToDegrees(const TVec3<float>& radians) { return radians * 180.0f / MATH_PI; }
+    static inline const TVec3<float> ToDegrees(const TVec3<float>& radians)
+    {
+        return radians * 180.0f / MATH_PI;
+    }
 
     //////////// Vec4 ////////////
 
     // Sum of Vec4
-    static inline float Sum(const TVec4<float>& vec) { return vec.x + vec.y + vec.z + vec.w; }
+    static inline float Sum(const TVec4<float>& vec)
+    {
+        return vec.x + vec.y + vec.z + vec.w;
+    }
 
     // Get distance between two Vec4
     static inline float Distance(const TVec4<float>& first, const TVec4<float>& second)
@@ -108,8 +132,14 @@ namespace Dodo { namespace Math {
     }
 
     // Turn vec4 using degrees into vec4 using radians
-    static inline const TVec4<float> ToRadians(const TVec4<float>& degrees) { return degrees * (MATH_PI / 180.0f); }
+    static inline const TVec4<float> ToRadians(const TVec4<float>& degrees)
+    {
+        return degrees * (MATH_PI / 180.0f);
+    }
 
     // Turn vec4 using radians into vec4 using degrees
-    static inline const TVec4<float> ToDegrees(const TVec4<float>& radians) { return radians * (180.0f / MATH_PI); }
+    static inline const TVec4<float> ToDegrees(const TVec4<float>& radians)
+    {
+        return radians * (180.0f / MATH_PI);
+    }
 }} // namespace Dodo::Math

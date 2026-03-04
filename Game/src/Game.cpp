@@ -110,11 +110,9 @@ void GameLayer::Render()
 
 void GameLayer::OnEvent(const Event& event)
 {
-    switch (event.GetType())
-    {
+    switch (event.GetType()) {
     case EventType::KEY_PRESSED:
-        if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_F11)
-        {
+        if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_F11) {
             Application::s_Application->m_Window->FullScreen();
             m_Camera->Resize(Application::s_Application->GetWindowProperties().m_Width,
                              Application::s_Application->GetWindowProperties().m_Height);
@@ -122,8 +120,7 @@ void GameLayer::OnEvent(const Event& event)
                                  Application::s_Application->GetWindowProperties().m_Height);
         }
 
-        if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_ESCAPE)
-        {
+        if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_ESCAPE) {
             Application::s_Application->Shutdown();
         }
         break;

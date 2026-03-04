@@ -14,8 +14,7 @@ struct RenameState {
     void Begin(EditorWorld& world, EntityID id)
     {
         entityId = id;
-        if (!world.HasComponent<NameComponent>(id))
-        {
+        if (!world.HasComponent<NameComponent>(id)) {
             world.AddComponent<NameComponent>(id, NameComponent{"Unnamed"});
         }
 
@@ -26,13 +25,11 @@ struct RenameState {
     {
         if (!isActive()) return;
 
-        if (!world.HasComponent<NameComponent>(entityId))
-        {
+        if (!world.HasComponent<NameComponent>(entityId)) {
             world.AddComponent<NameComponent>(entityId, NameComponent{"Unnamed"});
         }
 
-        if (!nameBuffer.empty())
-        {
+        if (!nameBuffer.empty()) {
             world.GetComponent<NameComponent>(entityId).name = nameBuffer;
         }
     }

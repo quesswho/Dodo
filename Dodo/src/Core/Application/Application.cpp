@@ -33,8 +33,7 @@ namespace Dodo {
 
         m_ThreadManager->WaitMain();
         m_Initializing = false;
-        while (!m_Closed)
-        {
+        while (!m_Closed) {
             timer.Start();
             //
             Update(m_FrameTime);
@@ -43,8 +42,7 @@ namespace Dodo {
             elapsed += m_FrameTime;
             frames++;
 
-            if (elapsed > 1.0f)
-            {
+            if (elapsed > 1.0f) {
                 m_FramesPerSecond = frames;
                 m_FrameTimeMs = m_FrameTime * 1000.0f;
                 DD_INFO("FPS: {0}, FT: {1:.4f}", m_FramesPerSecond, m_FrameTimeMs);
@@ -72,8 +70,7 @@ namespace Dodo {
         m_RenderAPI = ddnew RenderAPI(m_Window->GetHandle());
         RenderInitError res = m_RenderAPI->Init(m_Window->GetWindowProperties());
 
-        if (res.status == RenderInitStatus::Failed)
-        {
+        if (res.status == RenderInitStatus::Failed) {
             DD_FATAL("{0}", res.message);
         }
 
@@ -86,8 +83,7 @@ namespace Dodo {
     {
         m_RenderAPI->Begin();
 
-        for (auto it = m_Layers.begin(); it != m_Layers.end(); it++)
-        {
+        for (auto it = m_Layers.begin(); it != m_Layers.end(); it++) {
             (*it)->Update(elapsed);
             (*it)->Render();
         }
@@ -98,24 +94,28 @@ namespace Dodo {
 
     void Application::OnEvent(const Event& event)
     {
-        for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
-        {
+        for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it) {
             if (event.m_Handled) break;
 
             (*it)->OnEvent(event);
         }
     }
 
-    void Application::Shutdown() { m_Closed = true; }
+    void Application::Shutdown()
+    {
+        m_Closed = true;
+    }
 
-    void Application::PushLayer(Layer* layer) { m_Layers.push_back(layer); }
+    void Application::PushLayer(Layer* layer)
+    {
+        m_Layers.push_back(layer);
+    }
 
     void Application::PopLayer(Layer* layer)
     {
         const auto it = std::find(m_Layers.begin(), m_Layers.end(), layer);
 
-        if (it != m_Layers.end())
-        {
+        if (it != m_Layers.end()) {
             m_Layers.erase(it);
         }
     }

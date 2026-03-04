@@ -25,7 +25,10 @@ namespace Dodo { namespace Math {
         181, 199, 106, 157, 184, 84,  204, 176, 115, 121, 50,  45,  127, 4,   150, 254, 138, 236, 205, 93,  222, 114,
         67,  29,  24,  72,  243, 141, 128, 195, 78,  66,  215, 61,  156, 180};
 
-    static inline uint8_t hash(int32_t i) { return perm[static_cast<uint8_t>(i)]; }
+    static inline uint8_t hash(int32_t i)
+    {
+        return perm[static_cast<uint8_t>(i)];
+    }
     static float grad(int32_t hash, float x, float y)
     {
         const int32_t h = hash & 0x3F;
@@ -54,12 +57,10 @@ namespace Dodo { namespace Math {
         const float y0 = y - Y0;
 
         int32_t i1, j1;
-        if (x0 > y0)
-        {
+        if (x0 > y0) {
             i1 = 1;
             j1 = 0;
-        } else
-        {
+        } else {
             i1 = 0;
             j1 = 1;
         }
@@ -74,31 +75,25 @@ namespace Dodo { namespace Math {
         const int gi2 = hash(i + 1 + hash(j + 1));
 
         float t0 = 0.5f - x0 * x0 - y0 * y0;
-        if (t0 < 0.0f)
-        {
+        if (t0 < 0.0f) {
             n0 = 0.0f;
-        } else
-        {
+        } else {
             t0 *= t0;
             n0 = t0 * t0 * grad(gi0, x0, y0);
         }
 
         float t1 = 0.5f - x1 * x1 - y1 * y1;
-        if (t1 < 0.0f)
-        {
+        if (t1 < 0.0f) {
             n1 = 0.0f;
-        } else
-        {
+        } else {
             t1 *= t1;
             n1 = t1 * t1 * grad(gi1, x1, y1);
         }
 
         float t2 = 0.5f - x2 * x2 - y2 * y2;
-        if (t2 < 0.0f)
-        {
+        if (t2 < 0.0f) {
             n2 = 0.0f;
-        } else
-        {
+        } else {
             t2 *= t2;
             n2 = t2 * t2 * grad(gi2, x2, y2);
         }
@@ -113,8 +108,7 @@ namespace Dodo { namespace Math {
         float noise = 0;
 
         // add successively smaller, higher - frequency terms
-        for (int i = 0; i < num_iterations; ++i)
-        {
+        for (int i = 0; i < num_iterations; ++i) {
             noise += Simplex(x * freq, y * freq) * amp;
             maxAmp += amp;
             amp *= persistence;

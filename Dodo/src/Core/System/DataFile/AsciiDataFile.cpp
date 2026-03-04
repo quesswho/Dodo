@@ -7,8 +7,7 @@ namespace Dodo {
     {
         m_File.clear();
         std::ifstream in(path);
-        if (!in)
-        {
+        if (!in) {
             if (throwOnFail) throw std::runtime_error("Failed to open ASCII file: " + path);
             return false;
         }
@@ -39,10 +38,16 @@ namespace Dodo {
             out << line << "\n";
     }
 
-    std::size_t AsciiDataFile::GetCurrentOffset() const { return m_Offset; }
+    std::size_t AsciiDataFile::GetCurrentOffset() const
+    {
+        return m_Offset;
+    }
 
     // Section handling
-    void AsciiDataFile::WriteSection(const std::string& name) { m_File.push_back("[" + name + "]"); }
+    void AsciiDataFile::WriteSection(const std::string& name)
+    {
+        m_File.push_back("[" + name + "]");
+    }
 
     std::string AsciiDataFile::ReadSection()
     {
@@ -71,7 +76,10 @@ namespace Dodo {
         m_File.push_back(key + "=\"" + val + "\"");
     }
 
-    void AsciiDataFile::WriteInt(const std::string& key, int val) { m_File.push_back(key + "=" + std::to_string(val)); }
+    void AsciiDataFile::WriteInt(const std::string& key, int val)
+    {
+        m_File.push_back(key + "=" + std::to_string(val));
+    }
 
     void AsciiDataFile::WriteVec2(const std::string& key, const Math::Vec2& v)
     {
@@ -97,15 +105,13 @@ namespace Dodo {
     // Value reading
     std::string AsciiDataFile::ReadString()
     {
-        if (m_Offset >= m_File.size())
-        {
+        if (m_Offset >= m_File.size()) {
             DD_WARN("No more lines in this file!");
             return "";
         }
         std::string line = m_File[m_Offset++];
         size_t quote = line.find('"');
-        if (quote == std::string::npos || quote == 0 || line[quote - 1] != '=')
-        {
+        if (quote == std::string::npos || quote == 0 || line[quote - 1] != '=') {
             DD_WARN("Not able to retrieve string at line: {}", m_Offset - 1);
             return "";
         }
@@ -135,8 +141,7 @@ namespace Dodo {
 
     Math::Vec2 AsciiDataFile::ReadVec2()
     {
-        if (m_Offset >= m_File.size())
-        {
+        if (m_Offset >= m_File.size()) {
             DD_WARN("No more lines in this file!");
             return Math::Vec2(0.0f);
         }
@@ -144,8 +149,7 @@ namespace Dodo {
         std::string line = m_File[m_Offset++];
         size_t eq = line.find('=');
         size_t comma1 = line.find(',', eq + 1);
-        if (eq == std::string::npos || comma1 == std::string::npos)
-        {
+        if (eq == std::string::npos || comma1 == std::string::npos) {
             DD_ERR("Trying to read invalid Vec2!");
             return Math::Vec2(0.0f);
         }
@@ -156,8 +160,7 @@ namespace Dodo {
 
     Math::Vec3 AsciiDataFile::ReadVec3()
     {
-        if (m_Offset >= m_File.size())
-        {
+        if (m_Offset >= m_File.size()) {
             DD_WARN("No more lines in this file!");
             return Math::Vec3(0.0f);
         }
@@ -166,8 +169,7 @@ namespace Dodo {
         size_t eq = line.find('=');
         size_t comma1 = line.find(',', eq + 1);
         size_t comma2 = line.find(',', comma1 + 1);
-        if (eq == std::string::npos || comma1 == std::string::npos || comma2 == std::string::npos)
-        {
+        if (eq == std::string::npos || comma1 == std::string::npos || comma2 == std::string::npos) {
             DD_ERR("Trying to read invalid Vec3!");
             return Math::Vec3(0.0f);
         }
@@ -179,8 +181,7 @@ namespace Dodo {
 
     Math::Vec4 AsciiDataFile::ReadVec4()
     {
-        if (m_Offset >= m_File.size())
-        {
+        if (m_Offset >= m_File.size()) {
             DD_ERR("No more lines in this file!");
             return Math::Vec4(0.0f);
         }
@@ -191,8 +192,7 @@ namespace Dodo {
         size_t comma2 = line.find(',', comma1 + 1);
         size_t comma3 = line.find(',', comma2 + 1);
         if (eq == std::string::npos || comma1 == std::string::npos || comma2 == std::string::npos ||
-            comma3 == std::string::npos)
-        {
+            comma3 == std::string::npos) {
             DD_ERR("Trying to read invalid Vec4!");
             return Math::Vec4(0.0f);
         }
@@ -204,9 +204,15 @@ namespace Dodo {
     }
 
     // Utility
-    void AsciiDataFile::WriteComment(const std::string& comment) { m_File.push_back("# " + comment); }
+    void AsciiDataFile::WriteComment(const std::string& comment)
+    {
+        m_File.push_back("# " + comment);
+    }
 
-    void AsciiDataFile::WriteBlankLine() { m_File.push_back(""); }
+    void AsciiDataFile::WriteBlankLine()
+    {
+        m_File.push_back("");
+    }
 
     void AsciiDataFile::SkipLine()
     {

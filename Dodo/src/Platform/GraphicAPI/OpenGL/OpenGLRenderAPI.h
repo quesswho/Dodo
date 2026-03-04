@@ -18,8 +18,7 @@ using OpenGLContext = Dodo::Platform::GLFWContext;
 
 namespace Dodo {
 
-    enum class DepthComparisonFunction : uint
-    {
+    enum class DepthComparisonFunction : uint {
         NEVER,
         LESS,
         EQUAL,

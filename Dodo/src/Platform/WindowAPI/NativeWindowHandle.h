@@ -3,8 +3,7 @@
 namespace Dodo {
 
     struct NativeWindowHandle {
-        enum class WindowBackend
-        {
+        enum class WindowBackend {
             Win32,
             GLFW
         };

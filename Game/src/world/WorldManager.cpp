@@ -9,8 +9,7 @@ WorldManager::WorldManager(Ref<ResourceManager> resourceManager, Dodo::Math::Fre
 
 void WorldManager::Draw()
 {
-    for (auto& chunk : m_World->m_Chunks)
-    {
+    for (auto& chunk : m_World->m_Chunks) {
         m_WorldRenderer->RenderChunk(chunk.second);
     }
 }

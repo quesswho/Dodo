@@ -111,17 +111,17 @@ namespace Dodo::Platform {
 #define DODO_KEY_KP_SUBTRACT   GLFW_KEY_KP_SUBTRACT
 #define DODO_KEY_KP_DIVIDE     GLFW_KEY_KP_DIVIDE
 #define DODO_KEY_SEMICOLON     GLFW_KEY_SEMICOLON /* ; */
-#define DODO_KEY_EQUAL         GLFW_KEY_EQUAL /* = */
+#define DODO_KEY_EQUAL         GLFW_KEY_EQUAL     /* = */
 #define DODO_KEY_KP_EQUAL      GLFW_KEY_KP_EQUAL
-#define DODO_KEY_COMMA         GLFW_KEY_COMMA /* , */
-#define DODO_KEY_MINUS         GLFW_KEY_MINUS /* - */
-#define DODO_KEY_PERIOD        GLFW_KEY_PERIOD /* . */
-#define DODO_KEY_SLASH         GLFW_KEY_SLASH /* / */
-#define DODO_KEY_GRAVE_ACCENT  GLFW_KEY_GRAVE_ACCENT /* ` */
-#define DODO_KEY_LEFT_BRACKET  GLFW_KEY_LEFT_BRACKET /* [ */
-#define DODO_KEY_BACKSLASH     GLFW_KEY_BACKSLASH /* \ */
+#define DODO_KEY_COMMA         GLFW_KEY_COMMA         /* , */
+#define DODO_KEY_MINUS         GLFW_KEY_MINUS         /* - */
+#define DODO_KEY_PERIOD        GLFW_KEY_PERIOD        /* . */
+#define DODO_KEY_SLASH         GLFW_KEY_SLASH         /* / */
+#define DODO_KEY_GRAVE_ACCENT  GLFW_KEY_GRAVE_ACCENT  /* ` */
+#define DODO_KEY_LEFT_BRACKET  GLFW_KEY_LEFT_BRACKET  /* [ */
+#define DODO_KEY_BACKSLASH     GLFW_KEY_BACKSLASH     /* \ */
 #define DODO_KEY_RIGHT_BRACKET GLFW_KEY_RIGHT_BRACKET /* ] */
-#define DODO_KEY_APOSTROPHE    GLFW_KEY_APOSTROPHE /* ' */
+#define DODO_KEY_APOSTROPHE    GLFW_KEY_APOSTROPHE    /* ' */
 
 /* Function keys */
 #define DODO_KEY_BACKSPACE     GLFW_KEY_BACKSPACE

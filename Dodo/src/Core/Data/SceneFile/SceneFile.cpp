@@ -13,8 +13,7 @@ namespace Dodo {
     // Public API
     SceneFileError SceneFile::Write(Scene* scene)
     {
-        if (!HasPath())
-        {
+        if (!HasPath()) {
             SetError(SceneFileError::IOError);
             return m_LastError;
         }
@@ -31,13 +30,11 @@ namespace Dodo {
         m_File.WriteBlankLine();
 
         World& world = scene->GetWorld();
-        for (EntityID entityId : world.GetAliveEntities())
-        {
+        for (EntityID entityId : world.GetAliveEntities()) {
             m_File.WriteSection("Entity:" + std::to_string(entityId));
 
             // Write ModelComponent if entity has one
-            if (world.HasComponent<ModelComponent>(entityId))
-            {
+            if (world.HasComponent<ModelComponent>(entityId)) {
                 auto& comp = world.GetComponent<ModelComponent>(entityId);
                 std::string path = Application::s_Application->m_AssetManager->GetModelPath(comp.m_ModelID);
                 m_File.WriteSection("ModelComponent");
@@ -65,8 +62,7 @@ namespace Dodo {
 
     Scene* SceneFile::Read()
     {
-        if (!HasPath())
-        {
+        if (!HasPath()) {
             SetError(SceneFileError::FileNotFound);
             return nullptr;
         }
@@ -77,8 +73,7 @@ namespace Dodo {
     {
         m_Path = path;
 
-        if (!m_File.BeginRead(path))
-        {
+        if (!m_File.BeginRead(path)) {
             SetError(SceneFileError::FileNotFound);
             return nullptr;
         }
@@ -91,11 +86,9 @@ namespace Dodo {
 
         EntityID currentEntityId = -1;
 
-        while (m_File.HasMore())
-        {
+        while (m_File.HasMore()) {
             // Skip blank lines
-            if (!m_File.IsSection())
-            {
+            if (!m_File.IsSection()) {
                 m_File.SkipLine();
                 continue;
             }
@@ -103,8 +96,7 @@ namespace Dodo {
             std::string section = m_File.ReadSection();
 
             // Entity header: Entity:0
-            if (section.find("Entity:") == 0)
-            {
+            if (section.find("Entity:") == 0) {
                 // Currently unused
                 // EntityID fileEntityId = (EntityID)std::stoi(section.substr(7));
 
@@ -114,10 +106,8 @@ namespace Dodo {
             }
 
             // Component sections
-            else if (section == "ModelComponent")
-            {
-                if (currentEntityId < 0)
-                {
+            else if (section == "ModelComponent") {
+                if (currentEntityId < 0) {
                     SetError(SceneFileError::ParseError, m_File.GetCurrentOffset());
                     return result;
                 }
@@ -132,8 +122,7 @@ namespace Dodo {
 
                 result->GetWorld().AddComponent<ModelComponent>(currentEntityId, ModelComponent(id, transform));
                 continue;
-            } else
-            {
+            } else {
                 // Skip unknown sections (e.g. [Editor] tail) gracefully
                 while (m_File.HasMore() && !m_File.IsSection())
                     m_File.SkipLine();
@@ -154,8 +143,7 @@ namespace Dodo {
     void SceneFile::SetError(SceneFileError error, size_t line)
     {
         m_LastError = error;
-        switch (error)
-        {
+        switch (error) {
         case SceneFileError::None:
             break;
         case SceneFileError::FileNotFound:

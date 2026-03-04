@@ -27,15 +27,13 @@ namespace Dodo {
 
     ModelID AssetManager::LoadModel(const std::string& path)
     {
-        if (m_ModelID.find(path) != m_ModelID.end())
-        {
+        if (m_ModelID.find(path) != m_ModelID.end()) {
             DD_WARN("Trying to create model that already exists! {0} ID: {1}", path, m_ModelID.at(path));
             return m_ModelID.at(path);
         }
 
         Model* model = m_ModelLoader->LoadModel(path);
-        if (model == nullptr)
-        {
+        if (model == nullptr) {
             DD_ERR("Failed to load model: {0}, Loading default cube", path);
             return GetBuiltinModel(BuiltinModel::Cube);
         }
@@ -55,8 +53,7 @@ namespace Dodo {
 
         Model* model = nullptr;
 
-        switch (type)
-        {
+        switch (type) {
         case BuiltinModel::Cube: {
             std::vector<Mesh*> meshes;
             meshes.push_back(m_MeshFactory->CreateCube(std::make_shared<Material>(Material())));
@@ -81,8 +78,7 @@ namespace Dodo {
 
     std::string AssetManager::GetModelPath(ModelID id)
     {
-        if (m_ModelPath.find(id) == m_ModelPath.end())
-        {
+        if (m_ModelPath.find(id) == m_ModelPath.end()) {
             DD_ERR("Trying to get path of model that doesn't exist! ID: {0}", id);
             return "";
         }
@@ -91,8 +87,7 @@ namespace Dodo {
 
     Ref<Material> AssetManager::GetMaterial(const char* path)
     {
-        if (m_MaterialID.find(path) != m_MaterialID.end())
-        {
+        if (m_MaterialID.find(path) != m_MaterialID.end()) {
 
             return m_Materials[m_MaterialID.at(path)];
         }

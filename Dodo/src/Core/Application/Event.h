@@ -6,8 +6,7 @@
 
 namespace Dodo {
 
-    enum class EventType
-    {
+    enum class EventType {
         KEY_PRESSED,
         KEY_RELEASED,
         MOUSE_PRESSED,

@@ -7,8 +7,7 @@
 
 namespace Dodo {
 
-    enum class SceneFileError
-    {
+    enum class SceneFileError {
         None = 0,
         FileNotFound,
         InvalidFormat,

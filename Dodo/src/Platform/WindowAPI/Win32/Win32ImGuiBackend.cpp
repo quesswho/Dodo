@@ -10,8 +10,7 @@ namespace Dodo::Platform {
         ImGui_ImplWin32_Init(hwnd);
         ImGui_ImplWin32_EnableDpiAwareness();
 
-        if (enableDocking)
-        {
+        if (enableDocking) {
             ImGuiIO& io = ImGui::GetIO();
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         }
@@ -29,7 +28,10 @@ namespace Dodo::Platform {
         ImGui::NewFrame();
     }
 
-    void Win32ImGuiBackend::EndFrame() { ImGui::Render(); }
+    void Win32ImGuiBackend::EndFrame()
+    {
+        ImGui::Render();
+    }
 
     LRESULT Win32ImGuiBackend::WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {

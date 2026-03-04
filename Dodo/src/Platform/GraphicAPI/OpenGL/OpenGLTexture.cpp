@@ -14,11 +14,9 @@ namespace Dodo { namespace Platform {
         int width, height, channels;
         stbi_set_flip_vertically_on_load(true);
         uchar* data = stbi_load(path, &width, &height, &channels, 0);
-        if (data)
-        {
+        if (data) {
             TextureProperties props((uint)width, (uint)height);
-            switch (channels)
-            {
+            switch (channels) {
             case 1:
                 props.m_Format = TextureFormat::FORMAT_RED;
                 break;
@@ -33,8 +31,7 @@ namespace Dodo { namespace Platform {
             }
             m_TextureProperties = props;
             Init(data, settings);
-        } else
-        {
+        } else {
             DD_ERR("Could not load texture: {}", path);
         }
         stbi_image_free(data);
@@ -51,8 +48,7 @@ namespace Dodo { namespace Platform {
         glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
         glBindTexture(GL_TEXTURE_2D, m_TextureID);
 
-        switch (settings.m_WrapU)
-        {
+        switch (settings.m_WrapU) {
         case TextureWrapMode::WRAP_REPEAT:
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             break;
@@ -67,8 +63,7 @@ namespace Dodo { namespace Platform {
             break;
         }
 
-        switch (settings.m_WrapV)
-        {
+        switch (settings.m_WrapV) {
         case TextureWrapMode::WRAP_REPEAT:
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
             break;
@@ -89,15 +84,13 @@ namespace Dodo { namespace Platform {
         if (filter >= 4) glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 4); // make this a parameter
 
         if (settings.m_WrapU == TextureWrapMode::WRAP_CLAMP_TO_BORDER ||
-            settings.m_WrapV == TextureWrapMode::WRAP_CLAMP_TO_BORDER)
-        {
+            settings.m_WrapV == TextureWrapMode::WRAP_CLAMP_TO_BORDER) {
             float borderColor[] = {1.0f, 0.4f, 0.8f, 0.09f};
             glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
         }
 
         uint format;
-        switch (m_TextureProperties.m_Format)
-        {
+        switch (m_TextureProperties.m_Format) {
         case TextureFormat::FORMAT_RED:
             format = GL_RED;
             break;
@@ -115,7 +108,10 @@ namespace Dodo { namespace Platform {
         glGenerateMipmap(GL_TEXTURE_2D);
     }
 
-    OpenGLTexture::~OpenGLTexture() { glDeleteTextures(1, &m_TextureID); }
+    OpenGLTexture::~OpenGLTexture()
+    {
+        glDeleteTextures(1, &m_TextureID);
+    }
 
     void OpenGLTexture::Bind() const
     {

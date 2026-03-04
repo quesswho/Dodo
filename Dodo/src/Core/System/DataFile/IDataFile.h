@@ -7,8 +7,7 @@
 
 namespace Dodo {
 
-    enum class DataFileType
-    {
+    enum class DataFileType {
         ASCII,
         BINARY
     };

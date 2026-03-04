@@ -5,11 +5,9 @@ void EditorRenderer::RenderEntities(EditorWorld& world, Math::FreeCamera* camera
 {
     // Draw ModelComponent
     const auto& modelPool = world.template GetPool<ModelComponent>();
-    for (const auto& modelComponent : modelPool.GetComponents())
-    {
+    for (const auto& modelComponent : modelPool.GetComponents()) {
         Model* model = assets.GetModel(modelComponent.m_ModelID);
-        for (auto mesh : model->GetMeshes())
-        {
+        for (auto mesh : model->GetMeshes()) {
             Ref<Material> mat = mesh->GetMaterial();
             mat->Bind();
             mat->SetUniform("u_LightCamera", lightSystem.m_Directional.m_LightCamera);

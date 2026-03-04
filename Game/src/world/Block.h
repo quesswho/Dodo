@@ -2,8 +2,7 @@
 
 #include "BlockPos.h"
 
-enum BlockType
-{
+enum BlockType {
     AIR,
     GRASS,
     DIRT,

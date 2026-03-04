@@ -87,8 +87,7 @@ class EditorWorld {
     EntityID CreateEntity()
     {
         EntityID id = m_RuntimeWorld->CreateEntity();
-        if (!m_Overlay->HasComponent<NameComponent>(id))
-        {
+        if (!m_Overlay->HasComponent<NameComponent>(id)) {
             m_Overlay->AddComponent<NameComponent>(id, NameComponent{"Entity_" + std::to_string(id)});
         }
         return id;
@@ -106,14 +105,11 @@ class EditorWorld {
     void AddComponent(EntityID entity, T&& component)
     {
         using U = std::remove_reference_t<T>; // Remove reference for type checks
-        if constexpr (RuntimeComponentList::template includes<U>())
-        {
+        if constexpr (RuntimeComponentList::template includes<U>()) {
             m_RuntimeWorld->AddComponent<U>(entity, std::forward<T>(component));
-        } else if constexpr (OverlayComponentList::template includes<U>())
-        {
+        } else if constexpr (OverlayComponentList::template includes<U>()) {
             m_Overlay->AddComponent<U>(entity, std::forward<T>(component));
-        } else
-        {
+        } else {
             static_assert(AlwaysFalse<U>::value, "Component type is not recognized!");
         }
     }
@@ -121,14 +117,11 @@ class EditorWorld {
     template <typename T>
     bool HasComponent(EntityID entity) const
     {
-        if constexpr (RuntimeComponentList::template includes<T>())
-        {
+        if constexpr (RuntimeComponentList::template includes<T>()) {
             return m_RuntimeWorld->HasComponent<T>(entity);
-        } else if constexpr (OverlayComponentList::template includes<T>())
-        {
+        } else if constexpr (OverlayComponentList::template includes<T>()) {
             return m_Overlay->HasComponent<T>(entity);
-        } else
-        {
+        } else {
             static_assert(AlwaysFalse<T>::value, "Component type is not recognized!");
         }
     }
@@ -136,14 +129,11 @@ class EditorWorld {
     template <typename T>
     T& GetComponent(EntityID entity)
     {
-        if constexpr (RuntimeComponentList::template includes<T>())
-        {
+        if constexpr (RuntimeComponentList::template includes<T>()) {
             return m_RuntimeWorld->GetComponent<T>(entity);
-        } else if constexpr (OverlayComponentList::template includes<T>())
-        {
+        } else if constexpr (OverlayComponentList::template includes<T>()) {
             return m_Overlay->GetComponent<T>(entity);
-        } else
-        {
+        } else {
             static_assert(AlwaysFalse<T>::value, "Component type is not recognized!");
         }
     }
@@ -151,14 +141,11 @@ class EditorWorld {
     template <typename T>
     ComponentPool<T>& GetPool()
     {
-        if constexpr (RuntimeComponentList::template includes<T>())
-        {
+        if constexpr (RuntimeComponentList::template includes<T>()) {
             return m_RuntimeWorld->GetPool<T>();
-        } else if constexpr (OverlayComponentList::template includes<T>())
-        {
+        } else if constexpr (OverlayComponentList::template includes<T>()) {
             return m_Overlay->GetPool<T>();
-        } else
-        {
+        } else {
             static_assert(AlwaysFalse<T>::value, "Component type is not recognized!");
         }
     }
@@ -166,14 +153,11 @@ class EditorWorld {
     template <typename T>
     const ComponentPool<T>& GetPool() const
     {
-        if constexpr (RuntimeComponentList::template includes<T>())
-        {
+        if constexpr (RuntimeComponentList::template includes<T>()) {
             return m_RuntimeWorld->GetPool<T>();
-        } else if constexpr (OverlayComponentList::template includes<T>())
-        {
+        } else if constexpr (OverlayComponentList::template includes<T>()) {
             return m_Overlay->GetPool<T>();
-        } else
-        {
+        } else {
             static_assert(AlwaysFalse<T>::value, "Component type is not recognized!");
         }
     }

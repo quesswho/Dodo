@@ -27,8 +27,7 @@ namespace Dodo { namespace Math {
             uint64* state = new uint64[4];
             state[0] = seed;
             // Splitmix64 for generating states
-            for (int i = 0; i < 3; i++)
-            {
+            for (int i = 0; i < 3; i++) {
                 uint64 z = (state[i] + 0x9e3779b97f4a7c15);
                 z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
                 z = (z ^ (z >> 27)) * 0x94d049bb133111eb;

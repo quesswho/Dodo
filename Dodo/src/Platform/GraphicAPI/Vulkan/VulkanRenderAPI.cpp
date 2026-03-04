@@ -28,7 +28,13 @@ namespace Dodo { namespace Platform {
 
     void VulkanRenderAPI::ResizeDefaultViewport(uint width, uint height, uint posX, uint posY) {}
 
-    void VulkanRenderAPI::ImGuiNewFrame() const { ImGui_ImplVulkan_NewFrame(); }
+    void VulkanRenderAPI::ImGuiNewFrame() const
+    {
+        ImGui_ImplVulkan_NewFrame();
+    }
 
-    void VulkanRenderAPI::ImGuiEndFrame() const { ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData()); }
+    void VulkanRenderAPI::ImGuiEndFrame() const
+    {
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData());
+    }
 }} // namespace Dodo::Platform

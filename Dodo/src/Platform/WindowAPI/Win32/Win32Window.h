@@ -62,7 +62,7 @@ namespace Dodo::Platform {
     };
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     static Win32Window* s_WindowClass;
-}
+} // namespace Dodo::Platform
 
 /* Printable keys */
 #define DODO_KEY_SPACE         0x20

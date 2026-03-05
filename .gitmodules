@@ -9,4 +9,4 @@
 	url = https://github.com/glfw/glfw.git
 [submodule "Dodo/lib/slang"]
 	path = Dodo/lib/slang
-	url = git@github.com:quesswho/slang.git
+	url = https://github.com/quesswho/slang.git

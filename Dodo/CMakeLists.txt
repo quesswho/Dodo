@@ -45,6 +45,7 @@ target_include_directories(Dodo
         lib/imgui/include
         lib/assimp/include
         lib/glfw/include
+        lib/slang/include
     PRIVATE
 )
 
@@ -54,6 +55,7 @@ target_link_libraries(Dodo
         imgui
         assimp
         glfw
+        slang
 )
 
 target_compile_definitions(Dodo

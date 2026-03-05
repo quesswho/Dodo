@@ -1,6 +1,9 @@
 # Choose build type: Debug or Release
 BUILD_TYPE ?= Debug
 
+CMAKE_CC := -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc
+CMAKE_CXX := -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++
+
 
 BUILD_DIR := build/$(BUILD_TYPE)
 
@@ -17,6 +20,7 @@ configure:
 	cd $(BUILD_DIR) && cmake -G Ninja \
 		-DCMAKE_BUILD_TYPE=$(BUILD_TYPE) \
 		-DCMAKE_COLOR_DIAGNOSTICS=ON \
+		$(CMAKE_CC) $(CMAKE_CXX) \
 		$(CURDIR)
 
 build:

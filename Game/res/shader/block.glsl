@@ -19,7 +19,6 @@ void main()
     float diff = max(dot(normalize(vec3(0.1,0.8,0.2)), frag_in.Normal), 0.0f);
     vec3 diffuse = color * diff;
     pixel = vec4(color*0.8 + diffuse,1.0f);
-	
 }
 
 #shader vertex

@@ -55,7 +55,6 @@ target_link_libraries(Dodo
         imgui
         assimp
         glfw
-        slang
 )
 
 target_compile_definitions(Dodo

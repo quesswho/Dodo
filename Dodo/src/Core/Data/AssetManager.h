@@ -6,7 +6,8 @@
 #include "Core/Graphics/Scene/Mesh/MeshFactory.h"
 #include "Core/Graphics/Scene/Model.h"
 #include "Core/Graphics/Scene/Rectangle.h"
-#include "Core/Graphics/Shader/ShaderBuilder.h"
+#include "Core/Graphics/Shader/ShaderGenerator.h"
+#include "Core/Graphics/Shader/Shader.h"
 #include "MaterialLoader.h"
 #include "ModelLoader.h"
 
@@ -15,6 +16,7 @@
 namespace Dodo {
 
     using MaterialID = uint64_t;
+    using ShaderID = uint64_t;
 
     enum class BuiltinModel {
         Cube,
@@ -22,8 +24,11 @@ namespace Dodo {
 
     class AssetManager {
       private:
-        std::unordered_map<ShaderBuilderFlags, Ref<Shader>>
+        std::unordered_map<ShaderBuilderFlags, ShaderID>
             m_ShaderBuilderShaders; // Stores all shaders created by shaderbuilder
+        
+        std::unordered_map<ShaderID, Ref<Shader>> m_Shaders;
+        std::unordered_map<std::string, ShaderID> m_ShaderPathLookup;
 
         std::unordered_map<MaterialID, Ref<Material>> m_Materials;
         std::unordered_map<std::string, uint> m_MaterialID;
@@ -37,8 +42,13 @@ namespace Dodo {
         AssetManager(bool serialization);
         ~AssetManager();
 
-        Ref<Shader> GetShader(ShaderBuilderFlags flags);
+        inline Ref<Shader> GetFallbackShader() const { return m_Shaders.at(0); }
+        ShaderID LoadShader(ShaderBuilderFlags flags);
+        ShaderID LoadShaderFromPath(const std::string& path);
+        ShaderID LoadShader(ShaderSource source);
+        Ref<Shader> GetShader(ShaderID id);
         Ref<Material> GetMaterial(const char* path);
+
 
         ModelID LoadModel(const std::string& path);
         ModelID GetBuiltinModel(BuiltinModel type);

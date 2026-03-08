@@ -6,14 +6,11 @@
 namespace Dodo::Platform {
     class OpenGLShaderCompiler {
       public:
-        OpenGLShaderCompiler() = default;
-        ~OpenGLShaderCompiler() = default;
-
-        uint Compile(const ShaderSource& source) const;
+        static uint Compile(const ShaderSource& source);
 
       private:
-        uint CompileStage(uint type, const std::string& source) const;
+        static uint CompileStage(uint type, const std::string& source);
 
-        uint GetStageType(ShaderStage stage) const;
+        static uint GetStageType(ShaderStage stage);
     };
 } // namespace Dodo::Platform

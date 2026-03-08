@@ -1,5 +1,12 @@
 add_executable(DodoEditor)
 
+add_custom_command(
+    TARGET DodoEditor POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/res
+            $<TARGET_FILE_DIR:DodoEditor>/res
+)
+
 file(GLOB_RECURSE DODOEDITOR_CPP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )

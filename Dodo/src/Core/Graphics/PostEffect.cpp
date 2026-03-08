@@ -1,15 +1,20 @@
 #include "PostEffect.h"
 #include "pch.h"
+#include "Core/Application/Application.h"
+
 
 namespace Dodo {
     PostEffect::PostEffect(const FrameBufferProperties& framebufferprop, const char* path)
-        : m_Framebuffer(new FrameBuffer(framebufferprop)), m_Shader(Shader::CreateFromPath("Postfx", path))
+        : m_Framebuffer(new FrameBuffer(framebufferprop))
     {
+        ShaderID id = Application::s_Application->m_AssetManager->LoadShaderFromPath(path);
+        m_Shader = Application::s_Application->m_AssetManager->GetShader(id);
         Create();
     }
 
     void PostEffect::Create()
     {
+
         float screenQuad[] = {
             -1.0f, 1.0f,  0.0f, 1.0f, // top left
             -1.0f, -1.0f, 0.0f, 0.0f, // bottom left

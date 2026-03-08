@@ -1,5 +1,9 @@
 #include "ResourceManager.h"
 
+#include "Core/Graphics/Shader/ShaderCompiler.h"
+#include "Core/Graphics/Shader/ShaderParser.h"
+#include "Core/System/FileUtils.h"
+
 float front_verts[] = {-0.5, -0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 0.5,  -0.5, 0.5, 1.0, 1.0, 0.0, 0.0, 1.0,
                        0.5,  0.5,  0.5, 1.0, 0.0, 0.0, 0.0, 1.0, -0.5, 0.5,  0.5, 0.0, 0.0, 0.0, 0.0, 1.0};
 
@@ -25,7 +29,8 @@ ResourceManager::ResourceManager()
         Dodo::TextureSettings(Dodo::TextureFilter::FILTER_MIN_MAG_MIP_NEAREST, Dodo::TextureWrapMode::WRAP_REPEAT,
                               Dodo::TextureWrapMode::WRAP_REPEAT));
 
-    Ref<Dodo::Shader> shader = Dodo::Shader::CreateFromPath("block", "res/shader/block.glsl");
+    // This is a very long, perhaps we should have function in ShaderCompiler that compiles from path, or use assetmanager
+    Ref<Dodo::Shader> shader = std::make_shared<Dodo::Shader>(Dodo::ShaderCompiler::Compile(Dodo::ShaderParser::Parse(Dodo::FileUtils::ReadTextFile("res/shader/block.glsl"))));
 
     m_TextureAtlas = std::make_shared<Dodo::Material>(shader, atlas);
 

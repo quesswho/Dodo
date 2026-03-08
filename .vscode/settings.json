@@ -1,5 +1,5 @@
 {
-    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",    
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/Debug/compile_commands.json",    
     "C_Cpp.errorSquiggles": "enabled",
 	"cmake.configureOnOpen": false,
     "cmake.configureOnEdit": false,

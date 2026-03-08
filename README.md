@@ -6,6 +6,18 @@ The engine features an **Entity Component System (ECS)**, model loading, materia
 
 ---
 
+### Sponza Scene
+
+![Sponza Scene](https://i.imgur.com/feKrrhv.png)
+
+### Editor
+![Level editor](https://i.imgur.com/6pS0l5n.png)
+
+### Voxel Game
+![Voxel Game](https://i.imgur.com/eSYjuAw.png)
+
+---
+
 ## Project Structure
 
 - `Dodo/` - Engine source code
@@ -24,18 +36,6 @@ Dodo uses the following libraries:
 - **spdlog** – High-performance logging
 - **stb_image** – Texture loading
 - **Assimp** – Model loading (`.fbx`, `.obj`, etc.)
-
----
-
-## Screenshots
-
-### Sponza Scene
-
-![Sponza Scene](https://i.imgur.com/feKrrhv.png)
-
-### Editor
-![Level editor](https://i.imgur.com/6pS0l5n.png)
-
 
 ---
 

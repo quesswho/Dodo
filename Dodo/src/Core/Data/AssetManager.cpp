@@ -31,9 +31,6 @@ namespace Dodo {
 
         int id = m_Shaders.size();
 
-        m_ShaderBuilderShaders.emplace(flags, id);
-        m_Shaders.emplace(id, shader);
-
         shader->Bind();
         int i = 0;
         if (flags & ShaderBuilderFlags::ShaderBuilderFlagCubeMap) shader->SetUniformValue("u_CubeMap", i++);
@@ -42,6 +39,8 @@ namespace Dodo {
         if (flags & ShaderBuilderFlags::ShaderBuilderFlagNormalMap) shader->SetUniformValue("u_NormalMap", i++);
         if (flags & ShaderBuilderFlags::ShaderBuilderFlagShadowMap) shader->SetUniformValue("u_DepthMap", 3);
 
+        m_ShaderBuilderShaders.emplace(flags, id);
+        m_Shaders.emplace(id, std::move(shader));
         return id;
     }
 
@@ -74,16 +73,18 @@ namespace Dodo {
 
     Ref<Shader> AssetManager::GetShader(ShaderID id)
     {
-        if (m_Shaders.find(id) != m_Shaders.end()) return m_Shaders[id];
+        auto it = m_Shaders.find(id);
+        if (it != m_Shaders.end()) return it->second;
         DD_ERR("Trying to get shader that doesn't exist! ID: {0}", id);
         return nullptr;
     }
 
     ModelID AssetManager::LoadModel(const std::string& path)
     {
-        if (m_ModelID.find(path) != m_ModelID.end()) {
-            DD_WARN("Trying to create model that already exists! {0} ID: {1}", path, m_ModelID.at(path));
-            return m_ModelID.at(path);
+        auto it = m_ModelID.find(path);
+        if (it != m_ModelID.end()) {
+            DD_WARN("Trying to create model that already exists! {0} ID: {1}", path, it->second);
+            return it->second;
         }
 
         Model* model = m_ModelLoader->LoadModel(path);
@@ -125,31 +126,33 @@ namespace Dodo {
 
     Model* AssetManager::GetModel(ModelID id)
     {
-        if (m_Models.find(id) != m_Models.end()) return m_Models[id];
+        auto it = m_Models.find(id);
+        if (it != m_Models.end()) return it->second;
         DD_ERR("Trying to get model that doesn't exist! ID: {0}", id);
         return nullptr;
     }
 
     std::string AssetManager::GetModelPath(ModelID id)
     {
-        if (m_ModelPath.find(id) == m_ModelPath.end()) {
+        auto it = m_Models.find(id);
+        if (it == m_Models.end()) {
             DD_ERR("Trying to get path of model that doesn't exist! ID: {0}", id);
             return "";
         }
-        return m_ModelPath[id];
+        return m_ModelPath.at(id);
     }
 
     Ref<Material> AssetManager::GetMaterial(const char* path)
     {
-        if (m_MaterialID.find(path) != m_MaterialID.end()) {
-
-            return m_Materials[m_MaterialID.at(path)];
+        auto it = m_MaterialID.find(path);
+        if (it != m_MaterialID.end()) {
+            return m_Materials[it->second];
         }
 
         Ref<Material> mat = m_MaterialLoader->LoadMaterial(path);
         int id = m_Materials.size();
         m_MaterialID.emplace(path, id);
-        m_Materials.emplace(id, mat);
+        m_Materials.emplace(id, std::move(mat));
         return mat;
     }
 } // namespace Dodo

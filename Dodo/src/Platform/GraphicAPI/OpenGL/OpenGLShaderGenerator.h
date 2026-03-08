@@ -3,6 +3,7 @@
 #include <Core/Common.h>
 
 #include "Core/Graphics/Shader/Shader.h"
+#include "Core/Graphics/Shader/ShaderSource.h"
 
 namespace Dodo {
 
@@ -37,27 +38,18 @@ namespace Dodo {
         return a;
     }
 
+    struct GeneratedShaderSource {
+        ShaderSource source;
+        ShaderBuilderFlags flags;
+    };
+
     namespace Platform {
 
-        class OpenGLShaderBuilder {
-            Ref<Shader> m_FallbackShader;
-
+        class OpenGLShaderGenerator {
           public:
-            OpenGLShaderBuilder();
-            ~OpenGLShaderBuilder();
+            static GeneratedShaderSource Generate(const ShaderBuilderFlags flags);
 
-            Ref<Shader> BuildVertexFragmentShader(const ShaderBuilderFlags flags, const char* name) const;
-            inline Ref<Shader> BuildVertexFragmentShader(const ShaderBuilderFlags flags) const
-            {
-                return BuildVertexFragmentShader(flags, std::to_string(flags).c_str());
-            }
-
-            uint CompileVertexFragmentShader(const char* vertex, const char* fragment) const;
-
-            inline Ref<Shader> GetFallbackShader() const { return m_FallbackShader; }
-
-          private:
-            void InitFallbackShader();
+            static GeneratedShaderSource GetFallbackShader();
         };
     } // namespace Platform
 } // namespace Dodo

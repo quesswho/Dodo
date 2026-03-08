@@ -1,19 +1,16 @@
-#include "OpenGLShaderBuilder.h"
+#include "OpenGLShaderGenerator.h"
 #include "pch.h"
 
 #include "Core/Application/Application.h"
 
 #include <glad/gl.h>
 
-namespace Dodo { namespace Platform {
-    OpenGLShaderBuilder::OpenGLShaderBuilder()
-    {
-        InitFallbackShader();
-    }
+namespace Dodo::Platform {
 
-    void OpenGLShaderBuilder::InitFallbackShader()
+
+    GeneratedShaderSource OpenGLShaderGenerator::GetFallbackShader()
     {
-        const char* vertex = "#version 330 core\n"
+        static std::string vertex = "#version 330 core\n"
                              "layout (location = 0) in vec3 a_Position;\n"
                              "layout (location = 1) in vec2 a_Texcoord;\n"
                              "uniform mat4 u_Model = mat4(1.0f);\n"
@@ -25,7 +22,7 @@ namespace Dodo { namespace Platform {
                              "   gl_Position = u_Camera * u_Model * vec4(a_Position, 1.0);\n"
                              "}\0";
 
-        const char* fragment = "#version 330 core\n"
+        static std::string fragment = "#version 330 core\n"
                                "in vec2 o_Texcoord;\n"
                                "out vec4 pixel;\n"
                                "float checker()\n"
@@ -39,13 +36,17 @@ namespace Dodo { namespace Platform {
                                "	float res = mix(1.0f, 0.0f, checker());\n"
                                "   pixel = vec4(res, res * 0.1f, res * 0.1f, 1.0);\n"
                                "}\0";
-
-        m_FallbackShader = std::make_shared<Shader>("FallbackShader", CompileVertexFragmentShader(vertex, fragment));
+        ShaderSource shaderSource;
+        shaderSource.stages.push_back({ ShaderStage::Vertex, std::move(vertex) });
+        shaderSource.stages.push_back({ ShaderStage::Fragment, std::move(fragment) });
+        
+        GeneratedShaderSource source;
+        source.source = shaderSource;
+        return source;
     }
 
-    OpenGLShaderBuilder::~OpenGLShaderBuilder() {}
 
-    Ref<Shader> OpenGLShaderBuilder::BuildVertexFragmentShader(const ShaderBuilderFlags flags, const char* name) const
+    GeneratedShaderSource OpenGLShaderGenerator::Generate(const ShaderBuilderFlags flags)
     {
         ////////////
         // Vertex //
@@ -352,87 +353,13 @@ namespace Dodo { namespace Platform {
         }
         fragment.append("\0");
 
-        uint shaderid = CompileVertexFragmentShader(vertex.c_str(), fragment.c_str());
-        if (!shaderid) {
-            DD_ERR("Failed to build shader with flag {}", flags);
-            DD_ERR("Vertex Shader: \n{}", vertex.c_str());
-            DD_ERR("Fragment Shader: \n{}", fragment.c_str());
-            return m_FallbackShader;
-        }
+        ShaderSource shaderSource;
+        shaderSource.stages.push_back({ ShaderStage::Vertex, std::move(vertex) });
+        shaderSource.stages.push_back({ ShaderStage::Fragment, std::move(fragment) });
+        GeneratedShaderSource source;
+        source.source = shaderSource;
+        source.flags = flags;
 
-        Ref<Shader> shader = std::make_shared<Shader>(std::to_string(flags).c_str(), shaderid);
-        shader->Bind();
-        int i = 0;
-        if (flags & ShaderBuilderFlagCubeMap) shader->SetUniformValue("u_CubeMap", i++);
-        if (flags & ShaderBuilderFlagDiffuseMap) shader->SetUniformValue("u_DiffuseMap", i++);
-        if (flags & ShaderBuilderFlagSpecularMap) shader->SetUniformValue("u_SpecularMap", i++);
-        if (flags & ShaderBuilderFlagNormalMap) shader->SetUniformValue("u_NormalMap", i++);
-        if (flags & ShaderBuilderFlagShadowMap) shader->SetUniformValue("u_DepthMap", 3);
-
-        return shader;
+        return source;
     }
-
-    uint OpenGLShaderBuilder::CompileVertexFragmentShader(const char* vertex, const char* fragment) const
-    {
-        uint result = glCreateProgram();
-
-        // Vertex Shader
-        uint vertexID = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(vertexID, 1, &vertex, NULL);
-        glCompileShader(vertexID);
-
-        int success;
-        char infoLog[512];
-        bool failed = false;
-        glGetShaderiv(vertexID, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            glGetShaderInfoLog(vertexID, 512, NULL, infoLog);
-            std::string stringlog = "Vertex Shader: ";
-            stringlog.append(infoLog);
-            stringlog = std::regex_replace(stringlog, std::regex("\\ERROR:"), "");
-            DD_ERR(stringlog);
-            failed = true;
-        }
-
-        // Fragment Shader
-
-        uint fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentID, 1, &fragment, NULL);
-        glCompileShader(fragmentID);
-
-        glGetShaderiv(fragmentID, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            glGetShaderInfoLog(fragmentID, 512, NULL, infoLog);
-            std::string stringlog = "Fragment Shader: ";
-            stringlog.append(infoLog);
-            stringlog = std::regex_replace(stringlog, std::regex("\\ERROR:"), "");
-            DD_ERR(stringlog);
-            failed = true;
-        }
-
-        if (failed) {
-            DD_ERR("{}", fragment);
-            Application::s_Application->m_Window->FocusConsole(); // Make the error more noticeable
-            return 0;                                             // Get error from both shaders
-        }
-
-        // LINKING
-
-        glAttachShader(result, vertexID);
-        glAttachShader(result, fragmentID);
-        glLinkProgram(result);
-
-        glGetProgramiv(result, GL_LINK_STATUS, &success);
-        if (!success) {
-            glGetProgramInfoLog(result, 512, NULL, infoLog);
-            std::string stringlog = infoLog;
-            stringlog.append("Linking Shader: ");
-            stringlog = std::regex_replace(stringlog, std::regex("\\Error:"), "");
-            DD_ERR(stringlog);
-            return 0;
-        }
-        glDeleteShader(vertexID);
-        glDeleteShader(fragmentID);
-        return result;
-    }
-}} // namespace Dodo::Platform
+} // namespace Dodo::Platform

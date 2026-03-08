@@ -8,14 +8,13 @@
 namespace Dodo { namespace Platform {
 
     OpenGLRenderAPI::OpenGLRenderAPI(const NativeWindowHandle& handle)
-        : m_Handle(handle), m_ShaderBuilder(0), m_GPUInfo(""), m_VramKbs(0), m_ViewportWidth(0), m_ViewportHeight(0),
+        : m_Handle(handle), m_GPUInfo(""), m_VramKbs(0), m_ViewportWidth(0), m_ViewportHeight(0),
           m_ViewportPosX(0), m_ViewportPosY(0)
     {}
 
     OpenGLRenderAPI::~OpenGLRenderAPI()
     {
         ImGui_ImplOpenGL3_Shutdown();
-        delete m_ShaderBuilder;
         gladLoaderUnloadGL();
     }
 
@@ -54,8 +53,6 @@ namespace Dodo { namespace Platform {
             m_Context.InitializeImGui();
             ImGui_ImplOpenGL3_Init();
         }
-
-        m_ShaderBuilder = new ShaderBuilder();
 
         return RenderInitError(RenderInitStatus::Success, "");
     }

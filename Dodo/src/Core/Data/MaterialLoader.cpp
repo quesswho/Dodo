@@ -7,8 +7,9 @@
 namespace Dodo {
     Ref<Material> MaterialLoader::LoadMaterial(const char* path)
     {
+        ShaderID id = Application::s_Application->m_AssetManager->LoadShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture);
         return std::make_shared<Material>(
-            Application::s_Application->m_AssetManager->GetShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture),
+            Application::s_Application->m_AssetManager->GetShader(id),
             std::make_shared<Texture>(path, 0, TextureSettings(TextureWrapMode::WRAP_CLAMP_TO_EDGE)));
     }
 
@@ -38,11 +39,11 @@ namespace Dodo {
 
         // Create material
         if (!textures.empty()) {
-            Ref<Shader> shader = Application::s_Application->m_AssetManager->GetShader(flags);
+            Ref<Shader> shader = Application::s_Application->m_AssetManager->GetShader(Application::s_Application->m_AssetManager->LoadShader(flags));
             if (!shader) {
                 DD_WARN("Could not create Shader");
             }
-            return std::make_shared<Material>(Application::s_Application->m_AssetManager->GetShader(flags), textures);
+            return std::make_shared<Material>(shader, textures);
         }
 
         aiString name;

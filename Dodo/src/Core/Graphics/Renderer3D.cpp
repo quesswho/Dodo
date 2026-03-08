@@ -2,6 +2,8 @@
 #include "pch.h"
 
 #include "Core/Application/Application.h"
+#include "Core/Graphics/Shader/ShaderParser.h"
+#include "Core/Graphics/Shader/ShaderCompiler.h"
 
 namespace Dodo {
 
@@ -28,9 +30,11 @@ namespace Dodo {
 	})";
 
     Renderer3D::Renderer3D(Math::FreeCamera* camera)
-        : m_Camera(camera), m_ShadowMap(new ShadowMap()),
-          m_ShadowMapMaterial(std::make_shared<Material>(Shader::CreateFromSource("Shadow", s_ShadowShader)))
-    {}
+        : m_Camera(camera), m_ShadowMap(new ShadowMap())
+    {
+        ShaderID id = Application::s_Application->m_AssetManager->LoadShader(ShaderParser::Parse(s_ShadowShader));
+        m_ShadowMapMaterial = std::make_shared<Material>(Application::s_Application->m_AssetManager->GetShader(id));
+    }
 
     void Renderer3D::RenderEntities(World& world, Math::FreeCamera* camera, LightSystem& lightSystem,
                                     AssetManager& assets)

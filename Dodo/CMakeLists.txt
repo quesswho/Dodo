@@ -1,5 +1,6 @@
 add_library(Dodo STATIC)
 
+include(ExternalProject)
 
 file(GLOB_RECURSE DODO_CPP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/pch.cpp
@@ -55,7 +56,6 @@ target_link_libraries(Dodo
         imgui
         assimp
         glfw
-        slang
 )
 
 target_compile_definitions(Dodo

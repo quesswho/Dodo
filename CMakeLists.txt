@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.26)
 project(Dodo LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -38,22 +38,13 @@ message(STATUS "DD_API_GLFW=${DD_API_GLFW}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+
+include(cmake/ConfigureSlang.cmake)
+
 # Dependencies
 message(STATUS "=== Configuring GLAD ===")
 add_subdirectory(Dodo/lib/glad)
 
-
-
-message(STATUS "=== Configuring Slang ${SLANG_VERSION} ===")
-set(SLANG_EMBED_CORE_MODULE ON CACHE BOOL "" FORCE)
-set(SLANG_EMBED_CORE_MODULE_SOURCE OFF CACHE BOOL "" FORCE)
-set(SLANG_ENABLE_DXIL OFF CACHE BOOL "" FORCE)
-set(SLANG_ENABLE_GFX OFF CACHE BOOL "" FORCE)
-set(SLANG_ENABLE_SLANGD OFF CACHE BOOL "" FORCE)
-set(SLANG_ENABLE_SLANGC OFF CACHE BOOL "" FORCE)
-set(SLANG_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
-set(SLANG_ENABLE_EXAMPLES OFF CACHE BOOL "" FORCE)
-add_subdirectory(Dodo/lib/slang)
 
 message(STATUS "=== Configuring ImGui ===")
 add_subdirectory(Dodo/lib/imgui)

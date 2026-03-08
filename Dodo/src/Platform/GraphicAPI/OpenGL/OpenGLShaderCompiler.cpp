@@ -6,7 +6,7 @@
 
 namespace Dodo::Platform {
 
-    uint OpenGLShaderCompiler::Compile(const ShaderSource& source) const
+    uint OpenGLShaderCompiler::Compile(const ShaderSource& source)
     {
         uint shaderProgram = glCreateProgram();
 
@@ -54,7 +54,7 @@ namespace Dodo::Platform {
         return shaderProgram;
     }
 
-    uint OpenGLShaderCompiler::CompileStage(GLenum type, const std::string& source) const
+    uint OpenGLShaderCompiler::CompileStage(GLenum type, const std::string& source)
     {
         uint shader = glCreateShader(type);
 
@@ -79,7 +79,7 @@ namespace Dodo::Platform {
         return shader;
     }
 
-    uint OpenGLShaderCompiler::GetStageType(ShaderStage stage) const
+    uint OpenGLShaderCompiler::GetStageType(ShaderStage stage)
     {
         switch (stage) {
         case ShaderStage::Vertex:

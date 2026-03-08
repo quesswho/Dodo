@@ -5,6 +5,7 @@
 
 namespace Dodo {
     enum class ShaderStage {
+        Unknown,
         Vertex,
         Fragment,
         Geometry,

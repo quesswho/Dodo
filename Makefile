@@ -1,8 +1,8 @@
 # Choose build type: Debug or Release
 BUILD_TYPE ?= Debug
 
-CMAKE_CC := -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc
-CMAKE_CXX := -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++
+#CMAKE_CC := -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc
+#CMAKE_CXX := -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++
 
 
 BUILD_DIR := build/$(BUILD_TYPE)

@@ -2,13 +2,19 @@
 #include "pch.h"
 
 #include "Core/Application/Application.h"
+#include "Core/Graphics/Shader/ShaderCompiler.h"
+#include "Core/Graphics/Shader/ShaderParser.h"
+#include "Core/System/FileUtils.h"
 
 namespace Dodo {
 
     AssetManager::AssetManager(bool serialization)
         : m_Serialization(serialization), m_ModelLoader(new ModelLoader), m_MaterialLoader(new MaterialLoader),
           m_MeshFactory(new MeshFactory())
-    {}
+    {
+        Ref<Shader> fallback = std::make_unique<Shader>(ShaderCompiler::Compile(ShaderGenerator::GetFallbackShader().source));
+        m_Shaders.emplace(0, fallback);
+    }
 
     AssetManager::~AssetManager()
     {
@@ -16,13 +22,61 @@ namespace Dodo {
             delete model.second;
     }
 
-    Ref<Shader> AssetManager::GetShader(ShaderBuilderFlags flags)
+    ShaderID AssetManager::LoadShader(ShaderBuilderFlags flags)
     {
         if (m_ShaderBuilderShaders.find(flags) != m_ShaderBuilderShaders.end()) return m_ShaderBuilderShaders[flags];
 
-        m_ShaderBuilderShaders.insert(std::make_pair(
-            flags, Application::s_Application->m_RenderAPI->m_ShaderBuilder->BuildVertexFragmentShader(flags)));
-        return m_ShaderBuilderShaders[flags];
+        GeneratedShaderSource source = ShaderGenerator::Generate(flags);
+        Ref<Shader> shader = std::make_unique<Shader>(ShaderCompiler::Compile(source.source));
+
+        int id = m_Shaders.size();
+
+        m_ShaderBuilderShaders.emplace(flags, id);
+        m_Shaders.emplace(id, shader);
+
+        shader->Bind();
+        int i = 0;
+        if (flags & ShaderBuilderFlags::ShaderBuilderFlagCubeMap) shader->SetUniformValue("u_CubeMap", i++);
+        if (flags & ShaderBuilderFlags::ShaderBuilderFlagDiffuseMap) shader->SetUniformValue("u_DiffuseMap", i++);
+        if (flags & ShaderBuilderFlags::ShaderBuilderFlagSpecularMap) shader->SetUniformValue("u_SpecularMap", i++);
+        if (flags & ShaderBuilderFlags::ShaderBuilderFlagNormalMap) shader->SetUniformValue("u_NormalMap", i++);
+        if (flags & ShaderBuilderFlags::ShaderBuilderFlagShadowMap) shader->SetUniformValue("u_DepthMap", 3);
+
+        return id;
+    }
+
+    ShaderID AssetManager::LoadShaderFromPath(const std::string& path) 
+    {
+        if (m_ShaderPathLookup.find(path) != m_ShaderPathLookup.end()) {
+            DD_WARN("Shader already loaded!", path, m_ShaderPathLookup.at(path));
+            return m_ShaderPathLookup.at(path);
+        }
+
+        ShaderSource source = ShaderParser::Parse(FileUtils::ReadTextFile(path.c_str()));
+
+        Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source));
+
+        int id = m_Shaders.size();
+
+        m_ShaderPathLookup.emplace(path, id);
+        m_Shaders.emplace(id, shader);
+        return id;
+    }
+
+    ShaderID AssetManager::LoadShader(ShaderSource source) {
+        Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source));
+
+        int id = m_Shaders.size();
+
+        m_Shaders.emplace(id, shader);
+        return id;
+    }
+
+    Ref<Shader> AssetManager::GetShader(ShaderID id)
+    {
+        if (m_Shaders.find(id) != m_Shaders.end()) return m_Shaders[id];
+        DD_ERR("Trying to get shader that doesn't exist! ID: {0}", id);
+        return nullptr;
     }
 
     ModelID AssetManager::LoadModel(const std::string& path)

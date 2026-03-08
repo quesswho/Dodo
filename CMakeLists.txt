@@ -53,7 +53,7 @@ set(SLANG_ENABLE_SLANGD OFF CACHE BOOL "" FORCE)
 set(SLANG_ENABLE_SLANGC OFF CACHE BOOL "" FORCE)
 set(SLANG_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
 set(SLANG_ENABLE_EXAMPLES OFF CACHE BOOL "" FORCE)
-add_subdirectory(Dodo/lib/slang)
+#add_subdirectory(Dodo/lib/slang)
 
 message(STATUS "=== Configuring ImGui ===")
 add_subdirectory(Dodo/lib/imgui)

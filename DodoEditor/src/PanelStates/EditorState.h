@@ -39,7 +39,7 @@ struct EditorState {
 struct ViewportState {
     std::string name = "Viewport";
     bool visible = false;
-    
+
     uint width = 0, height = 0;
     uint x = 0, y = 0;
 };

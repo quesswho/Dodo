@@ -4,12 +4,13 @@
 namespace Dodo {
     struct ShaderParser {
 
-        static ShaderSource Parse(std::string source) {
+        static ShaderSource Parse(std::string source)
+        {
             ShaderStage stage = ShaderStage::Unknown;
-            
+
             std::string stringFragmentSource = "";
             std::string stringVertexSource = "";
-            
+
             ShaderSource shaderSource;
             std::istringstream text(source);
             std::string line;
@@ -23,7 +24,7 @@ namespace Dodo {
                     stage = ShaderStage::Fragment;
                     continue;
                 }
-                
+
                 if (line == "#shader vertex") {
                     stage = ShaderStage::Vertex;
                     continue;
@@ -41,14 +42,14 @@ namespace Dodo {
 
             if (stringFragmentSource == "" || stringVertexSource == "") {
                 DD_ERR("Source needs to be in a specific format! Add \"#shader fragment\" or \"#shader vertex\" "
-                    "as the first line of the different shaders to differentiate between between the differnt "
-                    "shader types!");
+                       "as the first line of the different shaders to differentiate between between the differnt "
+                       "shader types!");
                 return shaderSource;
             }
 
-            shaderSource.stages.push_back({ ShaderStage::Vertex, stringVertexSource });
-            shaderSource.stages.push_back({ ShaderStage::Fragment, stringFragmentSource });
+            shaderSource.stages.push_back({ShaderStage::Vertex, stringVertexSource});
+            shaderSource.stages.push_back({ShaderStage::Fragment, stringFragmentSource});
             return shaderSource;
         }
     };
-}
+} // namespace Dodo

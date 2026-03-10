@@ -10,7 +10,7 @@ void HierarchyPanel::Draw(EditorState& editorState, InspectorState& inspectorSta
         ImGui::End();
         return;
     }
-    
+
     ImGuiIO& io = ImGui::GetIO();
     if (ImGui::BeginPopupContextWindow("Right-Click Hierarchy", ImGuiPopupFlags_MouseButtonRight)) {
         if (ImGui::MenuItem("Create New")) {

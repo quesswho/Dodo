@@ -24,17 +24,16 @@ namespace Dodo {
                                              1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f};
 
     Skybox::Skybox(const Math::Mat4& projection, std::vector<std::string> paths)
-        : m_Projection(projection),
-          m_VertexBuffer(
-              new VertexBuffer(s_SkyboxVertices, sizeof(s_SkyboxVertices), BufferProperties({{"POSITION", 3}}))),
+        : m_Projection(projection), m_VertexBuffer(new VertexBuffer(s_SkyboxVertices, sizeof(s_SkyboxVertices),
+                                                                    BufferProperties({{"POSITION", 3}}))),
           m_CubeMapTexture(std::make_shared<CubeMapTexture>(paths, 0,
                                                             TextureSettings(TextureFilter::FILTER_MIN_MAG_MIP_LINEAR,
                                                                             TextureWrapMode::WRAP_CLAMP_TO_EDGE,
                                                                             TextureWrapMode::WRAP_CLAMP_TO_EDGE)))
     {
         ShaderID id = Application::s_Application->m_AssetManager->LoadShader(
-              ShaderBuilderFlags::ShaderBuilderFlagCubeMap | ShaderBuilderFlags::ShaderBuilderFlagMaxDepth |
-              ShaderBuilderFlags::ShaderBuilderFlagNoTexcoord);
+            ShaderBuilderFlags::ShaderBuilderFlagCubeMap | ShaderBuilderFlags::ShaderBuilderFlagMaxDepth |
+            ShaderBuilderFlags::ShaderBuilderFlagNoTexcoord);
         m_Shader = Application::s_Application->m_AssetManager->GetShader(id);
     }
 

@@ -55,23 +55,22 @@ void Interface::InitInterface()
         DD_WARN("Could not find: res/font/opensans/opensans.ttf, using default font.");
     }
 
-    
     // Viewport
     m_EditorProperties.m_ViewportHover = false;
     m_EditorProperties.m_ViewportInput = false;
-    
+
     m_ViewportState.name = "Viewport";
     m_ViewportState.visible = true;
-    
+
     // Hierarchy
     m_HierarchyState.name = "Hierarchy";
     m_HierarchyState.visible = true;
-    
+
     // Inspector
     m_InspectorState.name = "Inspector";
     m_InspectorState.visible = false;
     m_InspectorState.dirty = false;
-    
+
     // Asset Browser
     m_AssetBrowserState.name = "Asset Browser";
     m_AssetBrowserState.visible = true;
@@ -198,15 +197,13 @@ void Interface::ResetDockspace(uint dockspace_id)
 
     ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
 
-
     ImGuiID dock_left_bottom;
     ImGuiID dock_left_top = ImGui::DockBuilderSplitNode(dock_left, ImGuiDir_Up, 0.50f, nullptr, &dock_left_bottom);
-
 
     ImGui::DockBuilderDockWindow(m_ViewportState.name.c_str(), dock_main_id);
     ImGui::DockBuilderDockWindow(m_HierarchyState.name.c_str(), dock_left_top);
     ImGui::DockBuilderDockWindow(m_InspectorState.name.c_str(), dock_right);
-    ImGui::DockBuilderDockWindow(m_AssetBrowserState.name.c_str(),  dock_bottom);
+    ImGui::DockBuilderDockWindow(m_AssetBrowserState.name.c_str(), dock_bottom);
 
     ImGui::DockBuilderFinish(dockspace_id);
 }
@@ -233,7 +230,8 @@ bool Interface::ViewportResize()
 bool Interface::BeginViewport()
 {
     if (m_ViewportState.visible) {
-        ImGui::Begin(m_ViewportState.name.c_str(), nullptr, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar);
+        ImGui::Begin(m_ViewportState.name.c_str(), nullptr,
+                     ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar);
 
         ImGui::Text("%d fps, %gms", Application::s_Application->m_FramesPerSecond,
                     Application::s_Application->m_FrameTimeMs);

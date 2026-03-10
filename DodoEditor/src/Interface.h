@@ -5,9 +5,9 @@
 #include "Data/EditorSceneFile.h"
 #include "PanelStates/EditorState.h"
 #include "PanelStates/HierarchyState.h"
+#include "Panels/AssetBrowserPanel.h"
 #include "Panels/HierarchyPanel.h"
 #include "Panels/InspectorPanel.h"
-#include "Panels/AssetBrowserPanel.h"
 #include "Scene/EditorScene.h"
 
 struct EditorProperties {

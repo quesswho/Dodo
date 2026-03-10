@@ -7,6 +7,5 @@ void AssetBrowserPanel::Draw(AssetBrowserState& state)
 {
     ImGui::Begin(state.name.c_str());
 
-    
     ImGui::End();
 }

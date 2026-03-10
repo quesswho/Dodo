@@ -7,44 +7,42 @@
 
 namespace Dodo::Platform {
 
-
     GeneratedShaderSource OpenGLShaderGenerator::GetFallbackShader()
     {
         static std::string vertex = "#version 330 core\n"
-                             "layout (location = 0) in vec3 a_Position;\n"
-                             "layout (location = 1) in vec2 a_Texcoord;\n"
-                             "uniform mat4 u_Model = mat4(1.0f);\n"
-                             "uniform mat4 u_Camera = mat4(1.0f);\n"
-                             "out vec2 o_Texcoord;\n"
-                             "void main()\n"
-                             "{\n"
-                             "   o_Texcoord = a_Texcoord;\n"
-                             "   gl_Position = u_Camera * u_Model * vec4(a_Position, 1.0);\n"
-                             "}\0";
+                                    "layout (location = 0) in vec3 a_Position;\n"
+                                    "layout (location = 1) in vec2 a_Texcoord;\n"
+                                    "uniform mat4 u_Model = mat4(1.0f);\n"
+                                    "uniform mat4 u_Camera = mat4(1.0f);\n"
+                                    "out vec2 o_Texcoord;\n"
+                                    "void main()\n"
+                                    "{\n"
+                                    "   o_Texcoord = a_Texcoord;\n"
+                                    "   gl_Position = u_Camera * u_Model * vec4(a_Position, 1.0);\n"
+                                    "}\0";
 
         static std::string fragment = "#version 330 core\n"
-                               "in vec2 o_Texcoord;\n"
-                               "out vec4 pixel;\n"
-                               "float checker()\n"
-                               "{\n"
-                               "	float cx = floor(20.0f * o_Texcoord.x);\n"
-                               "	float cy = floor(20.0f * o_Texcoord.y);\n"
-                               "	return sign(mod(cx + cy, 2.0f));\n"
-                               "}\n"
-                               "void main()\n"
-                               "{\n"
-                               "	float res = mix(1.0f, 0.0f, checker());\n"
-                               "   pixel = vec4(res, res * 0.1f, res * 0.1f, 1.0);\n"
-                               "}\0";
+                                      "in vec2 o_Texcoord;\n"
+                                      "out vec4 pixel;\n"
+                                      "float checker()\n"
+                                      "{\n"
+                                      "	float cx = floor(20.0f * o_Texcoord.x);\n"
+                                      "	float cy = floor(20.0f * o_Texcoord.y);\n"
+                                      "	return sign(mod(cx + cy, 2.0f));\n"
+                                      "}\n"
+                                      "void main()\n"
+                                      "{\n"
+                                      "	float res = mix(1.0f, 0.0f, checker());\n"
+                                      "   pixel = vec4(res, res * 0.1f, res * 0.1f, 1.0);\n"
+                                      "}\0";
         ShaderSource shaderSource;
-        shaderSource.stages.push_back({ ShaderStage::Vertex, std::move(vertex) });
-        shaderSource.stages.push_back({ ShaderStage::Fragment, std::move(fragment) });
-        
+        shaderSource.stages.push_back({ShaderStage::Vertex, std::move(vertex)});
+        shaderSource.stages.push_back({ShaderStage::Fragment, std::move(fragment)});
+
         GeneratedShaderSource source;
         source.source = shaderSource;
         return source;
     }
-
 
     GeneratedShaderSource OpenGLShaderGenerator::Generate(const ShaderBuilderFlags flags)
     {
@@ -354,8 +352,8 @@ namespace Dodo::Platform {
         fragment.append("\0");
 
         ShaderSource shaderSource;
-        shaderSource.stages.push_back({ ShaderStage::Vertex, std::move(vertex) });
-        shaderSource.stages.push_back({ ShaderStage::Fragment, std::move(fragment) });
+        shaderSource.stages.push_back({ShaderStage::Vertex, std::move(vertex)});
+        shaderSource.stages.push_back({ShaderStage::Fragment, std::move(fragment)});
         GeneratedShaderSource source;
         source.source = shaderSource;
         source.flags = flags;

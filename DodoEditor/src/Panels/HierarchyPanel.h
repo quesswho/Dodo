@@ -1,7 +1,7 @@
 #pragma once
 #include "PanelStates/EditorState.h"
-#include "PanelStates/InspectorState.h"
 #include "PanelStates/HierarchyState.h"
+#include "PanelStates/InspectorState.h"
 
 class HierarchyPanel {
   public:

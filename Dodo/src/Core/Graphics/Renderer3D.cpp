@@ -2,8 +2,8 @@
 #include "pch.h"
 
 #include "Core/Application/Application.h"
-#include "Core/Graphics/Shader/ShaderParser.h"
 #include "Core/Graphics/Shader/ShaderCompiler.h"
+#include "Core/Graphics/Shader/ShaderParser.h"
 
 namespace Dodo {
 
@@ -29,8 +29,7 @@ namespace Dodo {
 		gl_Position = u_LightCamera * u_Model * vec4(a_Position, 1.0);
 	})";
 
-    Renderer3D::Renderer3D(Math::FreeCamera* camera)
-        : m_Camera(camera), m_ShadowMap(new ShadowMap())
+    Renderer3D::Renderer3D(Math::FreeCamera* camera) : m_Camera(camera), m_ShadowMap(new ShadowMap())
     {
         ShaderID id = Application::s_Application->m_AssetManager->LoadShader(ShaderParser::Parse(s_ShadowShader));
         m_ShadowMapMaterial = std::make_shared<Material>(Application::s_Application->m_AssetManager->GetShader(id));

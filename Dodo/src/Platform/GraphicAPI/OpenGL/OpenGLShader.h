@@ -16,9 +16,7 @@ namespace Dodo::Platform {
         std::unordered_map<std::string, int> m_UniformLocations;
 
       public:
-        OpenGLShader(uint shader)
-            : m_ShaderID(shader)
-        {}
+        OpenGLShader(uint shader) : m_ShaderID(shader) {}
 
         ~OpenGLShader();
 

@@ -1,19 +1,19 @@
 #include "MaterialLoader.h"
-#include "Core/Application/Application.h"
 #include "pch.h"
+
+#include "AssetManager.h"
 
 #include <assimp/material.h>
 
 namespace Dodo {
-    Ref<Material> MaterialLoader::LoadMaterial(const char* path)
+    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, AssetManager& assets)
     {
-        ShaderID id = Application::s_Application->m_AssetManager->LoadShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture);
-        return std::make_shared<Material>(
-            Application::s_Application->m_AssetManager->GetShader(id),
+        ShaderID id = assets.LoadShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture);
+        return std::make_shared<Material>(assets.GetShader(id),
             std::make_shared<Texture>(path, 0, TextureSettings(TextureWrapMode::WRAP_CLAMP_TO_EDGE)));
     }
 
-    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, aiMaterial* material)
+    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, aiMaterial* material, AssetManager& assets)
     {
         ShaderBuilderFlags flags = ShaderBuilderFlagShadowMap;
         std::vector<Ref<Texture>> textures;
@@ -39,7 +39,8 @@ namespace Dodo {
 
         // Create material
         if (!textures.empty()) {
-            Ref<Shader> shader = Application::s_Application->m_AssetManager->GetShader(Application::s_Application->m_AssetManager->LoadShader(flags));
+            ShaderID shaderID = assets.LoadShader(flags);
+            Ref<Shader> shader = assets.GetShader(shaderID);
             if (!shader) {
                 DD_WARN("Could not create Shader");
             }

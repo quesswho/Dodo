@@ -6,6 +6,9 @@
 struct aiMesh;
 
 namespace Dodo {
+    class AssetManager;
+    class MaterialLoader;
+
     struct ModelLoader {
 
         struct Vertex {
@@ -53,7 +56,7 @@ namespace Dodo {
 
         ///////////////////////////////////////////////////
 
-        Model* LoadModel(const std::string& path);
+        Model* LoadModel(const std::string& path, MaterialLoader& materialLoader, AssetManager& assets);
 
       private:
         Mesh* LoadMesh(::aiMesh* mesh, Ref<Material> material);

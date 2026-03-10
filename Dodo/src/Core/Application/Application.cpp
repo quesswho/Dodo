@@ -74,7 +74,7 @@ namespace Dodo {
             DD_FATAL("{0}", res.message);
         }
 
-        m_AssetManager = ddnew AssetManager(conf.m_WindowProperties.m_Settings.serializeScene);
+        m_AssetManager = ddnew AssetManager();
     }
 
     void Application::Init() {}

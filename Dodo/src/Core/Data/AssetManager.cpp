@@ -8,11 +8,10 @@
 
 namespace Dodo {
 
-    AssetManager::AssetManager(bool serialization)
-        : m_Serialization(serialization), m_ModelLoader(new ModelLoader), m_MaterialLoader(new MaterialLoader),
-          m_MeshFactory(new MeshFactory())
+    AssetManager::AssetManager()
     {
-        Ref<Shader> fallback = std::make_unique<Shader>(ShaderCompiler::Compile(ShaderGenerator::GetFallbackShader().source));
+        Ref<Shader> fallback =
+            std::make_shared<Shader>(ShaderCompiler::Compile(ShaderGenerator::GetFallbackShader().source));
         m_Shaders.emplace(0, fallback);
     }
 
@@ -27,9 +26,9 @@ namespace Dodo {
         if (m_ShaderBuilderShaders.find(flags) != m_ShaderBuilderShaders.end()) return m_ShaderBuilderShaders[flags];
 
         GeneratedShaderSource source = ShaderGenerator::Generate(flags);
-        Ref<Shader> shader = std::make_unique<Shader>(ShaderCompiler::Compile(source.source));
+        Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source.source));
 
-        int id = m_Shaders.size();
+        int id = m_NextShaderID++;
 
         shader->Bind();
         int i = 0;
@@ -44,7 +43,7 @@ namespace Dodo {
         return id;
     }
 
-    ShaderID AssetManager::LoadShaderFromPath(const std::string& path) 
+    ShaderID AssetManager::LoadShaderFromPath(const std::string& path)
     {
         if (m_ShaderPathLookup.find(path) != m_ShaderPathLookup.end()) {
             DD_WARN("Shader already loaded!", path, m_ShaderPathLookup.at(path));
@@ -55,17 +54,18 @@ namespace Dodo {
 
         Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source));
 
-        int id = m_Shaders.size();
+        ShaderID id = m_NextShaderID++;
 
         m_ShaderPathLookup.emplace(path, id);
         m_Shaders.emplace(id, shader);
         return id;
     }
 
-    ShaderID AssetManager::LoadShader(ShaderSource source) {
+    ShaderID AssetManager::LoadShader(ShaderSource source)
+    {
         Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source));
 
-        int id = m_Shaders.size();
+        int id = m_NextShaderID++;
 
         m_Shaders.emplace(id, shader);
         return id;
@@ -87,13 +87,13 @@ namespace Dodo {
             return it->second;
         }
 
-        Model* model = m_ModelLoader->LoadModel(path);
+        Model* model = m_ModelLoader.LoadModel(path, m_MaterialLoader, *this);
         if (model == nullptr) {
             DD_ERR("Failed to load model: {0}, Loading default cube", path);
             return GetBuiltinModel(BuiltinModel::Cube);
         }
 
-        int id = m_Models.size();
+        int id = m_NextModelID++;
 
         m_ModelID.emplace(path, id);
         m_ModelPath.emplace(id, path);
@@ -111,13 +111,14 @@ namespace Dodo {
         switch (type) {
         case BuiltinModel::Cube: {
             std::vector<Mesh*> meshes;
-            meshes.push_back(m_MeshFactory->CreateCube(std::make_shared<Material>(Material())));
+            // TODO: We should ideally have a fallback material stored in asset manager instead of creating a new one
+            meshes.push_back(m_MeshFactory.CreateCube(std::make_shared<Material>(Material())));
             model = new Model(meshes);
             break;
         }
         }
 
-        ModelID id = m_Models.size();
+        ModelID id = m_NextModelID++;
         m_Models.emplace(id, model);
 
         builtinIDs.emplace(type, id);
@@ -134,25 +135,35 @@ namespace Dodo {
 
     std::string AssetManager::GetModelPath(ModelID id)
     {
-        auto it = m_Models.find(id);
-        if (it == m_Models.end()) {
+        auto it = m_ModelPath.find(id);
+        if (it == m_ModelPath.end()) {
             DD_ERR("Trying to get path of model that doesn't exist! ID: {0}", id);
             return "";
         }
-        return m_ModelPath.at(id);
+        return it->second;
     }
 
-    Ref<Material> AssetManager::GetMaterial(const char* path)
+    MaterialID AssetManager::LoadMaterial(const std::string& path)
     {
         auto it = m_MaterialID.find(path);
         if (it != m_MaterialID.end()) {
-            return m_Materials[it->second];
+            DD_WARN("Material already loaded: {0}", path);
+            return it->second;
         }
 
-        Ref<Material> mat = m_MaterialLoader->LoadMaterial(path);
-        int id = m_Materials.size();
+        Ref<Material> mat = m_MaterialLoader.LoadMaterial(path, *this);
+        MaterialID id = m_NextMaterialID++;
+
         m_MaterialID.emplace(path, id);
         m_Materials.emplace(id, std::move(mat));
-        return mat;
+        return id;
+    }
+
+    Ref<Material> AssetManager::GetMaterial(MaterialID id)
+    {
+        auto it = m_Materials.find(id);
+        if (it != m_Materials.end()) return it->second;
+        DD_ERR("Trying to get material that doesn't exist! ID: {0}", id);
+        return nullptr;
     }
 } // namespace Dodo

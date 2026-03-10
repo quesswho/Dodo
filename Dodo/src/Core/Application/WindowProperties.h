@@ -10,7 +10,6 @@ namespace Dodo {
         bool imgui = false;
         bool imguiDocking = false;
         bool backfaceCull = true;
-        bool serializeScene = false;
     };
 
     struct WindowProperties {

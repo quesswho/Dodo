@@ -1,7 +1,7 @@
 #include "ModelLoader.h"
 #include "pch.h"
 
-#include "Core/Application/Application.h"
+#include "AssetManager.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -54,7 +54,7 @@ namespace Dodo {
             new IndexBuffer(indices.data(), totalIndices), material);
     }
 
-    Model* ModelLoader::LoadModel(const std::string& path)
+    Model* ModelLoader::LoadModel(const std::string& path, MaterialLoader& materialLoader, AssetManager& assets)
     {
         Assimp::Importer imp;
 
@@ -67,9 +67,6 @@ namespace Dodo {
             return nullptr; // TODO: Replace with error model
         }
 
-        // Change work directory to get the textures
-        // Application::s_Application->m_Window->TruncateWorkDirectory(path);
-
         std::vector<Ref<Material>> materials;
         materials.reserve(model->mNumMaterials);
         if (!model->HasMaterials()) {
@@ -78,11 +75,11 @@ namespace Dodo {
         }
 
         for (int i = 0; i < model->mNumMaterials; i++) {
-            materials.push_back(
-                Application::s_Application->m_AssetManager->m_MaterialLoader->LoadMaterial(path, model->mMaterials[i]));
+            // TODO: This is really bad, we should let the asset manager own the materials, but this is easier for now.
+            // I would like to change the shader builder before doing this as material loader needs a lot of work
+            materials.push_back(materialLoader.LoadMaterial(path, model->mMaterials[i], assets));
         }
 
-        // Application::s_Application->m_Window->DefaultWorkDirectory();
         DD_INFO("{} materials loaded", materials.size());
 
         std::vector<Mesh*> meshes;

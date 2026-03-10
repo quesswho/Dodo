@@ -5,9 +5,8 @@
       "name": "Debug Sandbox",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/Debug/bin/Sandbox",
-      "args": [],
-      "cwd": "${workspaceFolder}/build/Debug/bin",
+      "program": "${workspaceFolder}/build/bin/Debug/Sandbox",
+      "cwd": "${workspaceFolder}/build/bin/Debug",
       "stopAtEntry": false,
       "MIMode": "gdb",
       "setupCommands": [
@@ -22,9 +21,8 @@
       "name": "Debug DodoEditor",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/Debug/bin/DodoEditor",
-      "args": [],
-      "cwd": "${workspaceFolder}/build/Debug/bin",
+      "program": "${workspaceFolder}/build/bin/Debug/DodoEditor",
+      "cwd": "${workspaceFolder}/build/bin/Debug",
       "stopAtEntry": false,
       "MIMode": "gdb",
       "setupCommands": [

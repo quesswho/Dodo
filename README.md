@@ -56,10 +56,15 @@ git clone --recurse-submodules git@github.com:quesswho/Dodo.git
 git submodule update --init --recursive
 ```
 
-To compile Dodo run
+### Building and running
+To configure Dodo run
 
 ```
-make debug/release
+cmake --preset default
 ```
 
-The binaries will be placed in in build/Debug/bin or build/Release/bin.
+To build and run:
+```
+cmake --build --preset debug
+make run
+```

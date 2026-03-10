@@ -7,9 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Export compile commands, useful for IntelliSense
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
-endif()
+set(CMAKE_DEFAULT_BUILD_TYPE Debug)
 
 
 # Load Opengl or Vulkan

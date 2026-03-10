@@ -1,0 +1,48 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 25,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "default",
+            "generator": "Ninja Multi-Config",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_COLOR_DIAGNOSTICS": "ON"
+            }
+        },
+        {
+        "name": "mingw",
+        "inherits": "default",
+        "cacheVariables": {
+            "CMAKE_C_COMPILER": "x86_64-w64-mingw32-gcc",
+            "CMAKE_CXX_COMPILER": "x86_64-w64-mingw32-g++"
+        }
+        }
+    ],
+    "buildPresets": [
+        {
+        "name": "debug",
+        "configurePreset": "default",
+        "configuration": "Debug"
+        },
+        {
+        "name": "release",
+        "configurePreset": "default",
+        "configuration": "Release"
+        },
+        {
+            "name": "debug-mingw",
+            "configurePreset": "mingw",
+            "configuration": "Debug"
+        },
+        {
+            "name": "release-mingw",
+            "configurePreset": "mingw",
+            "configuration": "Release"
+        }
+    ]
+}

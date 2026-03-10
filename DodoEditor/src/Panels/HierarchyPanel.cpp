@@ -4,15 +4,18 @@
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
-void HierarchyPanel::Draw(EditorState& state, InspectorState& inspector)
+void HierarchyPanel::Draw(EditorState& editorState, InspectorState& inspectorState, HierarchyState& state)
 {
+    if (!ImGui::Begin(state.name.c_str(), &state.visible)) {
+        ImGui::End();
+        return;
+    }
+    
     ImGuiIO& io = ImGui::GetIO();
-    ImGui::Begin("Hierarchy");
-
     if (ImGui::BeginPopupContextWindow("Right-Click Hierarchy", ImGuiPopupFlags_MouseButtonRight)) {
         if (ImGui::MenuItem("Create New")) {
-            EntityID newEntity = state.scene->GetWorld().CreateEntity();
-            state.renameState.Begin(state.scene->GetWorld(), newEntity);
+            EntityID newEntity = editorState.scene->GetWorld().CreateEntity();
+            editorState.renameState.Begin(editorState.scene->GetWorld(), newEntity);
         }
         ImGui::EndPopup();
     }
@@ -21,28 +24,28 @@ void HierarchyPanel::Draw(EditorState& state, InspectorState& inspector)
     ImGui::SameLine();
 
     if (ImGui::TreeNodeEx("Entities", ImGuiTreeNodeFlags_DefaultOpen)) {
-        auto& world = state.scene->GetWorld();
+        auto& world = editorState.scene->GetWorld();
         if (world.GetAliveEntities().empty()) {
             ImGui::Separator();
             ImGui::TextColored(ImVec4(0.34f, 129.0f, 0, 255), "Right click here!");
         }
 
         for (EntityID entityId : world.GetAliveEntities()) {
-            if (entityId == state.renameState.entityId) { // Currently renaming this entity
+            if (entityId == editorState.renameState.entityId) { // Currently renaming this entity
                 ImGui::SetKeyboardFocusHere();
                 ImGui::Indent();
 
                 ImGui::SetKeyboardFocusHere();
-                if (ImGui::InputText("##label", &state.renameState.nameBuffer,
+                if (ImGui::InputText("##label", &editorState.renameState.nameBuffer,
                                      ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll |
                                          ImGuiInputTextFlags_CharsNoBlank)) {
-                    state.renameState.Finish(world);
-                    state.selection.Single(entityId);
+                    editorState.renameState.Finish(world);
+                    editorState.selection.Single(entityId);
                 }
                 ImGui::Unindent();
             }
 
-            if (entityId != state.renameState.entityId) {
+            if (entityId != editorState.renameState.entityId) {
                 std::string colorButtonId = "##EntityIcon" + std::to_string(entityId);
                 ImGui::ColorButton(colorButtonId.c_str(), ImColor(120, 50, 0), ImGuiColorEditFlags_NoTooltip);
                 ImGui::SameLine();
@@ -51,22 +54,22 @@ void HierarchyPanel::Draw(EditorState& state, InspectorState& inspector)
                                              ? world.GetComponent<NameComponent>(entityId).name
                                              : "Entity_" + std::to_string(entityId);
                 bool open = ImGui::TreeNodeEx(
-                    entityName.c_str(), (state.selection.Contains(entityId) ? ImGuiTreeNodeFlags_Selected : 0) |
+                    entityName.c_str(), (editorState.selection.Contains(entityId) ? ImGuiTreeNodeFlags_Selected : 0) |
                                             ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
                 ImGui::PopID();
-                if (state.selection.Contains(entityId)) {
+                if (editorState.selection.Contains(entityId)) {
                     ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 40); // Move text to right side
                     ImGui::Text("%i", entityId);
                 }
                 if (ImGui::IsItemClicked()) {
                     if (io.KeyCtrl)
-                        state.selection.Toggle(entityId);
+                        editorState.selection.Toggle(entityId);
                     else
-                        state.selection.Single(entityId);
+                        editorState.selection.Single(entityId);
 
-                    if (state.selection.Contains(entityId)) {
-                        inspector.dirty = true;
-                        inspector.visible = true;
+                    if (editorState.selection.Contains(entityId)) {
+                        inspectorState.dirty = true;
+                        inspectorState.visible = true;
                     }
                 }
 
@@ -92,7 +95,7 @@ void HierarchyPanel::Draw(EditorState& state, InspectorState& inspector)
 
         ImGui::TreePop();
         if (ImGui::IsMouseClicked(0) && !ImGui::IsAnyItemHovered() && ImGui::IsWindowHovered()) {
-            state.selection.Clear();
+            editorState.selection.Clear();
         }
     }
 

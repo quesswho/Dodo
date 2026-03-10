@@ -12,6 +12,7 @@ struct TransformEditState {
 };
 
 struct InspectorState {
+    std::string name = "Inspector";
     bool visible = false;
     bool dirty = false;
 

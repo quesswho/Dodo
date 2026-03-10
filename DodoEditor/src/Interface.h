@@ -7,26 +7,12 @@
 #include "PanelStates/HierarchyState.h"
 #include "Panels/HierarchyPanel.h"
 #include "Panels/InspectorPanel.h"
+#include "Panels/AssetBrowserPanel.h"
 #include "Scene/EditorScene.h"
 
-struct Component {
-    Component() : m_Name("None"), m_Selected(false) {}
-
-    Component(const char* name) : m_Name(name), m_Selected(false) {}
-
-    const char* m_Name;
-    bool m_Selected;
-};
-
 struct EditorProperties {
-    bool m_ShowViewport;
-
     bool m_ViewportInput;
     bool m_ViewportHover;
-
-    const char* m_HierarchyName;
-    const char* m_ViewportName;
-    const char* m_InspectorName;
 };
 
 class Interface {
@@ -37,9 +23,11 @@ class Interface {
     ViewportState m_ViewportState;
     InspectorState m_InspectorState;
     HierarchyState m_HierarchyState;
+    AssetBrowserState m_AssetBrowserState;
 
     InspectorPanel m_InspectorPanel;
     HierarchyPanel m_HierarchyPanel;
+    AssetBrowserPanel m_AssetBrowserPanel;
 
   public:
     Interface(EditorScene* scene);
@@ -56,9 +44,6 @@ class Interface {
     void InitInterface();
 
     void ResetDockspace(uint dockspace_id);
-
-    std::vector<Component> m_HierarchyComponents;
-    std::vector<Component> m_InspectorComponents;
 
     bool m_ChangeScene;
 

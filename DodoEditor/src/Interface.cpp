@@ -42,8 +42,6 @@ void Interface::InitInterface()
     style.Colors[ImGuiCol_ChildBg] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
     style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
     style.Colors[ImGuiCol_Button] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
-    ImVec4 aa = style.Colors[ImGuiCol_TabActive];
-    ImVec4 aa2 = style.Colors[ImGuiCol_TitleBgActive];
     style.Colors[ImGuiCol_TabActive] = ImVec4(0.0f, 0.5f, 0.85f, 1.00f);
     style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.0f, 0.5f, 0.85f, 1.00f);
 
@@ -57,24 +55,26 @@ void Interface::InitInterface()
         DD_WARN("Could not find: res/font/opensans/opensans.ttf, using default font.");
     }
 
-    m_EditorProperties.m_ViewportName = "Viewport";
-    m_EditorProperties.m_HierarchyName = "Hierarchy";
-    m_EditorProperties.m_InspectorName = "Inspector";
-
+    
+    // Viewport
     m_EditorProperties.m_ViewportHover = false;
     m_EditorProperties.m_ViewportInput = false;
-
-    m_EditorProperties.m_ShowViewport = true;
-
+    
+    m_ViewportState.name = "Viewport";
+    m_ViewportState.visible = true;
+    
     // Hierarchy
-    m_HierarchyComponents.push_back(Component("ModelComponent"));
+    m_HierarchyState.name = "Hierarchy";
     m_HierarchyState.visible = true;
-
+    
     // Inspector
-    m_InspectorComponents = m_HierarchyComponents;
-
-    m_InspectorState.visible = true;
+    m_InspectorState.name = "Inspector";
+    m_InspectorState.visible = false;
     m_InspectorState.dirty = false;
+    
+    // Asset Browser
+    m_AssetBrowserState.name = "Asset Browser";
+    m_AssetBrowserState.visible = true;
 }
 
 bool Interface::BeginDraw()
@@ -95,7 +95,7 @@ bool Interface::BeginDraw()
     dockWindow_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
     ImGuiIO& io = ImGui::GetIO();
 
-    ImGui::Begin("DockSpace", 0, dockWindow_flags);
+    ImGui::Begin("DockSpace", nullptr, dockWindow_flags);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     ImGui::PopStyleVar();
     ImGui::PopStyleVar(2);
@@ -156,9 +156,10 @@ bool Interface::BeginDraw()
         }
 
         if (ImGui::BeginMenu("Window")) {
-            ImGui::MenuItem(m_EditorProperties.m_ViewportName, "", &m_EditorProperties.m_ShowViewport);
-            ImGui::MenuItem(m_EditorProperties.m_HierarchyName, "", &m_HierarchyState.visible);
-            ImGui::MenuItem(m_EditorProperties.m_InspectorName, "", &m_InspectorState.visible);
+            ImGui::MenuItem(m_ViewportState.name.c_str(), "", &m_ViewportState.visible);
+            ImGui::MenuItem(m_HierarchyState.name.c_str(), "", &m_HierarchyState.visible);
+            ImGui::MenuItem(m_InspectorState.name.c_str(), "", &m_InspectorState.visible);
+            ImGui::MenuItem(m_AssetBrowserState.name.c_str(), "", &m_AssetBrowserState.visible);
             ImGui::Separator();
             if (ImGui::Button("Reset DockSpace")) {
                 s_ResetDockspace = true;
@@ -170,8 +171,9 @@ bool Interface::BeginDraw()
     }
     ImGui::End();
 
-    if (m_HierarchyState.visible) m_HierarchyPanel.Draw(m_EditorState, m_InspectorState);
-    if (m_InspectorState.visible) m_InspectorPanel.Draw(m_EditorState, m_InspectorState);
+    m_HierarchyPanel.Draw(m_EditorState, m_InspectorState, m_HierarchyState);
+    m_InspectorPanel.Draw(m_EditorState, m_InspectorState);
+    m_AssetBrowserPanel.Draw(m_AssetBrowserState);
 
     return m_ChangeScene;
 }
@@ -190,12 +192,22 @@ void Interface::ResetDockspace(uint dockspace_id)
     ImGui::DockBuilderSetNodeSize(dockspace_id, viewport->Size);
 
     ImGuiID dock_main_id = dockspace_id;
-    ImGuiID dock_id_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, NULL, &dock_main_id);
-    ImGuiID dock_id_left_down = ImGui::DockBuilderSplitNode(dock_id_left, ImGuiDir_Down, 0.20f, NULL, &dock_id_left);
 
-    ImGui::DockBuilderDockWindow(m_EditorProperties.m_ViewportName, dock_main_id);
-    ImGui::DockBuilderDockWindow(m_EditorProperties.m_HierarchyName, dock_id_left);
-    ImGui::DockBuilderDockWindow(m_EditorProperties.m_InspectorName, dock_id_left_down);
+    ImGuiID dock_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, nullptr, &dock_main_id);
+    ImGuiID dock_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.20f, nullptr, &dock_main_id);
+
+    ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
+
+
+    ImGuiID dock_left_bottom;
+    ImGuiID dock_left_top = ImGui::DockBuilderSplitNode(dock_left, ImGuiDir_Up, 0.50f, nullptr, &dock_left_bottom);
+
+
+    ImGui::DockBuilderDockWindow(m_ViewportState.name.c_str(), dock_main_id);
+    ImGui::DockBuilderDockWindow(m_HierarchyState.name.c_str(), dock_left_top);
+    ImGui::DockBuilderDockWindow(m_InspectorState.name.c_str(), dock_right);
+    ImGui::DockBuilderDockWindow(m_AssetBrowserState.name.c_str(),  dock_bottom);
+
     ImGui::DockBuilderFinish(dockspace_id);
 }
 
@@ -220,9 +232,8 @@ bool Interface::ViewportResize()
 }
 bool Interface::BeginViewport()
 {
-    if (m_EditorProperties.m_ShowViewport) {
-        static ImGuiWindowFlags s_ViewportWindow = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
-        ImGui::Begin("Viewport", 0, s_ViewportWindow);
+    if (m_ViewportState.visible) {
+        ImGui::Begin(m_ViewportState.name.c_str(), nullptr, ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar);
 
         ImGui::Text("%d fps, %gms", Application::s_Application->m_FramesPerSecond,
                     Application::s_Application->m_FrameTimeMs);
@@ -235,7 +246,7 @@ bool Interface::BeginViewport()
 
 void Interface::EndViewport(FrameBuffer* framebuffer)
 {
-    if (m_EditorProperties.m_ShowViewport) {
+    if (m_ViewportState.visible) {
         ImGui::Image((void*)(intptr_t)framebuffer->GetTextureHandle(),
                      ImVec2((float)m_ViewportState.width, (float)m_ViewportState.height), ImVec2(0, 1), ImVec2(1, 0));
         ImGui::End();

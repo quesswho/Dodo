@@ -6,26 +6,30 @@
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
-void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
+void InspectorPanel::Draw(EditorState& editorState, InspectorState& state)
 {
-    ImGui::Begin("Inspector");
-    auto& world = state.scene->GetWorld();
-    for (int entityId : state.selection.entities) {
-        if (state.renameState.entityId != entityId) {
+    if (!ImGui::Begin(state.name.c_str(), &state.visible)) {
+        ImGui::End();
+        return;
+    }
+
+    auto& world = editorState.scene->GetWorld();
+    for (int entityId : editorState.selection.entities) {
+        if (editorState.renameState.entityId != entityId) {
             std::string name = world.HasComponent<NameComponent>(entityId)
                                    ? world.GetComponent<NameComponent>(entityId).name
                                    : "Entity_" + std::to_string(entityId);
             ImGui::Text(name.c_str());
             if (ImGui::IsItemClicked()) {
-                state.renameState.Begin(world, entityId);
+                editorState.renameState.Begin(world, entityId);
             }
         }
 
-        if (state.renameState.entityId == entityId) {
+        if (editorState.renameState.entityId == entityId) {
             ImGui::SetKeyboardFocusHere();
-            if (ImGui::InputText("##label", &state.renameState.nameBuffer,
+            if (ImGui::InputText("##label", &editorState.renameState.nameBuffer,
                                  ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank)) {
-                state.renameState.Finish(world);
+                editorState.renameState.Finish(world);
             }
         }
 
@@ -86,14 +90,14 @@ void InspectorPanel::Draw(EditorState& state, InspectorState& inspector)
                     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Built-in model");
                 }
 
-                TransformEditState& tState = inspector.transformState;
-                if (inspector.dirty) {
+                TransformEditState& tState = state.transformState;
+                if (state.dirty) {
                     tState.translate = model.m_Transformation.m_Position;
                     tState.scale = model.m_Transformation.m_Scale;
                     tState.rotate = Math::Vec3(Math::ToDegrees(model.m_Transformation.m_Rotation.x),
                                                Math::ToDegrees(model.m_Transformation.m_Rotation.y),
                                                Math::ToDegrees(model.m_Transformation.m_Rotation.z));
-                    inspector.dirty = false;
+                    state.dirty = false;
                 }
                 if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen)) {
                     ImGui::Text("Translate:");

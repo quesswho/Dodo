@@ -23,6 +23,7 @@ The engine features an **Entity Component System (ECS)**, model loading, materia
 - `Dodo/` - Engine source code
 - `Sandbox/` - Example application
 - `DodoEditor/` - Editor code
+- `Game/` - Procedurally generated voxel game
 - `res/` - Engine and sample assets
 - `build/` - Generated build files
 

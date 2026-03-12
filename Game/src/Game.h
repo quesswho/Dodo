@@ -1,6 +1,6 @@
 #pragma once
 
-#include "World/WorldManager.h"
+#include "world/WorldManager.h"
 #include <Dodo.h>
 
 using namespace Dodo;

@@ -10,7 +10,7 @@ struct aiMaterial;
 
 namespace Dodo {
     class AssetManager;
-    
+
     class MaterialLoader {
       public:
         Ref<Material> LoadMaterial(const std::string& texture, AssetManager& assets);

@@ -9,7 +9,8 @@ namespace Dodo {
     Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, AssetManager& assets)
     {
         ShaderID id = assets.LoadShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture);
-        return std::make_shared<Material>(assets.GetShader(id),
+        return std::make_shared<Material>(
+            assets.GetShader(id),
             std::make_shared<Texture>(path, 0, TextureSettings(TextureWrapMode::WRAP_CLAMP_TO_EDGE)));
     }
 

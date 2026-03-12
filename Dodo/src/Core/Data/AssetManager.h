@@ -7,6 +7,7 @@
 #include "Core/Graphics/Scene/Model.h"
 #include "Core/Graphics/Shader/Shader.h"
 #include "Core/Graphics/Shader/ShaderGenerator.h"
+#include "Core/Graphics/Shader/SlangCompiler.h"
 #include "MaterialLoader.h"
 #include "ModelLoader.h"
 
@@ -59,6 +60,7 @@ namespace Dodo {
         ModelLoader m_ModelLoader;
         MaterialLoader m_MaterialLoader;
         MeshFactory m_MeshFactory;
+        SlangCompiler m_SlangCompiler;
 
         ShaderID m_NextShaderID = 1;
         MaterialID m_NextMaterialID = 1;

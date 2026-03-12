@@ -19,6 +19,7 @@ namespace Dodo {
     };
 
     struct ShaderSource {
+        std::string name;
         std::vector<ShaderStageSource> stages;
     };
 } // namespace Dodo

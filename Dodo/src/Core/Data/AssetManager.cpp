@@ -8,8 +8,7 @@
 
 namespace Dodo {
 
-    AssetManager::AssetManager()
-        : m_SlangCompiler(SlangCompiler::Target::GLSL)
+    AssetManager::AssetManager() : m_SlangCompiler(SlangCompiler::Target::GLSL)
     {
         Ref<Shader> fallback =
             std::make_shared<Shader>(ShaderCompiler::Compile(ShaderGenerator::GetFallbackShader().source));

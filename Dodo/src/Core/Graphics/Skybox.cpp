@@ -27,7 +27,7 @@ namespace Dodo {
         : m_Projection(projection), m_VertexBuffer(new VertexBuffer(s_SkyboxVertices, sizeof(s_SkyboxVertices),
                                                                     BufferProperties({{"POSITION", 3}}))),
           m_CubeMapTexture(std::make_shared<CubeMapTexture>(paths, 0,
-                                                            TextureSettings(TextureFilter::FILTER_MIN_MAG_MIP_LINEAR,
+                                                            TextureSettings(TextureFilter::MIN_MAG_MIP_LINEAR,
                                                                             TextureWrapMode::WRAP_CLAMP_TO_EDGE,
                                                                             TextureWrapMode::WRAP_CLAMP_TO_EDGE)))
     {

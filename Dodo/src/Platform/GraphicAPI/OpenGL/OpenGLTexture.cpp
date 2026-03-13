@@ -6,116 +6,77 @@
 #include <glad/gl.h>
 #include <stb_image.h>
 
-namespace Dodo { namespace Platform {
+namespace Dodo::Platform {
 
-    OpenGLTexture::OpenGLTexture(const std::string& path, uint index, const TextureSettings& settings)
-        : m_Index(index), m_TextureID(0)
+    OpenGLTexture::OpenGLTexture(const std::string& path) : m_TextureID(0)
     {
         int width, height, channels;
         stbi_set_flip_vertically_on_load(true);
         uchar* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
         if (data) {
-            TextureProperties props((uint)width, (uint)height);
+            m_TextureProperties.m_Width = width;
+            m_TextureProperties.m_Height = height;
+
             switch (channels) {
             case 1:
-                props.m_Format = TextureFormat::FORMAT_RED;
+                m_TextureProperties.m_Format = TextureFormat::FORMAT_RED;
                 break;
             case 3:
-                props.m_Format = TextureFormat::FORMAT_RGB;
+                m_TextureProperties.m_Format = TextureFormat::FORMAT_RGB;
                 break;
             case 4:
-                props.m_Format = TextureFormat::FORMAT_RGBA;
+                m_TextureProperties.m_Format = TextureFormat::FORMAT_RGBA;
                 break;
             default:
                 DD_ERR("File format is not supported! {}", path);
             }
-            m_TextureProperties = props;
-            Init(data, settings);
+            Init(data);
         } else {
             DD_ERR("Could not load texture: {}", path);
         }
         stbi_image_free(data);
     }
 
-    OpenGLTexture::OpenGLTexture(uchar* data, TextureProperties prop, uint index, const TextureSettings& settings)
-        : m_Index(index), m_TextureProperties(prop)
+    OpenGLTexture::OpenGLTexture(uchar* data, const TextureProperties& prop) : m_TextureProperties(prop), m_TextureID(0)
     {
-        Init(data, settings);
+        Init(data);
     }
 
-    void OpenGLTexture::Init(uchar* data, const TextureSettings& settings)
+    void OpenGLTexture::Init(uchar* data)
     {
-        glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
-        glBindTexture(GL_TEXTURE_2D, m_TextureID);
-
-        switch (settings.m_WrapU) {
-        case TextureWrapMode::WRAP_REPEAT:
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            break;
-        case TextureWrapMode::WRAP_CLAMP_TO_BORDER:
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-            break;
-        case TextureWrapMode::WRAP_CLAMP_TO_EDGE:
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            break;
-        case TextureWrapMode::WRAP_MIRRORED_REPEAT:
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-            break;
-        }
-
-        switch (settings.m_WrapV) {
-        case TextureWrapMode::WRAP_REPEAT:
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            break;
-        case TextureWrapMode::WRAP_CLAMP_TO_BORDER:
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-            break;
-        case TextureWrapMode::WRAP_CLAMP_TO_EDGE:
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            break;
-        case TextureWrapMode::WRAP_MIRRORED_REPEAT:
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-            break;
-        }
-
-        uint filter = static_cast<uint>(settings.m_Filter);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter < 4 ? GL_LINEAR : GL_NEAREST);
-        if (filter >= 4) glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 4); // make this a parameter
-
-        if (settings.m_WrapU == TextureWrapMode::WRAP_CLAMP_TO_BORDER ||
-            settings.m_WrapV == TextureWrapMode::WRAP_CLAMP_TO_BORDER) {
-            float borderColor[] = {1.0f, 0.4f, 0.8f, 0.09f};
-            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-        }
-
-        uint format;
+        GLenum internalFormat, format;
         switch (m_TextureProperties.m_Format) {
         case TextureFormat::FORMAT_RED:
+            internalFormat = GL_R8;
             format = GL_RED;
             break;
         case TextureFormat::FORMAT_RGB:
+            internalFormat = GL_RGB8;
             format = GL_RGB;
             break;
         case TextureFormat::FORMAT_RGBA:
+            internalFormat = GL_RGBA8;
             format = GL_RGBA;
             break;
         default:
+            internalFormat = GL_RGB8;
             format = GL_RGB;
+            break;
         }
-        glTexImage2D(GL_TEXTURE_2D, 0, format, m_TextureProperties.m_Width, m_TextureProperties.m_Height, 0, format,
-                     GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
+
+        int mipLevels =
+            1 + (int)floor(log2((double)std::max(m_TextureProperties.m_Width, m_TextureProperties.m_Height)));
+
+        glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
+        glTextureStorage2D(m_TextureID, mipLevels, internalFormat, m_TextureProperties.m_Width,
+                           m_TextureProperties.m_Height);
+        glTextureSubImage2D(m_TextureID, 0, 0, 0, m_TextureProperties.m_Width, m_TextureProperties.m_Height, format,
+                            GL_UNSIGNED_BYTE, data);
+        glGenerateTextureMipmap(m_TextureID);
     }
 
     OpenGLTexture::~OpenGLTexture()
     {
         glDeleteTextures(1, &m_TextureID);
     }
-
-    void OpenGLTexture::Bind() const
-    {
-        glActiveTexture(GL_TEXTURE0 + m_Index);
-        glBindTexture(GL_TEXTURE_2D, m_TextureID);
-    }
-}} // namespace Dodo::Platform
+} // namespace Dodo::Platform

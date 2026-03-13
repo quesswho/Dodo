@@ -11,7 +11,7 @@ namespace Dodo {
         ShaderID id = assets.LoadShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture);
         return std::make_shared<Material>(
             assets.GetShader(id),
-            std::make_shared<Texture>(path, 0, TextureSettings(TextureWrapMode::WRAP_CLAMP_TO_EDGE)));
+            std::make_shared<Texture>(path, 0, SamplerProperties(SamplerWrapMode::WRAP_CLAMP_TO_EDGE)));
     }
 
     Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, aiMaterial* material, AssetManager& assets)

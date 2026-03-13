@@ -4,14 +4,14 @@ WorldRenderer::WorldRenderer(Ref<ResourceManager> resourceManager, Dodo::Math::F
     : m_Camera(camera), m_ResourceManager(resourceManager)
 {}
 
-void WorldRenderer::RenderChunk(Ref<Chunk> chunk)
+void WorldRenderer::RenderChunk(Ref<Chunk> chunk, Dodo::RenderAPI& renderAPI)
 {
     m_ResourceManager->m_TextureAtlas->SetUniform("u_Camera", m_Camera->GetCameraMatrix());
     m_ResourceManager->m_TextureAtlas->SetUniform(
         "u_Model",
         Dodo::Math::Mat4::Translate(Dodo::Math::Vec3((chunk->m_ChunkPos.x << 4), 0, (chunk->m_ChunkPos.y << 4))));
-    m_ResourceManager->m_TextureAtlas->Bind();
+    m_ResourceManager->m_TextureAtlas->Bind(renderAPI);
     chunk->m_Vertbuffer->Bind();
     chunk->m_Indexbuffer->Bind();
-    Dodo::Application::s_Application->m_RenderAPI->DrawIndices(chunk->m_Indexbuffer->GetCount());
+    renderAPI.DrawIndices(chunk->m_Indexbuffer->GetCount());
 }

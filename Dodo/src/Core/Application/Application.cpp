@@ -85,7 +85,7 @@ namespace Dodo {
 
         for (auto it = m_Layers.begin(); it != m_Layers.end(); it++) {
             (*it)->Update(elapsed);
-            (*it)->Render();
+            (*it)->Render(*m_RenderAPI, *m_AssetManager);
         }
 
         m_Window->Update();

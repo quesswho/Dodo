@@ -29,4 +29,4 @@ format:
 	$(shell find Dodo/src Sandbox/src DodoEditor/src Game/src \
 	-type f \( -name "*.cpp" -o -name "*.h" \))
 
-.PHONY: all configure build clean debug release
+.PHONY: run

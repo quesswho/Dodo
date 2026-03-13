@@ -3,22 +3,25 @@
 using namespace Dodo;
 using namespace Math;
 
-GameLayer::GameLayer()
+GameLayer::GameLayer(Application& app)
 {
-    Application::s_Application->m_RenderAPI->ClearColor(0.2f, 0.2f, 0.9f);
-    Application::s_Application->m_RenderAPI->DepthTest(true);
-    Application::s_Application->m_RenderAPI->Blending(true);
+    RenderAPI& renderAPI = *app.m_RenderAPI;
+    AssetManager& assets = *app.m_AssetManager;
+
+    renderAPI.ClearColor(0.2f, 0.2f, 0.9f);
+    renderAPI.DepthTest(true);
+    renderAPI.Blending(true);
 
     // FPS camera containing view matrix
     m_Camera = new FreeCamera(Vec3(0.0f, 16.0f, 0.0f),
-                              (float)Application::s_Application->GetWindowProperties().m_Width /
-                                  (float)Application::s_Application->GetWindowProperties().m_Height,
+                              (float)app.GetWindowProperties().m_Width /
+                                  (float)app.GetWindowProperties().m_Height,
                               0.04f, 20.0f);
 
     // Framebuffer initialization data
     FrameBufferProperties frameprop;
-    frameprop.m_Width = Application::s_Application->GetWindowProperties().m_Width;
-    frameprop.m_Height = Application::s_Application->GetWindowProperties().m_Height;
+    frameprop.m_Width = app.GetWindowProperties().m_Width;
+    frameprop.m_Height = app.GetWindowProperties().m_Height;
 
     m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.fx");
     m_Gamma = 1.0f;
@@ -37,12 +40,12 @@ GameLayer::GameLayer()
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    m_Scene->m_SkyBox = new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath);
+    m_Scene->m_SkyBox = new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath, assets);
     m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(Vec3(0.2f, -0.5f, -0.5f));
     m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
-    Application::s_Application->m_Window->SetCursorVisible(false);
+    app.m_Window->SetCursorVisible(false);
     m_Camera->ResetMouse();
-    m_ResourceManager = std::make_shared<ResourceManager>(*Application::s_Application->m_AssetManager);
+    m_ResourceManager = std::make_shared<ResourceManager>(assets);
     m_WorldManager = std::make_shared<WorldManager>(m_ResourceManager, m_Camera);
 }
 GameLayer::~GameLayer()
@@ -100,11 +103,11 @@ void GameLayer::Update(float elapsed)
     Application::s_Application->m_Window->SetTitle(stream.str().c_str());
 }
 
-void GameLayer::Render()
+void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
 {
     m_PostEffect->Bind();
-    m_WorldManager->Draw();
-    m_Scene->m_SkyBox->Draw(m_Camera->GetViewMatrix());
+    m_WorldManager->Draw(renderAPI);
+    m_Scene->m_SkyBox->Draw(m_Camera->GetViewMatrix(), renderAPI);
     m_PostEffect->Draw();
 }
 
@@ -153,7 +156,7 @@ class Sandbox : public Application {
         return conf;
     }
 
-    void Init() { PushLayer(new GameLayer()); }
+    void Init() { PushLayer(new GameLayer(*this)); }
 };
 
 int main()

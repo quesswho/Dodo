@@ -13,5 +13,5 @@ class WorldRenderer {
   public:
     WorldRenderer(Ref<ResourceManager> resourceManager, Dodo::Math::FreeCamera* camera);
 
-    void RenderChunk(Ref<Chunk> chunk);
+    void RenderChunk(Ref<Chunk> chunk, Dodo::RenderAPI& renderAPI);
 };

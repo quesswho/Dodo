@@ -5,7 +5,7 @@
 
 #include <backends/imgui_impl_opengl3.h>
 
-namespace Dodo { namespace Platform {
+namespace Dodo::Platform {
 
     OpenGLRenderAPI::OpenGLRenderAPI(const NativeWindowHandle& handle)
         : m_Handle(handle), m_GPUInfo(""), m_VramKbs(0), m_ViewportWidth(0), m_ViewportHeight(0), m_ViewportPosX(0),
@@ -112,4 +112,4 @@ namespace Dodo { namespace Platform {
     {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
-}} // namespace Dodo::Platform
+} // namespace Dodo::Platform

@@ -2,7 +2,7 @@
 
 #include <glad/glad.h>
 
-namespace Dodo {
+namespace Dodo::Platform {
 
     OpenGLSampler::OpenGLSampler(const SamplerProperties& prop)
     {
@@ -72,4 +72,4 @@ namespace Dodo {
     {
         glDeleteSamplers(1, &m_SamplerID);
     }
-} // namespace Dodo
+} // namespace Dodo::Platform

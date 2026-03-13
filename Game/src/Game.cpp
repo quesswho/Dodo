@@ -42,7 +42,7 @@ GameLayer::GameLayer()
     m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
     Application::s_Application->m_Window->SetCursorVisible(false);
     m_Camera->ResetMouse();
-    m_ResourceManager = std::make_shared<ResourceManager>();
+    m_ResourceManager = std::make_shared<ResourceManager>(*Application::s_Application->m_AssetManager);
     m_WorldManager = std::make_shared<WorldManager>(m_ResourceManager, m_Camera);
 }
 GameLayer::~GameLayer()

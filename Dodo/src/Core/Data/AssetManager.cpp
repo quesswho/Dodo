@@ -43,7 +43,7 @@ namespace Dodo {
         return id;
     }
 
-    ShaderID AssetManager::LoadShaderFromPath(const std::string& path)
+    ShaderID AssetManager::LoadGLSLShaderFromPath(const std::string& path)
     {
         if (m_ShaderPathLookup.find(path) != m_ShaderPathLookup.end()) {
             DD_WARN("Shader already loaded!", path, m_ShaderPathLookup.at(path));
@@ -51,6 +51,24 @@ namespace Dodo {
         }
 
         ShaderSource source = ShaderParser::Parse(FileUtils::ReadTextFile(path.c_str()));
+
+        Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source));
+
+        ShaderID id = m_NextShaderID++;
+
+        m_ShaderPathLookup.emplace(path, id);
+        m_Shaders.emplace(id, shader);
+        return id;
+    }
+
+    ShaderID AssetManager::LoadSlangShaderFromPath(const std::string& path)
+    {
+        if (m_ShaderPathLookup.find(path) != m_ShaderPathLookup.end()) {
+            DD_WARN("Shader already loaded!", path, m_ShaderPathLookup.at(path));
+            return m_ShaderPathLookup.at(path);
+        }
+
+        ShaderSource source = m_SlangCompiler.CompileFile(path);
 
         Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source));
 

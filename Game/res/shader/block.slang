@@ -1,5 +1,6 @@
-uniform Texture2D tex;
-uniform SamplerState texSampler;
+Texture2D colorTexture;
+SamplerState texSampler;
+
 uniform float4x4 u_Model;
 uniform float4x4 u_Camera;
 
@@ -30,7 +31,7 @@ VertexOutput vertexMain(VertexInput input)
 [shader("fragment")]
 float4 fragmentMain(VertexOutput input) : SV_Target
 {
-    float3 color = tex.Sample(texSampler, input.texCoord).xyz;
+    float3 color = colorTexture.Sample(texSampler, input.texCoord).xyz;
     float diff = max(dot(normalize(float3(0.1, 0.8, 0.2)), input.normal), 0.0f);
     float3 diffuse = color * diff;
     return float4(color * 0.8 + diffuse, 1.0f);

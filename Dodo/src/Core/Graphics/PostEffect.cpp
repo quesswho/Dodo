@@ -6,7 +6,7 @@ namespace Dodo {
     PostEffect::PostEffect(const FrameBufferProperties& framebufferprop, const char* path)
         : m_Framebuffer(new FrameBuffer(framebufferprop))
     {
-        ShaderID id = Application::s_Application->m_AssetManager->LoadShaderFromPath(path);
+        ShaderID id = Application::s_Application->m_AssetManager->LoadGLSLShaderFromPath(path);
         m_Shader = Application::s_Application->m_AssetManager->GetShader(id);
         Create();
     }

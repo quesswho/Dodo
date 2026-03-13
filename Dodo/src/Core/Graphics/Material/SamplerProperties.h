@@ -23,27 +23,36 @@ namespace Dodo {
     struct SamplerProperties {
         SamplerProperties()
             : m_Filter(SamplerFilter::MIN_MAG_MIP_LINEAR), m_WrapU(SamplerWrapMode::WRAP_REPEAT),
-              m_WrapV(SamplerWrapMode::WRAP_REPEAT)
+              m_WrapV(SamplerWrapMode::WRAP_REPEAT), m_BorderColor{1.0f, 0.4f, 0.8f, 0.09f}
         {}
-
         SamplerProperties(SamplerWrapMode wrap)
-            : m_Filter(SamplerFilter::MIN_MAG_MIP_LINEAR), m_WrapU(wrap), m_WrapV(wrap)
+            : m_Filter(SamplerFilter::MIN_MAG_MIP_LINEAR), m_WrapU(wrap), m_WrapV(wrap),
+              m_BorderColor{1.0f, 0.4f, 0.8f, 0.09f}
         {}
-
         SamplerProperties(SamplerWrapMode wrapU, SamplerWrapMode wrapV)
-            : m_Filter(SamplerFilter::MIN_MAG_MIP_LINEAR), m_WrapU(wrapU), m_WrapV(wrapV)
+            : m_Filter(SamplerFilter::MIN_MAG_MIP_LINEAR), m_WrapU(wrapU), m_WrapV(wrapV),
+              m_BorderColor{1.0f, 0.4f, 0.8f, 0.09f}
         {}
-
         SamplerProperties(SamplerFilter filter)
-            : m_Filter(filter), m_WrapU(SamplerWrapMode::WRAP_REPEAT), m_WrapV(SamplerWrapMode::WRAP_REPEAT)
+            : m_Filter(filter), m_WrapU(SamplerWrapMode::WRAP_REPEAT), m_WrapV(SamplerWrapMode::WRAP_REPEAT),
+              m_BorderColor{1.0f, 0.4f, 0.8f, 0.09f}
+        {}
+        SamplerProperties(SamplerFilter filter, SamplerWrapMode wrapU, SamplerWrapMode wrapV)
+            : m_Filter(filter), m_WrapU(wrapU), m_WrapV(wrapV), m_BorderColor{1.0f, 0.4f, 0.8f, 0.09f}
         {}
 
-        SamplerProperties(SamplerFilter filter, SamplerWrapMode wrapU, SamplerWrapMode wrapV)
-            : m_Filter(filter), m_WrapU(wrapU), m_WrapV(wrapV)
-        {}
+        SamplerProperties& WithBorderColor(float r, float g, float b, float a)
+        {
+            m_BorderColor[0] = r;
+            m_BorderColor[1] = g;
+            m_BorderColor[2] = b;
+            m_BorderColor[3] = a;
+            return *this;
+        }
 
         SamplerFilter m_Filter;
         SamplerWrapMode m_WrapU;
         SamplerWrapMode m_WrapV;
+        float m_BorderColor[4];
     };
 } // namespace Dodo

@@ -15,26 +15,26 @@ namespace Dodo {
         delete m_IBuffer;
     }
 
-    void Mesh::Draw() const
+    void Mesh::Draw(RenderAPI& renderAPI) const
     {
-        m_Material->Bind();
+        m_Material->Bind(renderAPI);
         m_VBuffer->Bind();
         m_IBuffer->Bind();
-        Application::s_Application->m_RenderAPI->DrawIndices(m_IBuffer->GetCount());
+        renderAPI.DrawIndices(m_IBuffer->GetCount());
     }
 
-    void Mesh::DrawGeometry() const
+    void Mesh::DrawGeometry(RenderAPI& renderAPI) const
     {
         m_VBuffer->Bind();
         m_IBuffer->Bind();
-        Application::s_Application->m_RenderAPI->DrawIndices(m_IBuffer->GetCount());
+        renderAPI.DrawIndices(m_IBuffer->GetCount());
     }
 
-    void Mesh::Draw(Ref<Material> material) const
+    void Mesh::Draw(Ref<Material> material, RenderAPI& renderAPI) const
     {
-        material->Bind();
+        material->Bind(renderAPI);
         m_VBuffer->Bind();
         m_IBuffer->Bind();
-        Application::s_Application->m_RenderAPI->DrawIndices(m_IBuffer->GetCount());
+        renderAPI.DrawIndices(m_IBuffer->GetCount());
     }
 } // namespace Dodo

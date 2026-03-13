@@ -6,93 +6,56 @@
 
 namespace Dodo::Platform {
 
-    OpenGLCubeMapTexture::OpenGLCubeMapTexture(std::vector<std::string> paths, uint index, const TextureSettings& prop)
-        : m_Index(index)
+    OpenGLCubeMap::OpenGLCubeMap(const std::vector<std::string>& paths) : m_TextureID(0)
     {
+        if (paths.size() != 6) {
+            DD_ERR("CubeMap requires exactly 6 faces, got {}", paths.size());
+            return;
+        }
+
         glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_TextureID);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
-
-        switch (prop.m_WrapU) {
-        case TextureWrapMode::WRAP_REPEAT:
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            break;
-        case TextureWrapMode::WRAP_CLAMP_TO_BORDER:
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-            break;
-        case TextureWrapMode::WRAP_CLAMP_TO_EDGE:
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            break;
-        case TextureWrapMode::WRAP_MIRRORED_REPEAT:
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-            break;
-        }
-
-        switch (prop.m_WrapV) {
-        case TextureWrapMode::WRAP_REPEAT:
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            break;
-        case TextureWrapMode::WRAP_CLAMP_TO_BORDER:
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-            break;
-        case TextureWrapMode::WRAP_CLAMP_TO_EDGE:
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            break;
-        case TextureWrapMode::WRAP_MIRRORED_REPEAT:
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-            break;
-        }
-
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-        uint filter = static_cast<uint>(prop.m_Filter);
-
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, filter < 4 ? GL_LINEAR : GL_NEAREST);
-        if (filter > 2 && filter < 6)
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        else
-            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-        if (prop.m_WrapU == TextureWrapMode::WRAP_CLAMP_TO_BORDER ||
-            prop.m_WrapV == TextureWrapMode::WRAP_CLAMP_TO_BORDER) {
-            float borderColor[] = {1.0f, 0.4f, 0.8f, 1.0f};
-            glTexParameterfv(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BORDER_COLOR, borderColor);
-        }
 
         for (int i = 0; i < paths.size(); i++) {
             int channels, width, height;
             stbi_set_flip_vertically_on_load(false);
             uchar* data = stbi_load(paths[i].c_str(), &width, &height, &channels, 0);
-            stbi_set_flip_vertically_on_load(true);
-            if (data) {
-                int internalFormat = 0;
-                switch (channels) {
-                case 3:
-                    internalFormat = GL_RGB;
-                    break;
-                case 4:
-                    internalFormat = GL_RGBA;
-                    break;
-                default:
-                    DD_ERR("File format is not supported! {}", channels);
-                }
-
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internalFormat, width, height, 0, internalFormat,
-                             GL_UNSIGNED_BYTE, data);
-            } else {
-                DD_ERR("Could not load texture: {}", paths[i]);
+            if (!data) {
+                DD_ERR("Could not load cubemap face: {}", paths[i]);
+                return;
             }
+            GLenum format, internalFormat;
+            switch (channels) {
+            case 3:
+                format = GL_RGB;
+                internalFormat = GL_RGB8;
+                break;
+            case 4:
+                format = GL_RGBA;
+                internalFormat = GL_RGBA8;
+                break;
+            default:
+                DD_ERR("Unsupported channel on face {}: {}", i, paths[i]);
+                stbi_image_free(data);
+                return;
+            }
+            // Allocate storage based on first face
+            if (i == 0) {
+                // TODO: Store mip map level in texture settings and use it here
+                // int mipLevels = 1 + (int)floor(log2((double)std::max(width, height)));
+                int mipLevels = 1;
+                glTextureStorage2D(m_TextureID, mipLevels, internalFormat, width, height);
+            }
+
+            glTextureSubImage3D(m_TextureID, 0, 0, 0, i, width, height, 1, format, GL_UNSIGNED_BYTE, data);
+
             stbi_image_free(data);
         }
+
+        // glGenerateTextureMipmap(m_TextureID);
     }
 
-    OpenGLCubeMapTexture::~OpenGLCubeMapTexture()
+    OpenGLCubeMap::~OpenGLCubeMap()
     {
         glDeleteTextures(1, &m_TextureID);
-    }
-
-    void OpenGLCubeMapTexture::Bind() const
-    {
-        glActiveTexture(GL_TEXTURE0 + m_Index);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
     }
 } // namespace Dodo::Platform

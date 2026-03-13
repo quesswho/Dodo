@@ -8,11 +8,11 @@ using namespace Dodo;
 class GameLayer : public Layer {
   private:
   public:
-    GameLayer();
+    GameLayer(Application& app);
     ~GameLayer();
 
     void Update(float elapsed);
-    void Render();
+    void Render(RenderAPI& renderAPI, AssetManager& assets);
     void OnEvent(const Event& event);
 
   private:

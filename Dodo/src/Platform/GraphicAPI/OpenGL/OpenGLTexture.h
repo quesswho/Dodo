@@ -14,7 +14,6 @@ namespace Dodo::Platform {
 
       private:
         void Init(uchar* data);
-        static uint GetFormat(TextureFormat format);
 
         TextureProperties m_TextureProperties;
         uint m_TextureID;

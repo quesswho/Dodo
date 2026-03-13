@@ -1,6 +1,6 @@
 #include "OpenGLSampler.h"
 
-#include <glad/glad.h>
+#include <glad/gl.h>
 
 namespace Dodo::Platform {
 

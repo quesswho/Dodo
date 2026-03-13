@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace Dodo { namespace Platform {
+namespace Dodo::Platform {
 
     class OpenGLCubeMapTexture {
       private:
@@ -21,4 +21,4 @@ namespace Dodo { namespace Platform {
       public:
         uint m_Index;
     };
-}} // namespace Dodo::Platform
+} // namespace Dodo::Platform

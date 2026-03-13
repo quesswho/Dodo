@@ -4,7 +4,7 @@
 #include <glad/gl.h>
 #include <stb_image.h>
 
-namespace Dodo { namespace Platform {
+namespace Dodo::Platform {
 
     OpenGLCubeMapTexture::OpenGLCubeMapTexture(std::vector<std::string> paths, uint index, const TextureSettings& prop)
         : m_Index(index)
@@ -95,4 +95,4 @@ namespace Dodo { namespace Platform {
         glActiveTexture(GL_TEXTURE0 + m_Index);
         glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureID);
     }
-}} // namespace Dodo::Platform
+} // namespace Dodo::Platform

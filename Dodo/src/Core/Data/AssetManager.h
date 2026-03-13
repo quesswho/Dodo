@@ -42,7 +42,8 @@ namespace Dodo {
 
         inline Ref<Shader> GetFallbackShader() const { return m_Shaders.at(0); }
         ShaderID LoadShader(ShaderBuilderFlags flags);
-        ShaderID LoadShaderFromPath(const std::string& path);
+        ShaderID LoadGLSLShaderFromPath(const std::string& path);
+        ShaderID LoadSlangShaderFromPath(const std::string& path);
         ShaderID LoadShader(ShaderSource source);
         Ref<Shader> GetShader(ShaderID id);
 

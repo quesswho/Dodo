@@ -46,7 +46,7 @@ Dodo uses the following libraries:
 - CMake >= 3.26
 - Ninja
 - A C++20-compatible compiler
-- OpenGL 3.3-capable GPU
+- OpenGL 4.0-capable GPU
 
 ### Cloning
 

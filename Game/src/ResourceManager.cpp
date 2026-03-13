@@ -22,7 +22,7 @@ float left_verts[] = {-0.5, -0.5, -0.5, 0.0, 1.0, -1.0, 0.0, 0.0, -0.5, -0.5, 0.
 float right_verts[] = {0.5, -0.5, 0.5,  0.0, 1.0, 1.0, 0.0, 0.0, 0.5, -0.5, -0.5, 1.0, 1.0, 1.0, 0.0, 0.0,
                        0.5, 0.5,  -0.5, 1.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.5,  0.5,  0.0, 0.0, 1.0, 0.0, 0.0};
 
-ResourceManager::ResourceManager()
+ResourceManager::ResourceManager(Dodo::AssetManager& assetManager)
 {
     Ref<Dodo::Texture> atlas = std::make_shared<Dodo::Texture>(
         "res/texture/blocks.png", 0,
@@ -31,8 +31,10 @@ ResourceManager::ResourceManager()
 
     // This is a very long, perhaps we should have function in ShaderCompiler that compiles from path, or use
     // assetmanager
-    Ref<Dodo::Shader> shader = std::make_shared<Dodo::Shader>(Dodo::ShaderCompiler::Compile(
-        Dodo::ShaderParser::Parse(Dodo::FileUtils::ReadTextFile("res/shader/block.glsl"))));
+
+    Dodo::ShaderID id = assetManager.LoadSlangShaderFromPath("res/shader/block.slang");
+    Ref<Dodo::Shader> shader = assetManager.GetShader(id);
+    // Dodo::ShaderParser::Parse(Dodo::FileUtils::ReadTextFile("res/shader/block.glsl"))
 
     m_TextureAtlas = std::make_shared<Dodo::Material>(shader, atlas);
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef DD_API_OPENGL
+#if defined(DD_API_OPENGL)
 #include "Platform/GraphicAPI/OpenGL/OpenGLCubeMap.h"
 namespace Dodo {
     using CubeMap = Platform::OpenGLCubeMap;
@@ -8,6 +8,6 @@ namespace Dodo {
 #elif defined(DD_API_VULKAN)
 #include "Platform/GraphicAPI/Vulkan/VkCubeMap.h"
 namespace Dodo {
-    using CubeMapTexture = Platform::VkCubeMapTexture;
+    using CubeMap = Platform::VkCubeMap;
 }
 #endif

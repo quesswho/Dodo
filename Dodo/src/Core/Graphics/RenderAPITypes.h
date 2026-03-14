@@ -1,5 +1,7 @@
+#pragma once
+
 namespace Dodo {
-    enum class DepthComparisonMethod : uint {
+    enum class DepthComparisonMethod {
         NEVER,
         LESS,
         EQUAL,

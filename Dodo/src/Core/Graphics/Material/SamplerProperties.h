@@ -1,7 +1,6 @@
 #include <Core/Common.h>
 
 namespace Dodo {
-
     enum class SamplerFilter : uint32_t {
         MIN_MAG_MIP_LINEAR,
         MIN_LINEAR_MAG_MIP_NEAREST,

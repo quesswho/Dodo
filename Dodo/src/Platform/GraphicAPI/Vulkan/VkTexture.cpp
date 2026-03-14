@@ -1,59 +1,45 @@
 #include "VkTexture.h"
 #include "pch.h"
 
-#include "Core/Math/MathFunc.h"
-
-#include <glad/gl.h>
 #include <stb_image.h>
 
-namespace Dodo { namespace Platform {
+namespace Dodo::Platform {
 
-    VkTexture::VkTexture(const std::string& path, uint index, const TextureSettings& settings)
-        : m_Index(index), m_TextureID(0)
+    VkTexture::VkTexture(const std::string& path)
     {
         int width, height, channels;
         stbi_set_flip_vertically_on_load(true);
         uchar* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
         if (data) {
-            TextureProperties props((uint)width, (uint)height);
+            m_TextureProperties.m_Width = width;
+            m_TextureProperties.m_Height = height;
+
             switch (channels) {
             case 1:
-                props.m_Format = TextureFormat::FORMAT_RED;
+                m_TextureProperties.m_Format = TextureFormat::FORMAT_RED;
                 break;
             case 3:
-                props.m_Format = TextureFormat::FORMAT_RGB;
+                m_TextureProperties.m_Format = TextureFormat::FORMAT_RGB;
                 break;
             case 4:
-                props.m_Format = TextureFormat::FORMAT_RGBA;
+                m_TextureProperties.m_Format = TextureFormat::FORMAT_RGBA;
                 break;
             default:
                 DD_ERR("File format is not supported! {}", path);
             }
-            m_TextureProperties = props;
-            Init(data, settings);
+            Init(data);
         } else {
             DD_ERR("Could not load texture: {}", path);
         }
         stbi_image_free(data);
     }
 
-    VkTexture::VkTexture(uchar* data, TextureProperties prop, uint index, const TextureSettings& settings)
-        : m_Index(index), m_TextureProperties(prop)
+    VkTexture::VkTexture(uchar* data, const TextureProperties& prop) : m_TextureProperties(prop), m_TextureID(0)
     {
-        Init(data, settings);
+        Init(data);
     }
 
-    void VkTexture::Init(uchar* data, const TextureSettings& settings)
-    {
-        
-    }
+    void VkTexture::Init(uchar* data) {}
 
-    VkTexture::~VkTexture()
-    {
-        
-    }
-
-    void VkTexture::Bind() const
-    {
-    }
-}} // namespace Dodo::Platform
+    VkTexture::~VkTexture() {}
+} // namespace Dodo::Platform

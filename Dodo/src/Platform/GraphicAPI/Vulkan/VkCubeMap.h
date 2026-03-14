@@ -5,20 +5,19 @@
 #include <string>
 #include <vector>
 
-namespace Dodo { namespace Platform {
+namespace Dodo::Platform {
 
-    class VkCubeMapTexture {
+    class VkCubeMap {
       private:
         uint m_TextureID;
 
       public:
-        VkCubeMapTexture(std::vector<std::string> paths, uint index = 0,
-                         const TextureSettings& prop = TextureSettings());
-        ~VkCubeMapTexture();
+        VkCubeMap(std::vector<std::string> paths);
+        ~VkCubeMap();
 
         void Bind() const;
 
       public:
         uint m_Index;
     };
-}} // namespace Dodo::Platform
+} // namespace Dodo::Platform

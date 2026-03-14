@@ -2,19 +2,11 @@
 
 #include <Core/Common.h>
 
-#include "VkBuffer.h"
-
 #include "Core/Math/Maths.h"
-
-#include <unordered_map>
 
 namespace Dodo::Platform {
 
     class VkShader {
-      private:
-        uint m_ShaderID;
-        std::unordered_map<std::string, int> m_UniformLocations;
-
       public:
         VkShader(uint shader) : m_ShaderID(shader) {}
 
@@ -33,6 +25,6 @@ namespace Dodo::Platform {
         void SetUniformValue(const char* location, const Math::Mat4& value);
 
       private:
-        int GetLocation(const char* location);
+        uint m_ShaderID;
     };
 } // namespace Dodo::Platform

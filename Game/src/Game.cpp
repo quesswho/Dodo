@@ -14,8 +14,7 @@ GameLayer::GameLayer(Application& app)
 
     // FPS camera containing view matrix
     m_Camera = new FreeCamera(Vec3(0.0f, 16.0f, 0.0f),
-                              (float)app.GetWindowProperties().m_Width /
-                                  (float)app.GetWindowProperties().m_Height,
+                              (float)app.GetWindowProperties().m_Width / (float)app.GetWindowProperties().m_Height,
                               0.04f, 20.0f);
 
     // Framebuffer initialization data

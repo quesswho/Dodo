@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef DD_API_OPENGL
+#if defined(DD_API_OPENGL)
 #include "Platform/GraphicAPI/OpenGL/OpenGLBuffer.h"
 namespace Dodo {
     using VertexBuffer = Platform::OpenGLVertexBuffer;

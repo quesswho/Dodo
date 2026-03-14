@@ -6,9 +6,6 @@ set_target_properties(glad PROPERTIES LINKER_LANGUAGE C)
 
 ## SOURCES ##
 set(GLAD_SOURCES src/gl.c)
-if (DD_API_VULKAN)
-    list(APPEND GLAD_SOURCES src/vulkan.c)
-endif()
 
 # Windows OpenGL (WGL) API
 if (DD_API_WIN32)
@@ -28,12 +25,6 @@ target_include_directories(glad
 # Link Opengl
 find_package(OpenGL REQUIRED)
 target_link_libraries(glad PUBLIC OpenGL::GL)
-
-# Link Vulkan
-if (DD_API_VULKAN)
-    find_package(Vulkan REQUIRED)
-    target_link_libraries(glad PUBLIC Vulkan::Vulkan)
-endif()
 
 
 # Debug / Release flags

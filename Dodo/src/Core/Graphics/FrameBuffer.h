@@ -1,10 +1,13 @@
 #pragma once
 
-#ifdef DD_API_OPENGL
+#if defined(DD_API_OPENGL)
 #include "Platform/GraphicAPI/OpenGL/OpenGLFrameBuffer.h"
 namespace Dodo {
     using FrameBuffer = Platform::OpenGLFrameBuffer;
 }
 #elif defined(DD_API_VULKAN)
-
+#include "Platform/GraphicAPI/Vulkan/VkFrameBuffer.h"
+namespace Dodo {
+    using FrameBuffer = Platform::VkFrameBuffer;
+}
 #endif

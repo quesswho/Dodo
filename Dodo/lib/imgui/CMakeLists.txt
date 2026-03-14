@@ -21,12 +21,14 @@ if(DD_API_OPENGL)
     target_sources(imgui PRIVATE
         imgui/backends/imgui_impl_opengl3.cpp
     )
+    target_link_libraries(imgui PRIVATE glad)
 endif()
 
 if(DD_API_VULKAN)
     target_sources(imgui PRIVATE
         imgui/backends/imgui_impl_vulkan.cpp
     )
+    target_link_libraries(imgui PRIVATE volk)
 endif()
 
 if(DD_API_GLFW)

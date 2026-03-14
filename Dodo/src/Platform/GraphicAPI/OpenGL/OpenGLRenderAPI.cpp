@@ -28,11 +28,6 @@ namespace Dodo::Platform {
             return RenderInitError(RenderInitStatus::Failed, "OpenGL version < 4.0 is not supported!");
         }
 
-        // TODO: make a fallback for this, a bit unclear how much work is needed
-        if (!GLAD_GL_ARB_bindless_texture) {
-            DD_FATAL("Bindless textures not supported! Make sure you have a compatible GPU and drivers installed.");
-        }
-
         glFrontFace(GL_CCW);
         glEnable(GL_MULTISAMPLE);
 

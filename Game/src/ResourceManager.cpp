@@ -24,19 +24,16 @@ float right_verts[] = {0.5, -0.5, 0.5,  0.0, 1.0, 1.0, 0.0, 0.0, 0.5, -0.5, -0.5
 
 ResourceManager::ResourceManager(Dodo::AssetManager& assetManager)
 {
-    Ref<Dodo::Texture> atlas = std::make_shared<Dodo::Texture>(
-        "res/texture/blocks.png", 0,
-        Dodo::TextureSettings(Dodo::TextureFilter::FILTER_MIN_MAG_MIP_NEAREST, Dodo::TextureWrapMode::WRAP_REPEAT,
-                              Dodo::TextureWrapMode::WRAP_REPEAT));
-
-    // This is a very long, perhaps we should have function in ShaderCompiler that compiles from path, or use
-    // assetmanager
+    Ref<Dodo::Texture> atlas = std::make_shared<Dodo::Texture>("res/texture/blocks.png");
+    Ref<Dodo::TextureSampler> sampler = std::make_shared<Dodo::TextureSampler>(
+        Dodo::SamplerProperties(Dodo::SamplerFilter::FILTER_MIN_MAG_MIP_NEAREST, Dodo::SamplerWrapMode::WRAP_REPEAT,
+                                Dodo::SamplerWrapMode::WRAP_REPEAT));
 
     Dodo::ShaderID id = assetManager.LoadSlangShaderFromPath("res/shader/block.slang");
     Ref<Dodo::Shader> shader = assetManager.GetShader(id);
     // Dodo::ShaderParser::Parse(Dodo::FileUtils::ReadTextFile("res/shader/block.glsl"))
 
-    m_TextureAtlas = std::make_shared<Dodo::Material>(shader, atlas);
+    m_TextureAtlas = std::make_shared<Dodo::Material>(shader, atlas, sampler);
 
     RegisterBlock(AIR, ChunkPos(0, 0));
     RegisterBlock(DIRT, ChunkPos(0, 0));

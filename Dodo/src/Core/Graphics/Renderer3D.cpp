@@ -36,7 +36,7 @@ namespace Dodo {
     }
 
     void Renderer3D::RenderEntities(World& world, Math::FreeCamera* camera, LightSystem& lightSystem,
-                                    AssetManager& assets)
+                                    RenderAPI& renderAPI, AssetManager& assets)
     {
         // Draw ModelComponent
         const auto& modelPool = world.GetPool<ModelComponent>();
@@ -44,57 +44,57 @@ namespace Dodo {
             Model* model = assets.GetModel(modelComponent.m_ModelID);
             for (auto mesh : model->GetMeshes()) {
                 Ref<Material> mat = mesh->GetMaterial();
-                mat->Bind();
+                mat->Bind(renderAPI);
                 mat->SetUniform("u_LightCamera", lightSystem.m_Directional.m_LightCamera);
                 mat->SetUniform("u_LightDir", lightSystem.m_Directional.m_Direction);
                 mat->SetUniform("u_Model", modelComponent.m_Transformation.m_Model);
                 mat->SetUniform("u_Camera", camera->GetCameraMatrix());
                 mat->SetUniform("u_CameraPos", camera->GetCameraPos());
-                mesh->DrawGeometry();
+                mesh->DrawGeometry(renderAPI);
             }
         }
     }
 
-    void Renderer3D::RenderEntitiesWithMaterial(World& world, Ref<Material> material, AssetManager& assets)
+    void Renderer3D::RenderEntitiesWithMaterial(World& world, Ref<Material> material, RenderAPI& renderAPI,
+                                                AssetManager& assets)
     {
-        material->Bind();
+        material->Bind(renderAPI);
 
         // Draw ModelComponents with custom material
         const auto& modelPool = world.GetPool<ModelComponent>();
         for (const auto& modelComponent : modelPool.GetComponents()) {
             material->SetUniform("u_Model", modelComponent.m_Transformation.m_Model);
             Model* model = assets.GetModel(modelComponent.m_ModelID);
-            model->DrawGeometry();
+            model->DrawGeometry(renderAPI);
         }
     }
 
-    void Renderer3D::DrawScene(Scene* scene)
+    void Renderer3D::DrawScene(Scene* scene, RenderAPI& renderAPI, AssetManager& assets)
     {
-        RenderEntities(scene->GetWorld(), m_Camera, scene->m_LightSystem, *Application::s_Application->m_AssetManager);
-        if (scene->m_SkyBox) scene->m_SkyBox->Draw(m_Camera->GetViewMatrix());
+        RenderEntities(scene->GetWorld(), m_Camera, scene->m_LightSystem, renderAPI, assets);
+        if (scene->m_SkyBox) scene->m_SkyBox->Draw(m_Camera->GetViewMatrix(), renderAPI);
     }
 
-    void Renderer3D::DrawShadowedScene(Scene* scene)
+    void Renderer3D::DrawShadowedScene(Scene* scene, RenderAPI& renderAPI, AssetManager& assets)
     {
 
         // Bind shadowmap
         m_ShadowMap->Bind();
 
         // Draw to shadowmap
-        Application::s_Application->m_RenderAPI->Culling(true, false);
-        m_ShadowMapMaterial->BindShader();
+        renderAPI.Culling(true, false);
+        m_ShadowMapMaterial->GetShader()->Bind();
         m_ShadowMapMaterial->SetUniform("u_LightCamera", scene->m_LightSystem.m_Directional.m_LightCamera);
         World& world = scene->GetWorld();
-        RenderEntitiesWithMaterial(world, m_ShadowMapMaterial, *Application::s_Application->m_AssetManager);
-        Application::s_Application->m_RenderAPI->Culling(Application::s_Application->m_RenderAPI->m_CullingDefault,
-                                                         true);
+        RenderEntitiesWithMaterial(world, m_ShadowMapMaterial, renderAPI, assets);
+        renderAPI.Culling(renderAPI.m_CullingDefault, true);
 
         // Bind postfx render target
         m_PostEffect->Bind();
 
         // Bind shadowmap to index 3
         m_ShadowMap->BindTexture(3);
-        DrawScene(scene);
+        DrawScene(scene, renderAPI, assets);
 
         // Draw postfx to screen target
         m_PostEffect->Draw();

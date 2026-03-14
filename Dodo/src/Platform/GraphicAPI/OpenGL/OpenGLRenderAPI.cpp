@@ -5,7 +5,7 @@
 
 #include <backends/imgui_impl_opengl3.h>
 
-namespace Dodo { namespace Platform {
+namespace Dodo::Platform {
 
     OpenGLRenderAPI::OpenGLRenderAPI(const NativeWindowHandle& handle)
         : m_Handle(handle), m_GPUInfo(""), m_VramKbs(0), m_ViewportWidth(0), m_ViewportHeight(0), m_ViewportPosX(0),
@@ -29,7 +29,7 @@ namespace Dodo { namespace Platform {
         }
 
         // TODO: make a fallback for this, a bit unclear how much work is needed
-        if(!GLAD_GL_ARB_bindless_texture) {
+        if (!GLAD_GL_ARB_bindless_texture) {
             DD_FATAL("Bindless textures not supported! Make sure you have a compatible GPU and drivers installed.");
         }
 
@@ -112,4 +112,4 @@ namespace Dodo { namespace Platform {
     {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
-}} // namespace Dodo::Platform
+} // namespace Dodo::Platform

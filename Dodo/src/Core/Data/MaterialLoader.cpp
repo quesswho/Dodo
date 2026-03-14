@@ -10,83 +10,81 @@ namespace Dodo {
     {
         ShaderID id = assets.LoadShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture);
         return std::make_shared<Material>(
-            assets.GetShader(id),
-            std::make_shared<Texture>(path, 0, TextureSettings(TextureWrapMode::WRAP_CLAMP_TO_EDGE)));
+            assets.GetShader(id), std::make_shared<Texture>(path),
+            std::make_shared<TextureSampler>(SamplerProperties(SamplerWrapMode::WRAP_CLAMP_TO_EDGE)));
     }
 
-    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, aiMaterial* material, AssetManager& assets)
+    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, aiMaterial* aiMat, AssetManager& assets)
     {
         ShaderBuilderFlags flags = ShaderBuilderFlagShadowMap;
-        std::vector<Ref<Texture>> textures;
-
         std::filesystem::path modelDir = std::filesystem::path(path).parent_path();
 
+        Ref<Material> material = std::make_shared<Material>();
+        uint slot = 0;
+
         // Diffuse map
-        Ref<Texture> tex =
-            LoadTextureFromMaterial(material, (int)aiTextureType_DIFFUSE, flags, modelDir, textures.size());
-        if (tex) textures.push_back(tex);
+        Ref<Texture> tex = LoadTextureFromMaterial(aiMat, aiTextureType_DIFFUSE, flags, modelDir);
+        if (tex) material->AddTexture(slot++, tex);
 
         // Specular map
-        tex = LoadTextureFromMaterial(material, (int)aiTextureType_SPECULAR, flags, modelDir, textures.size());
-        if (tex) textures.push_back(tex);
+        tex = LoadTextureFromMaterial(aiMat, aiTextureType_SPECULAR, flags, modelDir);
+        if (tex) material->AddTexture(slot++, tex);
 
-        // NORMALS and DISPLACEMENT is the same thing
+        // Normal map — NORMALS and DISPLACEMENT are the same thing
         aiTextureType normalType = aiTextureType_NORMALS;
         aiString str;
-        if (material->GetTexture(normalType, 0, &str) != AI_SUCCESS) normalType = aiTextureType_DISPLACEMENT;
+        if (aiMat->GetTexture(normalType, 0, &str) != AI_SUCCESS) normalType = aiTextureType_DISPLACEMENT;
+        tex = LoadTextureFromMaterial(aiMat, normalType, flags, modelDir);
+        if (tex) material->AddTexture(slot++, tex);
 
-        tex = LoadTextureFromMaterial(material, (int)normalType, flags, modelDir, textures.size());
-        if (tex) textures.push_back(tex);
-
-        // Create material
-        if (!textures.empty()) {
-            ShaderID shaderID = assets.LoadShader(flags);
-            Ref<Shader> shader = assets.GetShader(shaderID);
-            if (!shader) {
-                DD_WARN("Could not create Shader");
-            }
-            return std::make_shared<Material>(shader, textures);
+        if (slot == 0) {
+            aiString name;
+            if (aiMat->Get(AI_MATKEY_NAME, name) == AI_SUCCESS)
+                DD_WARN("Material {} has no textures!", name.C_Str());
+            else
+                DD_WARN("Material (unnamed) has no textures!");
+            return std::make_shared<Material>(); // fallback
         }
 
-        aiString name;
-        if (material->Get(AI_MATKEY_NAME, name) == AI_SUCCESS) {
-            DD_WARN("Material {0} does not have any textures!", name.C_Str());
-        } else {
-            DD_WARN("Material (unnamed) does not have any textures!");
-        }
-        return std::make_shared<Material>(); // Fallback shader
+        ShaderID shaderID = assets.LoadShader(flags);
+        Ref<Shader> shader = assets.GetShader(shaderID);
+        if (!shader) DD_WARN("Could not create shader");
+
+        material->SetShader(shader);
+        material->SetSampler(std::make_shared<TextureSampler>(SamplerProperties()));
+
+        return material;
     }
 
     Ref<Texture> MaterialLoader::LoadTextureFromMaterial(aiMaterial* material, int type,
                                                          ShaderBuilderFlags& shaderFlags,
-                                                         const std::filesystem::path& modelDir, uint slot)
+                                                         const std::filesystem::path& modelDir)
     {
         aiTextureType typeEnum = static_cast<aiTextureType>(type);
         aiString str;
-        if (material->GetTexture(typeEnum, 0, &str) == AI_SUCCESS && str.length > 0) {
-            switch (typeEnum) {
-            case aiTextureType_DIFFUSE:
-                shaderFlags |= ShaderBuilderFlagDiffuseMap;
-                break;
-            case aiTextureType_SPECULAR:
-                shaderFlags |= ShaderBuilderFlagSpecularMap;
-                break;
-            case aiTextureType_NORMALS:
-            case aiTextureType_DISPLACEMENT:
-                shaderFlags |= ShaderBuilderFlagNormalMap;
-                break;
-            default:
-                break;
-            }
-            std::string rawPath = str.C_Str();
-            std::replace(rawPath.begin(), rawPath.end(), '\\', '/'); /// Fix windows generated paths
-            std::filesystem::path texturePath = modelDir / rawPath;
-
-            DD_INFO("Texture: {}", texturePath.string());
-
-            return std::make_shared<Texture>(texturePath.string().c_str(), slot);
+        if (!(material->GetTexture(typeEnum, 0, &str) == AI_SUCCESS && str.length > 0)) {
+            return nullptr;
         }
+        switch (type) {
+        case aiTextureType_DIFFUSE:
+            shaderFlags |= ShaderBuilderFlagDiffuseMap;
+            break;
+        case aiTextureType_SPECULAR:
+            shaderFlags |= ShaderBuilderFlagSpecularMap;
+            break;
+        case aiTextureType_NORMALS:
+        case aiTextureType_DISPLACEMENT:
+            shaderFlags |= ShaderBuilderFlagNormalMap;
+            break;
+        default:
+            break;
+        }
+        std::string rawPath = str.C_Str();
+        std::replace(rawPath.begin(), rawPath.end(), '\\', '/'); /// Fix windows generated paths
+        std::filesystem::path texturePath = modelDir / rawPath;
 
-        return nullptr;
+        DD_INFO("Texture: {}", texturePath.string());
+
+        return std::make_shared<Texture>(texturePath.string().c_str());
     }
 } // namespace Dodo

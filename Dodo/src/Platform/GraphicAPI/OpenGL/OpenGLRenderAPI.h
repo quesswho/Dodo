@@ -4,6 +4,11 @@
 #include "Core/Common.h"
 #include "Core/Graphics/RenderInitResult.h"
 
+#include "Core/Graphics/Buffer.h"
+#include "Core/Graphics/CubeMap.h"
+#include "Core/Graphics/Material/Texture.h"
+#include "Core/Graphics/Material/TextureSampler.h"
+
 #include <glad/gl.h>
 
 #include <Platform/WindowAPI/NativeWindowHandle.h>
@@ -45,6 +50,20 @@ namespace Dodo {
 
             inline void ClearColor(float r, float g, float b) const { glClearColor(r, g, b, 1.0f); }
             inline void Viewport(uint width, uint height) const { glViewport(0, 0, (GLsizei)width, (GLsizei)height); }
+
+            inline void BindCubeMap(uint slot, Ref<CubeMap> cubemap)
+            {
+                glBindTextureUnit(slot, cubemap->GetTextureID());
+            }
+            inline void BindTexture(uint slot, Ref<Texture> texture)
+            {
+                glBindTextureUnit(slot, texture->GetTextureID());
+            }
+            inline void BindTextureSampler(uint slot, Ref<TextureSampler> sampler)
+            {
+                glBindSampler(slot, sampler->GetSamplerID());
+            }
+            void DrawIndexed(const Ref<OpenGLVertexBuffer>& va);
             inline void DrawIndices(uint count) const { glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); }
             inline void DrawArray(uint count) const { glDrawArrays(GL_TRIANGLES, 0, count); }
             void DefaultFrameBuffer() const;

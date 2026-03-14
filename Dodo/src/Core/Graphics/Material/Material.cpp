@@ -9,43 +9,28 @@ namespace Dodo {
 
     Material::Material(Ref<Shader> shader) : m_Shader(shader) {}
 
-    Material::Material(Ref<Shader> shader, Ref<Texture> texture) : m_Shader(shader)
+    Material::Material(Ref<Shader> shader, Ref<Texture> texture, Ref<TextureSampler> sampler)
+        : m_Shader(shader), m_Sampler(sampler)
     {
-        m_Textures.push_back(texture);
-    }
-
-    Material::Material(Ref<Shader> shader, std::vector<Ref<Texture>> textures) : m_Shader(shader), m_Textures(textures)
-    {
-        std::vector<uint> index;
-        index.resize(textures.size(), -1);
-        for (auto& tex : m_Textures) {
-            if (std::find(index.begin(), index.end(), tex->m_Index) != index.end())
-                DD_WARN("Duplicate Texture indexes found for index: {}", tex->m_Index);
-            else
-                index.push_back(tex->m_Index);
-        }
+        m_Textures[0] = texture;
     }
 
     Material::~Material() {}
 
-    void Material::AddTexture(Ref<Texture> texture)
+    void Material::AddTexture(uint slot, Ref<Texture> texture)
     {
-        m_Textures.push_back(texture);
-        for (auto& tex : m_Textures) {
-            if (texture->m_Index == tex->m_Index)
-                DD_WARN("Duplicate Texture indexes found for index: {}", tex->m_Index);
+        if (m_Textures.count(slot)) {
+            DD_WARN("Overwriting texture at slot {}", slot);
         }
+        m_Textures[slot] = texture;
     }
 
-    void Material::BindShader() const
+    void Material::Bind(RenderAPI& renderAPI) const
     {
         m_Shader->Bind();
-    }
-
-    void Material::Bind() const
-    {
-        m_Shader->Bind();
-        for (auto& tex : m_Textures)
-            tex->Bind();
+        for (const auto& [slot, texture] : m_Textures) {
+            renderAPI.BindTexture(slot, texture);
+            renderAPI.BindTextureSampler(slot, m_Sampler);
+        }
     }
 } // namespace Dodo

@@ -11,22 +11,22 @@ namespace Dodo {
             delete mesh;
     }
 
-    void Model::Draw() const
+    void Model::Draw(RenderAPI& renderAPI) const
     {
         for (auto mesh : m_Meshes)
-            mesh->Draw();
+            mesh->Draw(renderAPI);
     }
 
-    void Model::DrawGeometry() const
+    void Model::DrawGeometry(RenderAPI& renderAPI) const
     {
         for (auto mesh : m_Meshes)
-            mesh->DrawGeometry();
+            mesh->DrawGeometry(renderAPI);
     }
 
-    void Model::Draw(Ref<Material> material) const
+    void Model::Draw(Ref<Material> material, RenderAPI& renderAPI) const
     {
-        material->Bind();
+        material->Bind(renderAPI);
         for (auto mesh : m_Meshes)
-            mesh->DrawGeometry();
+            mesh->DrawGeometry(renderAPI);
     }
 } // namespace Dodo

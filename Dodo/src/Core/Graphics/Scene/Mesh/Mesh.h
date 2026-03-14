@@ -28,8 +28,8 @@ namespace Dodo {
 
         Ref<Material> GetMaterial() const { return m_Material; }
 
-        void Draw() const;
-        void DrawGeometry() const;
-        void Draw(Ref<Material> material) const;
+        void Draw(RenderAPI& renderAPI) const;
+        void DrawGeometry(RenderAPI& renderAPI) const;
+        void Draw(Ref<Material> material, RenderAPI& renderAPI) const;
     };
 } // namespace Dodo

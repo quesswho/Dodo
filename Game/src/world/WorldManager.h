@@ -13,5 +13,5 @@ class WorldManager {
     Ref<World> m_World;
     Ref<WorldRenderer> m_WorldRenderer;
 
-    void Draw();
+    void Draw(Dodo::RenderAPI& renderAPI);
 };

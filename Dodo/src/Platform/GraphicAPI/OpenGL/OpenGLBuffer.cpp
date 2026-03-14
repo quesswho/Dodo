@@ -1,7 +1,7 @@
 #include "OpenGLBuffer.h"
 #include "pch.h"
 
-namespace Dodo { namespace Platform {
+namespace Dodo::Platform {
 
     // VertexBuffer //
 
@@ -45,4 +45,4 @@ namespace Dodo { namespace Platform {
     {
         glDeleteBuffers(1, &m_BufferID);
     }
-}} // namespace Dodo::Platform
+} // namespace Dodo::Platform

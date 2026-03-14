@@ -1,7 +1,7 @@
 #include "OpenGLFrameBuffer.h"
 #include "pch.h"
 
-namespace Dodo { namespace Platform {
+namespace Dodo::Platform {
 
     OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferProperties& framebufferProp)
         : m_FrameBufferProperties(framebufferProp)
@@ -60,4 +60,4 @@ namespace Dodo { namespace Platform {
         glDeleteFramebuffers(1, &m_FrameBufferID);
         Create();
     }
-}} // namespace Dodo::Platform
+} // namespace Dodo::Platform

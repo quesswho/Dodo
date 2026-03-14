@@ -18,6 +18,6 @@ namespace Dodo {
 
       private:
         Ref<Texture> LoadTextureFromMaterial(aiMaterial* material, int type, ShaderBuilderFlags& outFlags,
-                                             const std::filesystem::path& modelDir, uint slot);
+                                             const std::filesystem::path& modelDir);
     };
 } // namespace Dodo

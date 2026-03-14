@@ -8,7 +8,6 @@
 #include <backends/imgui_impl_glfw.h>
 
 namespace Dodo::Platform {
-
     class VulkanGLFWContext {
       public:
         explicit VulkanGLFWContext() {}

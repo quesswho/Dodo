@@ -9,6 +9,6 @@ namespace Dodo::Platform {
         static uint Compile(const ShaderSource& source);
 
       private:
-        static uint CompileStage(uint type, const std::string& source);
+        static uint CompileStage(const std::string& source);
     };
 } // namespace Dodo::Platform

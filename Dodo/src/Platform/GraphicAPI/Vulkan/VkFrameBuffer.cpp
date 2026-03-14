@@ -1,7 +1,7 @@
 #include "VkFrameBuffer.h"
 #include "pch.h"
 
-namespace Dodo { namespace Platform {
+namespace Dodo::Platform {
 
     VkFrameBuffer::VkFrameBuffer(const FrameBufferProperties& framebufferProp)
         : m_FrameBufferProperties(framebufferProp)
@@ -9,17 +9,9 @@ namespace Dodo { namespace Platform {
         Create();
     }
 
-    void VkFrameBuffer::Create()
-    {
-        
-    }
+    void VkFrameBuffer::Create() {}
 
-    VkFrameBuffer::~VkFrameBuffer()
-    {
-        
-    }
+    VkFrameBuffer::~VkFrameBuffer() {}
 
-    void VkFrameBuffer::Resize(uint width, uint height)
-    {
-    }
-}} // namespace Dodo::Platform
+    void VkFrameBuffer::Resize(uint width, uint height) {}
+} // namespace Dodo::Platform

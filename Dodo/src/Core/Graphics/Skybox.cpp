@@ -1,8 +1,6 @@
 #include "Skybox.h"
 #include "pch.h"
 
-#include "Core/Application/Application.h"
-
 namespace Dodo {
 
     static const float s_SkyboxVertices[] = {-1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
@@ -42,14 +40,14 @@ namespace Dodo {
 
     void Skybox::Draw(const Math::Mat4& viewMatrix, RenderAPI& renderAPI) const
     {
-        Application::s_Application->m_RenderAPI->DepthComparisonMethod(DepthComparisonMethod::LESS_EQUAL);
+        renderAPI.DepthComparisonMethod(DepthComparisonMethod::LESS_EQUAL);
         m_Shader->Bind();
         m_Shader->SetUniformValue("u_Camera", m_Projection * Math::Mat4::RelinquishToMat3(viewMatrix));
         m_Shader->SetUniformValue("u_CubeMap", 0);
         renderAPI.BindTextureSampler(0, m_Sampler);
         renderAPI.BindCubeMap(0, m_CubeMap);
         m_VertexBuffer->Bind();
-        Application::s_Application->m_RenderAPI->DrawArray(36);
-        Application::s_Application->m_RenderAPI->DepthComparisonMethod(DepthComparisonMethod::LESS);
+        renderAPI.DrawArray(36);
+        renderAPI.DepthComparisonMethod(DepthComparisonMethod::LESS);
     }
 } // namespace Dodo

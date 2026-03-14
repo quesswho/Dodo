@@ -1,58 +1,37 @@
 #pragma once
 
+#include "Core/Graphics/FrameBufferProperties.h"
 #include <Core/Common.h>
 
 #include <glad/gl.h>
 
-namespace Dodo {
+namespace Dodo::Platform {
+    class OpenGLFrameBuffer {
+      private:
+        uint m_FrameBufferID, m_TextureID, m_RenderBuffer;
+        FrameBufferProperties m_FrameBufferProperties;
 
-    enum class FrameBufferType {
-        FRAMEBUFFER_COLOR_DEPTH_STENCIL,
-        FRAMEBUFFER_DEPTH
+      public:
+        OpenGLFrameBuffer(const FrameBufferProperties& framebufferprop);
+        ~OpenGLFrameBuffer();
+
+        inline void Bind() const
+        {
+            glViewport(0, 0, m_FrameBufferProperties.m_Width, m_FrameBufferProperties.m_Height);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBufferID);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        }
+
+        inline void BindTexture(uint index = 0) const
+        {
+            glActiveTexture(GL_TEXTURE0 + index);
+            glBindTexture(GL_TEXTURE_2D, m_TextureID);
+        }
+
+        void Resize(uint width, uint height);
+        inline uint GetTextureHandle() { return m_TextureID; }
+
+      private:
+        void Create();
     };
-
-    struct FrameBufferProperties {
-        FrameBufferProperties()
-            : m_Width(0), m_Height(0), m_FrameBufferType(FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL)
-        {}
-
-        FrameBufferProperties(uint width, uint height, FrameBufferType type)
-            : m_Width(width), m_Height(height), m_FrameBufferType(type)
-        {}
-
-        uint m_Width, m_Height;
-        FrameBufferType m_FrameBufferType;
-    };
-
-    namespace Platform {
-
-        class OpenGLFrameBuffer {
-          private:
-            uint m_FrameBufferID, m_TextureID, m_RenderBuffer;
-            FrameBufferProperties m_FrameBufferProperties;
-
-          public:
-            OpenGLFrameBuffer(const FrameBufferProperties& framebufferprop);
-            ~OpenGLFrameBuffer();
-
-            inline void Bind() const
-            {
-                glViewport(0, 0, m_FrameBufferProperties.m_Width, m_FrameBufferProperties.m_Height);
-                glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBufferID);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-            }
-
-            inline void BindTexture(uint index = 0) const
-            {
-                glActiveTexture(GL_TEXTURE0 + index);
-                glBindTexture(GL_TEXTURE_2D, m_TextureID);
-            }
-
-            void Resize(uint width, uint height);
-            inline uint GetTextureHandle() { return m_TextureID; }
-
-          private:
-            void Create();
-        };
-    } // namespace Platform
-} // namespace Dodo
+} // namespace Dodo::Platform

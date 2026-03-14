@@ -10,7 +10,6 @@
 #include <vector>
 
 namespace Dodo {
-
     class Material {
       public:
         Material();

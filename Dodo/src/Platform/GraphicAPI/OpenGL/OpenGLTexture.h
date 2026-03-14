@@ -2,28 +2,20 @@
 
 #include "Core/Graphics/Material/TextureProperties.h"
 
-namespace Dodo { namespace Platform {
-
+namespace Dodo::Platform {
     class OpenGLTexture {
-      private:
-        uint m_TextureID;
-
       public:
-        OpenGLTexture(const std::string& path, uint index = 0, const TextureSettings& settings = TextureSettings());
-        OpenGLTexture(uchar* data, TextureProperties prop, uint index = 0,
-                      const TextureSettings& settings = TextureSettings());
+        OpenGLTexture(const std::string& path);
+        OpenGLTexture(uchar* data, const TextureProperties& prop);
         ~OpenGLTexture();
 
-        void Bind() const;
-
-      private:
-        void Init(uchar* data, const TextureSettings& settings);
-
-      public:
-        uint m_Index;
+        uint GetTextureID() const { return m_TextureID; }
         const TextureProperties& GetTextureProperties() const { return m_TextureProperties; }
 
       private:
+        void Init(uchar* data);
+
         TextureProperties m_TextureProperties;
+        uint m_TextureID;
     };
-}} // namespace Dodo::Platform
+} // namespace Dodo::Platform

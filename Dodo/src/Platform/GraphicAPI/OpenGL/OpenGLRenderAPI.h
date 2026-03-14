@@ -5,6 +5,11 @@
 #include "Core/Graphics/RenderAPITypes.h"
 #include "Core/Graphics/RenderInitResult.h"
 
+#include "Core/Graphics/Buffer.h"
+#include "Core/Graphics/CubeMap.h"
+#include "Core/Graphics/Material/Texture.h"
+#include "Core/Graphics/Material/TextureSampler.h"
+
 #include <glad/gl.h>
 
 #include <Platform/WindowAPI/NativeWindowHandle.h>
@@ -16,10 +21,11 @@ using OpenGLContext = Dodo::Platform::WGLContext;
 using OpenGLContext = Dodo::Platform::GLFWContext;
 #endif
 
-namespace Dodo { namespace Platform {
+
+namespace Dodo::Platform {
 
     class OpenGLRenderAPI {
-      public:
+        public:
         OpenGLRenderAPI(const NativeWindowHandle& NativeWindowHandle);
         ~OpenGLRenderAPI();
         RenderInitError Init(const WindowProperties& winprop);
@@ -32,14 +38,34 @@ namespace Dodo { namespace Platform {
 
         inline void ClearColor(float r, float g, float b) const { glClearColor(r, g, b, 1.0f); }
         inline void Viewport(uint width, uint height) const { glViewport(0, 0, (GLsizei)width, (GLsizei)height); }
+
+        inline void BindCubeMap(uint slot, Ref<CubeMap> cubemap)
+        {
+            glBindTextureUnit(slot, cubemap->GetTextureID());
+        }
+        inline void BindTexture(uint slot, Ref<Texture> texture)
+        {
+            glBindTextureUnit(slot, texture->GetTextureID());
+        }
+        inline void BindTextureSampler(uint slot, Ref<TextureSampler> sampler)
+        {
+            glBindSampler(slot, sampler->GetSamplerID());
+        }
+        void DrawIndexed(const Ref<VertexBuffer>& va);
         inline void DrawIndices(uint count) const { glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); }
         inline void DrawArray(uint count) const { glDrawArrays(GL_TRIANGLES, 0, count); }
         void DefaultFrameBuffer() const;
         void ResizeDefaultViewport(uint width, uint height);
         void ResizeDefaultViewport(uint width, uint height, uint posX, uint posY);
 
-        inline void DepthComparisonMethod(DepthComparisonMethod method) const { glDepthFunc(GL_NEVER + (int)method); }
-        inline void DepthTest(bool depthtest) const { depthtest ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST); }
+        inline void DepthComparisonFunction(DepthComparisonMethod func) const
+        {
+            glDepthFunc(GL_NEVER + (int)func);
+        }
+        inline void DepthTest(bool depthtest) const
+        {
+            depthtest ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST);
+        }
         inline void StencilTest(bool stenciltest) const
         {
             stenciltest ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
@@ -65,8 +91,8 @@ namespace Dodo { namespace Platform {
 
         bool m_CullingDefault;
 
-      private:
+        private:
         int m_Version;
         NativeWindowHandle m_Handle;
     };
-}} // namespace Dodo::Platform
+} // namespace Dodo

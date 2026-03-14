@@ -7,9 +7,9 @@ WorldManager::WorldManager(Ref<ResourceManager> resourceManager, Dodo::Math::Fre
     m_World = std::make_shared<World>(m_ResourceManager, m_WorldRenderer);
 }
 
-void WorldManager::Draw()
+void WorldManager::Draw(Dodo::RenderAPI& renderAPI)
 {
     for (auto& chunk : m_World->m_Chunks) {
-        m_WorldRenderer->RenderChunk(chunk.second);
+        m_WorldRenderer->RenderChunk(chunk.second, renderAPI);
     }
 }

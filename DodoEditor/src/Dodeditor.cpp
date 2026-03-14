@@ -3,22 +3,25 @@
 using namespace Dodo;
 using namespace Math;
 
-GameLayer::GameLayer()
+GameLayer::GameLayer(Application& app)
 {
-    Application::s_Application->m_RenderAPI->ClearColor(0.2f, 0.2f, 0.9f);
-    Application::s_Application->m_RenderAPI->DepthTest(true);
-    Application::s_Application->m_RenderAPI->Blending(true);
+    RenderAPI& renderAPI = *app.m_RenderAPI;
+    AssetManager& assets = *app.m_AssetManager;
+
+    renderAPI.ClearColor(0.2f, 0.2f, 0.9f);
+    renderAPI.DepthTest(true);
+    renderAPI.Blending(true);
 
     BufferProperties bufferprop = {{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 3}};
 
     m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 20.0f),
-                              (float)Application::s_Application->m_Window->GetWindowProperties().m_Width /
-                                  (float)Application::s_Application->m_Window->GetWindowProperties().m_Height,
+                              (float)app.m_Window->GetWindowProperties().m_Width /
+                                  (float)app.m_Window->GetWindowProperties().m_Height,
                               0.04f, 10.0f);
 
     FrameBufferProperties frameprop;
-    frameprop.m_Width = Application::s_Application->m_Window->GetWindowProperties().m_Width;
-    frameprop.m_Height = Application::s_Application->m_Window->GetWindowProperties().m_Height;
+    frameprop.m_Width = app.m_Window->GetWindowProperties().m_Width;
+    frameprop.m_Height = app.m_Window->GetWindowProperties().m_Height;
 
     m_FrameBuffer = new FrameBuffer(frameprop);
 
@@ -30,7 +33,7 @@ GameLayer::GameLayer()
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    m_Scene->m_SkyBox = new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath);
+    m_Scene->m_SkyBox =  new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath, assets);
 
     m_Interface = new Interface(m_Scene);
 }
@@ -53,7 +56,7 @@ void GameLayer::Update(float elapsed)
     if (m_Interface->m_EditorProperties.m_ViewportInput) m_Camera->Update(elapsed);
 }
 
-void GameLayer::Render()
+void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
 {
     if (m_Interface->BeginDraw()) {
         m_Scene = m_Interface->m_EditorState.scene; // Maybe work out something better when changing scene
@@ -66,19 +69,19 @@ void GameLayer::Render()
 
         if (m_Scene->m_SkyBox != nullptr) m_Scene->m_SkyBox->m_Projection = m_Camera->GetProjectionMatrix();
     }
-    DrawScene();
+    DrawScene(renderAPI, assets);
     m_Interface->EndViewport(m_FrameBuffer);
     m_Interface->EndDraw();
 }
 
-void GameLayer::DrawScene()
+void GameLayer::DrawScene(RenderAPI& renderAPI, AssetManager& assets)
 {
     m_FrameBuffer->Bind();
 
     m_Renderer->UpdateCamera(m_Camera);
-    m_Renderer->DrawScene(m_Scene);
+    m_Renderer->DrawScene(m_Scene, renderAPI, assets);
 
-    Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
+    renderAPI.DefaultFrameBuffer();
 }
 
 void GameLayer::OnEvent(const Event& event)
@@ -138,7 +141,7 @@ ApplicationConfig Dodeditor::PreInit()
 
 void Dodeditor::Init()
 {
-    PushLayer(new GameLayer());
+    PushLayer(new GameLayer(*this));
 }
 
 int main()

@@ -1,12 +1,11 @@
 #pragma once
 
+#include <volk.h>
 #include <GLFW/glfw3.h>
-#include <glad/vulkan.h>
-
+#include <backends/imgui_impl_glfw.h>
 
 #include "Platform/WindowAPI/NativeWindowHandle.h"
 
-#include <backends/imgui_impl_glfw.h>
 #include <vector>
 
 namespace Dodo::Platform {
@@ -27,7 +26,7 @@ namespace Dodo::Platform {
             const char** glfwExtensions;
 
             glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-            for(uint32_t i = 0; i < glfwExtensionCount; i++) {
+            for (uint32_t i = 0; i < glfwExtensionCount; i++) {
                 requiredExtensions.emplace_back(glfwExtensions[i]);
             }
             return requiredExtensions;

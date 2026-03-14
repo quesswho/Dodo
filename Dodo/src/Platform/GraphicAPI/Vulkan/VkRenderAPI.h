@@ -28,7 +28,6 @@ namespace Dodo::Platform {
         void Begin() const;
         void End();
 
-        
         void ClearColor(float r, float g, float b) const;
         void Viewport(uint width, uint height) const;
         void BindCubeMap(uint slot, Ref<CubeMap> cubemap);
@@ -39,13 +38,13 @@ namespace Dodo::Platform {
         void DefaultFrameBuffer() const;
         void ResizeDefaultViewport(uint width, uint height);
         void ResizeDefaultViewport(uint width, uint height, uint posX, uint posY);
-        
+
         void DepthComparisonMethod(DepthComparisonMethod method) const;
         void DepthTest(bool depthtest) const;
         void StencilTest(bool stenciltest) const;
         void Blending(bool blending) const;
         void Culling(bool cull, bool backface = true);
-        
+
         inline const char* GetAPIName() const { return "Vulkan"; }
         int CurrentVRamUsage() const;
 
@@ -62,7 +61,6 @@ namespace Dodo::Platform {
         bool m_CullingDefault;
 
       private:
-
         RenderInitError InitInstance();
         RenderInitError InitDevice();
         RenderInitError InitImGui();

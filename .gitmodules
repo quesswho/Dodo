@@ -7,3 +7,6 @@
 [submodule "Dodo/lib/glfw"]
 	path = Dodo/lib/glfw
 	url = https://github.com/glfw/glfw.git
+[submodule "Dodo/lib/volk"]
+	path = Dodo/lib/volk
+	url = https://github.com/zeux/volk.git

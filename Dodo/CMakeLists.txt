@@ -42,20 +42,16 @@ target_include_directories(Dodo
         src
         lib/stb_image
         lib/spdlog/include
-        lib/glad/include
         lib/imgui/include
         lib/assimp/include
-        lib/glfw/include
         ${SLANG_INSTALL_DIR}/include
     PRIVATE
 )
 
 target_link_libraries(Dodo
     PUBLIC
-        glad
         imgui
         assimp
-        glfw
         slang::slang
 )
 
@@ -70,13 +66,18 @@ target_precompile_headers(Dodo PRIVATE src/pch.h)
 # Platform-specific
 if (DD_API_WIN32)
     target_compile_definitions(Dodo PUBLIC DD_x64 DD_API_WIN32)
-else(DD_API_GLFW)
+elseif (DD_API_GLFW)
+    target_include_directories(Dodo PUBLIC lib/glfw/include)
+    target_link_libraries(Dodo PUBLIC glfw)
     target_compile_definitions(Dodo PUBLIC DD_API_GLFW)
 endif()
 
 if (DD_API_OPENGL)
+    target_include_directories(Dodo PUBLIC lib/glad/include)
+    target_link_libraries(Dodo PUBLIC glad)
     target_compile_definitions(Dodo PUBLIC DD_API_OPENGL)
 elseif (DD_API_VULKAN)
+    target_link_libraries(Dodo PUBLIC volk)
     target_compile_definitions(Dodo PUBLIC DD_API_VULKAN)
 endif()
 

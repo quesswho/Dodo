@@ -1,9 +1,6 @@
 #include "VkRenderAPI.h"
 #include "pch.h"
 
-//#include <glad/vulkan.h>
-#include <vulkan/vulkan_raii.hpp>
-
 #include <backends/imgui_impl_vulkan.h>
 #include <unordered_set>
 
@@ -11,7 +8,7 @@ namespace Dodo::Platform {
 
     VkRenderAPI::VkRenderAPI(const NativeWindowHandle& handle) : m_Handle(handle) {}
 
-    VkRenderAPI::~VkRenderAPI() 
+    VkRenderAPI::~VkRenderAPI()
     {
         vkDestroyInstance(m_VkInstance, nullptr);
     }
@@ -22,58 +19,57 @@ namespace Dodo::Platform {
 
         m_Context.CreateContextImpl(m_Handle);
 
+        // Preload Vulkan using volk
+        if (volkInitialize() != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "Glad: Unable to load Vulkan symbols!");
+        }
 
-        // Preload Vulkan
-       // int version = gladLoaderLoadVulkan(NULL, NULL, NULL);
-        //if (!version) {
-        //    return RenderInitError(RenderInitStatus::Failed, "Glad: Unable to load Vulkan symbols!");
-        //}
-
-        if(result = InitInstance(); result.status != RenderInitStatus::Success) return result;
-        if(winprop.m_Settings.imgui) {
-            if(result = InitImGui(); result.status != RenderInitStatus::Success) return result;
+        if (result = InitInstance(); result.status != RenderInitStatus::Success) return result;
+        if (winprop.m_Settings.imgui) {
+            if (result = InitImGui(); result.status != RenderInitStatus::Success) return result;
         }
 
         return result;
     }
 
-    RenderInitError VkRenderAPI::InitInstance() {
+    RenderInitError VkRenderAPI::InitInstance()
+    {
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.pEngineName = "Dodo Engine";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_0;
-        
+
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
-        
+
         // Get required context extensions
         std::vector<const char*> requiredExtensions = m_Context.GetExtensions();
-        
+
         // Note: This might be useful for macOS, but I have no target to test it on
-        //requiredExtensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-        //createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-        
+        // requiredExtensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+        // createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
         // Get all available extensions
         uint32_t extensionCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
         std::vector<VkExtensionProperties> extensions(extensionCount);
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
-        
+
         std::unordered_set<std::string> availableExtensions;
         DD_INFO("Available vulkan extensions: ");
         for (const auto& extension : extensions) {
             availableExtensions.insert(extension.extensionName);
             DD_INFO("{}", extension.extensionName);
         }
-        
+
         // Check if all required extensions are available
-        for(const char* required : requiredExtensions) {
+        for (const char* required : requiredExtensions) {
             if (availableExtensions.find(required) == availableExtensions.end()) {
-                return RenderInitError(RenderInitStatus::Failed, std::string("Required Vulkan extension not available: ") + required);
+                return RenderInitError(RenderInitStatus::Failed,
+                                       std::string("Required Vulkan extension not available: ") + required);
             }
         }
 
@@ -91,10 +87,11 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success, "");
     }
 
-    RenderInitError InitImGui() {
-        //m_Context.InitializeImGui();
-        //ImGui_ImplVulkan_Init();
-        
+    RenderInitError VkRenderAPI::InitImGui()
+    {
+        m_Context.InitializeImGui();
+        // ImGui_ImplVulkan_Init();
+
         return RenderInitError(RenderInitStatus::Success, "");
     }
 
@@ -118,10 +115,10 @@ namespace Dodo::Platform {
     void VkRenderAPI::StencilTest(bool stenciltest) const {}
     void VkRenderAPI::Blending(bool blending) const {}
     void VkRenderAPI::Culling(bool cull, bool backface) {}
-    
+
     void VkRenderAPI::ImGuiNewFrame() const
     {
-        //ImGui_ImplVulkan_NewFrame();
+        ImGui_ImplVulkan_NewFrame();
     }
 
     void VkRenderAPI::ImGuiEndFrame() const

@@ -62,6 +62,13 @@ namespace Dodo::Platform {
         bool m_CullingDefault;
 
       private:
+
+        RenderInitError InitInstance();
+        RenderInitError InitDevice();
+        RenderInitError InitImGui();
+
+        VkInstance m_VkInstance;
+
         int m_Version;
         NativeWindowHandle m_Handle;
     };

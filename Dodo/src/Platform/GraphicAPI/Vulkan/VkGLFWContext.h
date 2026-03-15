@@ -1,8 +1,12 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
-#include <backends/imgui_impl_glfw.h>
+// Note: Volk needs to be included before GLFW
 #include <volk.h>
+
+#include <GLFW/glfw3.h>
+
+
+#include <backends/imgui_impl_glfw.h>
 
 #include "Platform/WindowAPI/NativeWindowHandle.h"
 
@@ -16,7 +20,6 @@ namespace Dodo::Platform {
         void CreateContextImpl(const NativeWindowHandle& handle)
         {
             m_Window = reinterpret_cast<GLFWwindow*>(handle.window);
-            glfwMakeContextCurrent(m_Window);
         }
 
         std::vector<const char*> GetExtensions()
@@ -31,11 +34,10 @@ namespace Dodo::Platform {
             }
             return requiredExtensions;
         }
-        void SwapBuffer() { glfwSwapBuffers(m_Window); }
-        void SetVSync(bool enabled)
+
+        bool CreateSurface(VkInstance instance, VkSurfaceKHR* surface)
         {
-            glfwMakeContextCurrent(m_Window);
-            glfwSwapInterval(enabled ? 1 : 0);
+            return glfwCreateWindowSurface(instance, m_Window, nullptr, surface) == VK_SUCCESS;
         }
 
         void InitializeImGui() { ImGui_ImplGlfw_InitForVulkan(m_Window, true); }

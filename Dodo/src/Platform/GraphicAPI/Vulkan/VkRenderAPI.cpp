@@ -22,7 +22,7 @@ namespace Dodo::Platform {
         if (m_EnableValidationLayers) {
             DestroyDebugUtilsMessengerEXT(m_VkInstance, m_DebugMessenger, nullptr);
         }
-
+        vkDestroySurfaceKHR(m_VkInstance, m_Surface, nullptr);
         vkDestroyInstance(m_VkInstance, nullptr);
     }
 
@@ -37,16 +37,20 @@ namespace Dodo::Platform {
             return RenderInitError(RenderInitStatus::Failed, "Glad: Unable to load Vulkan symbols!");
         }
 
+        // Lambda to simplify error checking
         auto Try = [&](RenderInitError res) -> bool {
             result = res;
             return result.status != RenderInitStatus::Success;
         };
 
         if (Try(InitInstance())) return result;
-        if (Try(PickPhysicalDevice())) return result;
-        if (Try(InitDevice())) return result;
         if (m_EnableValidationLayers)
             if (Try(SetupDebug())) return result;
+        if (!m_Context.CreateSurface(m_VkInstance, &m_Surface)) {
+            return RenderInitError(RenderInitStatus::Failed, "Failed to create Vulkan surface!");
+        }
+        if (Try(PickPhysicalDevice())) return result;
+        if (Try(InitDevice())) return result;
         if (winprop.m_Settings.imgui)
             if (Try(InitImGui())) return result;
 
@@ -140,12 +144,11 @@ namespace Dodo::Platform {
             VkPhysicalDeviceFeatures deviceFeatures;
             vkGetPhysicalDeviceProperties(device, &deviceProperties);
             vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-            
+
             deviceInfo.device = device;
             deviceInfo.properties = deviceProperties;
             deviceInfo.features = deviceFeatures;
             deviceInfo.indices = FindQueueFamilies(device);
-            
 
             if (isDeviceBetter(bestDevice, deviceInfo)) {
                 m_PhysicalDevice = device;
@@ -155,32 +158,38 @@ namespace Dodo::Platform {
         if (m_PhysicalDevice == VK_NULL_HANDLE) {
             return RenderInitError(RenderInitStatus::Failed, "failed to find a suitable GPU!");
         }
-        
+
         return RenderInitError(RenderInitStatus::Success);
     }
 
-    RenderInitError VkRenderAPI::InitDevice() 
+    RenderInitError VkRenderAPI::InitDevice()
     {
         QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
 
-        VkDeviceQueueCreateInfo queueCreateInfo{};
-        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
-        queueCreateInfo.queueCount = 1;
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+        // Normally graphics and present queues are the same, but they can be different on some platforms.
+        std::unordered_set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(),
+                                                            indices.presentFamily.value()};
 
-        // We only have one queue but we still need to provide a priority for it
         float queuePriority = 1.0f;
-        queueCreateInfo.pQueuePriorities = &queuePriority;
+        for (uint32_t queueFamily : uniqueQueueFamilies) {
+            VkDeviceQueueCreateInfo queueCreateInfo{};
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex = queueFamily;
+            queueCreateInfo.queueCount = 1;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+            queueCreateInfos.push_back(queueCreateInfo);
+        }
 
         // We will specify device features here later
         VkPhysicalDeviceFeatures deviceFeatures{};
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.pQueueCreateInfos = &queueCreateInfo;
-        createInfo.queueCreateInfoCount = 1;
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();
         createInfo.pEnabledFeatures = &deviceFeatures;
-        
+
         createInfo.enabledExtensionCount = 0;
 
         if (m_EnableValidationLayers) {
@@ -193,6 +202,8 @@ namespace Dodo::Platform {
         if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS) {
             return RenderInitError(RenderInitStatus::Failed, "failed to create logical device!");
         }
+
+        vkGetDeviceQueue(m_Device, indices.presentFamily.value(), 0, &m_PresentQueue);
 
         return RenderInitError(RenderInitStatus::Success);
     }
@@ -262,9 +273,9 @@ namespace Dodo::Platform {
         // ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData());
     }
 
-    QueueFamilyIndices  VkRenderAPI::FindQueueFamilies(VkPhysicalDevice device)
+    QueueFamilyIndices VkRenderAPI::FindQueueFamilies(VkPhysicalDevice device)
     {
-        QueueFamilyIndices  indices;
+        QueueFamilyIndices indices;
 
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -275,6 +286,11 @@ namespace Dodo::Platform {
         for (const auto& queueFamily : queueFamilies) {
             if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
                 indices.graphicsFamily = i;
+            }
+            VkBool32 presentSupport = false;
+            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentSupport);
+            if (presentSupport) {
+                indices.presentFamily = i;
             }
 
             // Exit early if all required families are found
@@ -295,7 +311,7 @@ namespace Dodo::Platform {
         }
 
         extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
-        
+
         extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 
         return extensions;

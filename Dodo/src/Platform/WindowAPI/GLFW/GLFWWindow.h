@@ -7,7 +7,10 @@
 #include <Core/Application/WindowProperties.h>
 #include <Platform/WindowAPI/NativeWindowHandle.h>
 
-#define GLFW_INCLUDE_NONE
+// TODO: This needs to be here because of weird header includes that needs to be addressed
+#ifdef DD_API_VULKAN
+#include <volk.h>
+#endif
 #include <GLFW/glfw3.h>
 
 #include <string>

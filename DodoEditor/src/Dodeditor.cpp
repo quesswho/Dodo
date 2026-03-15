@@ -33,7 +33,7 @@ GameLayer::GameLayer(Application& app)
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    m_Scene->m_SkyBox =  new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath, assets);
+    m_Scene->m_SkyBox = new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath, assets);
 
     m_Interface = new Interface(m_Scene);
 }

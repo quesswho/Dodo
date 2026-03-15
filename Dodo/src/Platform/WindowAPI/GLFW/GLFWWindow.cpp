@@ -5,9 +5,8 @@
 
 #include "Core/System/FileUtils.h"
 
+// TODO: Remove this when we change the callbacks and viewport handling
 #include "Core/Application/Application.h"
-
-#include <GLFW/glfw3.h>
 
 namespace Dodo::Platform {
 
@@ -36,6 +35,12 @@ namespace Dodo::Platform {
         // Set glfw error callback. This maps to the logger
         glfwSetErrorCallback(ErrorCallback);
         ConfigureMonitor();
+
+        // Tell GLFW not to create an OpenGL context if we are using Vulkan
+        #ifdef DD_API_VULKAN
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        #endif
+
         m_Handle = glfwCreateWindow(m_WindowProperties.m_Width, m_WindowProperties.m_Height, m_WindowProperties.m_Title,
                                     NULL, NULL);
         if (!m_Handle) {

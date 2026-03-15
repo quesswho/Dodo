@@ -24,7 +24,9 @@ namespace Dodo::Platform {
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
-        bool IsComplete() const { return graphicsFamily.has_value(); }
+        std::optional<uint32_t> presentFamily;
+
+        bool IsComplete() const { return graphicsFamily.has_value() && presentFamily.has_value(); }
     };
 
     struct PhyisicalDeviceInfo {
@@ -105,7 +107,8 @@ namespace Dodo::Platform {
         VkDevice m_Device;
         VkPhysicalDevice m_PhysicalDevice;
         VkDebugUtilsMessengerEXT m_DebugMessenger;
-        
+        VkSurfaceKHR m_Surface;
+        VkQueue m_PresentQueue;
 
         bool m_EnableValidationLayers;
         std::vector<const char*> m_ValidationLayers;

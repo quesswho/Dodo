@@ -1,6 +1,8 @@
 #include "OpenGLBuffer.h"
 #include "pch.h"
 
+#include <glad/gl.h>
+
 namespace Dodo::Platform {
 
     // VertexBuffer //
@@ -32,6 +34,8 @@ namespace Dodo::Platform {
         glDeleteVertexArrays(1, &m_ABufferID);
     }
 
+    void OpenGLVertexBuffer::Bind() const { glBindVertexArray(m_ABufferID); }
+
     // IndexBuffer //
 
     OpenGLIndexBuffer::OpenGLIndexBuffer(const uint* indices, const uint count) : m_Count(count), m_BufferID(0)
@@ -44,5 +48,10 @@ namespace Dodo::Platform {
     OpenGLIndexBuffer::~OpenGLIndexBuffer()
     {
         glDeleteBuffers(1, &m_BufferID);
+    }
+
+    void OpenGLIndexBuffer::Bind() const 
+    { 
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID); 
     }
 } // namespace Dodo::Platform

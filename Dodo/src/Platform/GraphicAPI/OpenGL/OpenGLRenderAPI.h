@@ -3,7 +3,6 @@
 #include "Core/Application/WindowProperties.h"
 #include "Core/Common.h"
 #include "Core/Graphics/RenderAPITypes.h"
-#include "Core/Graphics/RenderInitResult.h"
 
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/CubeMap.h"

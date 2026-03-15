@@ -7,7 +7,6 @@
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/RenderAPITypes.h"
-#include "Core/Graphics/RenderInitResult.h"
 
 #include "Platform/WindowAPI/NativeWindowHandle.h"
 #ifdef DD_API_WIN32

@@ -3,8 +3,6 @@
 #include "Core/Graphics/BufferLayout.h"
 #include <Core/Common.h>
 
-#include <glad/gl.h>
-
 namespace Dodo::Platform {
     class OpenGLVertexBuffer {
       private:
@@ -17,7 +15,7 @@ namespace Dodo::Platform {
 
         const BufferProperties& GetBufferProperties() const { return m_BufferProperties; }
 
-        inline void Bind() const { glBindVertexArray(m_ABufferID); }
+        void Bind() const;
 
       private:
         const BufferProperties m_BufferProperties;
@@ -31,7 +29,7 @@ namespace Dodo::Platform {
         OpenGLIndexBuffer(const uint* indices, const uint count);
         ~OpenGLIndexBuffer();
 
-        inline void Bind() const { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID); }
+        void Bind() const;
 
         inline const uint GetCount() const { return m_Count; }
 

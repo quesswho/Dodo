@@ -15,12 +15,12 @@
             }
         },
         {
-        "name": "mingw",
-        "inherits": "default",
-        "cacheVariables": {
-            "CMAKE_C_COMPILER": "x86_64-w64-mingw32-gcc",
-            "CMAKE_CXX_COMPILER": "x86_64-w64-mingw32-g++"
-        }
+            "name": "mingw",
+            "inherits": "default",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "x86_64-w64-mingw32-gcc",
+                "CMAKE_CXX_COMPILER": "x86_64-w64-mingw32-g++"
+            }
         }
     ],
     "buildPresets": [

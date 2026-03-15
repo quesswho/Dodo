@@ -18,7 +18,22 @@ using VulkanContext = Dodo::Platform::VulkanWGLContext;
 using VulkanContext = Dodo::Platform::VulkanGLFWContext;
 #endif
 
+#include <optional>
+
 namespace Dodo::Platform {
+
+    struct QueueFamilyIndices {
+        std::optional<uint32_t> graphicsFamily;
+        bool IsComplete() const { return graphicsFamily.has_value(); }
+    };
+
+    struct PhyisicalDeviceInfo {
+        VkPhysicalDevice device;
+        VkPhysicalDeviceProperties properties;
+        VkPhysicalDeviceFeatures features;
+        QueueFamilyIndices indices;
+    };
+
     class VkRenderAPI {
       public:
         VkRenderAPI(const NativeWindowHandle& NativeWindowHandle);
@@ -63,26 +78,34 @@ namespace Dodo::Platform {
       private:
         RenderInitError InitInstance();
         RenderInitError SetupDebug();
+        RenderInitError PickPhysicalDevice();
         RenderInitError InitDevice();
         RenderInitError InitImGui();
 
+        bool isDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device);
+
+        QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
         void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-        std::vector<const char*> getRequiredExtensions();
-        bool checkValidationLayerSupport();
+        std::vector<const char*> GetRequiredExtensions();
+        bool CheckValidationLayerSupport();
 
         VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
                                               const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
                                               const VkAllocationCallbacks* pAllocator,
                                               VkDebugUtilsMessengerEXT* pDebugMessenger);
-        void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
-        
+        void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+                                           const VkAllocationCallbacks* pAllocator);
+
         static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                          VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                          void* pUserData);
-        
+                                                            VkDebugUtilsMessageTypeFlagsEXT messageType,
+                                                            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                                            void* pUserData);
+
         VkInstance m_VkInstance;
+        VkDevice m_Device;
+        VkPhysicalDevice m_PhysicalDevice;
         VkDebugUtilsMessengerEXT m_DebugMessenger;
+        
 
         bool m_EnableValidationLayers;
         std::vector<const char*> m_ValidationLayers;

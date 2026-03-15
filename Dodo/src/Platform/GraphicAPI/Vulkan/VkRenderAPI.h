@@ -62,10 +62,30 @@ namespace Dodo::Platform {
 
       private:
         RenderInitError InitInstance();
+        RenderInitError SetupDebug();
         RenderInitError InitDevice();
         RenderInitError InitImGui();
 
+        void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+        std::vector<const char*> getRequiredExtensions();
+        bool checkValidationLayerSupport();
+
+        VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
+                                              const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+                                              const VkAllocationCallbacks* pAllocator,
+                                              VkDebugUtilsMessengerEXT* pDebugMessenger);
+        void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
+        
+        static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                                                          VkDebugUtilsMessageTypeFlagsEXT messageType,
+                                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+                                                          void* pUserData);
+        
         VkInstance m_VkInstance;
+        VkDebugUtilsMessengerEXT m_DebugMessenger;
+
+        bool m_EnableValidationLayers;
+        std::vector<const char*> m_ValidationLayers;
 
         int m_Version;
         NativeWindowHandle m_Handle;

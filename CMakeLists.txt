@@ -11,8 +11,8 @@ set(CMAKE_DEFAULT_BUILD_TYPE Debug)
 
 
 # Load Opengl or Vulkan
-option(DD_API_OPENGL "Enable OpenGL loader" ON)
-option(DD_API_VULKAN "Enable Vulkan loader" OFF)
+option(DD_API_OPENGL "Enable OpenGL loader" OFF)
+option(DD_API_VULKAN "Enable Vulkan loader" ON)
 
 option(DD_API_WIN32 "Enable Win32" OFF)
 option(DD_API_GLFW "Enable GLFW" ON)

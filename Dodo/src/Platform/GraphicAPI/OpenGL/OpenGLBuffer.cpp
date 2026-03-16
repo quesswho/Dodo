@@ -34,7 +34,10 @@ namespace Dodo::Platform {
         glDeleteVertexArrays(1, &m_ABufferID);
     }
 
-    void OpenGLVertexBuffer::Bind() const { glBindVertexArray(m_ABufferID); }
+    void OpenGLVertexBuffer::Bind() const
+    {
+        glBindVertexArray(m_ABufferID);
+    }
 
     // IndexBuffer //
 
@@ -50,8 +53,8 @@ namespace Dodo::Platform {
         glDeleteBuffers(1, &m_BufferID);
     }
 
-    void OpenGLIndexBuffer::Bind() const 
-    { 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID); 
+    void OpenGLIndexBuffer::Bind() const
+    {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
     }
 } // namespace Dodo::Platform

@@ -35,6 +35,12 @@ namespace Dodo::Platform {
         QueueFamilyIndices indices;
     };
 
+    struct SwapChainSupportDetails {
+        VkSurfaceCapabilitiesKHR capabilities;
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> presentModes;
+    };
+
     class VkRenderAPI {
       public:
         VkRenderAPI(const NativeWindowHandle& NativeWindowHandle);
@@ -83,13 +89,19 @@ namespace Dodo::Platform {
         RenderInitError InitDevice();
         RenderInitError InitImGui();
 
-        bool isDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device);
+        bool IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device);
+        bool IsDeviceSuitable(PhyisicalDeviceInfo device);
 
         QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
         void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
         std::vector<const char*> GetRequiredExtensions();
         bool CheckValidationLayerSupport();
-
+        std::vector<const char*> GetRequiredDeviceExtensions();
+        bool CheckDeviceExtensionSupport(VkPhysicalDevice device, const std::vector<const char*>& requiredExtensions);
+        SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
+        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+        
         VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
                                               const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
                                               const VkAllocationCallbacks* pAllocator,
@@ -111,6 +123,7 @@ namespace Dodo::Platform {
 
         bool m_EnableValidationLayers;
         std::vector<const char*> m_ValidationLayers;
+        std::vector<const char*> m_DeviceExtensions;
 
         int m_Version;
         NativeWindowHandle m_Handle;

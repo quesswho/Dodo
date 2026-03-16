@@ -26,6 +26,9 @@ namespace Dodo::Platform {
         vkDestroyInstance(m_VkInstance, nullptr);
     }
 
+    /**
+     * Initializes the Vulkan instance, picks a physical device, creates a logical device and initializes ImGui if enabled in the window properties.
+     */
     RenderInitError VkRenderAPI::Init(const WindowProperties& winprop)
     {
         RenderInitError result = RenderInitError(RenderInitStatus::Success);
@@ -57,6 +60,9 @@ namespace Dodo::Platform {
         return result;
     }
 
+    /**
+     * Initializes the Vulkan instance and initialize volk
+     */
     RenderInitError VkRenderAPI::InitInstance()
     {
         if (m_EnableValidationLayers && !CheckValidationLayerSupport())
@@ -124,6 +130,24 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success);
     }
 
+    /**
+     * Sets up the debug messenger callback for Vulkan validation layers
+     */
+    RenderInitError VkRenderAPI::SetupDebug()
+    {
+        VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+        PopulateDebugMessengerCreateInfo(createInfo);
+
+        if (CreateDebugUtilsMessengerEXT(m_VkInstance, &createInfo, nullptr, &m_DebugMessenger) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "failed to set up debug messenger!");
+        }
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    /**
+     * Selects the best physical device that supports the required features and extensions
+     */
     RenderInitError VkRenderAPI::PickPhysicalDevice()
     {
         uint32_t deviceCount = 0;
@@ -149,8 +173,11 @@ namespace Dodo::Platform {
             deviceInfo.properties = deviceProperties;
             deviceInfo.features = deviceFeatures;
             deviceInfo.indices = FindQueueFamilies(device);
-
-            if (isDeviceBetter(bestDevice, deviceInfo)) {
+            if(!IsDeviceSuitable(deviceInfo)) {
+                DD_INFO("Device {} is not suitable", deviceProperties.deviceName);
+                continue;
+            }
+            if (IsDeviceBetter(bestDevice, deviceInfo)) {
                 m_PhysicalDevice = device;
             }
         }
@@ -162,6 +189,9 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success);
     }
 
+    /**
+     * Creates a logical device from the selected physical device and retrieves the graphics and present queues
+     */
     RenderInitError VkRenderAPI::InitDevice()
     {
         QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
@@ -181,6 +211,12 @@ namespace Dodo::Platform {
             queueCreateInfos.push_back(queueCreateInfo);
         }
 
+        // Fetch and check required device extensions
+        std::vector<const char*> deviceExtensions = GetRequiredDeviceExtensions();
+        if (!CheckDeviceExtensionSupport(m_PhysicalDevice, deviceExtensions)) {
+            return RenderInitError(RenderInitStatus::Failed, "Physical device does not support required extensions!");
+        }
+
         // We will specify device features here later
         VkPhysicalDeviceFeatures deviceFeatures{};
 
@@ -190,7 +226,8 @@ namespace Dodo::Platform {
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
         createInfo.pEnabledFeatures = &deviceFeatures;
 
-        createInfo.enabledExtensionCount = 0;
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+        createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
         if (m_EnableValidationLayers) {
             createInfo.enabledLayerCount = static_cast<uint32_t>(m_ValidationLayers.size());
@@ -214,32 +251,6 @@ namespace Dodo::Platform {
         // ImGui_ImplVulkan_Init();
 
         return RenderInitError(RenderInitStatus::Success);
-    }
-
-    bool VkRenderAPI::isDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device)
-    {
-        if (bestDevice.device == VK_NULL_HANDLE) return true;
-
-        if (bestDevice.properties.deviceType < bestDevice.properties.deviceType) {
-            /**
-             * VK_PHYSICAL_DEVICE_TYPE_OTHER = 0,
-             * VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU = 1,
-             * VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU = 2,
-             * VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU = 3,
-             * VK_PHYSICAL_DEVICE_TYPE_CPU = 4,
-             *
-             * Prefer higher valued devices with the exception of CPU devices
-             */
-            return bestDevice.properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_CPU;
-        }
-
-        if (device.features.geometryShader != device.features.geometryShader) return device.features.geometryShader;
-
-        if (device.indices.IsComplete() && !bestDevice.indices.IsComplete()) return true;
-
-        // TODO: Selection based on VRAM:
-        // https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkPhysicalDeviceMemoryProperties.html
-        return false;
     }
 
     void VkRenderAPI::Begin() const {}
@@ -273,6 +284,55 @@ namespace Dodo::Platform {
         // ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData());
     }
 
+    /**
+     * Checks if a physical device meets our requirements of features, queue families, and extensions
+     */
+    bool VkRenderAPI::IsDeviceSuitable(PhyisicalDeviceInfo device)
+    {
+        if (device.device == VK_NULL_HANDLE) return false;
+        if (!device.features.geometryShader) return false; // Note: This might fail on MacOS even though the device supports geometry shaders, due to MoltenVK not reporting it correctly.
+        if (!device.indices.IsComplete()) return false;
+
+        // Check if all required device extensions are supported
+        std::vector<const char*> requiredExtensions = GetRequiredDeviceExtensions();
+        if (!CheckDeviceExtensionSupport(device.device, requiredExtensions)) return false;
+
+        // Check if swap chain is enough for presentation
+        SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device.device);
+        if(swapChainSupport.formats.empty() || swapChainSupport.presentModes.empty()) return false;
+        
+
+        return true;
+    }
+
+    /**
+     * Takes two candidate physical devices and provides an ordering based on their type
+     */
+    bool VkRenderAPI::IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device)
+    {
+
+        if (bestDevice.properties.deviceType < bestDevice.properties.deviceType) {
+            /**
+             * VK_PHYSICAL_DEVICE_TYPE_OTHER = 0,
+             * VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU = 1,
+             * VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU = 2,
+             * VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU = 3,
+             * VK_PHYSICAL_DEVICE_TYPE_CPU = 4,
+             *
+             * Prefer higher valued devices with the exception of CPU devices
+             */
+            return bestDevice.properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_CPU;
+        }
+
+
+        // TODO: Selection based on VRAM:
+        // https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkPhysicalDeviceMemoryProperties.html
+        return false;
+    }
+
+    /**
+     * Finds the queue families supported by a physical device
+     */
     QueueFamilyIndices VkRenderAPI::FindQueueFamilies(VkPhysicalDevice device)
     {
         QueueFamilyIndices indices;
@@ -282,19 +342,18 @@ namespace Dodo::Platform {
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-        int i = 0;
+        uint32_t i = 0;
         for (const auto& queueFamily : queueFamilies) {
-            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            bool graphics = queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT;
+            VkBool32 present = false;
+            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &present);
+            if (graphics && present) {
                 indices.graphicsFamily = i;
-            }
-            VkBool32 presentSupport = false;
-            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentSupport);
-            if (presentSupport) {
                 indices.presentFamily = i;
+                break; // Note: not modular for more queues rn, but we prefer same family for graphics and present
             }
-
-            // Exit early if all required families are found
-            if (indices.IsComplete()) break;
+            if (graphics) indices.graphicsFamily = i;
+            if (present) indices.presentFamily = i;
 
             i++;
         }
@@ -302,6 +361,9 @@ namespace Dodo::Platform {
         return indices;
     }
 
+    /**
+     * Retrieves the required instance extensions, including those required by the window backend
+     */
     std::vector<const char*> VkRenderAPI::GetRequiredExtensions()
     {
         std::vector<const char*> extensions = m_Context.GetExtensions();
@@ -331,25 +393,115 @@ namespace Dodo::Platform {
             availableLayerNames.insert(layer.layerName);
         }
 
+        // Store every missing extension for error reporting
+        std::vector<const char*> missingLayers;
         for (const char* layerName : m_ValidationLayers) {
             if (availableLayerNames.find(layerName) == availableLayerNames.end()) {
-                DD_ERR("Validation layer not found: {}", layerName);
-                return false;
+                missingLayers.push_back(layerName);
             }
         }
+
+        // If there are any missing extensions, log all of them and return false
+        if (!missingLayers.empty()) {
+            DD_ERR("Missing required layers:");
+            for (const char* required : missingLayers) {
+                DD_ERR("{}", required);
+            }
+            return false;
+        }
+
         return true;
     }
 
-    RenderInitError VkRenderAPI::SetupDebug()
+    std::vector<const char*> VkRenderAPI::GetRequiredDeviceExtensions()
     {
-        VkDebugUtilsMessengerCreateInfoEXT createInfo{};
-        PopulateDebugMessengerCreateInfo(createInfo);
+        std::vector<const char*> extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-        if (CreateDebugUtilsMessengerEXT(m_VkInstance, &createInfo, nullptr, &m_DebugMessenger) != VK_SUCCESS) {
-            return RenderInitError(RenderInitStatus::Failed, "failed to set up debug messenger!");
+        return extensions;
+    }
+
+    bool VkRenderAPI::CheckDeviceExtensionSupport(VkPhysicalDevice device,
+                                                  const std::vector<const char*>& requiredExtensions)
+    {
+        uint32_t extensionCount;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+        // Build a hash set of available extension names
+        std::unordered_set<std::string> availableExtensionNames;
+        availableExtensionNames.reserve(extensionCount);
+        for (const auto& extension : availableExtensions) {
+            availableExtensionNames.insert(extension.extensionName);
         }
 
-        return RenderInitError(RenderInitStatus::Success);
+        // Store every missing extension for error reporting
+        std::vector<const char*> missingExtensions;
+        for (const char* required : requiredExtensions) {
+            if (availableExtensionNames.find(required) == availableExtensionNames.end()) {
+                missingExtensions.push_back(required);
+            }
+        }
+
+        // If there are any missing extensions, log all of them and return false
+        if (!missingExtensions.empty()) {
+            DD_ERR("Physical device is missing required extensions:");
+            for (const char* required : missingExtensions) {
+                DD_ERR("{}", required);
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    SwapChainSupportDetails VkRenderAPI::QuerySwapChainSupport(VkPhysicalDevice device)
+    {
+        SwapChainSupportDetails details;
+
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &details.capabilities);
+
+        uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, nullptr);
+        if (formatCount != 0) {
+            details.formats.resize(formatCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, details.formats.data());
+        }
+
+        uint32_t presentModeCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, nullptr);
+        if (presentModeCount != 0) {
+            details.presentModes.resize(presentModeCount);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount,
+                                                      details.presentModes.data());
+        }
+
+        return details;
+    }
+
+    VkSurfaceFormatKHR VkRenderAPI::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+    {
+        for (const auto& availableFormat : availableFormats) {
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+                return availableFormat;
+            }
+        }
+
+        // TODO: Add a IsBetterSurfaceFormat function to select the best available format
+        return availableFormats[0];
+    }
+
+    VkPresentModeKHR VkRenderAPI::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+        // TODO: We want to choose this based on hardware. For example mobile devices or laptops 
+        // we want to avoid MAILBOX since it consumes a lot of battery
+        // See https://youtu.be/0OqJtPnkfC8?si=Bi7aUphwI486H_Ba&t=1200
+        for (const auto& availablePresentMode : availablePresentModes) {
+            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+                return availablePresentMode;
+            }
+        }
+
+        return VK_PRESENT_MODE_FIFO_KHR;
     }
 
     /**
@@ -394,6 +546,9 @@ namespace Dodo::Platform {
         }
     }
 
+    /**
+     * A callback function that is called by the Vulkan validation layers
+     */
     VKAPI_ATTR VkBool32 VKAPI_CALL VkRenderAPI::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                               VkDebugUtilsMessageTypeFlagsEXT messageType,
                                                               const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,

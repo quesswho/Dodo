@@ -18,6 +18,14 @@ namespace Dodo::Platform {
 
     VkRenderAPI::~VkRenderAPI()
     {
+        // TODO: There should be a check for imgui here...
+        ImGui_ImplVulkan_Shutdown();
+        vkDestroyDescriptorPool(m_Device, m_ImGuiDescriptorPool, nullptr);
+
+        for (auto imageView : m_SwapChainImageViews) {
+            vkDestroyImageView(m_Device, imageView, nullptr);
+        }
+        vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
         vkDestroyDevice(m_Device, nullptr);
         if (m_EnableValidationLayers) {
             DestroyDebugUtilsMessengerEXT(m_VkInstance, m_DebugMessenger, nullptr);
@@ -54,6 +62,8 @@ namespace Dodo::Platform {
         }
         if (Try(PickPhysicalDevice())) return result;
         if (Try(InitDevice())) return result;
+        if (Try(CreateSwapChain())) return result;
+        if (Try(CreateImageViews())) return result;
         if (winprop.m_Settings.imgui)
             if (Try(InitImGui())) return result;
 
@@ -245,10 +255,128 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success);
     }
 
+    RenderInitError VkRenderAPI::CreateSwapChain()
+    {
+        SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(m_PhysicalDevice);
+
+        VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
+        VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
+        VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
+
+        uint32_t minCount = swapChainSupport.capabilities.minImageCount;
+        uint32_t maxCount = swapChainSupport.capabilities.maxImageCount > 0 ? swapChainSupport.capabilities.maxImageCount : std::numeric_limits<uint32_t>::max();
+        // We prefer triple buffer, then double buffer
+        uint32_t imageCount = (3 <= maxCount) ? std::max(3u, minCount) : maxCount;
+
+        VkSwapchainCreateInfoKHR createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        createInfo.surface = m_Surface;
+
+        createInfo.minImageCount = imageCount;
+        createInfo.imageFormat = surfaceFormat.format;
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;
+        createInfo.imageExtent = extent;
+        createInfo.imageArrayLayers = 1;
+
+        // This means we draw directly to the images, with framebuffers we would use VK_IMAGE_USAGE_TRANSFER_DST_BIT
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; 
+
+        QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
+        uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+
+        if (indices.graphicsFamily != indices.presentFamily) {
+            // TODO: Data needs to be shared across queue families, needs some additional setup here
+            // We might need hardware to properly test whenever we have different queue families
+            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+            createInfo.queueFamilyIndexCount = 2;
+            createInfo.pQueueFamilyIndices = queueFamilyIndices;
+        } else {
+            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            createInfo.queueFamilyIndexCount = 0;
+            createInfo.pQueueFamilyIndices = nullptr;
+        }
+
+        // Specify no transformations such as 90 degree rotation or flipping
+        createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+
+        // We might want to change this for alpha textures, but not clear
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+
+        createInfo.presentMode = presentMode;
+        createInfo.clipped = VK_TRUE; // Disallow reading pixel in non-active buffers 
+
+        // Todo: See https://vulkan-tutorial.com/Drawing_a_triangle/Swap_chain_recreation
+        createInfo.oldSwapchain = VK_NULL_HANDLE;
+
+        if (vkCreateSwapchainKHR(m_Device, &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "Failed to create swap chain!");
+        }
+
+        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &imageCount, nullptr);
+        m_SwapChainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &imageCount, m_SwapChainImages.data());
+
+        m_SwapChainImageFormat = surfaceFormat.format;
+        m_SwapChainExtent = extent;
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    RenderInitError VkRenderAPI::CreateImageViews()
+    {
+        m_SwapChainImageViews.resize(m_SwapChainImages.size());
+        for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
+            VkImageViewCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            createInfo.image = m_SwapChainImages[i];
+            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            createInfo.format = m_SwapChainImageFormat;
+            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            createInfo.subresourceRange.baseMipLevel = 0;
+            createInfo.subresourceRange.levelCount = 1;
+            createInfo.subresourceRange.baseArrayLayer = 0;
+            createInfo.subresourceRange.layerCount = 1;
+
+            if (vkCreateImageView(m_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]) != VK_SUCCESS) {
+                return RenderInitError(RenderInitStatus::Failed, "Failed to create image views!");
+            }
+        }
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
     RenderInitError VkRenderAPI::InitImGui()
     {
         m_Context.InitializeImGui();
-        // ImGui_ImplVulkan_Init();
+
+        VkDescriptorPoolSize poolSizes[] = {
+            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 },
+        };
+
+        VkDescriptorPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+        poolInfo.maxSets = 1;
+        poolInfo.poolSizeCount = 1;
+        poolInfo.pPoolSizes = poolSizes;
+
+        if (vkCreateDescriptorPool(m_Device, &poolInfo, nullptr, &m_ImGuiDescriptorPool) != VK_SUCCESS)
+            return RenderInitError(RenderInitStatus::Failed, "Failed to create ImGui descriptor pool!");
+
+        ImGui_ImplVulkan_InitInfo vulkanInfo{};
+        vulkanInfo.Instance       = m_VkInstance;
+        vulkanInfo.PhysicalDevice = m_PhysicalDevice;
+        vulkanInfo.Device         = m_Device;
+        vulkanInfo.Queue          = m_PresentQueue;
+        vulkanInfo.DescriptorPool = m_ImGuiDescriptorPool;
+        vulkanInfo.MinImageCount  = 2;
+        vulkanInfo.ImageCount     = static_cast<uint32_t>(m_SwapChainImages.size());
+
+        ImGui_ImplVulkan_Init(&vulkanInfo);
 
         return RenderInitError(RenderInitStatus::Success);
     }
@@ -310,6 +438,7 @@ namespace Dodo::Platform {
      */
     bool VkRenderAPI::IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device)
     {
+        if(bestDevice.device == VK_NULL_HANDLE) return true;
 
         if (bestDevice.properties.deviceType < bestDevice.properties.deviceType) {
             /**
@@ -479,6 +608,10 @@ namespace Dodo::Platform {
         return details;
     }
 
+
+    /**
+     * Select the best surface format given available pixel formats
+     */
     VkSurfaceFormatKHR VkRenderAPI::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
     {
         for (const auto& availableFormat : availableFormats) {
@@ -491,7 +624,10 @@ namespace Dodo::Platform {
         return availableFormats[0];
     }
 
-    VkPresentModeKHR VkRenderAPI::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+    /**
+     * Select the best swap present mode given available present modes
+     */
+    VkPresentModeKHR VkRenderAPI::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
         // TODO: We want to choose this based on hardware. For example mobile devices or laptops 
         // we want to avoid MAILBOX since it consumes a lot of battery
         // See https://youtu.be/0OqJtPnkfC8?si=Bi7aUphwI486H_Ba&t=1200
@@ -502,6 +638,26 @@ namespace Dodo::Platform {
         }
 
         return VK_PRESENT_MODE_FIFO_KHR;
+    }
+
+    VkExtent2D VkRenderAPI::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+    {
+        if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+            return capabilities.currentExtent;
+        }
+
+        int width, height;
+        m_Context.GetFrameBufferSize(&width, &height);
+
+        VkExtent2D actualExtent = {
+            static_cast<uint32_t>(width),
+            static_cast<uint32_t>(height)
+        };
+
+        actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+        actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+
+        return actualExtent;
     }
 
     /**

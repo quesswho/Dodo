@@ -87,8 +87,10 @@ namespace Dodo::Platform {
         RenderInitError SetupDebug();
         RenderInitError PickPhysicalDevice();
         RenderInitError InitDevice();
+        RenderInitError CreateSwapChain();
+        RenderInitError CreateImageViews();
         RenderInitError InitImGui();
-
+        
         bool IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device);
         bool IsDeviceSuitable(PhyisicalDeviceInfo device);
 
@@ -100,8 +102,9 @@ namespace Dodo::Platform {
         bool CheckDeviceExtensionSupport(VkPhysicalDevice device, const std::vector<const char*>& requiredExtensions);
         SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-        
+        VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+        VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
         VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
                                               const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
                                               const VkAllocationCallbacks* pAllocator,
@@ -119,7 +122,14 @@ namespace Dodo::Platform {
         VkPhysicalDevice m_PhysicalDevice;
         VkDebugUtilsMessengerEXT m_DebugMessenger;
         VkSurfaceKHR m_Surface;
+        VkSwapchainKHR m_SwapChain;
         VkQueue m_PresentQueue;
+        std::vector<VkImage> m_SwapChainImages;
+        std::vector<VkImageView> m_SwapChainImageViews;
+        VkFormat m_SwapChainImageFormat;
+        VkExtent2D m_SwapChainExtent;
+
+        VkDescriptorPool m_ImGuiDescriptorPool;
 
         bool m_EnableValidationLayers;
         std::vector<const char*> m_ValidationLayers;

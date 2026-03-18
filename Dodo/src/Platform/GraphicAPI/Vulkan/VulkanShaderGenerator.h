@@ -45,7 +45,7 @@ namespace Dodo {
 
     namespace Platform {
 
-        class VkShaderGenerator {
+        class VulkanShaderGenerator {
           public:
             static GeneratedShaderSource Generate(const ShaderBuilderFlags flags);
 

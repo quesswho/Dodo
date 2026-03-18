@@ -1,4 +1,4 @@
-#include "VkRenderAPI.h"
+#include "VulkanRenderAPI.h"
 #include "pch.h"
 
 #include <backends/imgui_impl_vulkan.h>
@@ -6,7 +6,7 @@
 
 namespace Dodo::Platform {
 
-    VkRenderAPI::VkRenderAPI(const NativeWindowHandle& handle) : m_Handle(handle)
+    VulkanRenderAPI::VulkanRenderAPI(const NativeWindowHandle& handle) : m_Handle(handle)
     {
 #ifdef DD_DEBUG
         m_EnableValidationLayers = true;
@@ -16,7 +16,7 @@ namespace Dodo::Platform {
 #endif
     }
 
-    VkRenderAPI::~VkRenderAPI()
+    VulkanRenderAPI::~VulkanRenderAPI()
     {
         // TODO: There should be a check for imgui here...
         ImGui_ImplVulkan_Shutdown();
@@ -37,7 +37,7 @@ namespace Dodo::Platform {
     /**
      * Initializes the Vulkan instance, picks a physical device, creates a logical device and initializes ImGui if enabled in the window properties.
      */
-    RenderInitError VkRenderAPI::Init(const WindowProperties& winprop)
+    RenderInitError VulkanRenderAPI::Init(const WindowProperties& winprop)
     {
         RenderInitError result = RenderInitError(RenderInitStatus::Success);
 
@@ -73,7 +73,7 @@ namespace Dodo::Platform {
     /**
      * Initializes the Vulkan instance and initialize volk
      */
-    RenderInitError VkRenderAPI::InitInstance()
+    RenderInitError VulkanRenderAPI::InitInstance()
     {
         if (m_EnableValidationLayers && !CheckValidationLayerSupport())
             return RenderInitError(RenderInitStatus::Failed, "validation layers requested, but not available!");
@@ -143,7 +143,7 @@ namespace Dodo::Platform {
     /**
      * Sets up the debug messenger callback for Vulkan validation layers
      */
-    RenderInitError VkRenderAPI::SetupDebug()
+    RenderInitError VulkanRenderAPI::SetupDebug()
     {
         VkDebugUtilsMessengerCreateInfoEXT createInfo{};
         PopulateDebugMessengerCreateInfo(createInfo);
@@ -158,7 +158,7 @@ namespace Dodo::Platform {
     /**
      * Selects the best physical device that supports the required features and extensions
      */
-    RenderInitError VkRenderAPI::PickPhysicalDevice()
+    RenderInitError VulkanRenderAPI::PickPhysicalDevice()
     {
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(m_VkInstance, &deviceCount, nullptr);
@@ -202,7 +202,7 @@ namespace Dodo::Platform {
     /**
      * Creates a logical device from the selected physical device and retrieves the graphics and present queues
      */
-    RenderInitError VkRenderAPI::InitDevice()
+    RenderInitError VulkanRenderAPI::InitDevice()
     {
         QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
 
@@ -255,7 +255,7 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success);
     }
 
-    RenderInitError VkRenderAPI::CreateSwapChain()
+    RenderInitError VulkanRenderAPI::CreateSwapChain()
     {
         SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(m_PhysicalDevice);
 
@@ -322,7 +322,7 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success);
     }
 
-    RenderInitError VkRenderAPI::CreateImageViews()
+    RenderInitError VulkanRenderAPI::CreateImageViews()
     {
         m_SwapChainImageViews.resize(m_SwapChainImages.size());
         for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
@@ -349,7 +349,7 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success);
     }
 
-    RenderInitError VkRenderAPI::InitImGui()
+    RenderInitError VulkanRenderAPI::InitImGui()
     {
         m_Context.InitializeImGui();
 
@@ -381,33 +381,33 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success);
     }
 
-    void VkRenderAPI::Begin() const {}
-    void VkRenderAPI::End() {}
+    void VulkanRenderAPI::Begin() const {}
+    void VulkanRenderAPI::End() {}
 
-    void VkRenderAPI::ClearColor(float r, float g, float b) const {}
-    void VkRenderAPI::Viewport(uint width, uint height) const {}
-    void VkRenderAPI::BindCubeMap(uint slot, Ref<CubeMap> cubemap) {}
-    void VkRenderAPI::BindTexture(uint slot, Ref<Texture> texture) {}
-    void VkRenderAPI::BindTextureSampler(uint slot, Ref<TextureSampler> sampler) {}
-    void VkRenderAPI::DrawIndices(uint count) const {}
-    void VkRenderAPI::DrawArray(uint count) const {}
+    void VulkanRenderAPI::ClearColor(float r, float g, float b) const {}
+    void VulkanRenderAPI::Viewport(uint width, uint height) const {}
+    void VulkanRenderAPI::BindCubeMap(uint slot, Ref<CubeMap> cubemap) {}
+    void VulkanRenderAPI::BindTexture(uint slot, Ref<Texture> texture) {}
+    void VulkanRenderAPI::BindTextureSampler(uint slot, Ref<TextureSampler> sampler) {}
+    void VulkanRenderAPI::DrawIndices(uint count) const {}
+    void VulkanRenderAPI::DrawArray(uint count) const {}
 
-    void VkRenderAPI::DefaultFrameBuffer() const {}
-    void VkRenderAPI::ResizeDefaultViewport(uint width, uint height) {}
-    void VkRenderAPI::ResizeDefaultViewport(uint width, uint height, uint posX, uint posY) {}
+    void VulkanRenderAPI::DefaultFrameBuffer() const {}
+    void VulkanRenderAPI::ResizeDefaultViewport(uint width, uint height) {}
+    void VulkanRenderAPI::ResizeDefaultViewport(uint width, uint height, uint posX, uint posY) {}
 
-    void VkRenderAPI::DepthComparisonMethod(Dodo::DepthComparisonMethod method) const {}
-    void VkRenderAPI::DepthTest(bool depthtest) const {}
-    void VkRenderAPI::StencilTest(bool stenciltest) const {}
-    void VkRenderAPI::Blending(bool blending) const {}
-    void VkRenderAPI::Culling(bool cull, bool backface) {}
+    void VulkanRenderAPI::DepthComparisonMethod(Dodo::DepthComparisonMethod method) const {}
+    void VulkanRenderAPI::DepthTest(bool depthtest) const {}
+    void VulkanRenderAPI::StencilTest(bool stenciltest) const {}
+    void VulkanRenderAPI::Blending(bool blending) const {}
+    void VulkanRenderAPI::Culling(bool cull, bool backface) {}
 
-    void VkRenderAPI::ImGuiNewFrame() const
+    void VulkanRenderAPI::ImGuiNewFrame() const
     {
         ImGui_ImplVulkan_NewFrame();
     }
 
-    void VkRenderAPI::ImGuiEndFrame() const
+    void VulkanRenderAPI::ImGuiEndFrame() const
     {
         // ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData());
     }
@@ -415,7 +415,7 @@ namespace Dodo::Platform {
     /**
      * Checks if a physical device meets our requirements of features, queue families, and extensions
      */
-    bool VkRenderAPI::IsDeviceSuitable(PhyisicalDeviceInfo device)
+    bool VulkanRenderAPI::IsDeviceSuitable(PhyisicalDeviceInfo device)
     {
         if (device.device == VK_NULL_HANDLE) return false;
         if (!device.features.geometryShader) return false; // Note: This might fail on MacOS even though the device supports geometry shaders, due to MoltenVK not reporting it correctly.
@@ -436,7 +436,7 @@ namespace Dodo::Platform {
     /**
      * Takes two candidate physical devices and provides an ordering based on their type
      */
-    bool VkRenderAPI::IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device)
+    bool VulkanRenderAPI::IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device)
     {
         if(bestDevice.device == VK_NULL_HANDLE) return true;
 
@@ -462,7 +462,7 @@ namespace Dodo::Platform {
     /**
      * Finds the queue families supported by a physical device
      */
-    QueueFamilyIndices VkRenderAPI::FindQueueFamilies(VkPhysicalDevice device)
+    QueueFamilyIndices VulkanRenderAPI::FindQueueFamilies(VkPhysicalDevice device)
     {
         QueueFamilyIndices indices;
 
@@ -493,7 +493,7 @@ namespace Dodo::Platform {
     /**
      * Retrieves the required instance extensions, including those required by the window backend
      */
-    std::vector<const char*> VkRenderAPI::GetRequiredExtensions()
+    std::vector<const char*> VulkanRenderAPI::GetRequiredExtensions()
     {
         std::vector<const char*> extensions = m_Context.GetExtensions();
 
@@ -508,7 +508,7 @@ namespace Dodo::Platform {
         return extensions;
     }
 
-    bool VkRenderAPI::CheckValidationLayerSupport()
+    bool VulkanRenderAPI::CheckValidationLayerSupport()
     {
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -542,14 +542,14 @@ namespace Dodo::Platform {
         return true;
     }
 
-    std::vector<const char*> VkRenderAPI::GetRequiredDeviceExtensions()
+    std::vector<const char*> VulkanRenderAPI::GetRequiredDeviceExtensions()
     {
         std::vector<const char*> extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
         return extensions;
     }
 
-    bool VkRenderAPI::CheckDeviceExtensionSupport(VkPhysicalDevice device,
+    bool VulkanRenderAPI::CheckDeviceExtensionSupport(VkPhysicalDevice device,
                                                   const std::vector<const char*>& requiredExtensions)
     {
         uint32_t extensionCount;
@@ -584,7 +584,7 @@ namespace Dodo::Platform {
         return true;
     }
 
-    SwapChainSupportDetails VkRenderAPI::QuerySwapChainSupport(VkPhysicalDevice device)
+    SwapChainSupportDetails VulkanRenderAPI::QuerySwapChainSupport(VkPhysicalDevice device)
     {
         SwapChainSupportDetails details;
 
@@ -612,7 +612,7 @@ namespace Dodo::Platform {
     /**
      * Select the best surface format given available pixel formats
      */
-    VkSurfaceFormatKHR VkRenderAPI::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+    VkSurfaceFormatKHR VulkanRenderAPI::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
     {
         for (const auto& availableFormat : availableFormats) {
             if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -627,7 +627,7 @@ namespace Dodo::Platform {
     /**
      * Select the best swap present mode given available present modes
      */
-    VkPresentModeKHR VkRenderAPI::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+    VkPresentModeKHR VulkanRenderAPI::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
         // TODO: We want to choose this based on hardware. For example mobile devices or laptops 
         // we want to avoid MAILBOX since it consumes a lot of battery
         // See https://youtu.be/0OqJtPnkfC8?si=Bi7aUphwI486H_Ba&t=1200
@@ -640,7 +640,7 @@ namespace Dodo::Platform {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D VkRenderAPI::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+    VkExtent2D VulkanRenderAPI::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
     {
         if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
             return capabilities.currentExtent;
@@ -665,7 +665,7 @@ namespace Dodo::Platform {
      * messenger. This function is used while setting up the debug messenger and when creating the Vulkan instance. This
      * ensures that the debug messenger is set up even during instance creation.
      */
-    void VkRenderAPI::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
+    void VulkanRenderAPI::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
     {
         createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -678,7 +678,7 @@ namespace Dodo::Platform {
         createInfo.pfnUserCallback = DebugCallback;
     }
 
-    VkResult VkRenderAPI::CreateDebugUtilsMessengerEXT(VkInstance instance,
+    VkResult VulkanRenderAPI::CreateDebugUtilsMessengerEXT(VkInstance instance,
                                                        const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
                                                        const VkAllocationCallbacks* pAllocator,
                                                        VkDebugUtilsMessengerEXT* pDebugMessenger)
@@ -692,7 +692,7 @@ namespace Dodo::Platform {
         }
     }
 
-    void VkRenderAPI::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+    void VulkanRenderAPI::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
                                                     const VkAllocationCallbacks* pAllocator)
     {
         auto func =
@@ -705,7 +705,7 @@ namespace Dodo::Platform {
     /**
      * A callback function that is called by the Vulkan validation layers
      */
-    VKAPI_ATTR VkBool32 VKAPI_CALL VkRenderAPI::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderAPI::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                               VkDebugUtilsMessageTypeFlagsEXT messageType,
                                                               const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                               void* pUserData)

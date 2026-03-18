@@ -1,16 +1,16 @@
-#include "VkShaderGenerator.h"
+#include "VulkanShaderGenerator.h"
 #include "pch.h"
 
 namespace Dodo::Platform {
 
     // TODO: Replace with slang
-    GeneratedShaderSource VkShaderGenerator::GetFallbackShader()
+    GeneratedShaderSource VulkanShaderGenerator::GetFallbackShader()
     {
         GeneratedShaderSource source;
         return source;
     }
 
-    GeneratedShaderSource VkShaderGenerator::Generate(const ShaderBuilderFlags flags)
+    GeneratedShaderSource VulkanShaderGenerator::Generate(const ShaderBuilderFlags flags)
     {
         GeneratedShaderSource source;
         return source;

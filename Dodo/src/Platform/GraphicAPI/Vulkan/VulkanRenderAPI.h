@@ -10,10 +10,10 @@
 
 #include "Platform/WindowAPI/NativeWindowHandle.h"
 #ifdef DD_API_WIN32
-#include "VkWGLContext.h"
+#include "VulkanWGLContext.h"
 using VulkanContext = Dodo::Platform::VulkanWGLContext;
 #elif defined(DD_API_GLFW)
-#include "VkGLFWContext.h"
+#include "VulkanGLFWContext.h"
 using VulkanContext = Dodo::Platform::VulkanGLFWContext;
 #endif
 
@@ -41,10 +41,10 @@ namespace Dodo::Platform {
         std::vector<VkPresentModeKHR> presentModes;
     };
 
-    class VkRenderAPI {
+    class VulkanRenderAPI {
       public:
-        VkRenderAPI(const NativeWindowHandle& NativeWindowHandle);
-        ~VkRenderAPI();
+        VulkanRenderAPI(const NativeWindowHandle& NativeWindowHandle);
+        ~VulkanRenderAPI();
         RenderInitError Init(const WindowProperties& winprop);
 
         void Begin() const;

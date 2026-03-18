@@ -6,8 +6,8 @@ namespace Dodo {
     using CubeMap = Platform::OpenGLCubeMap;
 }
 #elif defined(DD_API_VULKAN)
-#include "Platform/GraphicAPI/Vulkan/VkCubeMap.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanCubeMap.h"
 namespace Dodo {
-    using CubeMap = Platform::VkCubeMap;
+    using CubeMap = Platform::VulkanCubeMap;
 }
 #endif

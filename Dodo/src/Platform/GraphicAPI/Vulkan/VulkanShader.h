@@ -6,11 +6,11 @@
 
 namespace Dodo::Platform {
 
-    class VkShader {
+    class VulkanShader {
       public:
-        VkShader(uint shader) : m_ShaderID(shader) {}
+        VulkanShader(uint shader) : m_ShaderID(shader) {}
 
-        ~VkShader();
+        ~VulkanShader();
 
         void Bind() const;
         void Unbind() const;

@@ -4,7 +4,7 @@
 #include <Core/Graphics/Shader/ShaderSource.h>
 
 namespace Dodo::Platform {
-    class VkShaderCompiler {
+    class VulkanShaderCompiler {
       public:
         static uint Compile(const ShaderSource& source);
 

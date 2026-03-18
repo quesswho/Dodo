@@ -6,8 +6,8 @@ namespace Dodo {
     using FrameBuffer = Platform::OpenGLFrameBuffer;
 }
 #elif defined(DD_API_VULKAN)
-#include "Platform/GraphicAPI/Vulkan/VkFrameBuffer.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanFrameBuffer.h"
 namespace Dodo {
-    using FrameBuffer = Platform::VkFrameBuffer;
+    using FrameBuffer = Platform::VulkanFrameBuffer;
 }
 #endif

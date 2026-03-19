@@ -47,7 +47,7 @@ The engine features an Entity Component System (ECS), model loading, materials, 
 - Ninja
 - A C++20-compatible compiler
 - OpenGL 4.5-capable GPU
-- Vulkan 1.0-capable GPU (for Vulkan backend, optional)
+- Vulkan 1.3-capable GPU (for Vulkan backend, optional)
 
 ### Cloning
 

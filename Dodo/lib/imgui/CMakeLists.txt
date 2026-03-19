@@ -28,6 +28,7 @@ if(DD_API_VULKAN)
     target_sources(imgui PRIVATE
         imgui/backends/imgui_impl_vulkan.cpp
     )
+    target_compile_definitions(imgui PRIVATE IMGUI_IMPL_VULKAN_NO_PROTOTYPES)
     target_link_libraries(imgui PRIVATE volk)
 endif()
 

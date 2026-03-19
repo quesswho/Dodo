@@ -18,6 +18,10 @@ namespace Dodo::Platform {
 
     VulkanRenderAPI::~VulkanRenderAPI()
     {
+        vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore, nullptr);
+        vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore, nullptr);
+        vkDestroyFence(m_Device, m_InFlightFence, nullptr);
+        vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
         // TODO: There should be a check for imgui here...
         ImGui_ImplVulkan_Shutdown();
         vkDestroyDescriptorPool(m_Device, m_ImGuiDescriptorPool, nullptr);
@@ -64,6 +68,9 @@ namespace Dodo::Platform {
         if (Try(InitDevice())) return result;
         if (Try(CreateSwapChain())) return result;
         if (Try(CreateImageViews())) return result;
+        if (Try(CreateCommandPool())) return result;
+        if (Try(CreateCommandBuffer())) return result;
+        if (Try(CreateSyncObjects())) return result;
         if (winprop.m_Settings.imgui)
             if (Try(InitImGui())) return result;
 
@@ -83,7 +90,7 @@ namespace Dodo::Platform {
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.pEngineName = "Dodo Engine";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion = VK_API_VERSION_1_0;
+        appInfo.apiVersion = VK_API_VERSION_1_3;
 
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -136,7 +143,7 @@ namespace Dodo::Platform {
 
         // Load all required Vulkan entrypoints, including all extensions
         volkLoadInstance(m_VkInstance);
-
+        
         return RenderInitError(RenderInitStatus::Success);
     }
 
@@ -222,16 +229,22 @@ namespace Dodo::Platform {
         }
 
         // Fetch and check required device extensions
-        std::vector<const char*> deviceExtensions = GetRequiredDeviceExtensions();
+        std::vector<const char*> deviceExtensions = GetRequiredDeviceExtensions(m_PhysicalDevice);
         if (!CheckDeviceExtensionSupport(m_PhysicalDevice, deviceExtensions)) {
             return RenderInitError(RenderInitStatus::Failed, "Physical device does not support required extensions!");
         }
+
+        // Dynamic rendering feature
+        VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeature{};
+        dynamicRenderingFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+        dynamicRenderingFeature.dynamicRendering = VK_TRUE;
 
         // We will specify device features here later
         VkPhysicalDeviceFeatures deviceFeatures{};
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.pNext = &dynamicRenderingFeature;
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
         createInfo.pEnabledFeatures = &deviceFeatures;
@@ -249,6 +262,8 @@ namespace Dodo::Platform {
         if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS) {
             return RenderInitError(RenderInitStatus::Failed, "failed to create logical device!");
         }
+
+        volkLoadDevice(m_Device);
 
         vkGetDeviceQueue(m_Device, indices.presentFamily.value(), 0, &m_PresentQueue);
 
@@ -349,6 +364,54 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success);
     }
 
+    RenderInitError VulkanRenderAPI::CreateCommandPool()
+    {
+        QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(m_PhysicalDevice);
+
+        VkCommandPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+
+        if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "failed to create command pool!");
+        }
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    RenderInitError VulkanRenderAPI::CreateCommandBuffer()
+    {
+        VkCommandBufferAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.commandPool = m_CommandPool;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandBufferCount = 1;
+
+        if (vkAllocateCommandBuffers(m_Device, &allocInfo, &m_CommandBuffer) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "failed to allocate command buffers!");
+        }
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    RenderInitError VulkanRenderAPI::CreateSyncObjects()
+    {
+        VkSemaphoreCreateInfo semaphoreInfo{};
+        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        VkFenceCreateInfo fenceInfo{};
+        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Sets the fence into signaled state so that we do not wait for the first frame which does not exist
+
+        if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore) != VK_SUCCESS ||
+            vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore) != VK_SUCCESS ||
+            vkCreateFence(m_Device, &fenceInfo, nullptr, &m_InFlightFence) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "failed to create semaphores!");
+        }
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
     RenderInitError VulkanRenderAPI::InitImGui()
     {
         m_Context.InitializeImGui();
@@ -357,7 +420,7 @@ namespace Dodo::Platform {
             { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 },
         };
 
-        VkDescriptorPoolCreateInfo poolInfo{};
+        VkDescriptorPoolCreateInfo poolInfo = {};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
         poolInfo.maxSets = 1;
@@ -367,15 +430,32 @@ namespace Dodo::Platform {
         if (vkCreateDescriptorPool(m_Device, &poolInfo, nullptr, &m_ImGuiDescriptorPool) != VK_SUCCESS)
             return RenderInitError(RenderInitStatus::Failed, "Failed to create ImGui descriptor pool!");
 
-        ImGui_ImplVulkan_InitInfo vulkanInfo{};
+        VkPipelineRenderingCreateInfo ImGuiPipelineInfo = {};
+        ImGuiPipelineInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+        ImGuiPipelineInfo.colorAttachmentCount = 1;
+        ImGuiPipelineInfo.pColorAttachmentFormats = &m_SwapChainImageFormat;
+
+        QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
+        
+        ImGui_ImplVulkan_InitInfo vulkanInfo = {};
         vulkanInfo.Instance       = m_VkInstance;
         vulkanInfo.PhysicalDevice = m_PhysicalDevice;
         vulkanInfo.Device         = m_Device;
+        vulkanInfo.QueueFamily    = indices.graphicsFamily.value();
         vulkanInfo.Queue          = m_PresentQueue;
         vulkanInfo.DescriptorPool = m_ImGuiDescriptorPool;
         vulkanInfo.MinImageCount  = 2;
         vulkanInfo.ImageCount     = static_cast<uint32_t>(m_SwapChainImages.size());
+        vulkanInfo.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
+        vulkanInfo.UseDynamicRendering = true;
+        vulkanInfo.PipelineInfoMain.PipelineRenderingCreateInfo = ImGuiPipelineInfo;
+
+        // (Volk) Load functions
+        ImGui_ImplVulkan_LoadFunctions(0, [](const char *function_name, void *vulkan_instance) {
+            return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance *>(vulkan_instance)), function_name);
+        }, &m_VkInstance);
+        
         ImGui_ImplVulkan_Init(&vulkanInfo);
 
         return RenderInitError(RenderInitStatus::Success);
@@ -409,7 +489,106 @@ namespace Dodo::Platform {
 
     void VulkanRenderAPI::ImGuiEndFrame() const
     {
-        // ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData());
+        // Wait until previous frame is finished
+        vkWaitForFences(m_Device, 1, &m_InFlightFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(m_Device, 1, &m_InFlightFence);
+
+        // Get the current image index in the swap chain
+        uint32_t imageIndex;
+        vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+        vkResetCommandBuffer(m_CommandBuffer, 0);
+
+        VkCommandBufferBeginInfo beginInfo = {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+        if (vkBeginCommandBuffer(m_CommandBuffer, &beginInfo) != VK_SUCCESS) {
+            DD_ERR("failed to begin recording command buffer!");
+            return;
+        }
+
+        VkImageMemoryBarrier barrier = {};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = m_SwapChainImages[imageIndex];
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        
+        vkCmdPipelineBarrier(
+            m_CommandBuffer,
+            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            0,
+            0, nullptr,
+            0, nullptr,
+            1, &barrier
+        );
+
+        // Setup dynamic rendering target
+        VkRenderingAttachmentInfo colorAttachment = {};
+        colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+        colorAttachment.imageView = m_SwapChainImageViews[imageIndex];
+        colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.clearValue.color = {{0.1f, 0.1f, 1.0f, 1.0f}};  // Dark gray background
+        
+        VkRenderingInfo renderingInfo = {};
+        renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+        renderingInfo.renderArea = {{0, 0}, m_SwapChainExtent};
+        renderingInfo.layerCount = 1;
+        renderingInfo.colorAttachmentCount = 1;
+        renderingInfo.pColorAttachments = &colorAttachment;
+        
+        vkCmdBeginRendering(m_CommandBuffer, &renderingInfo);
+
+        ImGui::Render();
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_CommandBuffer);
+
+        vkCmdEndRendering(m_CommandBuffer);
+        vkEndCommandBuffer(m_CommandBuffer);
+
+
+        // Setup semaphore and submit command buffer
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        
+        VkSemaphore waitSemaphores[] = {m_ImageAvailableSemaphore};
+        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitDstStageMask = waitStages;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &m_CommandBuffer;
+        
+        VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphore};
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
+        
+        if (vkQueueSubmit(m_PresentQueue, 1, &submitInfo, m_InFlightFence) != VK_SUCCESS) {
+            DD_ERR("failed to submit draw command buffer!");
+            return;
+        }
+
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+        
+        VkSwapchainKHR swapChains[] = {m_SwapChain};
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapChains;
+        presentInfo.pImageIndices = &imageIndex;
+        
+        vkQueuePresentKHR(m_PresentQueue, &presentInfo);
     }
 
     /**
@@ -422,7 +601,7 @@ namespace Dodo::Platform {
         if (!device.indices.IsComplete()) return false;
 
         // Check if all required device extensions are supported
-        std::vector<const char*> requiredExtensions = GetRequiredDeviceExtensions();
+        std::vector<const char*> requiredExtensions = GetRequiredDeviceExtensions(device.device);
         if (!CheckDeviceExtensionSupport(device.device, requiredExtensions)) return false;
 
         // Check if swap chain is enough for presentation
@@ -542,9 +721,24 @@ namespace Dodo::Platform {
         return true;
     }
 
-    std::vector<const char*> VulkanRenderAPI::GetRequiredDeviceExtensions()
+    /**
+     * Get required device extensions given the phyisical device. 
+     * Some extensions exist within the core after a certain version 
+     * so a version probe is necessary
+     */
+    std::vector<const char*> VulkanRenderAPI::GetRequiredDeviceExtensions(VkPhysicalDevice physicalDevice)
     {
-        std::vector<const char*> extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        std::vector<const char*> extensions = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        };
+
+        VkPhysicalDeviceProperties props;
+        vkGetPhysicalDeviceProperties(physicalDevice, &props);
+        
+        if (VK_API_VERSION_MINOR(props.apiVersion) < 3) {
+            // Dynamic rendering is built in core in 1.3+, otherwise we need the extension
+            extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+        }
 
         return extensions;
     }
@@ -557,11 +751,13 @@ namespace Dodo::Platform {
         std::vector<VkExtensionProperties> availableExtensions(extensionCount);
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
+        DD_INFO("Vulkan Device Extensions:");
         // Build a hash set of available extension names
         std::unordered_set<std::string> availableExtensionNames;
         availableExtensionNames.reserve(extensionCount);
         for (const auto& extension : availableExtensions) {
             availableExtensionNames.insert(extension.extensionName);
+            DD_INFO("{}", extension.extensionName);
         }
 
         // Store every missing extension for error reporting

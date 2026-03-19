@@ -105,6 +105,7 @@ namespace Dodo::Platform {
 
     void OpenGLRenderAPI::ImGuiEndFrame() const
     {
+        ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 } // namespace Dodo::Platform

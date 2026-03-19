@@ -89,6 +89,9 @@ namespace Dodo::Platform {
         RenderInitError InitDevice();
         RenderInitError CreateSwapChain();
         RenderInitError CreateImageViews();
+        RenderInitError CreateCommandPool();
+        RenderInitError CreateCommandBuffer();
+        RenderInitError CreateSyncObjects();
         RenderInitError InitImGui();
         
         bool IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device);
@@ -98,7 +101,7 @@ namespace Dodo::Platform {
         void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
         std::vector<const char*> GetRequiredExtensions();
         bool CheckValidationLayerSupport();
-        std::vector<const char*> GetRequiredDeviceExtensions();
+        std::vector<const char*> GetRequiredDeviceExtensions(VkPhysicalDevice physicalDevice);
         bool CheckDeviceExtensionSupport(VkPhysicalDevice device, const std::vector<const char*>& requiredExtensions);
         SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
@@ -128,9 +131,16 @@ namespace Dodo::Platform {
         std::vector<VkImageView> m_SwapChainImageViews;
         VkFormat m_SwapChainImageFormat;
         VkExtent2D m_SwapChainExtent;
+        VkCommandPool m_CommandPool;
+        VkCommandBuffer m_CommandBuffer;
+        
+        // Frame synchronization
+        VkSemaphore m_ImageAvailableSemaphore;
+        VkSemaphore m_RenderFinishedSemaphore;
+        VkFence m_InFlightFence;
 
         VkDescriptorPool m_ImGuiDescriptorPool;
-
+        
         bool m_EnableValidationLayers;
         std::vector<const char*> m_ValidationLayers;
         std::vector<const char*> m_DeviceExtensions;

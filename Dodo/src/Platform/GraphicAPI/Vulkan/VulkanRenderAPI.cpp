@@ -41,7 +41,8 @@ namespace Dodo::Platform {
     }
 
     /**
-     * Initializes the Vulkan instance, picks a physical device, creates a logical device and initializes ImGui if enabled in the window properties.
+     * Initializes the Vulkan instance, picks a physical device, creates a logical device and initializes ImGui if
+     * enabled in the window properties.
      */
     RenderInitError VulkanRenderAPI::Init(const WindowProperties& winprop)
     {
@@ -145,7 +146,7 @@ namespace Dodo::Platform {
 
         // Load all required Vulkan entrypoints, including all extensions
         volkLoadInstance(m_VkInstance);
-        
+
         return RenderInitError(RenderInitStatus::Success);
     }
 
@@ -192,7 +193,7 @@ namespace Dodo::Platform {
             deviceInfo.properties = deviceProperties;
             deviceInfo.features = deviceFeatures;
             deviceInfo.indices = FindQueueFamilies(device);
-            if(!IsDeviceSuitable(deviceInfo)) {
+            if (!IsDeviceSuitable(deviceInfo)) {
                 DD_INFO("Device {} is not suitable", deviceProperties.deviceName);
                 continue;
             }
@@ -281,7 +282,9 @@ namespace Dodo::Platform {
         VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
 
         uint32_t minCount = swapChainSupport.capabilities.minImageCount;
-        uint32_t maxCount = swapChainSupport.capabilities.maxImageCount > 0 ? swapChainSupport.capabilities.maxImageCount : std::numeric_limits<uint32_t>::max();
+        uint32_t maxCount = swapChainSupport.capabilities.maxImageCount > 0
+                                ? swapChainSupport.capabilities.maxImageCount
+                                : std::numeric_limits<uint32_t>::max();
         // We prefer triple buffer, then double buffer
         uint32_t imageCount = (3 <= maxCount) ? std::max(3u, minCount) : maxCount;
 
@@ -296,7 +299,7 @@ namespace Dodo::Platform {
         createInfo.imageArrayLayers = 1;
 
         // This means we draw directly to the images, with framebuffers we would use VK_IMAGE_USAGE_TRANSFER_DST_BIT
-        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT; 
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
         QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
         uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
@@ -320,7 +323,7 @@ namespace Dodo::Platform {
         createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 
         createInfo.presentMode = presentMode;
-        createInfo.clipped = VK_TRUE; // Disallow reading pixel in non-active buffers 
+        createInfo.clipped = VK_TRUE; // Disallow reading pixel in non-active buffers
 
         // Todo: See https://vulkan-tutorial.com/Drawing_a_triangle/Swap_chain_recreation
         createInfo.oldSwapchain = VK_NULL_HANDLE;
@@ -404,7 +407,8 @@ namespace Dodo::Platform {
 
         VkFenceCreateInfo fenceInfo{};
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Sets the fence into signaled state so that we do not wait for the first frame which does not exist
+        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Sets the fence into signaled state so that we do not wait for
+                                                        // the first frame which does not exist
 
         if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore) != VK_SUCCESS ||
             vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore) != VK_SUCCESS ||
@@ -418,16 +422,24 @@ namespace Dodo::Platform {
     {
         m_Context.InitializeImGui();
 
-        VkDescriptorPoolSize poolSizes[] = {
-            { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 },
-        };
+        VkDescriptorPoolSize poolSizes[] = {{VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
+                                             {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
+                                             {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
+                                             {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
+                                             {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
+                                             {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
+                                             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
+                                             {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
+                                             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
+                                             {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
+                                             {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}};
 
         VkDescriptorPoolCreateInfo poolInfo = {};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-        poolInfo.maxSets = 1;
-        poolInfo.poolSizeCount = 1;
-        poolInfo.pPoolSizes = poolSizes;
+        poolInfo.maxSets = 1000;
+        poolInfo.poolSizeCount = (uint32_t)std::size(poolSizes);
+	    poolInfo.pPoolSizes = poolSizes;
 
         if (vkCreateDescriptorPool(m_Device, &poolInfo, nullptr, &m_ImGuiDescriptorPool) != VK_SUCCESS)
             return RenderInitError(RenderInitStatus::Failed, "Failed to create ImGui descriptor pool!");
@@ -438,26 +450,29 @@ namespace Dodo::Platform {
         ImGuiPipelineInfo.pColorAttachmentFormats = &m_SwapChainImageFormat;
 
         QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
-        
+
         ImGui_ImplVulkan_InitInfo vulkanInfo = {};
-        vulkanInfo.Instance       = m_VkInstance;
+        vulkanInfo.Instance = m_VkInstance;
         vulkanInfo.PhysicalDevice = m_PhysicalDevice;
-        vulkanInfo.Device         = m_Device;
-        vulkanInfo.QueueFamily    = indices.graphicsFamily.value();
-        vulkanInfo.Queue          = m_PresentQueue;
+        vulkanInfo.Device = m_Device;
+        vulkanInfo.QueueFamily = indices.graphicsFamily.value();
+        vulkanInfo.Queue = m_PresentQueue;
         vulkanInfo.DescriptorPool = m_ImGuiDescriptorPool;
-        vulkanInfo.MinImageCount  = 2;
-        vulkanInfo.ImageCount     = static_cast<uint32_t>(m_SwapChainImages.size());
+        vulkanInfo.MinImageCount = 2;
+        vulkanInfo.ImageCount = static_cast<uint32_t>(m_SwapChainImages.size());
         vulkanInfo.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
         vulkanInfo.UseDynamicRendering = true;
         vulkanInfo.PipelineInfoMain.PipelineRenderingCreateInfo = ImGuiPipelineInfo;
 
         // (Volk) Load functions
-        ImGui_ImplVulkan_LoadFunctions(0, [](const char *function_name, void *vulkan_instance) {
-            return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance *>(vulkan_instance)), function_name);
-        }, &m_VkInstance);
-        
+        ImGui_ImplVulkan_LoadFunctions(
+            0,
+            [](const char* function_name, void* vulkan_instance) {
+                return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance*>(vulkan_instance)), function_name);
+            },
+            &m_VkInstance);
+
         ImGui_ImplVulkan_Init(&vulkanInfo);
 
         return RenderInitError(RenderInitStatus::Success);
@@ -497,7 +512,8 @@ namespace Dodo::Platform {
 
         // Get the current image index in the swap chain
         uint32_t imageIndex;
-        vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+        vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE,
+                              &imageIndex);
 
         vkResetCommandBuffer(m_CommandBuffer, 0);
 
@@ -524,16 +540,9 @@ namespace Dodo::Platform {
         barrier.subresourceRange.layerCount = 1;
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        
-        vkCmdPipelineBarrier(
-            m_CommandBuffer,
-            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            0,
-            0, nullptr,
-            0, nullptr,
-            1, &barrier
-        );
+
+        vkCmdPipelineBarrier(m_CommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
         // Setup dynamic rendering target
         VkRenderingAttachmentInfo colorAttachment = {};
@@ -542,15 +551,15 @@ namespace Dodo::Platform {
         colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorAttachment.clearValue.color = {{0.1f, 0.1f, 1.0f, 1.0f}};  // Dark gray background
-        
+        colorAttachment.clearValue.color = {{0.1f, 0.1f, 1.0f, 1.0f}}; // Dark gray background
+
         VkRenderingInfo renderingInfo = {};
         renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
         renderingInfo.renderArea = {{0, 0}, m_SwapChainExtent};
         renderingInfo.layerCount = 1;
         renderingInfo.colorAttachmentCount = 1;
         renderingInfo.pColorAttachments = &colorAttachment;
-        
+
         vkCmdBeginRendering(m_CommandBuffer, &renderingInfo);
 
         ImGui::Render();
@@ -575,23 +584,16 @@ namespace Dodo::Platform {
         presentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         presentBarrier.dstAccessMask = 0;
 
-        vkCmdPipelineBarrier(
-            m_CommandBuffer,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,  // wait for rendering to finish
-            VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-            0,
-            0, nullptr,
-            0, nullptr,
-            1, &presentBarrier
-        );
+        vkCmdPipelineBarrier(m_CommandBuffer,
+                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // wait for rendering to finish
+                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
 
         vkEndCommandBuffer(m_CommandBuffer);
-
 
         // Setup semaphore and submit command buffer
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        
+
         VkSemaphore waitSemaphores[] = {m_ImageAvailableSemaphore};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
         submitInfo.waitSemaphoreCount = 1;
@@ -599,11 +601,11 @@ namespace Dodo::Platform {
         submitInfo.pWaitDstStageMask = waitStages;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &m_CommandBuffer;
-        
+
         VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphore};
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
-        
+
         if (vkQueueSubmit(m_PresentQueue, 1, &submitInfo, m_InFlightFence) != VK_SUCCESS) {
             DD_ERR("failed to submit draw command buffer!");
             return;
@@ -613,12 +615,12 @@ namespace Dodo::Platform {
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores;
-        
+
         VkSwapchainKHR swapChains[] = {m_SwapChain};
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapChains;
         presentInfo.pImageIndices = &imageIndex;
-        
+
         vkQueuePresentKHR(m_PresentQueue, &presentInfo);
     }
 
@@ -628,7 +630,9 @@ namespace Dodo::Platform {
     bool VulkanRenderAPI::IsDeviceSuitable(PhyisicalDeviceInfo device)
     {
         if (device.device == VK_NULL_HANDLE) return false;
-        if (!device.features.geometryShader) return false; // Note: This might fail on MacOS even though the device supports geometry shaders, due to MoltenVK not reporting it correctly.
+        if (!device.features.geometryShader)
+            return false; // Note: This might fail on MacOS even though the device supports geometry shaders, due to
+                          // MoltenVK not reporting it correctly.
         if (!device.indices.IsComplete()) return false;
 
         // Check if all required device extensions are supported
@@ -637,8 +641,7 @@ namespace Dodo::Platform {
 
         // Check if swap chain is enough for presentation
         SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device.device);
-        if(swapChainSupport.formats.empty() || swapChainSupport.presentModes.empty()) return false;
-        
+        if (swapChainSupport.formats.empty() || swapChainSupport.presentModes.empty()) return false;
 
         return true;
     }
@@ -648,9 +651,9 @@ namespace Dodo::Platform {
      */
     bool VulkanRenderAPI::IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device)
     {
-        if(bestDevice.device == VK_NULL_HANDLE) return true;
+        if (bestDevice.device == VK_NULL_HANDLE) return true;
 
-        if (bestDevice.properties.deviceType < bestDevice.properties.deviceType) {
+        if (bestDevice.properties.deviceType < device.properties.deviceType) {
             /**
              * VK_PHYSICAL_DEVICE_TYPE_OTHER = 0,
              * VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU = 1,
@@ -660,9 +663,8 @@ namespace Dodo::Platform {
              *
              * Prefer higher valued devices with the exception of CPU devices
              */
-            return bestDevice.properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_CPU;
+            return device.properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_CPU;
         }
-
 
         // TODO: Selection based on VRAM:
         // https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkPhysicalDeviceMemoryProperties.html
@@ -753,19 +755,17 @@ namespace Dodo::Platform {
     }
 
     /**
-     * Get required device extensions given the phyisical device. 
-     * Some extensions exist within the core after a certain version 
+     * Get required device extensions given the phyisical device.
+     * Some extensions exist within the core after a certain version
      * so a version probe is necessary
      */
     std::vector<const char*> VulkanRenderAPI::GetRequiredDeviceExtensions(VkPhysicalDevice physicalDevice)
     {
-        std::vector<const char*> extensions = {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME
-        };
+        std::vector<const char*> extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
         VkPhysicalDeviceProperties props;
         vkGetPhysicalDeviceProperties(physicalDevice, &props);
-        
+
         if (VK_API_VERSION_MINOR(props.apiVersion) < 3) {
             // Dynamic rendering is built in core in 1.3+, otherwise we need the extension
             extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
@@ -775,7 +775,7 @@ namespace Dodo::Platform {
     }
 
     bool VulkanRenderAPI::CheckDeviceExtensionSupport(VkPhysicalDevice device,
-                                                  const std::vector<const char*>& requiredExtensions)
+                                                      const std::vector<const char*>& requiredExtensions)
     {
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
@@ -835,14 +835,14 @@ namespace Dodo::Platform {
         return details;
     }
 
-
     /**
      * Select the best surface format given available pixel formats
      */
     VkSurfaceFormatKHR VulkanRenderAPI::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
     {
         for (const auto& availableFormat : availableFormats) {
-            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
+                availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
                 return availableFormat;
             }
         }
@@ -854,8 +854,9 @@ namespace Dodo::Platform {
     /**
      * Select the best swap present mode given available present modes
      */
-    VkPresentModeKHR VulkanRenderAPI::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
-        // TODO: We want to choose this based on hardware. For example mobile devices or laptops 
+    VkPresentModeKHR VulkanRenderAPI::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+    {
+        // TODO: We want to choose this based on hardware. For example mobile devices or laptops
         // we want to avoid MAILBOX since it consumes a lot of battery
         // See https://youtu.be/0OqJtPnkfC8?si=Bi7aUphwI486H_Ba&t=1200
         for (const auto& availablePresentMode : availablePresentModes) {
@@ -876,13 +877,12 @@ namespace Dodo::Platform {
         int width, height;
         m_Context.GetFrameBufferSize(&width, &height);
 
-        VkExtent2D actualExtent = {
-            static_cast<uint32_t>(width),
-            static_cast<uint32_t>(height)
-        };
+        VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
-        actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
-        actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+        actualExtent.width =
+            std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+        actualExtent.height =
+            std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
         return actualExtent;
     }
@@ -906,9 +906,9 @@ namespace Dodo::Platform {
     }
 
     VkResult VulkanRenderAPI::CreateDebugUtilsMessengerEXT(VkInstance instance,
-                                                       const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
-                                                       const VkAllocationCallbacks* pAllocator,
-                                                       VkDebugUtilsMessengerEXT* pDebugMessenger)
+                                                           const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+                                                           const VkAllocationCallbacks* pAllocator,
+                                                           VkDebugUtilsMessengerEXT* pDebugMessenger)
     {
         auto func =
             (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
@@ -920,7 +920,7 @@ namespace Dodo::Platform {
     }
 
     void VulkanRenderAPI::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                                                    const VkAllocationCallbacks* pAllocator)
+                                                        const VkAllocationCallbacks* pAllocator)
     {
         auto func =
             (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
@@ -932,10 +932,9 @@ namespace Dodo::Platform {
     /**
      * A callback function that is called by the Vulkan validation layers
      */
-    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderAPI::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                              VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                                              const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                              void* pUserData)
+    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderAPI::DebugCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
     {
         switch (messageSeverity) {
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:

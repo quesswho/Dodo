@@ -31,7 +31,7 @@ namespace Dodo::Platform {
         glFrontFace(GL_CCW);
         glEnable(GL_MULTISAMPLE);
 
-        ResizeDefaultViewport(winprop.m_FrameBufferWidth, winprop.m_FrameBufferHeight);
+        SetViewport(winprop.m_FrameBufferWidth, winprop.m_FrameBufferHeight);
         m_CullingDefault = winprop.m_Settings.backfaceCull;
         Culling(m_CullingDefault);
 
@@ -84,18 +84,18 @@ namespace Dodo::Platform {
         }
     }
 
-    void OpenGLRenderAPI::ResizeDefaultViewport(uint width, uint height)
+    void OpenGLRenderAPI::SetViewport(uint width, uint height)
     {
         m_ViewportWidth = width;
         m_ViewportHeight = height;
         glViewport(m_ViewportPosX, m_ViewportPosY, width, height);
     }
 
-    void OpenGLRenderAPI::ResizeDefaultViewport(uint width, uint height, uint posX, uint posY)
+    void OpenGLRenderAPI::SetViewport(uint width, uint height, uint posX, uint posY)
     {
         m_ViewportPosX = posX;
         m_ViewportPosY = posY;
-        ResizeDefaultViewport(width, height);
+        SetViewport(width, height);
     }
 
     void OpenGLRenderAPI::ImGuiNewFrame() const

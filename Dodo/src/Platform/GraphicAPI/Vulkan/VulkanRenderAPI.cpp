@@ -280,7 +280,7 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success);
     }
 
-    RenderInitError VulkanRenderAPI::CreateSwapChain()
+    RenderInitError VulkanRenderAPI::CreateSwapChain(VkSwapchainKHR oldSwapchain)
     {
         SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(m_PhysicalDevice);
 
@@ -332,8 +332,7 @@ namespace Dodo::Platform {
         createInfo.presentMode = presentMode;
         createInfo.clipped = VK_TRUE; // Disallow reading pixel in non-active buffers
 
-        // Todo: See https://vulkan-tutorial.com/Drawing_a_triangle/Swap_chain_recreation
-        createInfo.oldSwapchain = VK_NULL_HANDLE;
+        createInfo.oldSwapchain = oldSwapchain;
 
         if (vkCreateSwapchainKHR(m_Device, &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS) {
             return RenderInitError(RenderInitStatus::Failed, "Failed to create swap chain!");
@@ -501,7 +500,21 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success);
     }
 
-    void VulkanRenderAPI::Begin() const {}
+    void VulkanRenderAPI::Begin()
+    {
+        if (m_SwapChainNeedsRecreation) {
+            // Note: this is probably not the best way to do this. We want to program to still run while the window is minmized
+            int width = 0, height = 0;
+            m_Context.GetFrameBufferSize(&width, &height);
+            while (width == 0 || height == 0) {
+                m_Context.GetFrameBufferSize(&width, &height);
+                m_Context.WaitEvents(); // Wait for application to be unminimized
+            }
+
+            RecreateSwapChain();
+            m_SwapChainNeedsRecreation = false;
+        }
+    }
     void VulkanRenderAPI::End() {}
 
     void VulkanRenderAPI::ClearColor(float r, float g, float b) const {}
@@ -513,8 +526,14 @@ namespace Dodo::Platform {
     void VulkanRenderAPI::DrawArray(uint count) const {}
 
     void VulkanRenderAPI::DefaultFrameBuffer() const {}
-    void VulkanRenderAPI::ResizeDefaultViewport(uint width, uint height) {}
-    void VulkanRenderAPI::ResizeDefaultViewport(uint width, uint height, uint posX, uint posY) {}
+    void VulkanRenderAPI::SetViewport(uint width, uint height)
+    {
+        m_SwapChainNeedsRecreation = true;
+    }
+    void VulkanRenderAPI::SetViewport(uint width, uint height, uint posX, uint posY)
+    {
+        m_SwapChainNeedsRecreation = true;
+    }
 
     void VulkanRenderAPI::DepthComparisonMethod(Dodo::DepthComparisonMethod method) const {}
     void VulkanRenderAPI::DepthTest(bool depthtest) const {}
@@ -914,6 +933,36 @@ namespace Dodo::Platform {
             std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 
         return actualExtent;
+    }
+
+    void VulkanRenderAPI::RecreateSwapChain()
+    {
+        vkDeviceWaitIdle(m_Device);
+
+        // Destroy old image views
+        for (auto imageView : m_SwapChainImageViews)
+            vkDestroyImageView(m_Device, imageView, nullptr);
+        m_SwapChainImageViews.clear();
+
+        // We destroy render semaphores here since they are sized to the swap chain image count and it is possible we
+        // want to change between triple and double buffering
+        for (auto& sem : m_RenderFinishedSemaphores)
+            vkDestroySemaphore(m_Device, sem, nullptr);
+        m_RenderFinishedSemaphores.clear();
+
+        // Recreate swap chain with old swapchain so that data can be transferred if necessary
+        VkSwapchainKHR oldSwapchain = m_SwapChain;
+        CreateSwapChain(oldSwapchain);
+        vkDestroySwapchainKHR(m_Device, oldSwapchain, nullptr);
+
+        CreateImageViews();
+
+        // Recreate render finished semaphores sized to new swapchain image count
+        VkSemaphoreCreateInfo semaphoreInfo{};
+        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        m_RenderFinishedSemaphores.resize(m_SwapChainImages.size());
+        for (auto& sem : m_RenderFinishedSemaphores)
+            vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &sem);
     }
 
     /**

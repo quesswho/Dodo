@@ -214,17 +214,17 @@ void Interface::ResetDockspace(uint dockspace_id)
 
 bool Interface::ViewportResize()
 {
-    if (m_ViewportState.width != ImGui::GetWindowWidth() || m_ViewportState.height != ImGui::GetWindowHeight() ||
+    /*if (m_ViewportState.width != ImGui::GetWindowWidth() || m_ViewportState.height != ImGui::GetWindowHeight() ||
         m_ViewportState.x != ImGui::GetWindowPos().x || m_ViewportState.y != ImGui::GetWindowPos().y) {
         m_ViewportState.width = (uint)ImGui::GetWindowWidth();
         m_ViewportState.height = (uint)ImGui::GetWindowHeight();
         m_ViewportState.x = (uint)ImGui::GetWindowPos().x;
         m_ViewportState.y = (uint)ImGui::GetWindowPos().y;
 
-        Application::s_Application->m_RenderAPI->ResizeDefaultViewport(m_ViewportState.width, m_ViewportState.height,
+        Application::s_Application->m_RenderAPI->SetViewport(m_ViewportState.width, m_ViewportState.height,
                                                                        m_ViewportState.x, m_ViewportState.y);
         return true;
-    }
+    }*/
     return false;
 }
 bool Interface::BeginViewport()

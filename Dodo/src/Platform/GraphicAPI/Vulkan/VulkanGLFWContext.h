@@ -39,6 +39,8 @@ namespace Dodo::Platform {
             return glfwCreateWindowSurface(instance, m_Window, nullptr, surface) == VK_SUCCESS;
         }
 
+        void WaitEvents() { glfwWaitEvents(); }
+
         void GetFrameBufferSize(int* width, int* height) { glfwGetFramebufferSize(m_Window, width, height); }
 
         void InitializeImGui() { ImGui_ImplGlfw_InitForVulkan(m_Window, true); }

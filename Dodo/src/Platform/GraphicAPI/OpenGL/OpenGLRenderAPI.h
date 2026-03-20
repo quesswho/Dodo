@@ -46,8 +46,8 @@ namespace Dodo::Platform {
         inline void DrawIndices(uint count) const { glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); }
         inline void DrawArray(uint count) const { glDrawArrays(GL_TRIANGLES, 0, count); }
         void DefaultFrameBuffer() const;
-        void ResizeDefaultViewport(uint width, uint height);
-        void ResizeDefaultViewport(uint width, uint height, uint posX, uint posY);
+        void SetViewport(uint width, uint height);
+        void SetViewport(uint width, uint height, uint posX, uint posY);
 
         inline void DepthComparisonMethod(DepthComparisonMethod func) const { glDepthFunc(GL_NEVER + (uint)func); }
         inline void DepthTest(bool depthtest) const { depthtest ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST); }

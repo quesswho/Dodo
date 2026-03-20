@@ -55,7 +55,7 @@ namespace Dodo::Platform {
         ~VulkanRenderAPI();
         RenderInitError Init(const WindowProperties& winprop);
 
-        void Begin() const;
+        void Begin();
         void End();
 
         void ClearColor(float r, float g, float b) const;
@@ -66,8 +66,8 @@ namespace Dodo::Platform {
         void DrawIndices(uint count) const;
         void DrawArray(uint count) const;
         void DefaultFrameBuffer() const;
-        void ResizeDefaultViewport(uint width, uint height);
-        void ResizeDefaultViewport(uint width, uint height, uint posX, uint posY);
+        void SetViewport(uint width, uint height);
+        void SetViewport(uint width, uint height, uint posX, uint posY);
 
         void DepthComparisonMethod(DepthComparisonMethod method) const;
         void DepthTest(bool depthtest) const;
@@ -95,7 +95,7 @@ namespace Dodo::Platform {
         RenderInitError SetupDebug();
         RenderInitError PickPhysicalDevice();
         RenderInitError InitDevice();
-        RenderInitError CreateSwapChain();
+        RenderInitError CreateSwapChain(VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE);
         RenderInitError CreateImageViews();
         RenderInitError CreateCommandPool();
         RenderInitError CreateCommandBuffer();
@@ -115,6 +115,8 @@ namespace Dodo::Platform {
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
         VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
+        void RecreateSwapChain();
 
         VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
                                               const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
@@ -149,6 +151,7 @@ namespace Dodo::Platform {
 
         VkDescriptorPool m_ImGuiDescriptorPool;
 
+        bool m_SwapChainNeedsRecreation = false;
         bool m_EnableValidationLayers;
         std::vector<const char*> m_ValidationLayers;
         std::vector<const char*> m_DeviceExtensions;

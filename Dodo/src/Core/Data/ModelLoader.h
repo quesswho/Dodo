@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Core/Graphics/Pipeline/ShaderGenerator.h"
 #include "Core/Graphics/Scene/Model.h"
-#include "Core/Graphics/Shader/ShaderGenerator.h"
 
 struct aiMesh;
 

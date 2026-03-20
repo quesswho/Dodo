@@ -7,9 +7,9 @@ namespace Dodo {
 
     Material::Material() : m_Shader(Application::s_Application->m_AssetManager->GetFallbackShader()) {}
 
-    Material::Material(Ref<Shader> shader) : m_Shader(shader) {}
+    Material::Material(Ref<Pipeline> shader) : m_Shader(shader) {}
 
-    Material::Material(Ref<Shader> shader, Ref<Texture> texture, Ref<TextureSampler> sampler)
+    Material::Material(Ref<Pipeline> shader, Ref<Texture> texture, Ref<TextureSampler> sampler)
         : m_Shader(shader), m_Sampler(sampler)
     {
         m_Textures[0] = texture;

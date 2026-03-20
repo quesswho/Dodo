@@ -2,8 +2,8 @@
 
 #include <Core/Common.h>
 
-#include "Core/Graphics/Shader/Shader.h"
-#include "Core/Graphics/Shader/ShaderSource.h"
+#include "Core/Graphics/Pipeline/Pipeline.h"
+#include "Core/Graphics/Pipeline/ShaderSource.h"
 
 namespace Dodo {
 

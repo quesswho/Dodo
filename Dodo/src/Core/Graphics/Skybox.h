@@ -4,8 +4,8 @@
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/CubeMap.h"
 #include "Core/Graphics/Material/Texture.h"
+#include "Core/Graphics/Pipeline/Pipeline.h"
 #include "Core/Graphics/RenderAPI.h"
-#include "Core/Graphics/Shader/Shader.h"
 
 #include "Core/Math/Matrix/Mat4.h"
 
@@ -16,7 +16,7 @@ namespace Dodo {
         std::unique_ptr<VertexBuffer> m_VertexBuffer;
         Ref<CubeMap> m_CubeMap;
         Ref<TextureSampler> m_Sampler;
-        Ref<Shader> m_Shader;
+        Ref<Pipeline> m_Shader;
 
       public:
         Math::Mat4 m_Projection;

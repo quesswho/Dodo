@@ -8,6 +8,7 @@
 #include "Core/Graphics/CubeMap.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
+#include "Core/Graphics/Pipeline/Pipeline.h"
 
 #include <glad/gl.h>
 
@@ -42,6 +43,7 @@ namespace Dodo::Platform {
         {
             glBindSampler(slot, sampler->GetSamplerID());
         }
+        void BindPipeline(Ref<Pipeline> pipeline) { glUseProgram(pipeline->m_ShaderID); }
         void DrawIndexed(const Ref<VertexBuffer>& va);
         inline void DrawIndices(uint count) const { glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); }
         inline void DrawArray(uint count) const { glDrawArrays(GL_TRIANGLES, 0, count); }

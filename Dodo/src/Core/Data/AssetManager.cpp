@@ -2,16 +2,16 @@
 #include "pch.h"
 
 #include "Core/Application/Application.h"
-#include "Core/Graphics/Shader/ShaderCompiler.h"
-#include "Core/Graphics/Shader/ShaderParser.h"
+#include "Core/Graphics/Pipeline/ShaderCompiler.h"
+#include "Core/Graphics/Pipeline/ShaderParser.h"
 #include "Core/System/FileUtils.h"
 
 namespace Dodo {
 
     AssetManager::AssetManager() : m_SlangCompiler(SlangCompiler::Target::GLSL)
     {
-        Ref<Shader> fallback =
-            std::make_shared<Shader>(ShaderCompiler::Compile(ShaderGenerator::GetFallbackShader().source));
+        Ref<Pipeline> fallback =
+            std::make_shared<Pipeline>(ShaderCompiler::Compile(ShaderGenerator::GetFallbackShader().source));
         m_Shaders.emplace(0, fallback);
     }
 
@@ -26,7 +26,7 @@ namespace Dodo {
         if (m_ShaderBuilderShaders.find(flags) != m_ShaderBuilderShaders.end()) return m_ShaderBuilderShaders[flags];
 
         GeneratedShaderSource source = ShaderGenerator::Generate(flags);
-        Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source.source));
+        Ref<Pipeline> shader = std::make_shared<Pipeline>(ShaderCompiler::Compile(source.source));
 
         int id = m_NextShaderID++;
 
@@ -52,7 +52,7 @@ namespace Dodo {
 
         ShaderSource source = ShaderParser::Parse(FileUtils::ReadTextFile(path.c_str()));
 
-        Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source));
+        Ref<Pipeline> shader = std::make_shared<Pipeline>(ShaderCompiler::Compile(source));
 
         ShaderID id = m_NextShaderID++;
 
@@ -70,7 +70,7 @@ namespace Dodo {
 
         ShaderSource source = m_SlangCompiler.CompileFile(path);
 
-        Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source));
+        Ref<Pipeline> shader = std::make_shared<Pipeline>(ShaderCompiler::Compile(source));
 
         ShaderID id = m_NextShaderID++;
 
@@ -81,7 +81,7 @@ namespace Dodo {
 
     ShaderID AssetManager::LoadShader(ShaderSource source)
     {
-        Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source));
+        Ref<Pipeline> shader = std::make_shared<Pipeline>(ShaderCompiler::Compile(source));
 
         int id = m_NextShaderID++;
 
@@ -89,7 +89,7 @@ namespace Dodo {
         return id;
     }
 
-    Ref<Shader> AssetManager::GetShader(ShaderID id)
+    Ref<Pipeline> AssetManager::GetShader(ShaderID id)
     {
         auto it = m_Shaders.find(id);
         if (it != m_Shaders.end()) return it->second;

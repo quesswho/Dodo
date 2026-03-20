@@ -1,16 +1,19 @@
 #pragma once
 
 #include <Core/Common.h>
+#include <volk.h>
 
 #include "Core/Math/Maths.h"
 
 namespace Dodo::Platform {
 
-    class VulkanShader {
-      public:
-        VulkanShader(uint shader) : m_ShaderID(shader) {}
+    class VulkanPipeline {
+        friend class VulkanRenderAPI;
 
-        ~VulkanShader();
+      public:
+        VulkanPipeline(uint shader) {}
+
+        ~VulkanPipeline();
 
         void Bind() const;
         void Unbind() const;
@@ -25,6 +28,6 @@ namespace Dodo::Platform {
         void SetUniformValue(const char* location, const Math::Mat4& value);
 
       private:
-        uint m_ShaderID;
+        VkPipeline m_Pipeline;
     };
 } // namespace Dodo::Platform

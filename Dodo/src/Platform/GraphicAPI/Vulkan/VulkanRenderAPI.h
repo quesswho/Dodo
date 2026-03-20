@@ -6,6 +6,7 @@
 #include "Core/Graphics/CubeMap.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
+#include "Core/Graphics/Pipeline/Pipeline.h"
 #include "Core/Graphics/RenderAPITypes.h"
 
 #include "Platform/WindowAPI/NativeWindowHandle.h"
@@ -63,6 +64,7 @@ namespace Dodo::Platform {
         void BindCubeMap(uint slot, Ref<CubeMap> cubemap);
         void BindTexture(uint slot, Ref<Texture> texture);
         void BindTextureSampler(uint slot, Ref<TextureSampler> sampler);
+        void BindPipeline(Ref<Pipeline> pipeline);
         void DrawIndices(uint count) const;
         void DrawArray(uint count) const;
         void DefaultFrameBuffer() const;
@@ -142,6 +144,7 @@ namespace Dodo::Platform {
         VkFormat m_SwapChainImageFormat;
         VkExtent2D m_SwapChainExtent;
         VkCommandPool m_CommandPool;
+        VkPipeline m_BoundPipeline;
 
         // Frame stuff
         static constexpr int maxFramesInFlight = 2;

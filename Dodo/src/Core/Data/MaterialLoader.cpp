@@ -47,7 +47,7 @@ namespace Dodo {
         }
 
         ShaderID shaderID = assets.LoadShader(flags);
-        Ref<Shader> shader = assets.GetShader(shaderID);
+        Ref<Pipeline> shader = assets.GetShader(shaderID);
         if (!shader) DD_WARN("Could not create shader");
 
         material->SetShader(shader);

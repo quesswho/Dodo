@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Graphics/Material/Material.h"
-#include "Core/Graphics/Shader/ShaderGenerator.h"
+#include "Core/Graphics/Pipeline/ShaderGenerator.h"
 
 #include <filesystem>
 

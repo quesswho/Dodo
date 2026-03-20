@@ -18,6 +18,8 @@ namespace Dodo::Platform {
 
     VulkanRenderAPI::~VulkanRenderAPI()
     {
+        vkQueueWaitIdle(m_PresentQueue);
+
         vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore, nullptr);
         vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore, nullptr);
         vkDestroyFence(m_Device, m_InFlightFence, nullptr);
@@ -507,6 +509,7 @@ namespace Dodo::Platform {
             return;
         }
 
+        // TODO: Deprecated stuff, use VkImageMemoryBarrier2KHR instead
         VkImageMemoryBarrier barrier = {};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -554,6 +557,34 @@ namespace Dodo::Platform {
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_CommandBuffer);
 
         vkCmdEndRendering(m_CommandBuffer);
+
+        // TODO: Deprecated stuff, use VkImageMemoryBarrier2KHR instead
+        // Transition swapchain image back to present layout
+        VkImageMemoryBarrier presentBarrier = {};
+        presentBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        presentBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        presentBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        presentBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        presentBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        presentBarrier.image = m_SwapChainImages[imageIndex];
+        presentBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        presentBarrier.subresourceRange.baseMipLevel = 0;
+        presentBarrier.subresourceRange.levelCount = 1;
+        presentBarrier.subresourceRange.baseArrayLayer = 0;
+        presentBarrier.subresourceRange.layerCount = 1;
+        presentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        presentBarrier.dstAccessMask = 0;
+
+        vkCmdPipelineBarrier(
+            m_CommandBuffer,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,  // wait for rendering to finish
+            VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+            0,
+            0, nullptr,
+            0, nullptr,
+            1, &presentBarrier
+        );
+
         vkEndCommandBuffer(m_CommandBuffer);
 
 

@@ -3,18 +3,19 @@
 #include <Core/Common.h>
 
 #include "Core/Graphics/CubeMap.h"
+#include "Core/Graphics/Pipeline/Pipeline.h"
+#include "Core/Graphics/Pipeline/ShaderGenerator.h"
+#include "Core/Graphics/Pipeline/SlangCompiler.h"
 #include "Core/Graphics/Scene/Mesh/MeshFactory.h"
 #include "Core/Graphics/Scene/Model.h"
-#include "Core/Graphics/Shader/Shader.h"
-#include "Core/Graphics/Shader/ShaderGenerator.h"
-#include "Core/Graphics/Shader/SlangCompiler.h"
 #include "MaterialLoader.h"
 #include "ModelLoader.h"
 
 namespace Dodo {
 
     using MaterialID = uint64_t;
-    using ShaderID = uint64_t;
+    using ShaderID = uint64_t; // Spir-v or GLSL
+    using PipelineID = uint64_t;
 
     enum class BuiltinModel {
         Cube,
@@ -25,7 +26,7 @@ namespace Dodo {
         std::unordered_map<ShaderBuilderFlags, ShaderID>
             m_ShaderBuilderShaders; // Stores all shaders created by shaderbuilder
 
-        std::unordered_map<ShaderID, Ref<Shader>> m_Shaders;
+        std::unordered_map<ShaderID, Ref<Pipeline>> m_Shaders;
         std::unordered_map<std::string, ShaderID> m_ShaderPathLookup;
 
         std::unordered_map<MaterialID, Ref<Material>> m_Materials;
@@ -40,12 +41,12 @@ namespace Dodo {
         AssetManager();
         ~AssetManager();
 
-        inline Ref<Shader> GetFallbackShader() const { return m_Shaders.at(0); }
+        inline Ref<Pipeline> GetFallbackShader() const { return m_Shaders.at(0); }
         ShaderID LoadShader(ShaderBuilderFlags flags);
         ShaderID LoadGLSLShaderFromPath(const std::string& path);
         ShaderID LoadSlangShaderFromPath(const std::string& path);
         ShaderID LoadShader(ShaderSource source);
-        Ref<Shader> GetShader(ShaderID id);
+        Ref<Pipeline> GetShader(ShaderID id);
 
         MaterialID LoadMaterial(const std::string& path);
         Ref<Material> GetMaterial(MaterialID id);

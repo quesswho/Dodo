@@ -503,7 +503,8 @@ namespace Dodo::Platform {
     void VulkanRenderAPI::Begin()
     {
         if (m_SwapChainNeedsRecreation) {
-            // Note: this is probably not the best way to do this. We want to program to still run while the window is minmized
+            // Note: this is probably not the best way to do this. We want to program to still run while the window is
+            // minmized
             int width = 0, height = 0;
             m_Context.GetFrameBufferSize(&width, &height);
             while (width == 0 || height == 0) {
@@ -522,6 +523,15 @@ namespace Dodo::Platform {
     void VulkanRenderAPI::BindCubeMap(uint slot, Ref<CubeMap> cubemap) {}
     void VulkanRenderAPI::BindTexture(uint slot, Ref<Texture> texture) {}
     void VulkanRenderAPI::BindTextureSampler(uint slot, Ref<TextureSampler> sampler) {}
+
+    void VulkanRenderAPI::BindPipeline(Ref<Pipeline> pipeline)
+    {
+        if (pipeline->m_Pipeline == m_BoundPipeline) return;
+        vkCmdBindPipeline(m_Frames[m_CurrentFrame].commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          pipeline->m_Pipeline);
+        m_BoundPipeline = pipeline->m_Pipeline;
+    }
+
     void VulkanRenderAPI::DrawIndices(uint count) const {}
     void VulkanRenderAPI::DrawArray(uint count) const {}
 

@@ -214,7 +214,7 @@ void Interface::ResetDockspace(uint dockspace_id)
 
 bool Interface::ViewportResize()
 {
-    /*if (m_ViewportState.width != ImGui::GetWindowWidth() || m_ViewportState.height != ImGui::GetWindowHeight() ||
+    if (m_ViewportState.width != ImGui::GetWindowWidth() || m_ViewportState.height != ImGui::GetWindowHeight() ||
         m_ViewportState.x != ImGui::GetWindowPos().x || m_ViewportState.y != ImGui::GetWindowPos().y) {
         m_ViewportState.width = (uint)ImGui::GetWindowWidth();
         m_ViewportState.height = (uint)ImGui::GetWindowHeight();
@@ -224,7 +224,7 @@ bool Interface::ViewportResize()
         Application::s_Application->m_RenderAPI->SetViewport(m_ViewportState.width, m_ViewportState.height,
                                                                        m_ViewportState.x, m_ViewportState.y);
         return true;
-    }*/
+    }
     return false;
 }
 bool Interface::BeginViewport()
@@ -246,8 +246,8 @@ void Interface::EndViewport(FrameBuffer* framebuffer)
 {
     // TODO: This is the OpenGL way of doing things
     if (m_ViewportState.visible) {
-        // ImGui::Image((void*)(intptr_t)framebuffer->GetTextureHandle(),
-        //             ImVec2((float)m_ViewportState.width, (float)m_ViewportState.height), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image((void*)(intptr_t)framebuffer->GetTextureHandle(),
+                     ImVec2((float)m_ViewportState.width, (float)m_ViewportState.height), ImVec2(0, 1), ImVec2(1, 0));
         ImGui::End();
     }
 }

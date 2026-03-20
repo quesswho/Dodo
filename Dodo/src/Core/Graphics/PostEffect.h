@@ -6,14 +6,14 @@
 
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/FrameBuffer.h"
-#include "Core/Graphics/Shader/Shader.h"
+#include "Core/Graphics/Pipeline/Pipeline.h"
 
 namespace Dodo {
     class PostEffect {
       private:
         VertexBuffer* m_Vertexbuffer;
         FrameBuffer* m_Framebuffer;
-        Ref<Shader> m_Shader;
+        Ref<Pipeline> m_Shader;
 
       public:
         PostEffect(const FrameBufferProperties& framebufferprop, const char* path);

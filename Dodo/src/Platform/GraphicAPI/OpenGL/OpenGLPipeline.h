@@ -10,15 +10,17 @@
 
 namespace Dodo::Platform {
 
-    class OpenGLShader {
+    class OpenGLPipeline {
+        friend class OpenGLRenderAPI;
+
       private:
         uint m_ShaderID;
         std::unordered_map<std::string, int> m_UniformLocations;
 
       public:
-        OpenGLShader(uint shader) : m_ShaderID(shader) {}
+        OpenGLPipeline(uint shader) : m_ShaderID(shader) {}
 
-        ~OpenGLShader();
+        ~OpenGLPipeline();
 
         void Bind() const;
         void Unbind() const;

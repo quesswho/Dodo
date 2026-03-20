@@ -2,8 +2,8 @@
 #include "pch.h"
 
 #include "Core/Application/Application.h"
-#include "Core/Graphics/Shader/ShaderCompiler.h"
-#include "Core/Graphics/Shader/ShaderParser.h"
+#include "Core/Graphics/Pipeline/ShaderCompiler.h"
+#include "Core/Graphics/Pipeline/ShaderParser.h"
 
 namespace Dodo {
 

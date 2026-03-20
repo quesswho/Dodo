@@ -17,6 +17,7 @@ using VulkanContext = Dodo::Platform::VulkanWGLContext;
 using VulkanContext = Dodo::Platform::VulkanGLFWContext;
 #endif
 
+#include <array>
 #include <optional>
 
 namespace Dodo::Platform {
@@ -39,6 +40,13 @@ namespace Dodo::Platform {
         VkSurfaceCapabilitiesKHR capabilities;
         std::vector<VkSurfaceFormatKHR> formats;
         std::vector<VkPresentModeKHR> presentModes;
+    };
+
+    struct FrameData {
+        VkCommandBuffer commandBuffer;
+        VkSemaphore imageAvailableSemaphore;
+        VkSemaphore renderFinishedSemaphore;
+        VkFence inFlightFence;
     };
 
     class VulkanRenderAPI {
@@ -71,7 +79,7 @@ namespace Dodo::Platform {
         int CurrentVRamUsage() const;
 
         void ImGuiNewFrame() const;
-        void ImGuiEndFrame() const;
+        void ImGuiEndFrame();
 
         VulkanContext m_Context;
 
@@ -132,12 +140,12 @@ namespace Dodo::Platform {
         VkFormat m_SwapChainImageFormat;
         VkExtent2D m_SwapChainExtent;
         VkCommandPool m_CommandPool;
-        VkCommandBuffer m_CommandBuffer;
 
-        // Frame synchronization
-        VkSemaphore m_ImageAvailableSemaphore;
-        VkSemaphore m_RenderFinishedSemaphore;
-        VkFence m_InFlightFence;
+        // Frame stuff
+        static constexpr int maxFramesInFlight = 2;
+        std::array<FrameData, maxFramesInFlight> m_Frames;
+        std::vector<VkSemaphore> m_RenderFinishedSemaphores;
+        uint m_CurrentFrame = 0;
 
         VkDescriptorPool m_ImGuiDescriptorPool;
 

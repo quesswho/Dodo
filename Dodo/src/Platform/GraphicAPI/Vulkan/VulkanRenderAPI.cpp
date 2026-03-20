@@ -20,9 +20,16 @@ namespace Dodo::Platform {
     {
         vkQueueWaitIdle(m_PresentQueue);
 
-        vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore, nullptr);
-        vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore, nullptr);
-        vkDestroyFence(m_Device, m_InFlightFence, nullptr);
+        for (const auto& semaphore : m_RenderFinishedSemaphores) {
+            vkDestroySemaphore(m_Device, semaphore, nullptr);
+        }
+
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            vkDestroySemaphore(m_Device, m_Frames[i].imageAvailableSemaphore, nullptr);
+            vkDestroySemaphore(m_Device, m_Frames[i].renderFinishedSemaphore, nullptr);
+            vkDestroyFence(m_Device, m_Frames[i].inFlightFence, nullptr);
+        }
+
         vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
         // TODO: There should be a check for imgui here...
         ImGui_ImplVulkan_Shutdown();
@@ -387,14 +394,20 @@ namespace Dodo::Platform {
 
     RenderInitError VulkanRenderAPI::CreateCommandBuffer()
     {
+        std::array<VkCommandBuffer, maxFramesInFlight> commandBuffers;
+
         VkCommandBufferAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = m_CommandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = 1;
+        allocInfo.commandBufferCount = maxFramesInFlight;
 
-        if (vkAllocateCommandBuffers(m_Device, &allocInfo, &m_CommandBuffer) != VK_SUCCESS) {
+        if (vkAllocateCommandBuffers(m_Device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
             return RenderInitError(RenderInitStatus::Failed, "failed to allocate command buffers!");
+        }
+
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            m_Frames[i].commandBuffer = commandBuffers[i];
         }
 
         return RenderInitError(RenderInitStatus::Success);
@@ -410,10 +423,20 @@ namespace Dodo::Platform {
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Sets the fence into signaled state so that we do not wait for
                                                         // the first frame which does not exist
 
-        if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore) != VK_SUCCESS ||
-            vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore) != VK_SUCCESS ||
-            vkCreateFence(m_Device, &fenceInfo, nullptr, &m_InFlightFence) != VK_SUCCESS) {
-            return RenderInitError(RenderInitStatus::Failed, "failed to create semaphores!");
+        m_RenderFinishedSemaphores.resize(m_SwapChainImages.size());
+        for (auto& sem : m_RenderFinishedSemaphores) {
+            if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &sem) != VK_SUCCESS)
+                return RenderInitError(RenderInitStatus::Failed, "failed to create render finished semaphore!");
+        }
+
+        // Create a semaphore for each frame in flight to synchronize when rendering is finished, and a fence to
+        // synchronize CPU-GPU
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_Frames[i].imageAvailableSemaphore) !=
+                    VK_SUCCESS ||
+                vkCreateFence(m_Device, &fenceInfo, nullptr, &m_Frames[i].inFlightFence) != VK_SUCCESS) {
+                return RenderInitError(RenderInitStatus::Failed, "failed to create semaphores!");
+            }
         }
         return RenderInitError(RenderInitStatus::Success);
     }
@@ -423,23 +446,23 @@ namespace Dodo::Platform {
         m_Context.InitializeImGui();
 
         VkDescriptorPoolSize poolSizes[] = {{VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
-                                             {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
-                                             {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
-                                             {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
-                                             {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
-                                             {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
-                                             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
-                                             {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
-                                             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
-                                             {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
-                                             {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}};
+                                            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
+                                            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
+                                            {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
+                                            {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
+                                            {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
+                                            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
+                                            {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
+                                            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
+                                            {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
+                                            {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}};
 
         VkDescriptorPoolCreateInfo poolInfo = {};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
         poolInfo.maxSets = 1000;
         poolInfo.poolSizeCount = (uint32_t)std::size(poolSizes);
-	    poolInfo.pPoolSizes = poolSizes;
+        poolInfo.pPoolSizes = poolSizes;
 
         if (vkCreateDescriptorPool(m_Device, &poolInfo, nullptr, &m_ImGuiDescriptorPool) != VK_SUCCESS)
             return RenderInitError(RenderInitStatus::Failed, "Failed to create ImGui descriptor pool!");
@@ -504,23 +527,27 @@ namespace Dodo::Platform {
         ImGui_ImplVulkan_NewFrame();
     }
 
-    void VulkanRenderAPI::ImGuiEndFrame() const
+    void VulkanRenderAPI::ImGuiEndFrame()
     {
+        VkSemaphore renderFinished = m_Frames[m_CurrentFrame].renderFinishedSemaphore;
+        VkFence inFlightFence = m_Frames[m_CurrentFrame].inFlightFence;
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+
         // Wait until previous frame is finished
-        vkWaitForFences(m_Device, 1, &m_InFlightFence, VK_TRUE, UINT64_MAX);
-        vkResetFences(m_Device, 1, &m_InFlightFence);
+        vkWaitForFences(m_Device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(m_Device, 1, &inFlightFence);
 
         // Get the current image index in the swap chain
         uint32_t imageIndex;
-        vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore, VK_NULL_HANDLE,
-                              &imageIndex);
+        vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_Frames[m_CurrentFrame].imageAvailableSemaphore,
+                              VK_NULL_HANDLE, &imageIndex);
 
-        vkResetCommandBuffer(m_CommandBuffer, 0);
+        vkResetCommandBuffer(cmd, 0);
 
         VkCommandBufferBeginInfo beginInfo = {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-        if (vkBeginCommandBuffer(m_CommandBuffer, &beginInfo) != VK_SUCCESS) {
+        if (vkBeginCommandBuffer(cmd, &beginInfo) != VK_SUCCESS) {
             DD_ERR("failed to begin recording command buffer!");
             return;
         }
@@ -541,8 +568,8 @@ namespace Dodo::Platform {
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-        vkCmdPipelineBarrier(m_CommandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
+                             0, nullptr, 0, nullptr, 1, &barrier);
 
         // Setup dynamic rendering target
         VkRenderingAttachmentInfo colorAttachment = {};
@@ -560,12 +587,12 @@ namespace Dodo::Platform {
         renderingInfo.colorAttachmentCount = 1;
         renderingInfo.pColorAttachments = &colorAttachment;
 
-        vkCmdBeginRendering(m_CommandBuffer, &renderingInfo);
+        vkCmdBeginRendering(cmd, &renderingInfo);
 
         ImGui::Render();
-        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_CommandBuffer);
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 
-        vkCmdEndRendering(m_CommandBuffer);
+        vkCmdEndRendering(cmd);
 
         // TODO: Deprecated stuff, use VkImageMemoryBarrier2KHR instead
         // Transition swapchain image back to present layout
@@ -584,29 +611,29 @@ namespace Dodo::Platform {
         presentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         presentBarrier.dstAccessMask = 0;
 
-        vkCmdPipelineBarrier(m_CommandBuffer,
+        vkCmdPipelineBarrier(cmd,
                              VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // wait for rendering to finish
                              VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
 
-        vkEndCommandBuffer(m_CommandBuffer);
+        vkEndCommandBuffer(cmd);
 
         // Setup semaphore and submit command buffer
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = {m_ImageAvailableSemaphore};
+        VkSemaphore waitSemaphores[] = {m_Frames[m_CurrentFrame].imageAvailableSemaphore};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &m_CommandBuffer;
+        submitInfo.pCommandBuffers = &cmd;
 
-        VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphore};
+        VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphores[imageIndex]};
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        if (vkQueueSubmit(m_PresentQueue, 1, &submitInfo, m_InFlightFence) != VK_SUCCESS) {
+        if (vkQueueSubmit(m_PresentQueue, 1, &submitInfo, m_Frames[m_CurrentFrame].inFlightFence) != VK_SUCCESS) {
             DD_ERR("failed to submit draw command buffer!");
             return;
         }
@@ -622,6 +649,8 @@ namespace Dodo::Platform {
         presentInfo.pImageIndices = &imageIndex;
 
         vkQueuePresentKHR(m_PresentQueue, &presentInfo);
+
+        m_CurrentFrame = (m_CurrentFrame + 1) % maxFramesInFlight;
     }
 
     /**
@@ -841,7 +870,7 @@ namespace Dodo::Platform {
     VkSurfaceFormatKHR VulkanRenderAPI::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
     {
         for (const auto& availableFormat : availableFormats) {
-            if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
                 availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
                 return availableFormat;
             }
@@ -856,9 +885,9 @@ namespace Dodo::Platform {
      */
     VkPresentModeKHR VulkanRenderAPI::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
     {
-        // TODO: We want to choose this based on hardware. For example mobile devices or laptops
-        // we want to avoid MAILBOX since it consumes a lot of battery
-        // See https://youtu.be/0OqJtPnkfC8?si=Bi7aUphwI486H_Ba&t=1200
+        // TODO: We want to choose this based on hardware. For example on pcs we want to use MAILBOX but on mobile
+        // devices or laptops we want to avoid MAILBOX since it consumes a lot of battery See
+        // https://youtu.be/0OqJtPnkfC8?si=Bi7aUphwI486H_Ba&t=1200
         for (const auto& availablePresentMode : availablePresentModes) {
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
                 return availablePresentMode;

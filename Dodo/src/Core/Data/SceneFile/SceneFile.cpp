@@ -2,6 +2,7 @@
 #include "pch.h"
 
 #include "Core/Application/Application.h"
+#include "Core/Data/AssetTypes.h"
 #include "Core/System/FileUtils.h"
 
 #include <filesystem>

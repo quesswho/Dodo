@@ -5,8 +5,6 @@
 
 namespace Dodo {
 
-    using ModelID = uint64_t;
-
     class Model {
       private:
         std::vector<Mesh*> m_Meshes;

@@ -20,7 +20,7 @@ namespace Dodo {
         Ref<Material> m_ShadowMapMaterial;
 
       public:
-        Renderer3D(Math::FreeCamera* camera);
+        Renderer3D(Math::FreeCamera* camera, RenderAPI& renderAPI, AssetManager& assets);
 
         ~Renderer3D() {}
 

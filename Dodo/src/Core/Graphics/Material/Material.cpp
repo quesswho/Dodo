@@ -5,7 +5,7 @@
 
 namespace Dodo {
 
-    Material::Material() : m_Shader(Application::s_Application->m_AssetManager->GetFallbackShader()) {}
+    Material::Material() : m_Shader(Application::s_Application->m_AssetManager->GetFallbackPipeline()) {}
 
     Material::Material(Ref<Pipeline> shader) : m_Shader(shader) {}
 

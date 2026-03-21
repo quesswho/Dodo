@@ -16,7 +16,8 @@ namespace Dodo {
         Ref<Pipeline> m_Shader;
 
       public:
-        PostEffect(const FrameBufferProperties& framebufferprop, const char* path);
+        PostEffect(const FrameBufferProperties& framebufferprop, const char* path, RenderAPI& renderAPI,
+                   AssetManager& assets);
         ~PostEffect();
 
         inline void Bind() const { m_Framebuffer->Bind(); }

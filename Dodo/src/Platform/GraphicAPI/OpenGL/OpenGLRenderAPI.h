@@ -2,13 +2,14 @@
 
 #include "Core/Application/WindowProperties.h"
 #include "Core/Common.h"
-#include "Core/Graphics/RenderAPITypes.h"
-
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/CubeMap.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
+#include "Core/Graphics/Pipeline/PipelineDesc.h"
+#include "Core/Graphics/Pipeline/ShaderSource.h"
+#include "Core/Graphics/RenderAPITypes.h"
 
 #include <glad/gl.h>
 
@@ -51,14 +52,7 @@ namespace Dodo::Platform {
         void SetViewport(uint width, uint height);
         void SetViewport(uint width, uint height, uint posX, uint posY);
 
-        inline void DepthComparisonMethod(DepthComparisonMethod func) const { glDepthFunc(GL_NEVER + (uint)func); }
-        inline void DepthTest(bool depthtest) const { depthtest ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST); }
-        inline void StencilTest(bool stenciltest) const
-        {
-            stenciltest ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
-        }
-        void Blending(bool blending) const;
-        void Culling(bool cull, bool backface = true);
+        Ref<Pipeline> CreatePipeline(const PipelineDesc& desc, const ShaderSource& source);
 
         inline const char* GetAPIName() const { return "OpenGL"; }
         int CurrentVRamUsage() const

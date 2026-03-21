@@ -24,8 +24,7 @@ namespace Dodo::Platform {
 
         inline void BindTexture(uint index = 0) const
         {
-            glActiveTexture(GL_TEXTURE0 + index);
-            glBindTexture(GL_TEXTURE_2D, m_TextureID);
+            glBindTextureUnit(index, m_TextureID);
         }
 
         void Resize(uint width, uint height);

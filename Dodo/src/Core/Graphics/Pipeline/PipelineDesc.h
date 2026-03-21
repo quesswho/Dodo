@@ -8,7 +8,6 @@ namespace Dodo {
         ShaderID shaderID = 0;
         DepthComparisonMethod depthMode = DepthComparisonMethod::DEFAULT;
         bool depthTest = true;
-        bool depthWrite = true;
         bool blending = false;
         bool culling = true;
         bool backfaceCull = true;

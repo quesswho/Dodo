@@ -17,7 +17,7 @@ namespace Dodo::Platform {
         glBindTexture(GL_TEXTURE_2D, m_TextureID);
         if (m_FrameBufferProperties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL) {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, m_FrameBufferProperties.m_Width, m_FrameBufferProperties.m_Height,
-                         0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+                         0, GL_RGB, GL_FLOAT, 0);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_TextureID, 0);
@@ -27,7 +27,6 @@ namespace Dodo::Platform {
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_FrameBufferProperties.m_Width,
                                   m_FrameBufferProperties.m_Height);
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_RenderBuffer);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
         } else if (m_FrameBufferProperties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_DEPTH) {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_FrameBufferProperties.m_Width,
                          m_FrameBufferProperties.m_Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
@@ -38,8 +37,14 @@ namespace Dodo::Platform {
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_TextureID, 0);
             glDrawBuffer(GL_NONE);
             glReadBuffer(GL_NONE);
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
+
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (status != GL_FRAMEBUFFER_COMPLETE) {
+            DD_ERR("Framebuffer incomplete: {}", status);
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     OpenGLFrameBuffer::~OpenGLFrameBuffer()

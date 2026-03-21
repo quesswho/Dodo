@@ -2,6 +2,7 @@
 
 #include <Core/Common.h>
 
+#include "Core/Graphics/Pipeline/PipelineDesc.h"
 #include "OpenGLBuffer.h"
 
 #include "Core/Math/Maths.h"
@@ -15,10 +16,11 @@ namespace Dodo::Platform {
 
       private:
         uint m_ShaderID;
+        PipelineDesc m_Desc;
         std::unordered_map<std::string, int> m_UniformLocations;
 
       public:
-        OpenGLPipeline(uint shader) : m_ShaderID(shader) {}
+        OpenGLPipeline(const PipelineDesc& desc, uint shaderID) : m_ShaderID(shaderID), m_Desc(desc) {}
         ~OpenGLPipeline();
 
         void SetUniformValue(const char* location, const int value);

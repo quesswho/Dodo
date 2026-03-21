@@ -2,8 +2,8 @@
 #include "pch.h"
 
 #include "Core/Application/Application.h"
-#include "Core/Graphics/Shader/ShaderCompiler.h"
-#include "Core/Graphics/Shader/ShaderParser.h"
+#include "Core/Graphics/Pipeline/ShaderCompiler.h"
+#include "Core/Graphics/Pipeline/ShaderParser.h"
 
 namespace Dodo {
 
@@ -44,7 +44,7 @@ namespace Dodo {
             Model* model = assets.GetModel(modelComponent.m_ModelID);
             for (auto mesh : model->GetMeshes()) {
                 Ref<Material> mat = mesh->GetMaterial();
-                mat->Bind(renderAPI);
+                renderAPI.BindPipeline(mat->GetShader());
                 mat->SetUniform("u_LightCamera", lightSystem.m_Directional.m_LightCamera);
                 mat->SetUniform("u_LightDir", lightSystem.m_Directional.m_Direction);
                 mat->SetUniform("u_Model", modelComponent.m_Transformation.m_Model);
@@ -83,7 +83,7 @@ namespace Dodo {
 
         // Draw to shadowmap
         renderAPI.Culling(true, false);
-        m_ShadowMapMaterial->GetShader()->Bind();
+        renderAPI.BindPipeline(m_ShadowMapMaterial->GetShader());
         m_ShadowMapMaterial->SetUniform("u_LightCamera", scene->m_LightSystem.m_Directional.m_LightCamera);
         World& world = scene->GetWorld();
         RenderEntitiesWithMaterial(world, m_ShadowMapMaterial, renderAPI, assets);
@@ -97,6 +97,6 @@ namespace Dodo {
         DrawScene(scene, renderAPI, assets);
 
         // Draw postfx to screen target
-        m_PostEffect->Draw();
+        m_PostEffect->Draw(renderAPI);
     }
 } // namespace Dodo

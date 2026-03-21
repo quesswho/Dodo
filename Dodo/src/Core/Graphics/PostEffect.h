@@ -6,14 +6,14 @@
 
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/FrameBuffer.h"
-#include "Core/Graphics/Shader/Shader.h"
+#include "Core/Graphics/Pipeline/Pipeline.h"
 
 namespace Dodo {
     class PostEffect {
       private:
         VertexBuffer* m_Vertexbuffer;
         FrameBuffer* m_Framebuffer;
-        Ref<Shader> m_Shader;
+        Ref<Pipeline> m_Shader;
 
       public:
         PostEffect(const FrameBufferProperties& framebufferprop, const char* path);
@@ -22,20 +22,13 @@ namespace Dodo {
         inline void Bind() const { m_Framebuffer->Bind(); }
 
         template <typename T>
-        void SetUniformValue(const char* location, const T val)
+        void SetUniformValue(const char* location, const T val, RenderAPI& renderAPI)
         {
-            m_Shader->Bind();
+            renderAPI.BindPipeline(m_Shader);
             m_Shader->SetUniformValue(location, val);
         }
 
-        inline void Draw() const
-        {
-            Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
-            m_Shader->Bind();
-            m_Vertexbuffer->Bind();
-            m_Framebuffer->BindTexture();
-            Application::s_Application->m_RenderAPI->DrawArray(6);
-        }
+        void Draw(RenderAPI& renderAPI) const;
 
         void Resize(uint width, uint height) { m_Framebuffer->Resize(width, height); }
 

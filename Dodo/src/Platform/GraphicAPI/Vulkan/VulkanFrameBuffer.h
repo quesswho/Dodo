@@ -4,14 +4,14 @@
 #include <Core/Common.h>
 
 namespace Dodo::Platform {
-    class VkFrameBuffer {
+    class VulkanFrameBuffer {
       private:
         uint m_FrameBufferID, m_TextureID, m_RenderBuffer;
         FrameBufferProperties m_FrameBufferProperties;
 
       public:
-        VkFrameBuffer(const FrameBufferProperties& framebufferprop);
-        ~VkFrameBuffer();
+        VulkanFrameBuffer(const FrameBufferProperties& framebufferprop);
+        ~VulkanFrameBuffer();
 
         inline void Bind() const {}
 

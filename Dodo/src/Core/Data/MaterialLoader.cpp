@@ -9,12 +9,16 @@ namespace Dodo {
     Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, AssetManager& assets, RenderAPI& renderAPI)
     {
         ShaderID id = assets.LoadShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture, renderAPI);
+        PipelineDesc pipelineDesc;
+        pipelineDesc.shaderID = id;
+        PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
         return std::make_shared<Material>(
-            assets.GetShader(id), std::make_shared<Texture>(path),
+            assets.GetPipeline(pipelineID), std::make_shared<Texture>(path),
             std::make_shared<TextureSampler>(SamplerProperties(SamplerWrapMode::WRAP_CLAMP_TO_EDGE)));
     }
 
-    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, aiMaterial* aiMat, AssetManager& assets, RenderAPI& renderAPI)
+    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, aiMaterial* aiMat, AssetManager& assets,
+                                               RenderAPI& renderAPI)
     {
         ShaderBuilderFlags flags = ShaderBuilderFlagShadowMap;
         std::filesystem::path modelDir = std::filesystem::path(path).parent_path();
@@ -46,8 +50,8 @@ namespace Dodo {
             return std::make_shared<Material>(); // fallback
         }
 
-        ShaderID shaderID = assets.LoadShader(flags, renderAPI);
-        Ref<Pipeline> shader = assets.GetShader(shaderID);
+        PipelineID pipelineID = assets.CreatePipeline(flags, renderAPI);
+        Ref<Pipeline> shader = assets.GetPipeline(pipelineID);
         if (!shader) DD_WARN("Could not create shader");
 
         material->SetShader(shader);

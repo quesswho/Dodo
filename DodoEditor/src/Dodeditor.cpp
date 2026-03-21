@@ -9,8 +9,8 @@ GameLayer::GameLayer(Application& app)
     AssetManager& assets = *app.m_AssetManager;
 
     renderAPI.ClearColor(0.2f, 0.2f, 0.9f);
-    renderAPI.DepthTest(true);
-    renderAPI.Blending(true);
+    //renderAPI.DepthTest(true);
+    //renderAPI.Blending(true);
 
     BufferProperties bufferprop = {{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 3}};
 

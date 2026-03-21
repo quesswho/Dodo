@@ -3,11 +3,15 @@
 #include "pch.h"
 
 namespace Dodo {
-    PostEffect::PostEffect(const FrameBufferProperties& framebufferprop, const char* path)
+    PostEffect::PostEffect(const FrameBufferProperties& framebufferprop, const char* path, RenderAPI& renderAPI,
+                           AssetManager& assets)
         : m_Framebuffer(new FrameBuffer(framebufferprop))
     {
-        ShaderID id = Application::s_Application->m_AssetManager->LoadGLSLShaderFromPath(path);
-        m_Shader = Application::s_Application->m_AssetManager->GetShader(id);
+        ShaderID id = assets.LoadShaderFromPath(path);
+        PipelineDesc pipelineDesc;
+        pipelineDesc.shaderID = id;
+        PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
+        m_Shader = assets.GetPipeline(pipelineID);
         Create();
     }
 

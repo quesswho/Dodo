@@ -2,7 +2,7 @@
 #include "pch.h"
 
 #include "Core/Application/Application.h"
-
+#include "OpenGLShaderCompiler.h"
 #include <backends/imgui_impl_opengl3.h>
 
 namespace Dodo::Platform {
@@ -33,7 +33,6 @@ namespace Dodo::Platform {
 
         SetViewport(winprop.m_FrameBufferWidth, winprop.m_FrameBufferHeight);
         m_CullingDefault = winprop.m_Settings.backfaceCull;
-        Culling(m_CullingDefault);
 
         m_Context.SetVSync(winprop.m_Settings.vsync);
 
@@ -64,26 +63,6 @@ namespace Dodo::Platform {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
-    void OpenGLRenderAPI::Blending(bool blending) const
-    {
-        if (blending) {
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glEnable(GL_BLEND);
-        } else {
-            glDisable(GL_BLEND);
-        }
-    }
-
-    void OpenGLRenderAPI::Culling(bool cull, bool backface)
-    {
-        if (cull) {
-            glEnable(GL_CULL_FACE);
-            glCullFace(backface ? GL_BACK : GL_FRONT);
-        } else {
-            glDisable(GL_CULL_FACE);
-        }
-    }
-
     void OpenGLRenderAPI::SetViewport(uint width, uint height)
     {
         m_ViewportWidth = width;
@@ -96,6 +75,41 @@ namespace Dodo::Platform {
         m_ViewportPosX = posX;
         m_ViewportPosY = posY;
         SetViewport(width, height);
+    }
+
+    Ref<Pipeline> OpenGLRenderAPI::CreatePipeline(const PipelineDesc& desc, const ShaderSource& source)
+    {
+        uint program = OpenGLShaderCompiler::Compile(source);
+
+        // Apply pipeline state from desc
+        if (desc.depthTest) {
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_NEVER + (uint)desc.depthMode);
+        } else {
+            glDisable(GL_DEPTH_TEST);
+        }
+
+        if (desc.blending) {
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glEnable(GL_BLEND);
+        } else {
+            glDisable(GL_BLEND);
+        }
+
+        if (desc.culling) {
+            glEnable(GL_CULL_FACE);
+            glCullFace(desc.backfaceCull ? GL_BACK : GL_FRONT);
+        } else {
+            glDisable(GL_CULL_FACE);
+        }
+
+        if (desc.stencilTest) {
+            glEnable(GL_STENCIL_TEST);
+        } else {
+            glDisable(GL_STENCIL_TEST);
+        }
+
+        return std::make_shared<Pipeline>(program);
     }
 
     void OpenGLRenderAPI::ImGuiNewFrame() const

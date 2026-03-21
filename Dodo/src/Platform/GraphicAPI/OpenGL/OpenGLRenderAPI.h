@@ -4,6 +4,7 @@
 #include "Core/Common.h"
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/CubeMap.h"
+#include "Core/Graphics/FrameBuffer.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
@@ -44,7 +45,14 @@ namespace Dodo::Platform {
         {
             glBindSampler(slot, sampler->GetSamplerID());
         }
+        inline void BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer)
+        {
+            glBindSampler(slot, framebuffer->m_Sampler->GetSamplerID());
+            glBindTextureUnit(slot, framebuffer->m_TextureID);
+        }
+
         void BindPipeline(Ref<Pipeline> pipeline);
+        void PushConstants(const void* data, size_t size);
         void SetFrameData(const FrameData& data);
         void SetDrawData(const DrawData& data);
         void DrawIndexed(const Ref<VertexBuffer>& va);
@@ -77,6 +85,7 @@ namespace Dodo::Platform {
       private:
         uint m_CurrentPipelineID;
         uint m_FrameUBO = 0;
+        uint m_PushConstantUBO = 0;
 
         int m_Version;
         NativeWindowHandle m_Handle;

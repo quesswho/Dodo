@@ -49,7 +49,8 @@ namespace Dodo {
         renderAPI.BindPipeline(m_Shader);
         FrameData skyboxFrame{};
         skyboxFrame.camera = m_Projection * Math::Mat4::RelinquishToMat3(viewMatrix);
-        renderAPI.SetFrameData(skyboxFrame); // Overrides UBO for skybox. Note a better way would be to have a separate UBO for skybox data
+        renderAPI.SetFrameData(
+            skyboxFrame); // Overrides UBO for skybox. Note a better way would be to have a separate UBO for skybox data
         renderAPI.BindTextureSampler(0, m_Sampler);
         renderAPI.BindCubeMap(0, m_CubeMap);
         m_VertexBuffer->Bind();

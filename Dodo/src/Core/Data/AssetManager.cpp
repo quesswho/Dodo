@@ -27,16 +27,6 @@ namespace Dodo {
         if (m_ShaderBuilderShaders.count(flags)) return m_ShaderBuilderShaders[flags];
 
         GeneratedShaderSource source = ShaderGenerator::Generate(flags);
-
-        /*
-        renderAPI.BindPipeline(shader);
-        int i = 0;
-        if (flags & ShaderBuilderFlags::ShaderBuilderFlagCubeMap) shader->SetUniformValue("u_CubeMap", i++);
-        if (flags & ShaderBuilderFlags::ShaderBuilderFlagDiffuseMap) shader->SetUniformValue("u_DiffuseMap", i++);
-        if (flags & ShaderBuilderFlags::ShaderBuilderFlagSpecularMap) shader->SetUniformValue("u_SpecularMap", i++);
-        if (flags & ShaderBuilderFlags::ShaderBuilderFlagNormalMap) shader->SetUniformValue("u_NormalMap", i++);
-        if (flags & ShaderBuilderFlags::ShaderBuilderFlagShadowMap) shader->SetUniformValue("u_DepthMap", 3);
-        */
         ShaderID id = m_NextShaderID++;
         m_ShaderBuilderShaders.emplace(flags, id);
         m_Shaders.emplace(id, std::move(source.source));

@@ -13,14 +13,6 @@ namespace Dodo {
         Model(std::vector<Mesh*> meshes);
         ~Model();
 
-        template <typename T>
-        void SetUniform(const char* location, T value)
-        {
-            for (auto mesh : m_Meshes) {
-                mesh->SetUniform(location, value);
-            }
-        }
-
         const std::vector<Mesh*>& GetMeshes() const { return m_Meshes; }
         void Draw(RenderAPI& renderAPI) const;
         void DrawGeometry(RenderAPI& renderAPI) const;

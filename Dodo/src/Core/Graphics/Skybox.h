@@ -20,7 +20,7 @@ namespace Dodo {
 
       public:
         Math::Mat4 m_Projection;
-        Skybox(const Math::Mat4& projection, std::vector<std::string> paths, AssetManager& assets);
+        Skybox(const Math::Mat4& projection, std::vector<std::string> paths, AssetManager& assets, RenderAPI& renderAPI);
         ~Skybox();
 
         void Draw(const Math::Mat4& viewMatrix, RenderAPI& renderAPI) const;

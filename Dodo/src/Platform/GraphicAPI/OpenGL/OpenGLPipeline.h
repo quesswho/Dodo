@@ -19,11 +19,7 @@ namespace Dodo::Platform {
 
       public:
         OpenGLPipeline(uint shader) : m_ShaderID(shader) {}
-
         ~OpenGLPipeline();
-
-        void Bind() const;
-        void Unbind() const;
 
         void SetUniformValue(const char* location, const int value);
         void SetUniformValue(const char* location, const float value);

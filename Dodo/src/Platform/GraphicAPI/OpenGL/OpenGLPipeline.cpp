@@ -13,16 +13,6 @@ namespace Dodo::Platform {
         glDeleteProgram(m_ShaderID);
     }
 
-    void OpenGLPipeline::Bind() const
-    {
-        glUseProgram(m_ShaderID);
-    }
-
-    void OpenGLPipeline::Unbind() const
-    {
-        glUseProgram(0);
-    }
-
     int OpenGLPipeline::GetLocation(const char* location)
     {
         if (m_UniformLocations.find(location) != m_UniformLocations.end()) return m_UniformLocations[location];

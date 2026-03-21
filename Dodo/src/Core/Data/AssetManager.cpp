@@ -21,7 +21,7 @@ namespace Dodo {
             delete model.second;
     }
 
-    ShaderID AssetManager::LoadShader(ShaderBuilderFlags flags)
+    ShaderID AssetManager::LoadShader(ShaderBuilderFlags flags, RenderAPI& renderAPI)
     {
         if (m_ShaderBuilderShaders.find(flags) != m_ShaderBuilderShaders.end()) return m_ShaderBuilderShaders[flags];
 
@@ -30,7 +30,7 @@ namespace Dodo {
 
         int id = m_NextShaderID++;
 
-        shader->Bind();
+        renderAPI.BindPipeline(shader);
         int i = 0;
         if (flags & ShaderBuilderFlags::ShaderBuilderFlagCubeMap) shader->SetUniformValue("u_CubeMap", i++);
         if (flags & ShaderBuilderFlags::ShaderBuilderFlagDiffuseMap) shader->SetUniformValue("u_DiffuseMap", i++);
@@ -105,7 +105,7 @@ namespace Dodo {
             return it->second;
         }
 
-        Model* model = m_ModelLoader.LoadModel(path, m_MaterialLoader, *this);
+        Model* model = m_ModelLoader.LoadModel(path, m_MaterialLoader, *this, *Application::s_Application->m_RenderAPI);
         if (model == nullptr) {
             DD_ERR("Failed to load model: {0}, Loading default cube", path);
             return GetBuiltinModel(BuiltinModel::Cube);
@@ -169,7 +169,7 @@ namespace Dodo {
             return it->second;
         }
 
-        Ref<Material> mat = m_MaterialLoader.LoadMaterial(path, *this);
+        Ref<Material> mat = m_MaterialLoader.LoadMaterial(path, *this, *Application::s_Application->m_RenderAPI);
         MaterialID id = m_NextMaterialID++;
 
         m_MaterialID.emplace(path, id);

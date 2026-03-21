@@ -22,20 +22,13 @@ namespace Dodo {
         inline void Bind() const { m_Framebuffer->Bind(); }
 
         template <typename T>
-        void SetUniformValue(const char* location, const T val)
+        void SetUniformValue(const char* location, const T val, RenderAPI& renderAPI)
         {
-            m_Shader->Bind();
+            renderAPI.BindPipeline(m_Shader);
             m_Shader->SetUniformValue(location, val);
         }
 
-        inline void Draw() const
-        {
-            Application::s_Application->m_RenderAPI->DefaultFrameBuffer();
-            m_Shader->Bind();
-            m_Vertexbuffer->Bind();
-            m_Framebuffer->BindTexture();
-            Application::s_Application->m_RenderAPI->DrawArray(6);
-        }
+        void Draw(RenderAPI& renderAPI) const;
 
         void Resize(uint width, uint height) { m_Framebuffer->Resize(width, height); }
 

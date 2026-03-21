@@ -12,11 +12,7 @@ namespace Dodo::Platform {
 
       public:
         VulkanPipeline(uint shader) {}
-
         ~VulkanPipeline();
-
-        void Bind() const;
-        void Unbind() const;
 
         void SetUniformValue(const char* location, const int value);
         void SetUniformValue(const char* location, const float value);

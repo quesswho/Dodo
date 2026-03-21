@@ -5,10 +5,6 @@ namespace Dodo::Platform {
 
     VulkanPipeline::~VulkanPipeline() {}
 
-    void VulkanPipeline::Bind() const {}
-
-    void VulkanPipeline::Unbind() const {}
-
     void VulkanPipeline::SetUniformValue(const char* location, const int value) {}
 
     void VulkanPipeline::SetUniformValue(const char* location, const float value) {}

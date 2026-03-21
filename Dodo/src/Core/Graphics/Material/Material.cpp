@@ -27,7 +27,7 @@ namespace Dodo {
 
     void Material::Bind(RenderAPI& renderAPI) const
     {
-        m_Shader->Bind();
+        renderAPI.BindPipeline(m_Shader);
         for (const auto& [slot, texture] : m_Textures) {
             renderAPI.BindTexture(slot, texture);
             renderAPI.BindTextureSampler(slot, m_Sampler);

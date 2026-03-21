@@ -21,7 +21,8 @@ namespace Dodo {
                                              -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f,
                                              1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f};
 
-    Skybox::Skybox(const Math::Mat4& projection, std::vector<std::string> paths, AssetManager& assets, RenderAPI& renderAPI)
+    Skybox::Skybox(const Math::Mat4& projection, std::vector<std::string> paths, AssetManager& assets,
+                   RenderAPI& renderAPI)
         : m_Projection(projection),
           m_VertexBuffer(std::make_unique<VertexBuffer>(s_SkyboxVertices, sizeof(s_SkyboxVertices),
                                                         BufferProperties({{"POSITION", 3}}))),
@@ -31,23 +32,28 @@ namespace Dodo {
           m_CubeMap(std::make_shared<CubeMap>(paths))
     {
         ShaderID id = assets.LoadShader(ShaderBuilderFlags::ShaderBuilderFlagCubeMap |
-                                        ShaderBuilderFlags::ShaderBuilderFlagMaxDepth |
-                                        ShaderBuilderFlags::ShaderBuilderFlagNoTexcoord, renderAPI);
-        m_Shader = assets.GetShader(id);
+                                            ShaderBuilderFlags::ShaderBuilderFlagMaxDepth |
+                                            ShaderBuilderFlags::ShaderBuilderFlagNoTexcoord,
+                                        renderAPI);
+        PipelineDesc pipelineDesc;
+        pipelineDesc.shaderID = id;
+        pipelineDesc.depthMode = DepthComparisonMethod::LESS_EQUAL;
+        PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
+        m_Shader = assets.GetPipeline(pipelineID);
     }
 
     Skybox::~Skybox() {}
 
     void Skybox::Draw(const Math::Mat4& viewMatrix, RenderAPI& renderAPI) const
     {
-        renderAPI.DepthComparisonMethod(DepthComparisonMethod::LESS_EQUAL);
         renderAPI.BindPipeline(m_Shader);
-        m_Shader->SetUniformValue("u_Camera", m_Projection * Math::Mat4::RelinquishToMat3(viewMatrix));
-        m_Shader->SetUniformValue("u_CubeMap", 0);
+        FrameData skyboxFrame{};
+        skyboxFrame.camera = m_Projection * Math::Mat4::RelinquishToMat3(viewMatrix);
+        renderAPI.SetFrameData(
+            skyboxFrame); // Overrides UBO for skybox. Note a better way would be to have a separate UBO for skybox data
         renderAPI.BindTextureSampler(0, m_Sampler);
         renderAPI.BindCubeMap(0, m_CubeMap);
         m_VertexBuffer->Bind();
         renderAPI.DrawArray(36);
-        renderAPI.DepthComparisonMethod(DepthComparisonMethod::LESS);
     }
 } // namespace Dodo

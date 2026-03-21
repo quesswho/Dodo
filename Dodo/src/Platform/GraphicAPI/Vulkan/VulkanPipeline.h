@@ -11,17 +11,8 @@ namespace Dodo::Platform {
         friend class VulkanRenderAPI;
 
       public:
-        VulkanPipeline(uint shader) {}
+        VulkanPipeline(const PipelineDesc& desc, uint shaderID) {}
         ~VulkanPipeline();
-
-        void SetUniformValue(const char* location, const int value);
-        void SetUniformValue(const char* location, const float value);
-        void SetUniformValue(const char* location, const Math::TVec2<float>& value);
-        void SetUniformValue(const char* location, const Math::TVec3<float>& value);
-        void SetUniformValue(const char* location, const Math::TVec4<float>& value);
-        void SetUniformValue(const char* location, const Math::Mat2& value);
-        void SetUniformValue(const char* location, const Math::Mat3& value);
-        void SetUniformValue(const char* location, const Math::Mat4& value);
 
       private:
         VkPipeline m_Pipeline;

@@ -222,7 +222,7 @@ bool Interface::ViewportResize()
         m_ViewportState.y = (uint)ImGui::GetWindowPos().y;
 
         Application::s_Application->m_RenderAPI->SetViewport(m_ViewportState.width, m_ViewportState.height,
-                                                                       m_ViewportState.x, m_ViewportState.y);
+                                                             m_ViewportState.x, m_ViewportState.y);
         return true;
     }
     return false;

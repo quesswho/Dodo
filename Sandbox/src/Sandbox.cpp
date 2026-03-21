@@ -3,13 +3,14 @@
 using namespace Dodo;
 using namespace Math;
 
-GameLayer::GameLayer()
+GameLayer::GameLayer(Application& app)
 {
+    RenderAPI& renderAPI = *app.m_RenderAPI;
+    AssetManager& assets = *app.m_AssetManager;
+
     DD_INFO("Working directory: {}", std::filesystem::current_path().string());
 
-    Application::s_Application->m_RenderAPI->ClearColor(0.2f, 0.2f, 0.9f);
-    Application::s_Application->m_RenderAPI->DepthTest(true);
-    Application::s_Application->m_RenderAPI->Blending(true);
+    renderAPI.ClearColor(0.2f, 0.2f, 0.9f);
 
     // FPS camera containing view matrix
     m_Camera =
@@ -22,15 +23,17 @@ GameLayer::GameLayer()
     FrameBufferProperties frameprop;
     frameprop.m_Width = Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferWidth;
     frameprop.m_Height = Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferHeight;
+    frameprop.m_FrameBufferType = FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL;
 
-    m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.fx");
-    m_Gamma = 1.0f;
+    m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.fx", renderAPI, assets);
+    m_PostEffectData.gamma = 1.0f;
+    m_PostEffect->SetEffectData(m_PostEffectData);
 
     m_LightLook = Vec3(0.0, 0.0f, 15.0f);
     m_LightProjection = Mat4::Orthographic(-50.0f, 50.0f, -50.0f, 50.0f, 1.0f, 100.0f);
     m_LightView = Mat4::LookAt(Vec3(0.0f, 35.0f, 23.0f), m_LightLook, Vec3(0.0, 1.0, 0.0));
 
-    m_Renderer = new Renderer3D(m_Camera);
+    m_Renderer = new Renderer3D(m_Camera, renderAPI, assets);
     m_Renderer->SetPostEffect(m_PostEffect);
 
     m_Scene = m_File.Read("res/sponza/sponza.das");
@@ -42,7 +45,7 @@ GameLayer::GameLayer()
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    m_Scene->m_SkyBox = new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath);
+    m_Scene->m_SkyBox = new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath, assets, renderAPI);
     DD_INFO("Finished loading skybox");
     m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(Vec3(0.2f, -0.5f, -0.5f));
     m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
@@ -59,8 +62,9 @@ GameLayer::~GameLayer()
 
 void GameLayer::Update(float elapsed)
 {
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_9)) m_Gamma += 1.0f * elapsed;
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_8)) m_Gamma -= 1.0f * elapsed;
+    double gammaChangeSpeed = 0.0f;
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_9)) gammaChangeSpeed += 1.0f * elapsed;
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_8)) gammaChangeSpeed -= 1.0f * elapsed;
 
     // Change directional light
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_1))
@@ -97,7 +101,11 @@ void GameLayer::Update(float elapsed)
     m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(m_LightLook - lightPos);
     m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
 
-    m_PostEffect->SetUniformValue("u_Gamma", m_Gamma);
+    if (gammaChangeSpeed != 0.0f) {
+        m_PostEffectData.gamma += gammaChangeSpeed;
+        m_PostEffectData.gamma = std::max(0.1f, std::min(m_PostEffectData.gamma, 5.0f));
+        m_PostEffect->SetEffectData(m_PostEffectData);
+    }
 
     m_Camera->Update(elapsed);
 
@@ -108,10 +116,10 @@ void GameLayer::Update(float elapsed)
     Application::s_Application->m_Window->SetTitle(stream.str().c_str());
 }
 
-void GameLayer::Render()
+void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
 {
     m_Renderer->UpdateCamera(m_Camera);
-    m_Renderer->DrawShadowedScene(m_Scene);
+    m_Renderer->DrawShadowedScene(m_Scene, renderAPI, assets);
 }
 
 void GameLayer::OnEvent(const Event& event)
@@ -158,7 +166,7 @@ class Sandbox : public Application {
         return conf;
     }
 
-    void Init() { PushLayer(new GameLayer()); }
+    void Init() { PushLayer(new GameLayer(*this)); }
 };
 
 int main()

@@ -24,24 +24,33 @@ namespace Dodo {
         std::filesystem::path modelDir = std::filesystem::path(path).parent_path();
 
         Ref<Material> material = std::make_shared<Material>();
-        uint slot = 0;
+        uint numTextures = 0;
 
         // Diffuse map
         Ref<Texture> tex = LoadTextureFromMaterial(aiMat, aiTextureType_DIFFUSE, flags, modelDir);
-        if (tex) material->AddTexture(slot++, tex);
+        if (tex) {
+            material->AddTexture(0, tex);
+            numTextures++;
+        }
 
         // Specular map
         tex = LoadTextureFromMaterial(aiMat, aiTextureType_SPECULAR, flags, modelDir);
-        if (tex) material->AddTexture(slot++, tex);
+        if (tex) {
+            material->AddTexture(1, tex);
+            numTextures++;
+        }
 
         // Normal map — NORMALS and DISPLACEMENT are the same thing
         aiTextureType normalType = aiTextureType_NORMALS;
         aiString str;
         if (aiMat->GetTexture(normalType, 0, &str) != AI_SUCCESS) normalType = aiTextureType_DISPLACEMENT;
         tex = LoadTextureFromMaterial(aiMat, normalType, flags, modelDir);
-        if (tex) material->AddTexture(slot++, tex);
+        if (tex) {
+            material->AddTexture(2, tex);
+            numTextures++;
+        }
 
-        if (slot == 0) {
+        if (numTextures == 0) {
             aiString name;
             if (aiMat->Get(AI_MATKEY_NAME, name) == AI_SUCCESS)
                 DD_WARN("Material {} has no textures!", name.C_Str());

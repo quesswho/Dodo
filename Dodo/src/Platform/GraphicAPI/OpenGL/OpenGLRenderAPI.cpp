@@ -14,6 +14,7 @@ namespace Dodo::Platform {
 
     OpenGLRenderAPI::~OpenGLRenderAPI()
     {
+        glDeleteBuffers(1, &m_FrameUBO);
         ImGui_ImplOpenGL3_Shutdown();
         gladLoaderUnloadGL();
     }
@@ -53,7 +54,78 @@ namespace Dodo::Platform {
             ImGui_ImplOpenGL3_Init();
         }
 
+        // Create frame UBO
+        glGenBuffers(1, &m_FrameUBO);
+        glBindBuffer(GL_UNIFORM_BUFFER, m_FrameUBO);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(FrameData), nullptr, GL_DYNAMIC_DRAW);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_FrameUBO); // Bind to slot 0
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
         return RenderInitError(RenderInitStatus::Success, "");
+    }
+
+    void OpenGLRenderAPI::BindPipeline(Ref<Pipeline> pipeline)
+    {
+        m_CurrentPipelineID = pipeline->m_ShaderID;
+        glUseProgram(pipeline->m_ShaderID);
+
+        // Apply pipeline state from desc
+        if (pipeline->m_Desc.depthTest) {
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_NEVER + (uint)pipeline->m_Desc.depthMode);
+        } else {
+            glDisable(GL_DEPTH_TEST);
+        }
+
+        if (pipeline->m_Desc.blending) {
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glEnable(GL_BLEND);
+        } else {
+            glDisable(GL_BLEND);
+        }
+
+        if (pipeline->m_Desc.culling) {
+            glEnable(GL_CULL_FACE);
+            glCullFace(pipeline->m_Desc.backfaceCull ? GL_BACK : GL_FRONT);
+        } else {
+            glDisable(GL_CULL_FACE);
+        }
+
+        if (pipeline->m_Desc.stencilTest) {
+            glEnable(GL_STENCIL_TEST);
+        } else {
+            glDisable(GL_STENCIL_TEST);
+        }
+    }
+
+    void OpenGLRenderAPI::SetFrameData(const FrameData& data)
+    {
+        FrameData uboData;
+        uboData.lightCamera = data.lightCamera;
+        uboData.camera = data.camera;
+        uboData.lightDir = data.lightDir;
+        uboData.pad0 = 0.0f;
+        uboData.cameraPos = data.cameraPos;
+        uboData.pad1 = 0.0f;
+
+        glBindBuffer(GL_UNIFORM_BUFFER, m_FrameUBO);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(FrameData), &uboData);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        /*GLint uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_LightCamera");
+        glUniformMatrix4fv(uLoc, 1, GL_FALSE, &data.lightCamera.m_Elements[0]);
+        uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_LightDir");
+        glUniform3f(uLoc, data.lightDir.x, data.lightDir.y, data.lightDir.z);
+        uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_Camera");
+        glUniformMatrix4fv(uLoc, 1, GL_FALSE, &data.camera.m_Elements[0]);
+        uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_CameraPos");
+        glUniform3f(uLoc, data.cameraPos.x, data.cameraPos.y, data.cameraPos.z);*/
+    }
+
+    void OpenGLRenderAPI::SetDrawData(const DrawData& data)
+    {
+        GLint uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_Model");
+        glUniformMatrix4fv(uLoc, 1, GL_FALSE, &data.model.m_Elements[0]);
     }
 
     void OpenGLRenderAPI::DefaultFrameBuffer() const
@@ -81,35 +153,7 @@ namespace Dodo::Platform {
     {
         uint program = OpenGLShaderCompiler::Compile(source);
 
-        // Apply pipeline state from desc
-        if (desc.depthTest) {
-            glEnable(GL_DEPTH_TEST);
-            glDepthFunc(GL_NEVER + (uint)desc.depthMode);
-        } else {
-            glDisable(GL_DEPTH_TEST);
-        }
-
-        if (desc.blending) {
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glEnable(GL_BLEND);
-        } else {
-            glDisable(GL_BLEND);
-        }
-
-        if (desc.culling) {
-            glEnable(GL_CULL_FACE);
-            glCullFace(desc.backfaceCull ? GL_BACK : GL_FRONT);
-        } else {
-            glDisable(GL_CULL_FACE);
-        }
-
-        if (desc.stencilTest) {
-            glEnable(GL_STENCIL_TEST);
-        } else {
-            glDisable(GL_STENCIL_TEST);
-        }
-
-        return std::make_shared<Pipeline>(program);
+        return std::make_shared<Pipeline>(desc, program);
     }
 
     void OpenGLRenderAPI::ImGuiNewFrame() const

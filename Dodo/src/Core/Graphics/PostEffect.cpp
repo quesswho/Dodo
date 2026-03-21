@@ -10,8 +10,12 @@ namespace Dodo {
         ShaderID id = assets.LoadShaderFromPath(path);
         PipelineDesc pipelineDesc;
         pipelineDesc.shaderID = id;
+        pipelineDesc.depthTest = false;
+        pipelineDesc.culling = false;
+        pipelineDesc.backfaceCull = false;
         PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
         m_Shader = assets.GetPipeline(pipelineID);
+
         Create();
     }
 
@@ -20,12 +24,14 @@ namespace Dodo {
         renderAPI.DefaultFrameBuffer();
         renderAPI.BindPipeline(m_Shader);
         m_Vertexbuffer->Bind();
-        m_Framebuffer->BindTexture();
+        renderAPI.BindTextureSampler(0, m_Sampler);
+        m_Framebuffer->BindTexture(0);
         renderAPI.DrawArray(6);
     }
 
     void PostEffect::Create()
     {
+        m_Sampler = std::make_shared<TextureSampler>(SamplerProperties(SamplerFilter::MIN_MAG_LINEAR, SamplerWrapMode::WRAP_CLAMP_TO_EDGE, SamplerWrapMode::WRAP_CLAMP_TO_EDGE));
 
         float screenQuad[] = {
             -1.0f, 1.0f,  0.0f, 1.0f, // top left

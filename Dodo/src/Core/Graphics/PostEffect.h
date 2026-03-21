@@ -7,6 +7,7 @@
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/FrameBuffer.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
+#include "Core/Graphics/Material/TextureSampler.h"
 
 namespace Dodo {
     class PostEffect {
@@ -14,7 +15,7 @@ namespace Dodo {
         VertexBuffer* m_Vertexbuffer;
         FrameBuffer* m_Framebuffer;
         Ref<Pipeline> m_Shader;
-
+        Ref<TextureSampler> m_Sampler;
       public:
         PostEffect(const FrameBufferProperties& framebufferprop, const char* path, RenderAPI& renderAPI,
                    AssetManager& assets);

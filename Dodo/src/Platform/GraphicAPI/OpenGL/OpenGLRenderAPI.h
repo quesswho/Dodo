@@ -44,7 +44,9 @@ namespace Dodo::Platform {
         {
             glBindSampler(slot, sampler->GetSamplerID());
         }
-        void BindPipeline(Ref<Pipeline> pipeline) { glUseProgram(pipeline->m_ShaderID); }
+        void BindPipeline(Ref<Pipeline> pipeline);
+        void SetFrameData(const FrameData& data);
+        void SetDrawData(const DrawData& data);
         void DrawIndexed(const Ref<VertexBuffer>& va);
         inline void DrawIndices(uint count) const { glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); }
         inline void DrawArray(uint count) const { glDrawArrays(GL_TRIANGLES, 0, count); }
@@ -73,6 +75,9 @@ namespace Dodo::Platform {
         bool m_CullingDefault;
 
       private:
+        uint m_CurrentPipelineID;
+        uint m_FrameUBO = 0;
+
         int m_Version;
         NativeWindowHandle m_Handle;
     };

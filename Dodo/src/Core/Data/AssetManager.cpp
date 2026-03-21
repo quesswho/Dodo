@@ -12,7 +12,8 @@ namespace Dodo {
     {
         ShaderSource fallback = ShaderGenerator::GetFallbackShader().source;
         m_Shaders.emplace(0, std::move(fallback));
-        m_Pipelines.emplace(0, Application::s_Application->m_RenderAPI->CreatePipeline(PipelineDesc{0}, m_Shaders.at(0)));
+        m_Pipelines.emplace(0,
+                            Application::s_Application->m_RenderAPI->CreatePipeline(PipelineDesc{0}, m_Shaders.at(0)));
     }
 
     AssetManager::~AssetManager()

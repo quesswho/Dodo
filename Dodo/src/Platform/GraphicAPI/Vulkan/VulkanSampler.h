@@ -3,10 +3,10 @@
 #include "Core/Graphics/Material/SamplerProperties.h"
 
 namespace Dodo::Platform {
-    class VkSampler {
+    class VulkanSampler {
       public:
-        VkSampler(const SamplerProperties& settings = SamplerProperties());
-        ~VkSampler();
+        VulkanSampler(const SamplerProperties& settings = SamplerProperties());
+        ~VulkanSampler();
 
         uint GetSamplerID() const { return m_SamplerID; }
 

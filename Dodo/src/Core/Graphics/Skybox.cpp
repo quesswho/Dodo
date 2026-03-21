@@ -21,7 +21,7 @@ namespace Dodo {
                                              -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f,
                                              1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f};
 
-    Skybox::Skybox(const Math::Mat4& projection, std::vector<std::string> paths, AssetManager& assets)
+    Skybox::Skybox(const Math::Mat4& projection, std::vector<std::string> paths, AssetManager& assets, RenderAPI& renderAPI)
         : m_Projection(projection),
           m_VertexBuffer(std::make_unique<VertexBuffer>(s_SkyboxVertices, sizeof(s_SkyboxVertices),
                                                         BufferProperties({{"POSITION", 3}}))),
@@ -32,7 +32,7 @@ namespace Dodo {
     {
         ShaderID id = assets.LoadShader(ShaderBuilderFlags::ShaderBuilderFlagCubeMap |
                                         ShaderBuilderFlags::ShaderBuilderFlagMaxDepth |
-                                        ShaderBuilderFlags::ShaderBuilderFlagNoTexcoord);
+                                        ShaderBuilderFlags::ShaderBuilderFlagNoTexcoord, renderAPI);
         m_Shader = assets.GetShader(id);
     }
 
@@ -41,7 +41,7 @@ namespace Dodo {
     void Skybox::Draw(const Math::Mat4& viewMatrix, RenderAPI& renderAPI) const
     {
         renderAPI.DepthComparisonMethod(DepthComparisonMethod::LESS_EQUAL);
-        m_Shader->Bind();
+        renderAPI.BindPipeline(m_Shader);
         m_Shader->SetUniformValue("u_Camera", m_Projection * Math::Mat4::RelinquishToMat3(viewMatrix));
         m_Shader->SetUniformValue("u_CubeMap", 0);
         renderAPI.BindTextureSampler(0, m_Sampler);

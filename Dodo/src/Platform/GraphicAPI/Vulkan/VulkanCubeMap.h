@@ -7,13 +7,13 @@
 
 namespace Dodo::Platform {
 
-    class VkCubeMap {
+    class VulkanCubeMap {
       private:
         uint m_TextureID;
 
       public:
-        VkCubeMap(std::vector<std::string> paths);
-        ~VkCubeMap();
+        VulkanCubeMap(std::vector<std::string> paths);
+        ~VulkanCubeMap();
 
         void Bind() const;
 

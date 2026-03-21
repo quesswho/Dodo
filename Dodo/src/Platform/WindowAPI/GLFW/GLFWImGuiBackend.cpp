@@ -27,9 +27,6 @@ namespace Dodo::Platform {
         ImGui::NewFrame();
     }
 
-    void GLFWImGuiBackend::EndFrame()
-    {
-        ImGui::Render();
-    }
+    void GLFWImGuiBackend::EndFrame() {}
 
 } // namespace Dodo::Platform

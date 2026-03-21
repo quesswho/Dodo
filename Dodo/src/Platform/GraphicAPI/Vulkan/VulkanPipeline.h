@@ -1,27 +1,18 @@
 #pragma once
 
 #include <Core/Common.h>
-
-#include "OpenGLBuffer.h"
+#include <volk.h>
 
 #include "Core/Math/Maths.h"
 
-#include <unordered_map>
-
 namespace Dodo::Platform {
 
-    class OpenGLShader {
-      private:
-        uint m_ShaderID;
-        std::unordered_map<std::string, int> m_UniformLocations;
+    class VulkanPipeline {
+        friend class VulkanRenderAPI;
 
       public:
-        OpenGLShader(uint shader) : m_ShaderID(shader) {}
-
-        ~OpenGLShader();
-
-        void Bind() const;
-        void Unbind() const;
+        VulkanPipeline(uint shader) {}
+        ~VulkanPipeline();
 
         void SetUniformValue(const char* location, const int value);
         void SetUniformValue(const char* location, const float value);
@@ -33,6 +24,6 @@ namespace Dodo::Platform {
         void SetUniformValue(const char* location, const Math::Mat4& value);
 
       private:
-        int GetLocation(const char* location);
+        VkPipeline m_Pipeline;
     };
 } // namespace Dodo::Platform

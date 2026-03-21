@@ -11,6 +11,15 @@ namespace Dodo {
         Create();
     }
 
+    void PostEffect::Draw(RenderAPI& renderAPI) const
+    {
+        renderAPI.DefaultFrameBuffer();
+        renderAPI.BindPipeline(m_Shader);
+        m_Vertexbuffer->Bind();
+        m_Framebuffer->BindTexture();
+        renderAPI.DrawArray(6);
+    }
+
     void PostEffect::Create()
     {
 

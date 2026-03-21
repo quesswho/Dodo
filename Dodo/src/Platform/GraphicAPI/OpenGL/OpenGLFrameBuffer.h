@@ -1,15 +1,19 @@
 #pragma once
 
 #include "Core/Graphics/FrameBufferProperties.h"
+#include "OpenGLSampler.h"
 #include <Core/Common.h>
 
 #include <glad/gl.h>
 
 namespace Dodo::Platform {
     class OpenGLFrameBuffer {
+        friend class OpenGLRenderAPI;
+
       private:
         uint m_FrameBufferID, m_TextureID, m_RenderBuffer;
         FrameBufferProperties m_FrameBufferProperties;
+        Ref<OpenGLSampler> m_Sampler;
 
       public:
         OpenGLFrameBuffer(const FrameBufferProperties& framebufferprop);
@@ -20,11 +24,6 @@ namespace Dodo::Platform {
             glViewport(0, 0, m_FrameBufferProperties.m_Width, m_FrameBufferProperties.m_Height);
             glBindFramebuffer(GL_FRAMEBUFFER, m_FrameBufferID);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-        }
-
-        inline void BindTexture(uint index = 0) const
-        {
-            glBindTextureUnit(index, m_TextureID);
         }
 
         void Resize(uint width, uint height);

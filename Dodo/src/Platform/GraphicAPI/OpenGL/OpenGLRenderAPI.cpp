@@ -15,7 +15,7 @@ namespace Dodo::Platform {
     OpenGLRenderAPI::~OpenGLRenderAPI()
     {
         glDeleteBuffers(1, &m_FrameUBO);
-        ImGui_ImplOpenGL3_Shutdown();
+        glDeleteBuffers(1, &m_PushConstantUBO);
         gladLoaderUnloadGL();
     }
 
@@ -61,6 +61,13 @@ namespace Dodo::Platform {
         glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_FrameUBO); // Bind to slot 0
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+        // Create push constant UBO (binding 1, 128 bytes max)
+        glGenBuffers(1, &m_PushConstantUBO);
+        glBindBuffer(GL_UNIFORM_BUFFER, m_PushConstantUBO);
+        glBufferData(GL_UNIFORM_BUFFER, 128, nullptr, GL_DYNAMIC_DRAW); // 128 byte Vulkan guaranteed min
+        glBindBufferBase(GL_UNIFORM_BUFFER, 1, m_PushConstantUBO);      // binding point 1
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
         return RenderInitError(RenderInitStatus::Success, "");
     }
 
@@ -96,6 +103,13 @@ namespace Dodo::Platform {
         } else {
             glDisable(GL_STENCIL_TEST);
         }
+    }
+
+    void OpenGLRenderAPI::PushConstants(const void* data, size_t size)
+    {
+        glBindBuffer(GL_UNIFORM_BUFFER, m_PushConstantUBO);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, size, data);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
 
     void OpenGLRenderAPI::SetFrameData(const FrameData& data)

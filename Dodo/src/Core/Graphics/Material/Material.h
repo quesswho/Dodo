@@ -34,12 +34,6 @@ namespace Dodo {
         void SetSampler(Ref<TextureSampler> sampler) { m_Sampler = sampler; }
         Ref<TextureSampler> GetSampler() const { return m_Sampler; }
 
-        template <typename T>
-        void SetUniform(const char* location, T value)
-        {
-            m_Shader->SetUniformValue(location, value);
-        }
-
         void Bind(RenderAPI& renderAPI) const;
 
       private:

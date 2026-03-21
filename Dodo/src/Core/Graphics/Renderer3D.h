@@ -29,8 +29,7 @@ namespace Dodo {
 
         void RenderEntities(World& world, Math::FreeCamera* camera, LightSystem& lightSystem, RenderAPI& renderApi,
                             AssetManager& assets);
-        void RenderGeometry(World& world, RenderAPI& renderApi,
-                                        AssetManager& assets);
+        void RenderGeometry(World& world, RenderAPI& renderApi, AssetManager& assets);
 
         void UpdateCamera(Math::FreeCamera* camera) { m_Camera = camera; }
 

@@ -89,21 +89,14 @@ namespace Dodo {
 
     void Renderer3D::DrawShadowedScene(Scene* scene, RenderAPI& renderAPI, AssetManager& assets)
     {
-
-        //auto& world = scene->GetWorld();
-        //RenderEntities(world, m_Camera, scene->m_LightSystem, renderAPI, assets);
-        //if (scene->m_SkyBox) scene->m_SkyBox->Draw(m_Camera->GetViewMatrix(), renderAPI);
-        // Bind shadowmap
-        
         // Draw to shadowmap
-        // renderAPI.Culling(true, false);
         FrameData frameData;
         frameData.camera = m_Camera->GetCameraMatrix();
         frameData.cameraPos = m_Camera->GetCameraPos();
         frameData.lightCamera = scene->m_LightSystem.m_Directional.m_LightCamera;
         frameData.lightDir = scene->m_LightSystem.m_Directional.m_Direction;
         renderAPI.SetFrameData(frameData);
-        
+
         // Bind target, shadow pipeline and draw geometry to shadowmap
         m_ShadowMap->Bind();
         renderAPI.BindPipeline(m_ShadowMapMaterial->GetShader());
@@ -111,12 +104,12 @@ namespace Dodo {
         RenderGeometry(world, renderAPI, assets);
 
         // Bind postfx render target
-        
-        // Bind shadowmap to index 3
         m_PostEffect->Bind();
-        m_ShadowMap->BindTexture(3);
+
+        // Bind shadowmap to index 3
+        renderAPI.BindFrameBufferTexture(3, m_ShadowMap->GetFrameBuffer());
         DrawScene(scene, renderAPI, assets);
-        
+
         // Draw postfx to screen target
         m_PostEffect->Draw(renderAPI);
     }

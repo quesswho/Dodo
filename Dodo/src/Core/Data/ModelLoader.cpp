@@ -54,7 +54,8 @@ namespace Dodo {
             new IndexBuffer(indices.data(), totalIndices), material);
     }
 
-    Model* ModelLoader::LoadModel(const std::string& path, MaterialLoader& materialLoader, AssetManager& assets, RenderAPI& renderAPI)
+    Model* ModelLoader::LoadModel(const std::string& path, MaterialLoader& materialLoader, AssetManager& assets,
+                                  RenderAPI& renderAPI)
     {
         Assimp::Importer imp;
 

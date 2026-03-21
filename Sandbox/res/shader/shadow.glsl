@@ -15,10 +15,16 @@ void main()
 #version 330 core
 layout (location = 0) in vec3 a_Position;
 
-uniform mat4 u_LightCamera;
+layout(std140, binding = 0) uniform FrameData {
+    mat4 u_Camera;
+    mat4 u_LightCamera;
+    vec3 u_LightDir;
+    vec3 u_CameraPos;
+} frame;
+
 uniform mat4 u_Model;
 
 void main()
 {
-    gl_Position = u_LightCamera * u_Model * vec4(a_Position, 1.0);
+    gl_Position = frame.u_LightCamera * u_Model * vec4(a_Position, 1.0);
 }

@@ -4,14 +4,19 @@
 
 using namespace Dodo;
 
+struct PostEffectData {
+    float gamma;
+    float padding[3]; // Padding to ensure 16 byte alignment (std140)
+};
+
 class GameLayer : public Layer {
   private:
   public:
-    GameLayer();
+    GameLayer(Application& app);
     ~GameLayer();
 
     void Update(float elapsed);
-    void Render();
+    void Render(RenderAPI& renderAPI, AssetManager& assets);
     void OnEvent(const Event& event);
 
   private:
@@ -29,5 +34,5 @@ class GameLayer : public Layer {
 
     Math::Vec3 m_LightLook;
 
-    float m_Gamma;
+    PostEffectData m_PostEffectData;
 };

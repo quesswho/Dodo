@@ -9,19 +9,24 @@ namespace Dodo::Platform {
 
     GeneratedShaderSource OpenGLShaderGenerator::GetFallbackShader()
     {
-        static std::string vertex = "#version 330 core\n"
+        static std::string vertex = "#version 420 core\n"
                                     "layout (location = 0) in vec3 a_Position;\n"
                                     "layout (location = 1) in vec2 a_Texcoord;\n"
                                     "uniform mat4 u_Model = mat4(1.0f);\n"
-                                    "uniform mat4 u_Camera = mat4(1.0f);\n"
+                                    "layout(std140, binding = 0) uniform FrameData {\n"
+                                    "    mat4 u_Camera;\n"
+                                    "    mat4 u_LightCamera;\n"
+                                    "    vec3 u_LightDir;\n"
+                                    "    vec3 u_CameraPos;\n"
+                                    "} frame;\n"
                                     "out vec2 o_Texcoord;\n"
                                     "void main()\n"
                                     "{\n"
                                     "   o_Texcoord = a_Texcoord;\n"
-                                    "   gl_Position = u_Camera * u_Model * vec4(a_Position, 1.0);\n"
+                                    "   gl_Position = frame.u_Camera * u_Model * vec4(a_Position, 1.0);\n"
                                     "}\0";
 
-        static std::string fragment = "#version 330 core\n"
+        static std::string fragment = "#version 420 core\n"
                                       "in vec2 o_Texcoord;\n"
                                       "out vec4 pixel;\n"
                                       "float checker()\n"
@@ -50,7 +55,7 @@ namespace Dodo::Platform {
         // Vertex //
         ////////////
 
-        std::string vertex = "#version 330 core\n"
+        std::string vertex = "#version 420 core\n"
                              "layout (location = 0) in vec3 a_Position;\n";
         vertex.reserve(vertex.capacity() + 263); // atleast 263 characters always present in vertex shader
 
@@ -76,24 +81,14 @@ namespace Dodo::Platform {
 
         // Uniform //
 
-        vertex.append("uniform mat4 u_Model = mat4(1.0f);\n"
-                      "uniform mat4 u_Camera = mat4(1.0f);\n");
+        vertex.append("uniform mat4 u_Model = mat4(1.0f);\n");
 
-        if (flags & ShaderBuilderFlagsCameraPositionUniform || flags & ShaderBuilderFlagSpecularUniform ||
-            flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap ||
-            flags & ShaderBuilderFlagNormalMap) {
-            vertex.append("uniform vec3 u_CameraPos = vec3(0.0f, 0.0f, 0.0f);\n");
-        }
-
-        if (flags & ShaderBuilderFlagLightDirectionUniform || flags & ShaderBuilderFlagSpecularUniform ||
-            flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap ||
-            flags & ShaderBuilderFlagNormalMap) {
-            vertex.append("uniform vec3 u_LightDir = vec3(0.2f, -0.5f, -0.5f);\n");
-        }
-
-        if (flags & ShaderBuilderFlagShadowMap) {
-            vertex.append("		uniform mat4 u_LightCamera;\n");
-        }
+        vertex.append("layout(std140, binding = 0) uniform FrameData {\n"
+                      "    mat4 u_Camera;\n"
+                      "    mat4 u_LightCamera;\n"
+                      "    vec3 u_LightDir;\n"
+                      "    vec3 u_CameraPos;\n"
+                      "} frame;\n");
 
         // Interface Block //
 
@@ -140,7 +135,7 @@ namespace Dodo::Platform {
         if (flags & ShaderBuilderFlagLightDirectionUniform || flags & ShaderBuilderFlagSpecularUniform ||
             flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap) {
             if (!(flags & ShaderBuilderFlagNormalMap))
-                vertex.append("		vertex_out.LightDirection = normalize(-u_LightDir);\n");
+                vertex.append("		vertex_out.LightDirection = normalize(-frame.u_LightDir);\n");
         }
 
         if (flags & ShaderBuilderFlagNormalMap) {
@@ -150,23 +145,23 @@ namespace Dodo::Platform {
                           "	T = normalize(T - dot(T, N) * N);\n"
                           "	vec3 B = cross(N, T);\n"
                           "	mat3 TBN = transpose(mat3(T, B, N));\n"
-                          "	vertex_out.TangentCameraPos = TBN * u_CameraPos;\n"
+                          "	vertex_out.TangentCameraPos = TBN * frame.u_CameraPos;\n"
                           "	vertex_out.TangentFragPos = TBN * vertex_out.FragPos;\n"
-                          "	vertex_out.LightDirection = TBN * normalize(-u_LightDir);\n");
+                          "	vertex_out.LightDirection = TBN * normalize(-frame.u_LightDir);\n");
         } else if (!(flags & ShaderBuilderFlagCubeMap)) {
             vertex.append("		vertex_out.Normal = a_Normal;\n");
             if (flags & ShaderBuilderFlagsCameraPositionUniform || flags & ShaderBuilderFlagSpecularUniform ||
                 flags & ShaderBuilderFlagDiffuseMap || flags & ShaderBuilderFlagSpecularMap ||
                 flags & ShaderBuilderFlagNormalMap)
-                vertex.append("		vertex_out.CameraPos = u_CameraPos;\n");
+                vertex.append("		vertex_out.CameraPos = frame.u_CameraPos;\n");
         }
         if (flags & ShaderBuilderFlagShadowMap) {
-            vertex.append("		vertex_out.LightFragPos = u_LightCamera * u_Model * vec4(a_Position, 1.0);\n");
+            vertex.append("		vertex_out.LightFragPos = frame.u_LightCamera * u_Model * vec4(a_Position, 1.0);\n");
         }
         if (flags & ShaderBuilderFlagMaxDepth) {
-            vertex.append("		gl_Position = vec4(u_Camera * u_Model * vec4(a_Position, 1.0f)).xyww;\n");
+            vertex.append("		gl_Position = vec4(frame.u_Camera * u_Model * vec4(a_Position, 1.0f)).xyww;\n");
         } else {
-            vertex.append("		gl_Position = u_Camera * u_Model * vec4(a_Position, 1.0f);\n");
+            vertex.append("		gl_Position = frame.u_Camera * u_Model * vec4(a_Position, 1.0f);\n");
         }
         vertex.append("}\0");
 
@@ -174,7 +169,7 @@ namespace Dodo::Platform {
         // Fragment //
         //////////////
 
-        std::string fragment = "#version 330 core\n"
+        std::string fragment = "#version 420 core\n"
                                "out vec4 pixel;\n";
 
         fragment.reserve(fragment.capacity() + 102); // atleast 102 characters always present in fragment shader
@@ -182,15 +177,17 @@ namespace Dodo::Platform {
 
         if (flags & ShaderBuilderFlagSpecularUniform) fragment.append("uniform float u_Specular = 0.0f;\n");
         if (flags & ShaderBuilderFlagColorUniform) fragment.append("uniform vec3 u_Color = vec3(1.0f, 0.0f, 0.0f);\n");
-        if (flags & ShaderBuilderFlagNormalMap) fragment.append("uniform sampler2D u_NormalMap;\n");
-        if (flags & ShaderBuilderFlagDiffuseMap) fragment.append("uniform sampler2D u_DiffuseMap;\n");
-        if (flags & ShaderBuilderFlagSpecularMap) fragment.append("uniform sampler2D u_SpecularMap;\n");
-        if (flags & ShaderBuilderFlagCubeMap)
-            fragment.append("uniform samplerCube u_CubeMap;\n");
+        if (flags & ShaderBuilderFlagDiffuseMap)
+            fragment.append("layout(binding = 0) uniform sampler2D u_DiffuseMap;\n");
+        else if (flags & ShaderBuilderFlagCubeMap)
+            fragment.append("layout(binding = 0) uniform samplerCube u_CubeMap;\n");
         else if (flags & ShaderBuilderFlagBasicTexture)
-            fragment.append("uniform sampler2D u_TextureMap;\n");
+            fragment.append("layout(binding = 0) uniform sampler2D u_TextureMap;\n");
+        if (flags & ShaderBuilderFlagSpecularMap)
+            fragment.append("layout(binding = 1) uniform sampler2D u_SpecularMap;\n");
+        if (flags & ShaderBuilderFlagNormalMap) fragment.append("layout(binding = 2) uniform sampler2D u_NormalMap;\n");
         if (flags & ShaderBuilderFlagShadowMap) {
-            fragment.append("uniform sampler2D u_DepthMap;\n");
+            fragment.append("layout(binding = 3) uniform sampler2D u_DepthMap;\n");
             fragment.append("float ShadowCalculation(vec3 normal);\n");
         }
         // Interface Block //

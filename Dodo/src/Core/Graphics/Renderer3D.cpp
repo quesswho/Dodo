@@ -9,7 +9,7 @@ namespace Dodo {
 
     static std::string s_ShadowShader = R"(#shader fragment
 
-	#version 330 core
+	#version 420 core
 
 	void main()
 	{
@@ -18,52 +18,64 @@ namespace Dodo {
 
 	#shader vertex
 
-	#version 330 core
+	#version 420 core
 	layout(location = 0) in vec3 a_Position;
 
-	uniform mat4 u_LightCamera;
+	layout(std140, binding = 0) uniform FrameData {
+        mat4 u_Camera;
+        mat4 u_LightCamera;
+        vec3 u_LightDir;
+        vec3 u_CameraPos;
+    } frame;
+
 	uniform mat4 u_Model;
 
 	void main()
 	{
-		gl_Position = u_LightCamera * u_Model * vec4(a_Position, 1.0);
+		gl_Position = frame.u_LightCamera * u_Model * vec4(a_Position, 1.0);
 	})";
 
-    Renderer3D::Renderer3D(Math::FreeCamera* camera) : m_Camera(camera), m_ShadowMap(new ShadowMap())
+    Renderer3D::Renderer3D(Math::FreeCamera* camera, RenderAPI& renderAPI, AssetManager& assets)
+        : m_Camera(camera), m_ShadowMap(new ShadowMap())
     {
-        ShaderID id = Application::s_Application->m_AssetManager->LoadShader(ShaderParser::Parse(s_ShadowShader));
-        m_ShadowMapMaterial = std::make_shared<Material>(Application::s_Application->m_AssetManager->GetShader(id));
+        ShaderID id = assets.LoadShader(ShaderParser::Parse(s_ShadowShader));
+        PipelineDesc shadowPipelineDesc;
+        shadowPipelineDesc.shaderID = id;
+        shadowPipelineDesc.culling = true;
+        shadowPipelineDesc.backfaceCull = false;
+        PipelineID shadowPipelineID = assets.CreatePipeline(shadowPipelineDesc, renderAPI);
+        m_ShadowMapMaterial = std::make_shared<Material>(assets.GetPipeline(shadowPipelineID));
     }
 
     void Renderer3D::RenderEntities(World& world, Math::FreeCamera* camera, LightSystem& lightSystem,
                                     RenderAPI& renderAPI, AssetManager& assets)
     {
+        FrameData frameData;
+        frameData.camera = camera->GetCameraMatrix();
+        frameData.cameraPos = camera->GetCameraPos();
+        frameData.lightCamera = lightSystem.m_Directional.m_LightCamera;
+        frameData.lightDir = lightSystem.m_Directional.m_Direction;
+        renderAPI.SetFrameData(frameData); // Uploads frame data to the GPU
+
         // Draw ModelComponent
         const auto& modelPool = world.GetPool<ModelComponent>();
         for (const auto& modelComponent : modelPool.GetComponents()) {
             Model* model = assets.GetModel(modelComponent.m_ModelID);
             for (auto mesh : model->GetMeshes()) {
                 Ref<Material> mat = mesh->GetMaterial();
-                renderAPI.BindPipeline(mat->GetShader());
-                mat->SetUniform("u_LightCamera", lightSystem.m_Directional.m_LightCamera);
-                mat->SetUniform("u_LightDir", lightSystem.m_Directional.m_Direction);
-                mat->SetUniform("u_Model", modelComponent.m_Transformation.m_Model);
-                mat->SetUniform("u_Camera", camera->GetCameraMatrix());
-                mat->SetUniform("u_CameraPos", camera->GetCameraPos());
+                mat->Bind(renderAPI);
+                renderAPI.SetDrawData({modelComponent.m_Transformation.m_Model});
                 mesh->DrawGeometry(renderAPI);
             }
         }
     }
 
-    void Renderer3D::RenderEntitiesWithMaterial(World& world, Ref<Material> material, RenderAPI& renderAPI,
-                                                AssetManager& assets)
+    void Renderer3D::RenderGeometry(World& world, RenderAPI& renderAPI, AssetManager& assets)
     {
-        material->Bind(renderAPI);
-
         // Draw ModelComponents with custom material
         const auto& modelPool = world.GetPool<ModelComponent>();
         for (const auto& modelComponent : modelPool.GetComponents()) {
-            material->SetUniform("u_Model", modelComponent.m_Transformation.m_Model);
+            renderAPI.SetDrawData({modelComponent.m_Transformation.m_Model});
             Model* model = assets.GetModel(modelComponent.m_ModelID);
             model->DrawGeometry(renderAPI);
         }
@@ -77,23 +89,25 @@ namespace Dodo {
 
     void Renderer3D::DrawShadowedScene(Scene* scene, RenderAPI& renderAPI, AssetManager& assets)
     {
-
-        // Bind shadowmap
-        m_ShadowMap->Bind();
-
         // Draw to shadowmap
-        renderAPI.Culling(true, false);
+        FrameData frameData;
+        frameData.camera = m_Camera->GetCameraMatrix();
+        frameData.cameraPos = m_Camera->GetCameraPos();
+        frameData.lightCamera = scene->m_LightSystem.m_Directional.m_LightCamera;
+        frameData.lightDir = scene->m_LightSystem.m_Directional.m_Direction;
+        renderAPI.SetFrameData(frameData);
+
+        // Bind target, shadow pipeline and draw geometry to shadowmap
+        m_ShadowMap->Bind();
         renderAPI.BindPipeline(m_ShadowMapMaterial->GetShader());
-        m_ShadowMapMaterial->SetUniform("u_LightCamera", scene->m_LightSystem.m_Directional.m_LightCamera);
         World& world = scene->GetWorld();
-        RenderEntitiesWithMaterial(world, m_ShadowMapMaterial, renderAPI, assets);
-        renderAPI.Culling(renderAPI.m_CullingDefault, true);
+        RenderGeometry(world, renderAPI, assets);
 
         // Bind postfx render target
         m_PostEffect->Bind();
 
         // Bind shadowmap to index 3
-        m_ShadowMap->BindTexture(3);
+        renderAPI.BindFrameBufferTexture(3, m_ShadowMap->GetFrameBuffer());
         DrawScene(scene, renderAPI, assets);
 
         // Draw postfx to screen target

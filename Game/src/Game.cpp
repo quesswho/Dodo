@@ -23,7 +23,8 @@ GameLayer::GameLayer(Application& app)
     frameprop.m_Height = app.GetWindowProperties().m_Height;
 
     m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.fx");
-    m_Gamma = 1.0f;
+    m_PostEffectData.gamma = 1.0f;
+    m_PostEffect->SetEffectData(m_PostEffectData);
 
     m_LightLook = Vec3(0.0, 0.0f, 15.0f);
     m_LightProjection = Mat4::Orthographic(-50.0f, 50.0f, -50.0f, 50.0f, 1.0f, 100.0f);
@@ -56,8 +57,9 @@ GameLayer::~GameLayer()
 
 void GameLayer::Update(float elapsed)
 {
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_9)) m_Gamma += 1.0f * elapsed;
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_8)) m_Gamma -= 1.0f * elapsed;
+    double gammaChangeSpeed = 0.0f;
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_9)) gammaChangeSpeed += 1.0f * elapsed;
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_8)) gammaChangeSpeed -= 1.0f * elapsed;
 
     // Change directional light
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_1))
@@ -91,7 +93,11 @@ void GameLayer::Update(float elapsed)
 
     m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
 
-    m_PostEffect->SetUniformValue("u_Gamma", m_Gamma);
+    if (gammaChangeSpeed != 0.0f) {
+        m_PostEffectData.gamma += gammaChangeSpeed;
+        m_PostEffectData.gamma = std::max(0.1f, std::min(m_PostEffectData.gamma, 5.0f));
+        m_PostEffect->SetEffectData(m_PostEffectData);
+    }
 
     m_Camera->Update(elapsed);
 

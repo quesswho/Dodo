@@ -20,7 +20,7 @@ namespace Dodo {
         Ref<Material> m_ShadowMapMaterial;
 
       public:
-        Renderer3D(Math::FreeCamera* camera);
+        Renderer3D(Math::FreeCamera* camera, RenderAPI& renderAPI, AssetManager& assets);
 
         ~Renderer3D() {}
 
@@ -29,8 +29,7 @@ namespace Dodo {
 
         void RenderEntities(World& world, Math::FreeCamera* camera, LightSystem& lightSystem, RenderAPI& renderApi,
                             AssetManager& assets);
-        void RenderEntitiesWithMaterial(World& world, Ref<Material> material, RenderAPI& renderApi,
-                                        AssetManager& assets);
+        void RenderGeometry(World& world, RenderAPI& renderApi, AssetManager& assets);
 
         void UpdateCamera(Math::FreeCamera* camera) { m_Camera = camera; }
 

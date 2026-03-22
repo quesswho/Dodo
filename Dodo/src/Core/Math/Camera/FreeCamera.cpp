@@ -1,102 +1,45 @@
 #include "FreeCamera.h"
 #include "pch.h"
 
-#include "Core/Application/Application.h"
-
-namespace Dodo { namespace Math {
-    FreeCamera::FreeCamera(const Vec3& pos, const Vec3& viewDir, float aspectRatio, float sensitivity, float speed)
-        : m_CameraPos(pos), m_ViewDir(viewDir), m_Yaw(-90.0f), m_Pitch(0.0f), m_Sensitivity(sensitivity),
-          m_Speed(speed), m_Forward(0.0f, 0.0f, 0.0f), m_Right(1.0f, 0.0f, 0.0f), m_WorldUp(Vec3(0.0f, 1.0f, 0.0f))
+namespace Dodo::Math {
+    FreeCamera::FreeCamera(const Vec3& pos, float yaw, float pitch, float aspectRatio)
+        : m_CameraPos(pos), m_Yaw(yaw), m_Pitch(pitch), m_WorldUp(Vec3(0.0f, 1.0f, 0.0f))
     {
         m_ProjectionMatrix = Mat4::Perspective(45.0f, aspectRatio, 1.0f, 1000.0f);
-        m_LastMousePos = TVec2<double>(Application::s_Application->m_RenderAPI->m_ViewportPosX +
-                                           Application::s_Application->m_RenderAPI->m_ViewportWidth / 2.0,
-                                       Application::s_Application->m_RenderAPI->m_ViewportPosY +
-                                           Application::s_Application->m_RenderAPI->m_ViewportHeight / 2.0);
-        Application::s_Application->m_Window->SetCursorPosition(m_LastMousePos);
-        CalculateProjectionViewMatrix();
-        m_MouseRect = TVec4<double>(Application::s_Application->m_RenderAPI->m_ViewportPosX +
-                                        Application::s_Application->m_RenderAPI->m_ViewportWidth / 4.0,
-                                    Application::s_Application->m_RenderAPI->m_ViewportPosX +
-                                        (int)(Application::s_Application->m_RenderAPI->m_ViewportWidth * (3.0 / 4.0)),
-                                    Application::s_Application->m_RenderAPI->m_ViewportPosY +
-                                        Application::s_Application->m_RenderAPI->m_ViewportHeight / 4.0,
-                                    Application::s_Application->m_RenderAPI->m_ViewportPosY +
-                                        Application::s_Application->m_RenderAPI->m_ViewportHeight * (int)(3.0 / 4.0));
+        m_Dirty = true;
     }
 
-    void FreeCamera::ResetMouse()
+    void FreeCamera::SetPosition(const Vec3& pos)
     {
-        m_LastMousePos = TVec2<double>(Application::s_Application->m_RenderAPI->m_ViewportPosX +
-                                           Application::s_Application->m_RenderAPI->m_ViewportWidth / 2.0,
-                                       Application::s_Application->m_RenderAPI->m_ViewportPosY +
-                                           Application::s_Application->m_RenderAPI->m_ViewportHeight / 2.0);
-        Application::s_Application->m_Window->SetCursorPosition(m_LastMousePos);
+        m_CameraPos = pos;
+        m_Dirty = true;
+    }
+
+    void FreeCamera::Move(const Vec3& delta)
+    {
+        m_CameraPos += delta;
+        m_Dirty = true;
+    }
+
+    void FreeCamera::Rotate(float yaw, float pitch)
+    {
+        m_Yaw = std::fmod((m_Yaw + yaw), 360.0f); // Prevent yaw from reaching high numbers
+        m_Pitch += pitch;
+        
+        // Constrain the pitch to prevent gimbal lock
+        if (m_Pitch > 89.0f) m_Pitch = 89.0f;
+        if (m_Pitch < -89.0f) m_Pitch = -89.0f;
+
+        m_Dirty = true;
     }
 
     void FreeCamera::Resize(uint width, uint height)
     {
         m_ProjectionMatrix = Mat4::Perspective(45.0f, (float)width / height, 0.1f, 1000.0f);
-        m_MouseRect = TVec4<double>(
-            Application::s_Application->m_RenderAPI->m_ViewportPosX + width / 4.0,
-            Application::s_Application->m_RenderAPI->m_ViewportPosX + (int)(width * (3.0 / 4.0)),
-            Application::s_Application->m_RenderAPI->m_ViewportPosY + height / 4.0,
-            Application::s_Application->m_RenderAPI->m_ViewportPosY + (int)((double)height * (3.0 / 4.0)));
-        CalculateProjectionViewMatrix();
+        m_Dirty = true;
     }
 
-    void FreeCamera::Update(float elapsed)
-    {
-        m_MoveDirection = Vec3();
-        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_W)) m_MoveDirection.x += 1.0f;
-        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_S)) m_MoveDirection.x -= 1.0f;
-        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_D)) m_MoveDirection.y += 1.0f;
-        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_A)) m_MoveDirection.y -= 1.0f;
-
-        m_MoveDirection.NormalizeVector();
-
-        m_CameraPos += m_MoveDirection.x * m_Forward * m_Speed * elapsed;
-        m_CameraPos += m_MoveDirection.y * m_Right * m_Speed * elapsed;
-
-        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_SPACE))
-            m_CameraPos += m_Up * m_Speed * elapsed;
-        if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_LEFT_CONTROL))
-            m_CameraPos -= m_Up * m_Speed * elapsed;
-
-        CalculateProjectionViewMatrix();
-    }
-
-    void FreeCamera::UpdateRotation()
-    {
-        if (Application::s_Application->m_Window->m_Focused) {
-            Math::TVec2<double> mousePos = Application::s_Application->GetInput().GetMousePosition();
-            double movementX = mousePos.x - m_LastMousePos.x;
-            double movementY = m_LastMousePos.y - mousePos.y;
-
-            // Keep mouse inside rectangle
-            if (m_LastMousePos.x < m_MouseRect.x || m_LastMousePos.x > m_MouseRect.y ||
-                m_LastMousePos.y < m_MouseRect.z || m_LastMousePos.y > m_MouseRect.w) {
-                m_LastMousePos = TVec2<double>(Application::s_Application->m_RenderAPI->m_ViewportPosX +
-                                                   Application::s_Application->m_RenderAPI->m_ViewportWidth / 2,
-                                               Application::s_Application->m_RenderAPI->m_ViewportPosY +
-                                                   Application::s_Application->m_RenderAPI->m_ViewportHeight / 2);
-                Application::s_Application->m_Window->SetCursorPosition(m_LastMousePos);
-            } else {
-                m_LastMousePos = mousePos;
-            }
-
-            movementX *= m_Sensitivity;
-            movementY *= m_Sensitivity;
-
-            m_Yaw = std::fmod((m_Yaw + movementX), 360.0f); // Prevent yaw from reaching high numbers
-            m_Pitch += movementY;
-
-            if (m_Pitch > 89.9f) m_Pitch = 89.9f;
-            if (m_Pitch < -89.0f) m_Pitch = -89.0f;
-        }
-    }
-
-    void FreeCamera::CalculateProjectionViewMatrix()
+    void FreeCamera::CalculateCameraMatrix() const
     {
         m_Forward = Normalize(Vec3(cos(ToRadians(m_Yaw)), 0.0f, sin(ToRadians(m_Yaw))));
         m_ViewDir = Normalize(Vec3(cos(ToRadians(m_Yaw)) * cos(ToRadians(m_Pitch)), sin(ToRadians(m_Pitch)),
@@ -106,5 +49,6 @@ namespace Dodo { namespace Math {
 
         m_ViewMatrix = Mat4::LookDir(m_CameraPos, m_ViewDir, m_Up);
         m_CameraMatrix = Mat4::Multiply(m_ProjectionMatrix, m_ViewMatrix);
+        m_Dirty = false;
     }
-}} // namespace Dodo::Math
+} // namespace Dodo::Math

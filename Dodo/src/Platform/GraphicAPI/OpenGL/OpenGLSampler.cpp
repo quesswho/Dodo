@@ -33,6 +33,10 @@ namespace Dodo::Platform {
         ApplyWrap(GL_TEXTURE_WRAP_T, prop.m_WrapV);
 
         switch (prop.m_Filter) {
+        case SamplerFilter::MIN_MAG_LINEAR:
+            glSamplerParameteri(m_SamplerID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glSamplerParameteri(m_SamplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            break;
         case SamplerFilter::MIN_MAG_MIP_LINEAR:
             glSamplerParameteri(m_SamplerID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glSamplerParameteri(m_SamplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

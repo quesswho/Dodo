@@ -6,8 +6,8 @@ namespace Dodo {
     using ShaderGenerator = Platform::OpenGLShaderGenerator;
 }
 #elif defined(DD_API_VULKAN)
-#include "Platform/GraphicAPI/Vulkan/VkShaderGenerator.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanShaderGenerator.h"
 namespace Dodo {
-    using ShaderGenerator = Platform::VkShaderGenerator;
+    using ShaderGenerator = Platform::VulkanShaderGenerator;
 }
 #endif

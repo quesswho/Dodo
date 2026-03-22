@@ -213,7 +213,7 @@ namespace Dodo::Platform {
         self->m_WindowProperties.m_FrameBufferWidth = width;
         self->m_WindowProperties.m_FrameBufferHeight = height;
         DD_INFO("Framebuffer resize: {0}x{1}", width, height);
-        Application::s_Application->m_RenderAPI->ResizeDefaultViewport(width, height);
+        Application::s_Application->m_RenderAPI->SetViewport(width, height);
         Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
     }
 

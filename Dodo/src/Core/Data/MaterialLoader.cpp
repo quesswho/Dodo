@@ -6,38 +6,51 @@
 #include <assimp/material.h>
 
 namespace Dodo {
-    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, AssetManager& assets)
+    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, AssetManager& assets, RenderAPI& renderAPI)
     {
-        ShaderID id = assets.LoadShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture);
+        ShaderID id = assets.LoadShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture, renderAPI);
+        PipelineDesc pipelineDesc;
+        pipelineDesc.shaderID = id;
+        PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
         return std::make_shared<Material>(
-            assets.GetShader(id), std::make_shared<Texture>(path),
+            assets.GetPipeline(pipelineID), std::make_shared<Texture>(path),
             std::make_shared<TextureSampler>(SamplerProperties(SamplerWrapMode::WRAP_CLAMP_TO_EDGE)));
     }
 
-    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, aiMaterial* aiMat, AssetManager& assets)
+    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, aiMaterial* aiMat, AssetManager& assets,
+                                               RenderAPI& renderAPI)
     {
         ShaderBuilderFlags flags = ShaderBuilderFlagShadowMap;
         std::filesystem::path modelDir = std::filesystem::path(path).parent_path();
 
         Ref<Material> material = std::make_shared<Material>();
-        uint slot = 0;
+        uint numTextures = 0;
 
         // Diffuse map
         Ref<Texture> tex = LoadTextureFromMaterial(aiMat, aiTextureType_DIFFUSE, flags, modelDir);
-        if (tex) material->AddTexture(slot++, tex);
+        if (tex) {
+            material->AddTexture(0, tex);
+            numTextures++;
+        }
 
         // Specular map
         tex = LoadTextureFromMaterial(aiMat, aiTextureType_SPECULAR, flags, modelDir);
-        if (tex) material->AddTexture(slot++, tex);
+        if (tex) {
+            material->AddTexture(1, tex);
+            numTextures++;
+        }
 
         // Normal map — NORMALS and DISPLACEMENT are the same thing
         aiTextureType normalType = aiTextureType_NORMALS;
         aiString str;
         if (aiMat->GetTexture(normalType, 0, &str) != AI_SUCCESS) normalType = aiTextureType_DISPLACEMENT;
         tex = LoadTextureFromMaterial(aiMat, normalType, flags, modelDir);
-        if (tex) material->AddTexture(slot++, tex);
+        if (tex) {
+            material->AddTexture(2, tex);
+            numTextures++;
+        }
 
-        if (slot == 0) {
+        if (numTextures == 0) {
             aiString name;
             if (aiMat->Get(AI_MATKEY_NAME, name) == AI_SUCCESS)
                 DD_WARN("Material {} has no textures!", name.C_Str());
@@ -46,8 +59,8 @@ namespace Dodo {
             return std::make_shared<Material>(); // fallback
         }
 
-        ShaderID shaderID = assets.LoadShader(flags);
-        Ref<Shader> shader = assets.GetShader(shaderID);
+        PipelineID pipelineID = assets.CreatePipeline(flags, renderAPI);
+        Ref<Pipeline> shader = assets.GetPipeline(pipelineID);
         if (!shader) DD_WARN("Could not create shader");
 
         material->SetShader(shader);

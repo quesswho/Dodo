@@ -2,17 +2,18 @@
 #include "pch.h"
 
 #include "Core/Application/Application.h"
-#include "Core/Graphics/Shader/ShaderCompiler.h"
-#include "Core/Graphics/Shader/ShaderParser.h"
+#include "Core/Graphics/Pipeline/ShaderCompiler.h"
+#include "Core/Graphics/Pipeline/ShaderParser.h"
 #include "Core/System/FileUtils.h"
 
 namespace Dodo {
 
     AssetManager::AssetManager() : m_SlangCompiler(SlangCompiler::Target::GLSL)
     {
-        Ref<Shader> fallback =
-            std::make_shared<Shader>(ShaderCompiler::Compile(ShaderGenerator::GetFallbackShader().source));
-        m_Shaders.emplace(0, fallback);
+        ShaderSource fallback = ShaderGenerator::GetFallbackShader().source;
+        m_Shaders.emplace(0, std::move(fallback));
+        m_Pipelines.emplace(0,
+                            Application::s_Application->m_RenderAPI->CreatePipeline(PipelineDesc{0}, m_Shaders.at(0)));
     }
 
     AssetManager::~AssetManager()
@@ -21,79 +22,80 @@ namespace Dodo {
             delete model.second;
     }
 
-    ShaderID AssetManager::LoadShader(ShaderBuilderFlags flags)
+    ShaderID AssetManager::LoadShader(ShaderBuilderFlags flags, RenderAPI& renderAPI)
     {
-        if (m_ShaderBuilderShaders.find(flags) != m_ShaderBuilderShaders.end()) return m_ShaderBuilderShaders[flags];
+        if (m_ShaderBuilderShaders.count(flags)) return m_ShaderBuilderShaders[flags];
 
         GeneratedShaderSource source = ShaderGenerator::Generate(flags);
-        Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source.source));
-
-        int id = m_NextShaderID++;
-
-        shader->Bind();
-        int i = 0;
-        if (flags & ShaderBuilderFlags::ShaderBuilderFlagCubeMap) shader->SetUniformValue("u_CubeMap", i++);
-        if (flags & ShaderBuilderFlags::ShaderBuilderFlagDiffuseMap) shader->SetUniformValue("u_DiffuseMap", i++);
-        if (flags & ShaderBuilderFlags::ShaderBuilderFlagSpecularMap) shader->SetUniformValue("u_SpecularMap", i++);
-        if (flags & ShaderBuilderFlags::ShaderBuilderFlagNormalMap) shader->SetUniformValue("u_NormalMap", i++);
-        if (flags & ShaderBuilderFlags::ShaderBuilderFlagShadowMap) shader->SetUniformValue("u_DepthMap", 3);
-
+        ShaderID id = m_NextShaderID++;
         m_ShaderBuilderShaders.emplace(flags, id);
-        m_Shaders.emplace(id, std::move(shader));
+        m_Shaders.emplace(id, std::move(source.source));
         return id;
     }
 
-    ShaderID AssetManager::LoadGLSLShaderFromPath(const std::string& path)
+    ShaderID AssetManager::LoadShaderFromPath(const std::string& path)
     {
-        if (m_ShaderPathLookup.find(path) != m_ShaderPathLookup.end()) {
-            DD_WARN("Shader already loaded!", path, m_ShaderPathLookup.at(path));
+        if (m_ShaderPathLookup.count(path)) {
+            DD_WARN("Shader already loaded! {}", path);
             return m_ShaderPathLookup.at(path);
         }
 
-        ShaderSource source = ShaderParser::Parse(FileUtils::ReadTextFile(path.c_str()));
-
-        Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source));
-
-        ShaderID id = m_NextShaderID++;
-
-        m_ShaderPathLookup.emplace(path, id);
-        m_Shaders.emplace(id, shader);
-        return id;
-    }
-
-    ShaderID AssetManager::LoadSlangShaderFromPath(const std::string& path)
-    {
-        if (m_ShaderPathLookup.find(path) != m_ShaderPathLookup.end()) {
-            DD_WARN("Shader already loaded!", path, m_ShaderPathLookup.at(path));
-            return m_ShaderPathLookup.at(path);
-        }
-
-        ShaderSource source = m_SlangCompiler.CompileFile(path);
-
-        Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source));
+        ShaderSource source = path.ends_with(".slang") ? m_SlangCompiler.CompileFile(path)
+                                                       : ShaderParser::Parse(FileUtils::ReadTextFile(path.c_str()));
 
         ShaderID id = m_NextShaderID++;
-
         m_ShaderPathLookup.emplace(path, id);
-        m_Shaders.emplace(id, shader);
+        m_Shaders.emplace(id, std::move(source));
+
         return id;
     }
 
     ShaderID AssetManager::LoadShader(ShaderSource source)
     {
-        Ref<Shader> shader = std::make_shared<Shader>(ShaderCompiler::Compile(source));
-
-        int id = m_NextShaderID++;
-
-        m_Shaders.emplace(id, shader);
+        ShaderID id = m_NextShaderID++;
+        m_Shaders.emplace(id, std::move(source));
         return id;
     }
 
-    Ref<Shader> AssetManager::GetShader(ShaderID id)
+    PipelineID AssetManager::CreatePipeline(const PipelineDesc& desc, RenderAPI& renderAPI)
     {
-        auto it = m_Shaders.find(id);
-        if (it != m_Shaders.end()) return it->second;
-        DD_ERR("Trying to get shader that doesn't exist! ID: {0}", id);
+        auto shaderIt = m_Shaders.find(desc.shaderID);
+        if (shaderIt == m_Shaders.end()) {
+            DD_ERR("CreatePipeline: shader not found!");
+            return 0;
+        }
+
+        Ref<Pipeline> pipeline = renderAPI.CreatePipeline(desc, shaderIt->second);
+        PipelineID id = m_NextPipelineID++;
+        m_Pipelines.emplace(id, pipeline);
+        return id;
+    }
+
+    PipelineID AssetManager::CreatePipeline(ShaderBuilderFlags flags, RenderAPI& renderAPI)
+    {
+        // Return existing pipeline if already created for these flags
+        if (m_ShaderBuilderPipelines.count(flags)) {
+            return m_ShaderBuilderPipelines.at(flags);
+        }
+
+        ShaderID shaderID = LoadShader(flags, renderAPI);
+        ShaderSource source = m_Shaders.at(shaderID);
+
+        PipelineDesc desc;
+        desc.shaderID = shaderID;
+
+        Ref<Pipeline> pipeline = renderAPI.CreatePipeline(desc, source);
+        PipelineID pipelineID = m_NextPipelineID++;
+        m_ShaderBuilderPipelines.emplace(flags, pipelineID);
+        m_Pipelines.emplace(pipelineID, pipeline);
+        return pipelineID;
+    }
+
+    Ref<Pipeline> AssetManager::GetPipeline(PipelineID id)
+    {
+        auto it = m_Pipelines.find(id);
+        if (it != m_Pipelines.end()) return it->second;
+        DD_ERR("Trying to get pipeline that doesn't exist! ID: {0}", id);
         return nullptr;
     }
 
@@ -105,7 +107,7 @@ namespace Dodo {
             return it->second;
         }
 
-        Model* model = m_ModelLoader.LoadModel(path, m_MaterialLoader, *this);
+        Model* model = m_ModelLoader.LoadModel(path, m_MaterialLoader, *this, *Application::s_Application->m_RenderAPI);
         if (model == nullptr) {
             DD_ERR("Failed to load model: {0}, Loading default cube", path);
             return GetBuiltinModel(BuiltinModel::Cube);
@@ -169,7 +171,7 @@ namespace Dodo {
             return it->second;
         }
 
-        Ref<Material> mat = m_MaterialLoader.LoadMaterial(path, *this);
+        Ref<Material> mat = m_MaterialLoader.LoadMaterial(path, *this, *Application::s_Application->m_RenderAPI);
         MaterialID id = m_NextMaterialID++;
 
         m_MaterialID.emplace(path, id);

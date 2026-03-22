@@ -5,14 +5,14 @@
 #include "Core/Graphics/BufferLayout.h"
 
 namespace Dodo::Platform {
-    class VkVertexBuffer {
+    class VulkanVertexBuffer {
       private:
         uint m_VBufferID;
         uint m_ABufferID;
 
       public:
-        VkVertexBuffer(const float* vertices, const uint size, const BufferProperties& prop);
-        ~VkVertexBuffer();
+        VulkanVertexBuffer(const float* vertices, const uint size, const BufferProperties& prop);
+        ~VulkanVertexBuffer();
 
         const BufferProperties& GetBufferProperties() const { return m_BufferProperties; }
 
@@ -22,10 +22,10 @@ namespace Dodo::Platform {
         const BufferProperties m_BufferProperties;
     };
 
-    class VkIndexBuffer {
+    class VulkanIndexBuffer {
       public:
-        VkIndexBuffer(const uint* indices, const uint count);
-        ~VkIndexBuffer();
+        VulkanIndexBuffer(const uint* indices, const uint count);
+        ~VulkanIndexBuffer();
 
         inline void Bind() const {}
 

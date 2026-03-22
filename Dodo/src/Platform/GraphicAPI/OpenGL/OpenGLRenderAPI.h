@@ -2,12 +2,15 @@
 
 #include "Core/Application/WindowProperties.h"
 #include "Core/Common.h"
-#include "Core/Graphics/RenderAPITypes.h"
-
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/CubeMap.h"
+#include "Core/Graphics/FrameBuffer.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
+#include "Core/Graphics/Pipeline/Pipeline.h"
+#include "Core/Graphics/Pipeline/PipelineDesc.h"
+#include "Core/Graphics/Pipeline/ShaderSource.h"
+#include "Core/Graphics/RenderAPITypes.h"
 
 #include <glad/gl.h>
 
@@ -42,21 +45,24 @@ namespace Dodo::Platform {
         {
             glBindSampler(slot, sampler->GetSamplerID());
         }
+        inline void BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer)
+        {
+            glBindSampler(slot, framebuffer->m_Sampler->GetSamplerID());
+            glBindTextureUnit(slot, framebuffer->m_TextureID);
+        }
+
+        void BindPipeline(Ref<Pipeline> pipeline);
+        void PushConstants(const void* data, size_t size);
+        void SetFrameData(const FrameData& data);
+        void SetDrawData(const DrawData& data);
         void DrawIndexed(const Ref<VertexBuffer>& va);
         inline void DrawIndices(uint count) const { glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); }
         inline void DrawArray(uint count) const { glDrawArrays(GL_TRIANGLES, 0, count); }
         void DefaultFrameBuffer() const;
-        void ResizeDefaultViewport(uint width, uint height);
-        void ResizeDefaultViewport(uint width, uint height, uint posX, uint posY);
+        void SetViewport(uint width, uint height);
+        void SetViewport(uint width, uint height, uint posX, uint posY);
 
-        inline void DepthComparisonMethod(DepthComparisonMethod func) const { glDepthFunc(GL_NEVER + (uint)func); }
-        inline void DepthTest(bool depthtest) const { depthtest ? glEnable(GL_DEPTH_TEST) : glDisable(GL_DEPTH_TEST); }
-        inline void StencilTest(bool stenciltest) const
-        {
-            stenciltest ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
-        }
-        void Blending(bool blending) const;
-        void Culling(bool cull, bool backface = true);
+        Ref<Pipeline> CreatePipeline(const PipelineDesc& desc, const ShaderSource& source);
 
         inline const char* GetAPIName() const { return "OpenGL"; }
         int CurrentVRamUsage() const
@@ -77,6 +83,10 @@ namespace Dodo::Platform {
         bool m_CullingDefault;
 
       private:
+        uint m_CurrentPipelineID;
+        uint m_FrameUBO = 0;
+        uint m_PushConstantUBO = 0;
+
         int m_Version;
         NativeWindowHandle m_Handle;
     };

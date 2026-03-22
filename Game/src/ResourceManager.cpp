@@ -29,8 +29,9 @@ ResourceManager::ResourceManager(Dodo::AssetManager& assetManager)
         Dodo::SamplerProperties(Dodo::SamplerFilter::FILTER_MIN_MAG_MIP_NEAREST, Dodo::SamplerWrapMode::WRAP_REPEAT,
                                 Dodo::SamplerWrapMode::WRAP_REPEAT));
 
-    Dodo::ShaderID id = assetManager.LoadSlangShaderFromPath("res/shader/block.slang");
-    Ref<Dodo::Shader> shader = assetManager.GetShader(id);
+    // Dodo::ShaderID id = assetManager.LoadSlangShaderFromPath("res/shader/block.slang");
+    Dodo::ShaderID id = assetManager.LoadGLSLShaderFromPath("res/shader/block.glsl");
+    Ref<Dodo::Pipeline> shader = assetManager.GetShader(id);
     // Dodo::ShaderParser::Parse(Dodo::FileUtils::ReadTextFile("res/shader/block.glsl"))
 
     m_TextureAtlas = std::make_shared<Dodo::Material>(shader, atlas, sampler);

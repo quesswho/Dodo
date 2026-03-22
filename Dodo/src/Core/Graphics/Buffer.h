@@ -7,9 +7,9 @@ namespace Dodo {
     using IndexBuffer = Platform::OpenGLIndexBuffer;
 } // namespace Dodo
 #elif defined(DD_API_VULKAN)
-#include "Platform/GraphicAPI/Vulkan/VkBuffer.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanBuffer.h"
 namespace Dodo {
-    using VertexBuffer = Platform::VkVertexBuffer;
-    using IndexBuffer = Platform::VkIndexBuffer;
+    using VertexBuffer = Platform::VulkanVertexBuffer;
+    using IndexBuffer = Platform::VulkanIndexBuffer;
 } // namespace Dodo
 #endif

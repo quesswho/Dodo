@@ -310,8 +310,8 @@ namespace Dodo::Platform {
             m_WindowProperties.m_Width = GetSystemMetrics(SM_CXSCREEN);
             m_WindowProperties.m_Height = GetSystemMetrics(SM_CYSCREEN);
 
-            Application::s_Application->m_RenderAPI->ResizeDefaultViewport(m_WindowProperties.m_Width,
-                                                                           m_WindowProperties.m_Height);
+            Application::s_Application->m_RenderAPI->SetViewport(m_WindowProperties.m_Width,
+                                                                 m_WindowProperties.m_Height);
             DD_INFO("{0}, {1}", GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 
             m_WindowProperties.m_Settings.fullscreen = true;
@@ -341,8 +341,8 @@ namespace Dodo::Platform {
                                           GetSystemMetrics(SM_CYSMSIZE) - GetSystemMetrics(SM_CYEDGE) -
                                           GetSystemMetrics(SM_CYFRAME);
 
-            Application::s_Application->m_RenderAPI->ResizeDefaultViewport(m_WindowProperties.m_Width,
-                                                                           m_WindowProperties.m_Height);
+            Application::s_Application->m_RenderAPI->SetViewport(m_WindowProperties.m_Width,
+                                                                 m_WindowProperties.m_Height);
 
             m_WindowProperties.m_Settings.fullscreen = false;
         }

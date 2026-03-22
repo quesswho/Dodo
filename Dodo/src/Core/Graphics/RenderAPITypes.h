@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Core/Math/Maths.h"
 #include <string>
-
 namespace Dodo {
     enum class DepthComparisonMethod {
         NEVER,
@@ -25,5 +25,18 @@ namespace Dodo {
         RenderInitError(RenderInitStatus status, const std::string& message) : status(status), message(message) {}
         RenderInitStatus status;
         std::string message;
+    };
+
+    struct FrameData {
+        Math::Mat4 camera;
+        Math::Mat4 lightCamera;
+        Math::Vec3 lightDir;
+        float pad0; // std140 alignment
+        Math::Vec3 cameraPos;
+        float pad1;
+    };
+
+    struct DrawData {
+        Math::Mat4 model;
     };
 } // namespace Dodo

@@ -6,8 +6,8 @@ namespace Dodo {
     using Texture = Platform::OpenGLTexture;
 }
 #elif defined(DD_API_VULKAN)
-#include "Platform/GraphicAPI/Vulkan/VkTexture.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanTexture.h"
 namespace Dodo {
-    using Texture = Platform::VkTexture;
+    using Texture = Platform::VulkanTexture;
 }
 #endif

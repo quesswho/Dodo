@@ -221,8 +221,8 @@ bool Interface::ViewportResize()
         m_ViewportState.x = (uint)ImGui::GetWindowPos().x;
         m_ViewportState.y = (uint)ImGui::GetWindowPos().y;
 
-        Application::s_Application->m_RenderAPI->ResizeDefaultViewport(m_ViewportState.width, m_ViewportState.height,
-                                                                       m_ViewportState.x, m_ViewportState.y);
+        Application::s_Application->m_RenderAPI->SetViewport(m_ViewportState.width, m_ViewportState.height,
+                                                             m_ViewportState.x, m_ViewportState.y);
         return true;
     }
     return false;
@@ -244,6 +244,7 @@ bool Interface::BeginViewport()
 
 void Interface::EndViewport(FrameBuffer* framebuffer)
 {
+    // TODO: This is the OpenGL way of doing things
     if (m_ViewportState.visible) {
         ImGui::Image((void*)(intptr_t)framebuffer->GetTextureHandle(),
                      ImVec2((float)m_ViewportState.width, (float)m_ViewportState.height), ImVec2(0, 1), ImVec2(1, 0));

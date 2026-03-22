@@ -1,0 +1,1044 @@
+#include "VulkanRenderAPI.h"
+#include "pch.h"
+
+#include <backends/imgui_impl_vulkan.h>
+#include <unordered_set>
+
+namespace Dodo::Platform {
+
+    VulkanRenderAPI::VulkanRenderAPI(const NativeWindowHandle& handle) : m_Handle(handle)
+    {
+#ifdef DD_DEBUG
+        m_EnableValidationLayers = true;
+        m_ValidationLayers.emplace_back("VK_LAYER_KHRONOS_validation");
+#else
+        m_EnableValidationLayers = false;
+#endif
+    }
+
+    VulkanRenderAPI::~VulkanRenderAPI()
+    {
+        vkQueueWaitIdle(m_PresentQueue);
+
+        for (const auto& semaphore : m_RenderFinishedSemaphores) {
+            vkDestroySemaphore(m_Device, semaphore, nullptr);
+        }
+
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            vkDestroySemaphore(m_Device, m_Frames[i].imageAvailableSemaphore, nullptr);
+            vkDestroySemaphore(m_Device, m_Frames[i].renderFinishedSemaphore, nullptr);
+            vkDestroyFence(m_Device, m_Frames[i].inFlightFence, nullptr);
+        }
+
+        vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
+        // TODO: There should be a check for imgui here...
+        ImGui_ImplVulkan_Shutdown();
+        vkDestroyDescriptorPool(m_Device, m_ImGuiDescriptorPool, nullptr);
+
+        for (auto imageView : m_SwapChainImageViews) {
+            vkDestroyImageView(m_Device, imageView, nullptr);
+        }
+        vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+        vkDestroyDevice(m_Device, nullptr);
+        if (m_EnableValidationLayers) {
+            DestroyDebugUtilsMessengerEXT(m_VkInstance, m_DebugMessenger, nullptr);
+        }
+        vkDestroySurfaceKHR(m_VkInstance, m_Surface, nullptr);
+        vkDestroyInstance(m_VkInstance, nullptr);
+    }
+
+    /**
+     * Initializes the Vulkan instance, picks a physical device, creates a logical device and initializes ImGui if
+     * enabled in the window properties.
+     */
+    RenderInitError VulkanRenderAPI::Init(const WindowProperties& winprop)
+    {
+        RenderInitError result = RenderInitError(RenderInitStatus::Success);
+
+        m_Context.CreateContextImpl(m_Handle);
+
+        // Preload Vulkan using volk
+        if (volkInitialize() != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "Glad: Unable to load Vulkan symbols!");
+        }
+
+        // Lambda to simplify error checking
+        auto Try = [&](RenderInitError res) -> bool {
+            result = res;
+            return result.status != RenderInitStatus::Success;
+        };
+
+        if (Try(InitInstance())) return result;
+        if (m_EnableValidationLayers)
+            if (Try(SetupDebug())) return result;
+        if (!m_Context.CreateSurface(m_VkInstance, &m_Surface)) {
+            return RenderInitError(RenderInitStatus::Failed, "Failed to create Vulkan surface!");
+        }
+        if (Try(PickPhysicalDevice())) return result;
+        if (Try(InitDevice())) return result;
+        if (Try(CreateSwapChain())) return result;
+        if (Try(CreateImageViews())) return result;
+        if (Try(CreateCommandPool())) return result;
+        if (Try(CreateCommandBuffer())) return result;
+        if (Try(CreateSyncObjects())) return result;
+        if (winprop.m_Settings.imgui)
+            if (Try(InitImGui())) return result;
+
+        return result;
+    }
+
+    /**
+     * Initializes the Vulkan instance and initialize volk
+     */
+    RenderInitError VulkanRenderAPI::InitInstance()
+    {
+        if (m_EnableValidationLayers && !CheckValidationLayerSupport())
+            return RenderInitError(RenderInitStatus::Failed, "validation layers requested, but not available!");
+
+        VkApplicationInfo appInfo{};
+        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.pEngineName = "Dodo Engine";
+        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.apiVersion = VK_API_VERSION_1_3;
+
+        VkInstanceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        createInfo.pApplicationInfo = &appInfo;
+
+        // Add portability enumeration flag for platforms that require it (e.g. macOS with MoltenVK)
+        createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+        // Get required context extensions
+        std::vector<const char*> requiredExtensions = GetRequiredExtensions();
+
+        // Get all available extensions
+        uint32_t extensionCount = 0;
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+        std::vector<VkExtensionProperties> extensions(extensionCount);
+        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+
+        std::unordered_set<std::string> availableExtensions;
+        DD_INFO("Available vulkan extensions: ");
+        for (const auto& extension : extensions) {
+            availableExtensions.insert(extension.extensionName);
+            DD_INFO("{}", extension.extensionName);
+        }
+
+        // Check if all required extensions are available
+        for (const char* required : requiredExtensions) {
+            if (availableExtensions.find(required) == availableExtensions.end()) {
+                return RenderInitError(RenderInitStatus::Failed,
+                                       std::string("Required Vulkan extension not available: ") + required);
+            }
+        }
+
+        // Add required extensions
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(requiredExtensions.size());
+        createInfo.ppEnabledExtensionNames = requiredExtensions.data();
+
+        if (m_EnableValidationLayers) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(m_ValidationLayers.size());
+            createInfo.ppEnabledLayerNames = m_ValidationLayers.data();
+
+            VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+            PopulateDebugMessengerCreateInfo(debugCreateInfo);
+            createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
+        } else {
+            createInfo.enabledLayerCount = 0;
+        }
+
+        if (vkCreateInstance(&createInfo, nullptr, &m_VkInstance) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "Failed to create Vulkan instance!");
+        }
+
+        // Load all required Vulkan entrypoints, including all extensions
+        volkLoadInstance(m_VkInstance);
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    /**
+     * Sets up the debug messenger callback for Vulkan validation layers
+     */
+    RenderInitError VulkanRenderAPI::SetupDebug()
+    {
+        VkDebugUtilsMessengerCreateInfoEXT createInfo{};
+        PopulateDebugMessengerCreateInfo(createInfo);
+
+        if (CreateDebugUtilsMessengerEXT(m_VkInstance, &createInfo, nullptr, &m_DebugMessenger) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "failed to set up debug messenger!");
+        }
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    /**
+     * Selects the best physical device that supports the required features and extensions
+     */
+    RenderInitError VulkanRenderAPI::PickPhysicalDevice()
+    {
+        uint32_t deviceCount = 0;
+        vkEnumeratePhysicalDevices(m_VkInstance, &deviceCount, nullptr);
+        if (deviceCount == 0) {
+            return RenderInitError(RenderInitStatus::Failed, "Failed to find GPUs with Vulkan support!");
+        }
+        std::vector<VkPhysicalDevice> devices(deviceCount);
+        vkEnumeratePhysicalDevices(m_VkInstance, &deviceCount, devices.data());
+
+        m_PhysicalDevice = VK_NULL_HANDLE;
+
+        PhyisicalDeviceInfo bestDevice;
+        bestDevice.device = VK_NULL_HANDLE;
+        for (const auto& device : devices) {
+            PhyisicalDeviceInfo deviceInfo;
+            VkPhysicalDeviceProperties deviceProperties;
+            VkPhysicalDeviceFeatures deviceFeatures;
+            vkGetPhysicalDeviceProperties(device, &deviceProperties);
+            vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+            deviceInfo.device = device;
+            deviceInfo.properties = deviceProperties;
+            deviceInfo.features = deviceFeatures;
+            deviceInfo.indices = FindQueueFamilies(device);
+            if (!IsDeviceSuitable(deviceInfo)) {
+                DD_INFO("Device {} is not suitable", deviceProperties.deviceName);
+                continue;
+            }
+            if (IsDeviceBetter(bestDevice, deviceInfo)) {
+                m_PhysicalDevice = device;
+            }
+        }
+
+        if (m_PhysicalDevice == VK_NULL_HANDLE) {
+            return RenderInitError(RenderInitStatus::Failed, "failed to find a suitable GPU!");
+        }
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    /**
+     * Creates a logical device from the selected physical device and retrieves the graphics and present queues
+     */
+    RenderInitError VulkanRenderAPI::InitDevice()
+    {
+        QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
+
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+        // Normally graphics and present queues are the same, but they can be different on some platforms.
+        std::unordered_set<uint32_t> uniqueQueueFamilies = {indices.graphicsFamily.value(),
+                                                            indices.presentFamily.value()};
+
+        float queuePriority = 1.0f;
+        for (uint32_t queueFamily : uniqueQueueFamilies) {
+            VkDeviceQueueCreateInfo queueCreateInfo{};
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex = queueFamily;
+            queueCreateInfo.queueCount = 1;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+            queueCreateInfos.push_back(queueCreateInfo);
+        }
+
+        // Fetch and check required device extensions
+        std::vector<const char*> deviceExtensions = GetRequiredDeviceExtensions(m_PhysicalDevice);
+        if (!CheckDeviceExtensionSupport(m_PhysicalDevice, deviceExtensions)) {
+            return RenderInitError(RenderInitStatus::Failed, "Physical device does not support required extensions!");
+        }
+
+        // Dynamic rendering feature
+        VkPhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeature{};
+        dynamicRenderingFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+        dynamicRenderingFeature.dynamicRendering = VK_TRUE;
+
+        // We will specify device features here later
+        VkPhysicalDeviceFeatures deviceFeatures{};
+
+        VkDeviceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.pNext = &dynamicRenderingFeature;
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();
+        createInfo.pEnabledFeatures = &deviceFeatures;
+
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+        createInfo.ppEnabledExtensionNames = deviceExtensions.data();
+
+        if (m_EnableValidationLayers) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(m_ValidationLayers.size());
+            createInfo.ppEnabledLayerNames = m_ValidationLayers.data();
+        } else {
+            createInfo.enabledLayerCount = 0;
+        }
+
+        if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "failed to create logical device!");
+        }
+
+        volkLoadDevice(m_Device);
+
+        vkGetDeviceQueue(m_Device, indices.presentFamily.value(), 0, &m_PresentQueue);
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    RenderInitError VulkanRenderAPI::CreateSwapChain(VkSwapchainKHR oldSwapchain)
+    {
+        SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(m_PhysicalDevice);
+
+        VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
+        VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.presentModes);
+        VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities);
+
+        uint32_t minCount = swapChainSupport.capabilities.minImageCount;
+        uint32_t maxCount = swapChainSupport.capabilities.maxImageCount > 0
+                                ? swapChainSupport.capabilities.maxImageCount
+                                : std::numeric_limits<uint32_t>::max();
+        // We prefer triple buffer, then double buffer
+        uint32_t imageCount = (3 <= maxCount) ? std::max(3u, minCount) : maxCount;
+
+        VkSwapchainCreateInfoKHR createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        createInfo.surface = m_Surface;
+
+        createInfo.minImageCount = imageCount;
+        createInfo.imageFormat = surfaceFormat.format;
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;
+        createInfo.imageExtent = extent;
+        createInfo.imageArrayLayers = 1;
+
+        // This means we draw directly to the images, with framebuffers we would use VK_IMAGE_USAGE_TRANSFER_DST_BIT
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+        QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
+        uint32_t queueFamilyIndices[] = {indices.graphicsFamily.value(), indices.presentFamily.value()};
+
+        if (indices.graphicsFamily != indices.presentFamily) {
+            // TODO: Data needs to be shared across queue families, needs some additional setup here
+            // We might need hardware to properly test whenever we have different queue families
+            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+            createInfo.queueFamilyIndexCount = 2;
+            createInfo.pQueueFamilyIndices = queueFamilyIndices;
+        } else {
+            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            createInfo.queueFamilyIndexCount = 0;
+            createInfo.pQueueFamilyIndices = nullptr;
+        }
+
+        // Specify no transformations such as 90 degree rotation or flipping
+        createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+
+        // We might want to change this for alpha textures, but not clear
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+
+        createInfo.presentMode = presentMode;
+        createInfo.clipped = VK_TRUE; // Disallow reading pixel in non-active buffers
+
+        createInfo.oldSwapchain = oldSwapchain;
+
+        if (vkCreateSwapchainKHR(m_Device, &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "Failed to create swap chain!");
+        }
+
+        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &imageCount, nullptr);
+        m_SwapChainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(m_Device, m_SwapChain, &imageCount, m_SwapChainImages.data());
+
+        m_SwapChainImageFormat = surfaceFormat.format;
+        m_SwapChainExtent = extent;
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    RenderInitError VulkanRenderAPI::CreateImageViews()
+    {
+        m_SwapChainImageViews.resize(m_SwapChainImages.size());
+        for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
+            VkImageViewCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            createInfo.image = m_SwapChainImages[i];
+            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            createInfo.format = m_SwapChainImageFormat;
+            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            createInfo.subresourceRange.baseMipLevel = 0;
+            createInfo.subresourceRange.levelCount = 1;
+            createInfo.subresourceRange.baseArrayLayer = 0;
+            createInfo.subresourceRange.layerCount = 1;
+
+            if (vkCreateImageView(m_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]) != VK_SUCCESS) {
+                return RenderInitError(RenderInitStatus::Failed, "Failed to create image views!");
+            }
+        }
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    RenderInitError VulkanRenderAPI::CreateCommandPool()
+    {
+        QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(m_PhysicalDevice);
+
+        VkCommandPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+
+        if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "failed to create command pool!");
+        }
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    RenderInitError VulkanRenderAPI::CreateCommandBuffer()
+    {
+        std::array<VkCommandBuffer, maxFramesInFlight> commandBuffers;
+
+        VkCommandBufferAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.commandPool = m_CommandPool;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandBufferCount = maxFramesInFlight;
+
+        if (vkAllocateCommandBuffers(m_Device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "failed to allocate command buffers!");
+        }
+
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            m_Frames[i].commandBuffer = commandBuffers[i];
+        }
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    RenderInitError VulkanRenderAPI::CreateSyncObjects()
+    {
+        VkSemaphoreCreateInfo semaphoreInfo{};
+        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        VkFenceCreateInfo fenceInfo{};
+        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT; // Sets the fence into signaled state so that we do not wait for
+                                                        // the first frame which does not exist
+
+        m_RenderFinishedSemaphores.resize(m_SwapChainImages.size());
+        for (auto& sem : m_RenderFinishedSemaphores) {
+            if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &sem) != VK_SUCCESS)
+                return RenderInitError(RenderInitStatus::Failed, "failed to create render finished semaphore!");
+        }
+
+        // Create a semaphore for each frame in flight to synchronize when rendering is finished, and a fence to
+        // synchronize CPU-GPU
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_Frames[i].imageAvailableSemaphore) !=
+                    VK_SUCCESS ||
+                vkCreateFence(m_Device, &fenceInfo, nullptr, &m_Frames[i].inFlightFence) != VK_SUCCESS) {
+                return RenderInitError(RenderInitStatus::Failed, "failed to create semaphores!");
+            }
+        }
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    RenderInitError VulkanRenderAPI::InitImGui()
+    {
+        m_Context.InitializeImGui();
+
+        VkDescriptorPoolSize poolSizes[] = {{VK_DESCRIPTOR_TYPE_SAMPLER, 1000},
+                                            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000},
+                                            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000},
+                                            {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000},
+                                            {VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000},
+                                            {VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000},
+                                            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000},
+                                            {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000},
+                                            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000},
+                                            {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000},
+                                            {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000}};
+
+        VkDescriptorPoolCreateInfo poolInfo = {};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+        poolInfo.maxSets = 1000;
+        poolInfo.poolSizeCount = (uint32_t)std::size(poolSizes);
+        poolInfo.pPoolSizes = poolSizes;
+
+        if (vkCreateDescriptorPool(m_Device, &poolInfo, nullptr, &m_ImGuiDescriptorPool) != VK_SUCCESS)
+            return RenderInitError(RenderInitStatus::Failed, "Failed to create ImGui descriptor pool!");
+
+        VkPipelineRenderingCreateInfo ImGuiPipelineInfo = {};
+        ImGuiPipelineInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+        ImGuiPipelineInfo.colorAttachmentCount = 1;
+        ImGuiPipelineInfo.pColorAttachmentFormats = &m_SwapChainImageFormat;
+
+        QueueFamilyIndices indices = FindQueueFamilies(m_PhysicalDevice);
+
+        ImGui_ImplVulkan_InitInfo vulkanInfo = {};
+        vulkanInfo.Instance = m_VkInstance;
+        vulkanInfo.PhysicalDevice = m_PhysicalDevice;
+        vulkanInfo.Device = m_Device;
+        vulkanInfo.QueueFamily = indices.graphicsFamily.value();
+        vulkanInfo.Queue = m_PresentQueue;
+        vulkanInfo.DescriptorPool = m_ImGuiDescriptorPool;
+        vulkanInfo.MinImageCount = 2;
+        vulkanInfo.ImageCount = static_cast<uint32_t>(m_SwapChainImages.size());
+        vulkanInfo.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+
+        vulkanInfo.UseDynamicRendering = true;
+        vulkanInfo.PipelineInfoMain.PipelineRenderingCreateInfo = ImGuiPipelineInfo;
+
+        // (Volk) Load functions
+        ImGui_ImplVulkan_LoadFunctions(
+            0,
+            [](const char* function_name, void* vulkan_instance) {
+                return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance*>(vulkan_instance)), function_name);
+            },
+            &m_VkInstance);
+
+        ImGui_ImplVulkan_Init(&vulkanInfo);
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    void VulkanRenderAPI::Begin()
+    {
+        if (m_SwapChainNeedsRecreation) {
+            // Note: this is probably not the best way to do this. We want to program to still run while the window is
+            // minmized
+            int width = 0, height = 0;
+            m_Context.GetFrameBufferSize(&width, &height);
+            while (width == 0 || height == 0) {
+                m_Context.GetFrameBufferSize(&width, &height);
+                m_Context.WaitEvents(); // Wait for application to be unminimized
+            }
+
+            RecreateSwapChain();
+            m_SwapChainNeedsRecreation = false;
+        }
+    }
+    void VulkanRenderAPI::End() {}
+
+    void VulkanRenderAPI::ClearColor(float r, float g, float b) const {}
+    void VulkanRenderAPI::Viewport(uint width, uint height) const {}
+    void VulkanRenderAPI::BindCubeMap(uint slot, Ref<CubeMap> cubemap) {}
+    void VulkanRenderAPI::BindTexture(uint slot, Ref<Texture> texture) {}
+    void VulkanRenderAPI::BindTextureSampler(uint slot, Ref<TextureSampler> sampler) {}
+
+    void VulkanRenderAPI::BindPipeline(Ref<Pipeline> pipeline)
+    {
+        if (pipeline->m_Pipeline == m_BoundPipeline) return;
+        vkCmdBindPipeline(m_Frames[m_CurrentFrame].commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                          pipeline->m_Pipeline);
+        m_BoundPipeline = pipeline->m_Pipeline;
+    }
+
+    void VulkanRenderAPI::DrawIndices(uint count) const {}
+    void VulkanRenderAPI::DrawArray(uint count) const {}
+
+    void VulkanRenderAPI::DefaultFrameBuffer() const {}
+    void VulkanRenderAPI::SetViewport(uint width, uint height)
+    {
+        m_SwapChainNeedsRecreation = true;
+    }
+    void VulkanRenderAPI::SetViewport(uint width, uint height, uint posX, uint posY)
+    {
+        m_SwapChainNeedsRecreation = true;
+    }
+
+    void VulkanRenderAPI::DepthComparisonMethod(Dodo::DepthComparisonMethod method) const {}
+    void VulkanRenderAPI::DepthTest(bool depthtest) const {}
+    void VulkanRenderAPI::StencilTest(bool stenciltest) const {}
+    void VulkanRenderAPI::Blending(bool blending) const {}
+    void VulkanRenderAPI::Culling(bool cull, bool backface) {}
+
+    void VulkanRenderAPI::ImGuiNewFrame() const
+    {
+        ImGui_ImplVulkan_NewFrame();
+    }
+
+    void VulkanRenderAPI::ImGuiEndFrame()
+    {
+        VkSemaphore renderFinished = m_Frames[m_CurrentFrame].renderFinishedSemaphore;
+        VkFence inFlightFence = m_Frames[m_CurrentFrame].inFlightFence;
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+
+        // Wait until previous frame is finished
+        vkWaitForFences(m_Device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(m_Device, 1, &inFlightFence);
+
+        // Get the current image index in the swap chain
+        uint32_t imageIndex;
+        vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_Frames[m_CurrentFrame].imageAvailableSemaphore,
+                              VK_NULL_HANDLE, &imageIndex);
+
+        vkResetCommandBuffer(cmd, 0);
+
+        VkCommandBufferBeginInfo beginInfo = {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+        if (vkBeginCommandBuffer(cmd, &beginInfo) != VK_SUCCESS) {
+            DD_ERR("failed to begin recording command buffer!");
+            return;
+        }
+
+        // TODO: Deprecated stuff, use VkImageMemoryBarrier2KHR instead
+        VkImageMemoryBarrier barrier = {};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = m_SwapChainImages[imageIndex];
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
+                             0, nullptr, 0, nullptr, 1, &barrier);
+
+        // Setup dynamic rendering target
+        VkRenderingAttachmentInfo colorAttachment = {};
+        colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+        colorAttachment.imageView = m_SwapChainImageViews[imageIndex];
+        colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.clearValue.color = {{0.1f, 0.1f, 1.0f, 1.0f}}; // Dark gray background
+
+        VkRenderingInfo renderingInfo = {};
+        renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+        renderingInfo.renderArea = {{0, 0}, m_SwapChainExtent};
+        renderingInfo.layerCount = 1;
+        renderingInfo.colorAttachmentCount = 1;
+        renderingInfo.pColorAttachments = &colorAttachment;
+
+        vkCmdBeginRendering(cmd, &renderingInfo);
+
+        ImGui::Render();
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
+
+        vkCmdEndRendering(cmd);
+
+        // TODO: Deprecated stuff, use VkImageMemoryBarrier2KHR instead
+        // Transition swapchain image back to present layout
+        VkImageMemoryBarrier presentBarrier = {};
+        presentBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        presentBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        presentBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        presentBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        presentBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        presentBarrier.image = m_SwapChainImages[imageIndex];
+        presentBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        presentBarrier.subresourceRange.baseMipLevel = 0;
+        presentBarrier.subresourceRange.levelCount = 1;
+        presentBarrier.subresourceRange.baseArrayLayer = 0;
+        presentBarrier.subresourceRange.layerCount = 1;
+        presentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        presentBarrier.dstAccessMask = 0;
+
+        vkCmdPipelineBarrier(cmd,
+                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // wait for rendering to finish
+                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
+
+        vkEndCommandBuffer(cmd);
+
+        // Setup semaphore and submit command buffer
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+        VkSemaphore waitSemaphores[] = {m_Frames[m_CurrentFrame].imageAvailableSemaphore};
+        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitDstStageMask = waitStages;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmd;
+
+        VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphores[imageIndex]};
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
+
+        if (vkQueueSubmit(m_PresentQueue, 1, &submitInfo, m_Frames[m_CurrentFrame].inFlightFence) != VK_SUCCESS) {
+            DD_ERR("failed to submit draw command buffer!");
+            return;
+        }
+
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+
+        VkSwapchainKHR swapChains[] = {m_SwapChain};
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapChains;
+        presentInfo.pImageIndices = &imageIndex;
+
+        vkQueuePresentKHR(m_PresentQueue, &presentInfo);
+
+        m_CurrentFrame = (m_CurrentFrame + 1) % maxFramesInFlight;
+    }
+
+    /**
+     * Checks if a physical device meets our requirements of features, queue families, and extensions
+     */
+    bool VulkanRenderAPI::IsDeviceSuitable(PhyisicalDeviceInfo device)
+    {
+        if (device.device == VK_NULL_HANDLE) return false;
+        if (!device.features.geometryShader)
+            return false; // Note: This might fail on MacOS even though the device supports geometry shaders, due to
+                          // MoltenVK not reporting it correctly.
+        if (!device.indices.IsComplete()) return false;
+
+        // Check if all required device extensions are supported
+        std::vector<const char*> requiredExtensions = GetRequiredDeviceExtensions(device.device);
+        if (!CheckDeviceExtensionSupport(device.device, requiredExtensions)) return false;
+
+        // Check if swap chain is enough for presentation
+        SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device.device);
+        if (swapChainSupport.formats.empty() || swapChainSupport.presentModes.empty()) return false;
+
+        return true;
+    }
+
+    /**
+     * Takes two candidate physical devices and provides an ordering based on their type
+     */
+    bool VulkanRenderAPI::IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device)
+    {
+        if (bestDevice.device == VK_NULL_HANDLE) return true;
+
+        if (bestDevice.properties.deviceType < device.properties.deviceType) {
+            /**
+             * VK_PHYSICAL_DEVICE_TYPE_OTHER = 0,
+             * VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU = 1,
+             * VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU = 2,
+             * VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU = 3,
+             * VK_PHYSICAL_DEVICE_TYPE_CPU = 4,
+             *
+             * Prefer higher valued devices with the exception of CPU devices
+             */
+            return device.properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_CPU;
+        }
+
+        // TODO: Selection based on VRAM:
+        // https://registry.khronos.org/VulkanSC/specs/1.0-extensions/man/html/VkPhysicalDeviceMemoryProperties.html
+        return false;
+    }
+
+    /**
+     * Finds the queue families supported by a physical device
+     */
+    QueueFamilyIndices VulkanRenderAPI::FindQueueFamilies(VkPhysicalDevice device)
+    {
+        QueueFamilyIndices indices;
+
+        uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+        uint32_t i = 0;
+        for (const auto& queueFamily : queueFamilies) {
+            bool graphics = queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT;
+            VkBool32 present = false;
+            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &present);
+            if (graphics && present) {
+                indices.graphicsFamily = i;
+                indices.presentFamily = i;
+                break; // Note: not modular for more queues rn, but we prefer same family for graphics and present
+            }
+            if (graphics) indices.graphicsFamily = i;
+            if (present) indices.presentFamily = i;
+
+            i++;
+        }
+
+        return indices;
+    }
+
+    /**
+     * Retrieves the required instance extensions, including those required by the window backend
+     */
+    std::vector<const char*> VulkanRenderAPI::GetRequiredExtensions()
+    {
+        std::vector<const char*> extensions = m_Context.GetExtensions();
+
+        if (m_EnableValidationLayers) {
+            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        }
+
+        extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
+
+        extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+
+        return extensions;
+    }
+
+    bool VulkanRenderAPI::CheckValidationLayerSupport()
+    {
+        uint32_t layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+        std::vector<VkLayerProperties> availableLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+        // Build a hash set of available layer names
+        std::unordered_set<std::string> availableLayerNames;
+        availableLayerNames.reserve(layerCount);
+        for (const auto& layer : availableLayers) {
+            availableLayerNames.insert(layer.layerName);
+        }
+
+        // Store every missing extension for error reporting
+        std::vector<const char*> missingLayers;
+        for (const char* layerName : m_ValidationLayers) {
+            if (availableLayerNames.find(layerName) == availableLayerNames.end()) {
+                missingLayers.push_back(layerName);
+            }
+        }
+
+        // If there are any missing extensions, log all of them and return false
+        if (!missingLayers.empty()) {
+            DD_ERR("Missing required layers:");
+            for (const char* required : missingLayers) {
+                DD_ERR("{}", required);
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get required device extensions given the phyisical device.
+     * Some extensions exist within the core after a certain version
+     * so a version probe is necessary
+     */
+    std::vector<const char*> VulkanRenderAPI::GetRequiredDeviceExtensions(VkPhysicalDevice physicalDevice)
+    {
+        std::vector<const char*> extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+        VkPhysicalDeviceProperties props;
+        vkGetPhysicalDeviceProperties(physicalDevice, &props);
+
+        if (VK_API_VERSION_MINOR(props.apiVersion) < 3) {
+            // Dynamic rendering is built in core in 1.3+, otherwise we need the extension
+            extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+        }
+
+        return extensions;
+    }
+
+    bool VulkanRenderAPI::CheckDeviceExtensionSupport(VkPhysicalDevice device,
+                                                      const std::vector<const char*>& requiredExtensions)
+    {
+        uint32_t extensionCount;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+        DD_INFO("Vulkan Device Extensions:");
+        // Build a hash set of available extension names
+        std::unordered_set<std::string> availableExtensionNames;
+        availableExtensionNames.reserve(extensionCount);
+        for (const auto& extension : availableExtensions) {
+            availableExtensionNames.insert(extension.extensionName);
+            DD_INFO("{}", extension.extensionName);
+        }
+
+        // Store every missing extension for error reporting
+        std::vector<const char*> missingExtensions;
+        for (const char* required : requiredExtensions) {
+            if (availableExtensionNames.find(required) == availableExtensionNames.end()) {
+                missingExtensions.push_back(required);
+            }
+        }
+
+        // If there are any missing extensions, log all of them and return false
+        if (!missingExtensions.empty()) {
+            DD_ERR("Physical device is missing required extensions:");
+            for (const char* required : missingExtensions) {
+                DD_ERR("{}", required);
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    SwapChainSupportDetails VulkanRenderAPI::QuerySwapChainSupport(VkPhysicalDevice device)
+    {
+        SwapChainSupportDetails details;
+
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &details.capabilities);
+
+        uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, nullptr);
+        if (formatCount != 0) {
+            details.formats.resize(formatCount);
+            vkGetPhysicalDeviceSurfaceFormatsKHR(device, m_Surface, &formatCount, details.formats.data());
+        }
+
+        uint32_t presentModeCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, nullptr);
+        if (presentModeCount != 0) {
+            details.presentModes.resize(presentModeCount);
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount,
+                                                      details.presentModes.data());
+        }
+
+        return details;
+    }
+
+    /**
+     * Select the best surface format given available pixel formats
+     */
+    VkSurfaceFormatKHR VulkanRenderAPI::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
+    {
+        for (const auto& availableFormat : availableFormats) {
+            if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
+                availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
+                return availableFormat;
+            }
+        }
+
+        // TODO: Add a IsBetterSurfaceFormat function to select the best available format
+        return availableFormats[0];
+    }
+
+    /**
+     * Select the best swap present mode given available present modes
+     */
+    VkPresentModeKHR VulkanRenderAPI::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
+    {
+        // TODO: We want to choose this based on hardware. For example on pcs we want to use MAILBOX but on mobile
+        // devices or laptops we want to avoid MAILBOX since it consumes a lot of battery See
+        // https://youtu.be/0OqJtPnkfC8?si=Bi7aUphwI486H_Ba&t=1200
+        for (const auto& availablePresentMode : availablePresentModes) {
+            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+                return availablePresentMode;
+            }
+        }
+
+        return VK_PRESENT_MODE_FIFO_KHR;
+    }
+
+    VkExtent2D VulkanRenderAPI::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
+    {
+        if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+            return capabilities.currentExtent;
+        }
+
+        int width, height;
+        m_Context.GetFrameBufferSize(&width, &height);
+
+        VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+
+        actualExtent.width =
+            std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);
+        actualExtent.height =
+            std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
+
+        return actualExtent;
+    }
+
+    void VulkanRenderAPI::RecreateSwapChain()
+    {
+        vkDeviceWaitIdle(m_Device);
+
+        // Destroy old image views
+        for (auto imageView : m_SwapChainImageViews)
+            vkDestroyImageView(m_Device, imageView, nullptr);
+        m_SwapChainImageViews.clear();
+
+        // We destroy render semaphores here since they are sized to the swap chain image count and it is possible we
+        // want to change between triple and double buffering
+        for (auto& sem : m_RenderFinishedSemaphores)
+            vkDestroySemaphore(m_Device, sem, nullptr);
+        m_RenderFinishedSemaphores.clear();
+
+        // Recreate swap chain with old swapchain so that data can be transferred if necessary
+        VkSwapchainKHR oldSwapchain = m_SwapChain;
+        CreateSwapChain(oldSwapchain);
+        vkDestroySwapchainKHR(m_Device, oldSwapchain, nullptr);
+
+        CreateImageViews();
+
+        // Recreate render finished semaphores sized to new swapchain image count
+        VkSemaphoreCreateInfo semaphoreInfo{};
+        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        m_RenderFinishedSemaphores.resize(m_SwapChainImages.size());
+        for (auto& sem : m_RenderFinishedSemaphores)
+            vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &sem);
+    }
+
+    /**
+     * This function populates a VkDebugUtilsMessengerCreateInfoEXT structure with the desired settings for the debug
+     * messenger. This function is used while setting up the debug messenger and when creating the Vulkan instance. This
+     * ensures that the debug messenger is set up even during instance creation.
+     */
+    void VulkanRenderAPI::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo)
+    {
+        createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+                                     VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                                     VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                                 VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                                 VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        createInfo.pfnUserCallback = DebugCallback;
+    }
+
+    VkResult VulkanRenderAPI::CreateDebugUtilsMessengerEXT(VkInstance instance,
+                                                           const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+                                                           const VkAllocationCallbacks* pAllocator,
+                                                           VkDebugUtilsMessengerEXT* pDebugMessenger)
+    {
+        auto func =
+            (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+        if (func != nullptr) {
+            return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
+        } else {
+            return VK_ERROR_EXTENSION_NOT_PRESENT;
+        }
+    }
+
+    void VulkanRenderAPI::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+                                                        const VkAllocationCallbacks* pAllocator)
+    {
+        auto func =
+            (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+        if (func != nullptr) {
+            func(instance, debugMessenger, pAllocator);
+        }
+    }
+
+    /**
+     * A callback function that is called by the Vulkan validation layers
+     */
+    VKAPI_ATTR VkBool32 VKAPI_CALL VulkanRenderAPI::DebugCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+    {
+        switch (messageSeverity) {
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+            // DD_INFO("validation layer (verbose): {}", pCallbackData->pMessage);
+            break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+            // DD_INFO("validation layer (info): {}", pCallbackData->pMessage);
+            break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+            DD_WARN("validation layer (warning): {}", pCallbackData->pMessage);
+            break;
+        case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+            DD_ERR("validation layer (error): {}", pCallbackData->pMessage);
+            break;
+        }
+
+        return VK_FALSE;
+    }
+} // namespace Dodo::Platform

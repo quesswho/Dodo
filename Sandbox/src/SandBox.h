@@ -20,7 +20,7 @@ class GameLayer : public Layer {
     void OnEvent(const Event& event);
 
   private:
-    Math::FreeCamera* m_Camera;
+    FreeCameraController* m_Camera;
 
     Renderer3D* m_Renderer;
     Scene* m_Scene;

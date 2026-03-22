@@ -51,7 +51,8 @@ namespace Dodo::Math {
 
       private:
         void CalculateCameraMatrix() const;
-        // This is mutable because of the lazy evaluation logic and we want to be able to call the getters from const contexts
+        // This is mutable because of the lazy evaluation logic and we want to be able to call the getters from const
+        // contexts
         mutable bool m_Dirty = true;
         mutable Mat4 m_ViewMatrix;
         mutable Mat4 m_CameraMatrix;
@@ -59,7 +60,7 @@ namespace Dodo::Math {
         mutable Vec3 m_Forward;
         mutable Vec3 m_Right;
         mutable Vec3 m_Up;
-        
+
         // These are never modified in const contexts
         Mat4 m_ProjectionMatrix;
         Vec3 m_CameraPos;

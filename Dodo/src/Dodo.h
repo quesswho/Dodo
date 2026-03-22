@@ -28,7 +28,10 @@
 #include "Core/Graphics/Scene/Scene.h"
 
 /* Math */
-#include "Core/Math/Camera/FreeCamera.h"
+#include "Core/Math/Maths.h"
+
+/* Gameplay */
+#include "Core/Gameplay/FreeCameraController.h"
 
 /* System */
 

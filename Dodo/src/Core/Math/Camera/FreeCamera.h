@@ -2,77 +2,68 @@
 
 #include "Core/Math/Matrix/Mat4.h"
 
-namespace Dodo { namespace Math {
+namespace Dodo::Math {
 
     class FreeCamera {
-      private:
-        Mat4 m_ViewMatrix;
-        Mat4 m_ProjectionMatrix;
-        Mat4 m_CameraMatrix;
-
-        Vec3 m_CameraPos; // z-component should be up
-        Vec3 m_ViewDir;
-        Vec3 m_Forward;
-        Vec3 m_Right;
-        Vec3 m_Up;
-        Vec3 m_WorldUp;
-        Vec3 m_MoveDirection;
-
-        float m_Yaw, m_Pitch;
-        float m_Speed;
-        float m_Sensitivity;
-
-        TVec2<double> m_LastMousePos;
-        TVec4<double> m_MouseRect;
-
       public:
-        FreeCamera(const Vec3& pos, const Vec3& viewDir, float aspectRatio, float sensitivity, float speed);
+        FreeCamera(const Vec3& pos, float yaw, float pitch, float aspectRatio);
 
-        FreeCamera(const Vec3& pos, float aspectRatio, float sensitivity, float speed = 1.0f)
-            : FreeCamera(pos, Vec3(0.0f, 0.0f, 1.0f), aspectRatio, sensitivity, speed)
-        {}
-
-        ~FreeCamera() {}
-
-        void Update(float elapsed);
-        void UpdateRotation();
-
-        void ResetMouse();
+        void SetPosition(const Vec3& pos);
+        void Move(const Vec3& delta);
+        void Rotate(float yaw, float pitch);
         void Resize(uint width, uint height);
 
-        inline const Mat4& GetViewMatrix() const { return m_ViewMatrix; }
-
-        inline const Mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
-        void SetProjectionMatrix(const Mat4& projection) noexcept
+        Mat4 GetViewMatrix() const
         {
-            m_ProjectionMatrix = projection;
-            CalculateProjectionViewMatrix();
+            if (m_Dirty) CalculateCameraMatrix();
+            return m_ViewMatrix;
         }
-
-        inline const Vec3& GetCameraPos() const { return m_CameraPos; }
-        void SetCameraPos(const Vec3& pos) noexcept
+        Mat4 GetProjectionMatrix() const
         {
-            m_CameraPos = pos;
-            CalculateProjectionViewMatrix();
+            if (m_Dirty) CalculateCameraMatrix();
+            return m_ProjectionMatrix;
         }
-
-        inline const Vec3& GetViewDir() const { return m_ViewDir; }
-        void SetViewDir(const Vec3& dir) noexcept
+        Mat4 GetCameraMatrix() const
         {
-            m_ViewDir = dir;
-            CalculateProjectionViewMatrix();
+            if (m_Dirty) CalculateCameraMatrix();
+            return m_CameraMatrix;
         }
-
-        // Yaw, Pitch
-        void SetRotation(const Vec2& rotation) noexcept
+        Vec3 GetPosition() const
         {
-            m_Yaw = rotation.x;
-            m_Pitch = rotation.y;
+            if (m_Dirty) CalculateCameraMatrix();
+            return m_CameraPos;
         }
-
-        inline const Mat4& GetCameraMatrix() const { return m_CameraMatrix; }
+        Vec3 GetForward() const
+        {
+            if (m_Dirty) CalculateCameraMatrix();
+            return m_Forward;
+        }
+        Vec3 GetRight() const
+        {
+            if (m_Dirty) CalculateCameraMatrix();
+            return m_Right;
+        }
+        Vec3 GetUp() const
+        {
+            if (m_Dirty) CalculateCameraMatrix();
+            return m_Up;
+        }
 
       private:
-        void CalculateProjectionViewMatrix();
+        void CalculateCameraMatrix() const;
+        // This is mutable because of the lazy evaluation logic and we want to be able to call the getters from const contexts
+        mutable bool m_Dirty = true;
+        mutable Mat4 m_ViewMatrix;
+        mutable Mat4 m_CameraMatrix;
+        mutable Vec3 m_ViewDir;
+        mutable Vec3 m_Forward;
+        mutable Vec3 m_Right;
+        mutable Vec3 m_Up;
+        
+        // These are never modified in const contexts
+        Mat4 m_ProjectionMatrix;
+        Vec3 m_CameraPos;
+        Vec3 m_WorldUp;
+        float m_Yaw, m_Pitch;
     };
-}} // namespace Dodo::Math
+} // namespace Dodo::Math

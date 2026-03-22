@@ -1,6 +1,6 @@
 #include "EditorRenderer.h"
 
-void EditorRenderer::RenderEntities(EditorWorld& world, Math::FreeCamera* camera, LightSystem& lightSystem,
+void EditorRenderer::RenderEntities(EditorWorld& world, const Math::FreeCamera& camera, LightSystem& lightSystem,
                                     RenderAPI& renderAPI, AssetManager& assets)
 {
     // Draw ModelComponent
@@ -13,16 +13,16 @@ void EditorRenderer::RenderEntities(EditorWorld& world, Math::FreeCamera* camera
             mat->SetUniform("u_LightCamera", lightSystem.m_Directional.m_LightCamera);
             mat->SetUniform("u_LightDir", lightSystem.m_Directional.m_Direction);
             mat->SetUniform("u_Model", modelComponent.m_Transformation.m_Model);
-            mat->SetUniform("u_Camera", camera->GetCameraMatrix());
-            mat->SetUniform("u_CameraPos", camera->GetCameraPos());
+            mat->SetUniform("u_Camera", camera.GetCameraMatrix());
+            mat->SetUniform("u_CameraPos", camera.GetCameraPos());
             mesh->DrawGeometry(renderAPI);
         }
     }
 }
 
-void EditorRenderer::DrawScene(EditorScene* scene, RenderAPI& renderAPI, AssetManager& assets)
+void EditorRenderer::DrawScene(EditorScene* scene, const Math::FreeCamera& camera, RenderAPI& renderAPI, AssetManager& assets)
 {
     auto& world = scene->GetWorld();
-    RenderEntities(world, m_Camera, scene->m_LightSystem, renderAPI, assets);
-    if (scene->m_SkyBox) scene->m_SkyBox->Draw(m_Camera->GetViewMatrix(), renderAPI);
+    RenderEntities(world, camera, scene->m_LightSystem, renderAPI, assets);
+    if (scene->m_SkyBox) scene->m_SkyBox->Draw(camera.GetViewMatrix(), renderAPI);
 }

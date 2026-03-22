@@ -6,17 +6,13 @@
 using namespace Dodo;
 
 class EditorRenderer {
-    Math::FreeCamera* m_Camera;
-
   public:
-    EditorRenderer(Math::FreeCamera* camera) : m_Camera(camera) {}
+    EditorRenderer() = default;
 
-    ~EditorRenderer() {}
+    ~EditorRenderer() = default;
 
-    void DrawScene(EditorScene* scene, RenderAPI& renderAPI, AssetManager& assets);
+    void DrawScene(EditorScene* scene, const Math::FreeCamera& camera, RenderAPI& renderAPI, AssetManager& assets);
 
-    void RenderEntities(EditorWorld& world, Math::FreeCamera* camera, LightSystem& lightSystem, RenderAPI& renderAPI,
+    void RenderEntities(EditorWorld& world, const Math::FreeCamera& camera, LightSystem& lightSystem, RenderAPI& renderAPI,
                         AssetManager& assets);
-
-    void UpdateCamera(Math::FreeCamera* camera) { m_Camera = camera; }
 };

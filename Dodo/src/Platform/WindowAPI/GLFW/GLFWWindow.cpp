@@ -1,10 +1,10 @@
 #include "pch.h"
 
-
 #include "GLFWImGuiBackend.h"
 #include "GLFWWindow.h"
 
-// TODO: Remove this when we change the callbacks and viewport handling. This needs to be before the GLFW include because it indirectly includes opengl headers
+// TODO: Remove this when we change the callbacks and viewport handling. This needs to be before the GLFW include
+// because it indirectly includes opengl headers
 #include "Core/Application/Application.h"
 
 #include "Core/System/FileUtils.h"
@@ -37,10 +37,10 @@ namespace Dodo::Platform {
         glfwSetErrorCallback(ErrorCallback);
         ConfigureMonitor();
 
-        // Tell GLFW not to create an OpenGL context if we are using Vulkan
-        #ifdef DD_API_VULKAN
+// Tell GLFW not to create an OpenGL context if we are using Vulkan
+#ifdef DD_API_VULKAN
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        #endif
+#endif
 
         m_Handle = glfwCreateWindow(m_WindowProperties.m_Width, m_WindowProperties.m_Height, m_WindowProperties.m_Title,
                                     NULL, NULL);

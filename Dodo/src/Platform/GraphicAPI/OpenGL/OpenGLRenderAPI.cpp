@@ -2,7 +2,7 @@
 #include "pch.h"
 
 #include "Core/Application/Application.h"
-
+#include "OpenGLShaderCompiler.h"
 #include <backends/imgui_impl_opengl3.h>
 
 namespace Dodo::Platform {
@@ -14,7 +14,8 @@ namespace Dodo::Platform {
 
     OpenGLRenderAPI::~OpenGLRenderAPI()
     {
-        ImGui_ImplOpenGL3_Shutdown();
+        glDeleteBuffers(1, &m_FrameUBO);
+        glDeleteBuffers(1, &m_PushConstantUBO);
         gladLoaderUnloadGL();
     }
 
@@ -31,9 +32,8 @@ namespace Dodo::Platform {
         glFrontFace(GL_CCW);
         glEnable(GL_MULTISAMPLE);
 
-        ResizeDefaultViewport(winprop.m_FrameBufferWidth, winprop.m_FrameBufferHeight);
+        SetViewport(winprop.m_FrameBufferWidth, winprop.m_FrameBufferHeight);
         m_CullingDefault = winprop.m_Settings.backfaceCull;
-        Culling(m_CullingDefault);
 
         m_Context.SetVSync(winprop.m_Settings.vsync);
 
@@ -54,7 +54,92 @@ namespace Dodo::Platform {
             ImGui_ImplOpenGL3_Init();
         }
 
+        // Create frame UBO
+        glGenBuffers(1, &m_FrameUBO);
+        glBindBuffer(GL_UNIFORM_BUFFER, m_FrameUBO);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(FrameData), nullptr, GL_DYNAMIC_DRAW);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_FrameUBO); // Bind to slot 0
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        // Create push constant UBO (binding 1, 128 bytes max)
+        glGenBuffers(1, &m_PushConstantUBO);
+        glBindBuffer(GL_UNIFORM_BUFFER, m_PushConstantUBO);
+        glBufferData(GL_UNIFORM_BUFFER, 128, nullptr, GL_DYNAMIC_DRAW); // 128 byte Vulkan guaranteed min
+        glBindBufferBase(GL_UNIFORM_BUFFER, 1, m_PushConstantUBO);      // binding point 1
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
         return RenderInitError(RenderInitStatus::Success, "");
+    }
+
+    void OpenGLRenderAPI::BindPipeline(Ref<Pipeline> pipeline)
+    {
+        m_CurrentPipelineID = pipeline->m_ShaderID;
+        glUseProgram(pipeline->m_ShaderID);
+
+        // Apply pipeline state from desc
+        if (pipeline->m_Desc.depthTest) {
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_NEVER + (uint)pipeline->m_Desc.depthMode);
+        } else {
+            glDisable(GL_DEPTH_TEST);
+        }
+
+        if (pipeline->m_Desc.blending) {
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glEnable(GL_BLEND);
+        } else {
+            glDisable(GL_BLEND);
+        }
+
+        if (pipeline->m_Desc.culling) {
+            glEnable(GL_CULL_FACE);
+            glCullFace(pipeline->m_Desc.backfaceCull ? GL_BACK : GL_FRONT);
+        } else {
+            glDisable(GL_CULL_FACE);
+        }
+
+        if (pipeline->m_Desc.stencilTest) {
+            glEnable(GL_STENCIL_TEST);
+        } else {
+            glDisable(GL_STENCIL_TEST);
+        }
+    }
+
+    void OpenGLRenderAPI::PushConstants(const void* data, size_t size)
+    {
+        glBindBuffer(GL_UNIFORM_BUFFER, m_PushConstantUBO);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, size, data);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+
+    void OpenGLRenderAPI::SetFrameData(const FrameData& data)
+    {
+        FrameData uboData;
+        uboData.lightCamera = data.lightCamera;
+        uboData.camera = data.camera;
+        uboData.lightDir = data.lightDir;
+        uboData.pad0 = 0.0f;
+        uboData.cameraPos = data.cameraPos;
+        uboData.pad1 = 0.0f;
+
+        glBindBuffer(GL_UNIFORM_BUFFER, m_FrameUBO);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(FrameData), &uboData);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        /*GLint uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_LightCamera");
+        glUniformMatrix4fv(uLoc, 1, GL_FALSE, &data.lightCamera.m_Elements[0]);
+        uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_LightDir");
+        glUniform3f(uLoc, data.lightDir.x, data.lightDir.y, data.lightDir.z);
+        uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_Camera");
+        glUniformMatrix4fv(uLoc, 1, GL_FALSE, &data.camera.m_Elements[0]);
+        uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_CameraPos");
+        glUniform3f(uLoc, data.cameraPos.x, data.cameraPos.y, data.cameraPos.z);*/
+    }
+
+    void OpenGLRenderAPI::SetDrawData(const DrawData& data)
+    {
+        GLint uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_Model");
+        glUniformMatrix4fv(uLoc, 1, GL_FALSE, &data.model.m_Elements[0]);
     }
 
     void OpenGLRenderAPI::DefaultFrameBuffer() const
@@ -64,38 +149,25 @@ namespace Dodo::Platform {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
-    void OpenGLRenderAPI::Blending(bool blending) const
-    {
-        if (blending) {
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glEnable(GL_BLEND);
-        } else {
-            glDisable(GL_BLEND);
-        }
-    }
-
-    void OpenGLRenderAPI::Culling(bool cull, bool backface)
-    {
-        if (cull) {
-            glEnable(GL_CULL_FACE);
-            glCullFace(backface ? GL_BACK : GL_FRONT);
-        } else {
-            glDisable(GL_CULL_FACE);
-        }
-    }
-
-    void OpenGLRenderAPI::ResizeDefaultViewport(uint width, uint height)
+    void OpenGLRenderAPI::SetViewport(uint width, uint height)
     {
         m_ViewportWidth = width;
         m_ViewportHeight = height;
         glViewport(m_ViewportPosX, m_ViewportPosY, width, height);
     }
 
-    void OpenGLRenderAPI::ResizeDefaultViewport(uint width, uint height, uint posX, uint posY)
+    void OpenGLRenderAPI::SetViewport(uint width, uint height, uint posX, uint posY)
     {
         m_ViewportPosX = posX;
         m_ViewportPosY = posY;
-        ResizeDefaultViewport(width, height);
+        SetViewport(width, height);
+    }
+
+    Ref<Pipeline> OpenGLRenderAPI::CreatePipeline(const PipelineDesc& desc, const ShaderSource& source)
+    {
+        uint program = OpenGLShaderCompiler::Compile(source);
+
+        return std::make_shared<Pipeline>(desc, program);
     }
 
     void OpenGLRenderAPI::ImGuiNewFrame() const
@@ -105,6 +177,7 @@ namespace Dodo::Platform {
 
     void OpenGLRenderAPI::ImGuiEndFrame() const
     {
+        ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 } // namespace Dodo::Platform

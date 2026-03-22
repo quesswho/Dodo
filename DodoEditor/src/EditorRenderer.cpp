@@ -3,6 +3,13 @@
 void EditorRenderer::RenderEntities(EditorWorld& world, const Math::FreeCamera& camera, LightSystem& lightSystem,
                                     RenderAPI& renderAPI, AssetManager& assets)
 {
+    FrameData frameData;
+    frameData.camera = camera.GetCameraMatrix();
+    frameData.cameraPos = camera.GetPosition();
+    frameData.lightCamera = lightSystem.m_Directional.m_LightCamera;
+    frameData.lightDir = lightSystem.m_Directional.m_Direction;
+    renderAPI.SetFrameData(frameData); // Uploads frame data to the GPU
+
     // Draw ModelComponent
     const auto& modelPool = world.template GetPool<ModelComponent>();
     for (const auto& modelComponent : modelPool.GetComponents()) {
@@ -10,17 +17,14 @@ void EditorRenderer::RenderEntities(EditorWorld& world, const Math::FreeCamera& 
         for (auto mesh : model->GetMeshes()) {
             Ref<Material> mat = mesh->GetMaterial();
             mat->Bind(renderAPI);
-            mat->SetUniform("u_LightCamera", lightSystem.m_Directional.m_LightCamera);
-            mat->SetUniform("u_LightDir", lightSystem.m_Directional.m_Direction);
-            mat->SetUniform("u_Model", modelComponent.m_Transformation.m_Model);
-            mat->SetUniform("u_Camera", camera.GetCameraMatrix());
-            mat->SetUniform("u_CameraPos", camera.GetCameraPos());
+            renderAPI.SetDrawData({modelComponent.m_Transformation.m_Model});
             mesh->DrawGeometry(renderAPI);
         }
     }
 }
 
-void EditorRenderer::DrawScene(EditorScene* scene, const Math::FreeCamera& camera, RenderAPI& renderAPI, AssetManager& assets)
+void EditorRenderer::DrawScene(EditorScene* scene, const Math::FreeCamera& camera, RenderAPI& renderAPI,
+                               AssetManager& assets)
 {
     auto& world = scene->GetWorld();
     RenderEntities(world, camera, scene->m_LightSystem, renderAPI, assets);

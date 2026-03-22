@@ -1,11 +1,11 @@
-#include "VkTexture.h"
+#include "VulkanTexture.h"
 #include "pch.h"
 
 #include <stb_image.h>
 
 namespace Dodo::Platform {
 
-    VkTexture::VkTexture(const std::string& path)
+    VulkanTexture::VulkanTexture(const std::string& path)
     {
         int width, height, channels;
         stbi_set_flip_vertically_on_load(true);
@@ -34,12 +34,12 @@ namespace Dodo::Platform {
         stbi_image_free(data);
     }
 
-    VkTexture::VkTexture(uchar* data, const TextureProperties& prop) : m_TextureProperties(prop), m_TextureID(0)
+    VulkanTexture::VulkanTexture(uchar* data, const TextureProperties& prop) : m_TextureProperties(prop), m_TextureID(0)
     {
         Init(data);
     }
 
-    void VkTexture::Init(uchar* data) {}
+    void VulkanTexture::Init(uchar* data) {}
 
-    VkTexture::~VkTexture() {}
+    VulkanTexture::~VulkanTexture() {}
 } // namespace Dodo::Platform

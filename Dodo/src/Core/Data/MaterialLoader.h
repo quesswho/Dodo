@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Graphics/Material/Material.h"
-#include "Core/Graphics/Shader/ShaderGenerator.h"
+#include "Core/Graphics/Pipeline/ShaderGenerator.h"
 
 #include <filesystem>
 
@@ -13,8 +13,9 @@ namespace Dodo {
 
     class MaterialLoader {
       public:
-        Ref<Material> LoadMaterial(const std::string& texture, AssetManager& assets);
-        Ref<Material> LoadMaterial(const std::string& path, aiMaterial* material, AssetManager& assets);
+        Ref<Material> LoadMaterial(const std::string& texture, AssetManager& assets, RenderAPI& renderAPI);
+        Ref<Material> LoadMaterial(const std::string& path, aiMaterial* material, AssetManager& assets,
+                                   RenderAPI& renderAPI);
 
       private:
         Ref<Texture> LoadTextureFromMaterial(aiMaterial* material, int type, ShaderBuilderFlags& outFlags,

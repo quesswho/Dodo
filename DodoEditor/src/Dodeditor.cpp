@@ -9,8 +9,8 @@ GameLayer::GameLayer(Application& app)
     AssetManager& assets = *app.m_AssetManager;
 
     renderAPI.ClearColor(0.2f, 0.2f, 0.9f);
-    renderAPI.DepthTest(true);
-    renderAPI.Blending(true);
+    // renderAPI.DepthTest(true);
+    // renderAPI.Blending(true);
 
     BufferProperties bufferprop = {{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 3}};
 
@@ -33,7 +33,7 @@ GameLayer::GameLayer(Application& app)
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    m_Scene->m_SkyBox = new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath, assets);
+    m_Scene->m_SkyBox = new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath, assets, renderAPI);
 
     m_Interface = new Interface(m_Scene);
 }

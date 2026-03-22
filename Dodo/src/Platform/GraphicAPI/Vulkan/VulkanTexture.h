@@ -3,11 +3,11 @@
 #include "Core/Graphics/Material/TextureProperties.h"
 
 namespace Dodo::Platform {
-    class VkTexture {
+    class VulkanTexture {
       public:
-        VkTexture(const std::string& path);
-        VkTexture(uchar* data, const TextureProperties& prop);
-        ~VkTexture();
+        VulkanTexture(const std::string& path);
+        VulkanTexture(uchar* data, const TextureProperties& prop);
+        ~VulkanTexture();
 
         uint GetTextureID() const { return m_TextureID; }
         const TextureProperties& GetTextureProperties() const { return m_TextureProperties; }

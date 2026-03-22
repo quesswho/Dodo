@@ -18,9 +18,9 @@
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/FrameBuffer.h"
 #include "Core/Graphics/Material/Texture.h"
+#include "Core/Graphics/Pipeline/Pipeline.h"
 #include "Core/Graphics/PostEffect.h"
 #include "Core/Graphics/Renderer3D.h"
-#include "Core/Graphics/Shader/Shader.h"
 #include "Core/Graphics/ShadowMap.h"
 
 /* Scene */

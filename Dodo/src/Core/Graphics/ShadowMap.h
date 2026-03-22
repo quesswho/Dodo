@@ -7,7 +7,7 @@ namespace Dodo {
     // Essentially a wrapper of framebuffer. Implementing point lights will give this class a distinction
     class ShadowMap {
       private:
-        FrameBuffer* m_FrameBuffer;
+        Ref<FrameBuffer> m_FrameBuffer;
 
       public:
         ShadowMap();
@@ -15,6 +15,6 @@ namespace Dodo {
 
         void Bind() const;
 
-        void BindTexture(uint index = 0) const;
+        Ref<FrameBuffer> GetFrameBuffer() const { return m_FrameBuffer; }
     };
 } // namespace Dodo

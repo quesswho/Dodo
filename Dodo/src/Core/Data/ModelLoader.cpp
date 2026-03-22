@@ -54,7 +54,8 @@ namespace Dodo {
             new IndexBuffer(indices.data(), totalIndices), material);
     }
 
-    Model* ModelLoader::LoadModel(const std::string& path, MaterialLoader& materialLoader, AssetManager& assets)
+    Model* ModelLoader::LoadModel(const std::string& path, MaterialLoader& materialLoader, AssetManager& assets,
+                                  RenderAPI& renderAPI)
     {
         Assimp::Importer imp;
 
@@ -77,7 +78,7 @@ namespace Dodo {
         for (int i = 0; i < model->mNumMaterials; i++) {
             // TODO: This is really bad, we should let the asset manager own the materials, but this is easier for now.
             // I would like to change the shader builder before doing this as material loader needs a lot of work
-            materials.push_back(materialLoader.LoadMaterial(path, model->mMaterials[i], assets));
+            materials.push_back(materialLoader.LoadMaterial(path, model->mMaterials[i], assets, renderAPI));
         }
 
         DD_INFO("{} materials loaded", materials.size());

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Core/Graphics/Pipeline/ShaderGenerator.h"
 #include "Core/Graphics/Scene/Model.h"
-#include "Core/Graphics/Shader/ShaderGenerator.h"
 
 struct aiMesh;
 
@@ -56,7 +56,8 @@ namespace Dodo {
 
         ///////////////////////////////////////////////////
 
-        Model* LoadModel(const std::string& path, MaterialLoader& materialLoader, AssetManager& assets);
+        Model* LoadModel(const std::string& path, MaterialLoader& materialLoader, AssetManager& assets,
+                         RenderAPI& renderAPI);
 
       private:
         Mesh* LoadMesh(::aiMesh* mesh, Ref<Material> material);

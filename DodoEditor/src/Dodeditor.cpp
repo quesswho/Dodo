@@ -14,10 +14,10 @@ GameLayer::GameLayer(Application& app)
 
     BufferProperties bufferprop = {{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 3}};
 
-    m_Camera = new FreeCamera(Vec3(0.0f, 0.0f, 20.0f),
-                              (float)app.m_Window->GetWindowProperties().m_Width /
-                                  (float)app.m_Window->GetWindowProperties().m_Height,
-                              0.04f, 10.0f);
+    m_Camera = new FreeCameraController(Vec3(0.0f, 0.0f, 20.0f), -90.0f, 0.0f,
+                                        (float)app.m_Window->GetWindowProperties().m_Width /
+                                            (float)app.m_Window->GetWindowProperties().m_Height,
+                                        0.04f, 10.0f);
 
     FrameBufferProperties frameprop;
     frameprop.m_Width = app.m_Window->GetWindowProperties().m_Width;
@@ -25,15 +25,16 @@ GameLayer::GameLayer(Application& app)
 
     m_FrameBuffer = new FrameBuffer(frameprop);
 
-    m_Renderer = new EditorRenderer(m_Camera);
-    m_Scene = new EditorScene(m_Camera);
+    m_Renderer = new EditorRenderer();
+    m_Scene = new EditorScene();
 
     std::vector<std::string> skyboxPath = {
         "res/texture/skybox/right.jpg",  "res/texture/skybox/left.jpg",  "res/texture/skybox/top.jpg",
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    m_Scene->m_SkyBox = new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath, assets, renderAPI);
+    // Note: skyboxes projection matrix is not updated after this, so after resizing the skybox might look stretched
+    m_Scene->m_SkyBox = new Skybox(m_Camera->GetCamera().GetProjectionMatrix(), skyboxPath, assets, renderAPI);
 
     m_Interface = new Interface(m_Scene);
 }

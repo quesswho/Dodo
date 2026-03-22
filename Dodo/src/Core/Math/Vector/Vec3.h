@@ -123,6 +123,20 @@ namespace Dodo { namespace Math {
             }
         }
 
+        // Given a targeet vector, return a vector that is the linear interpolation between this vector and the target
+        // vector by t
+        inline TVec3 Lerp(const TVec3& target, float t) const { return (1.0f - t) * *this + t * target; }
+
+        // Return linear interpolation between a and b by t
+        static inline TVec3 Lerp(const TVec3& a, const TVec3& b, float t) { return (1.0f - t) * a + t * b; }
+
+        // Return a the exponential decay between this vector and the target vector by decay rate and delta time
+        // See: https://youtu.be/LSNQuFEDOyQ?si=HVeC5ZccwbZLN-d_&t=2298
+        static inline TVec3 ExpDecay(const TVec3& a, const TVec3& b, float decay, float dt)
+        {
+            return b + (a - b) * exp(-decay * dt);
+        }
+
         // Return a vector with a magnitude of limit
         inline constexpr TVec3 Limit(const T limit) const { return this->Normalize() * limit; }
 

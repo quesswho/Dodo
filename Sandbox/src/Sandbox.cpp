@@ -13,11 +13,11 @@ GameLayer::GameLayer(Application& app)
     renderAPI.ClearColor(0.2f, 0.2f, 0.9f);
 
     // FPS camera containing view matrix
-    m_Camera =
-        new FreeCamera(Vec3(0.0f, 0.0f, 0.0f),
-                       (float)Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferWidth /
-                           (float)Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferHeight,
-                       0.04f, 10.0f);
+    m_Camera = new FreeCameraController(
+        Vec3(0.0f, 0.0f, 0.0f), -90.0f, 0.0f,
+        (float)Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferWidth /
+            (float)Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferHeight,
+        0.04f, 10.0f);
 
     // Framebuffer initialization data
     FrameBufferProperties frameprop;
@@ -33,7 +33,7 @@ GameLayer::GameLayer(Application& app)
     m_LightProjection = Mat4::Orthographic(-50.0f, 50.0f, -50.0f, 50.0f, 1.0f, 100.0f);
     m_LightView = Mat4::LookAt(Vec3(0.0f, 35.0f, 23.0f), m_LightLook, Vec3(0.0, 1.0, 0.0));
 
-    m_Renderer = new Renderer3D(m_Camera, renderAPI, assets);
+    m_Renderer = new Renderer3D(renderAPI, assets);
     m_Renderer->SetPostEffect(m_PostEffect);
 
     m_Scene = m_File.Read("res/sponza/sponza.das");
@@ -45,7 +45,7 @@ GameLayer::GameLayer(Application& app)
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    m_Scene->m_SkyBox = new Skybox(m_Camera->GetProjectionMatrix(), skyboxPath, assets, renderAPI);
+    m_Scene->m_SkyBox = new Skybox(m_Camera->GetCamera().GetProjectionMatrix(), skyboxPath, assets, renderAPI);
     DD_INFO("Finished loading skybox");
     m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(Vec3(0.2f, -0.5f, -0.5f));
     m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
@@ -107,7 +107,7 @@ void GameLayer::Update(float elapsed)
         m_PostEffect->SetEffectData(m_PostEffectData);
     }
 
-    m_Camera->Update(elapsed);
+    m_Camera->Update(Application::s_Application->GetInput(), elapsed);
 
     std::stringstream stream;
     stream << Application::s_Application->m_FramesPerSecond << " FPS, " << std::fixed << std::setprecision(2)
@@ -118,8 +118,7 @@ void GameLayer::Update(float elapsed)
 
 void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
 {
-    m_Renderer->UpdateCamera(m_Camera);
-    m_Renderer->DrawShadowedScene(m_Scene, renderAPI, assets);
+    m_Renderer->DrawShadowedScene(m_Scene, m_Camera->GetCamera(), renderAPI, assets);
 }
 
 void GameLayer::OnEvent(const Event& event)
@@ -137,7 +136,7 @@ void GameLayer::OnEvent(const Event& event)
     case EventType::MOUSE_PRESSED:
         break;
     case EventType::MOUSE_POSITION:
-        m_Camera->UpdateRotation();
+        m_Camera->UpdateRotation(Application::s_Application->GetInput());
         break;
     case EventType::WINDOW_RESIZE:
         m_Camera->Resize(Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferWidth,

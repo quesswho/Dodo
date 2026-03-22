@@ -25,7 +25,7 @@ namespace Dodo::Math {
     {
         m_Yaw = std::fmod((m_Yaw + yaw), 360.0f); // Prevent yaw from reaching high numbers
         m_Pitch += pitch;
-        
+
         // Constrain the pitch to prevent gimbal lock
         if (m_Pitch > 89.0f) m_Pitch = 89.0f;
         if (m_Pitch < -89.0f) m_Pitch = -89.0f;

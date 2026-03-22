@@ -21,7 +21,7 @@ class GameLayer : public Layer {
   private:
     FrameBuffer* m_FrameBuffer;
 
-    FreeCameraController * m_Camera;
+    FreeCameraController* m_Camera;
 
     EditorRenderer* m_Renderer;
     EditorScene* m_Scene;

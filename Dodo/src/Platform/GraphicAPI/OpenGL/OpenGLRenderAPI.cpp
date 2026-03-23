@@ -14,6 +14,10 @@ namespace Dodo::Platform {
 
     OpenGLRenderAPI::~OpenGLRenderAPI()
     {
+        if (m_ImGuiLoaded) 
+        {
+            ImGui_ImplOpenGL3_Shutdown();
+        }
         glDeleteBuffers(1, &m_FrameUBO);
         glDeleteBuffers(1, &m_PushConstantUBO);
         gladLoaderUnloadGL();
@@ -52,6 +56,7 @@ namespace Dodo::Platform {
         if (winprop.m_Settings.imgui) {
             m_Context.InitializeImGui();
             ImGui_ImplOpenGL3_Init();
+            m_ImGuiLoaded = true;
         }
 
         // Create frame UBO

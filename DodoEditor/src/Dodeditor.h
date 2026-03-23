@@ -19,7 +19,7 @@ class GameLayer : public Layer {
     void SetScene(EditorScene* scene);
 
   private:
-    FrameBuffer* m_FrameBuffer;
+    Ref<FrameBuffer> m_FrameBuffer;
 
     FreeCameraController* m_Camera;
 

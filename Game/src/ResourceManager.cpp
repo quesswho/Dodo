@@ -1,7 +1,7 @@
 #include "ResourceManager.h"
 
-#include "Core/Graphics/Shader/ShaderCompiler.h"
-#include "Core/Graphics/Shader/ShaderParser.h"
+#include "Core/Graphics/Pipeline/ShaderCompiler.h"
+#include "Core/Graphics/Pipeline/ShaderParser.h"
 #include "Core/System/FileUtils.h"
 
 float front_verts[] = {-0.5, -0.5, 0.5, 0.0, 1.0, 0.0, 0.0, 1.0, 0.5,  -0.5, 0.5, 1.0, 1.0, 0.0, 0.0, 1.0,
@@ -22,16 +22,20 @@ float left_verts[] = {-0.5, -0.5, -0.5, 0.0, 1.0, -1.0, 0.0, 0.0, -0.5, -0.5, 0.
 float right_verts[] = {0.5, -0.5, 0.5,  0.0, 1.0, 1.0, 0.0, 0.0, 0.5, -0.5, -0.5, 1.0, 1.0, 1.0, 0.0, 0.0,
                        0.5, 0.5,  -0.5, 1.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.5,  0.5,  0.0, 0.0, 1.0, 0.0, 0.0};
 
-ResourceManager::ResourceManager(Dodo::AssetManager& assetManager)
+ResourceManager::ResourceManager(Dodo::AssetManager& assetManager, Dodo::RenderAPI& renderAPI)
 {
     Ref<Dodo::Texture> atlas = std::make_shared<Dodo::Texture>("res/texture/blocks.png");
     Ref<Dodo::TextureSampler> sampler = std::make_shared<Dodo::TextureSampler>(
-        Dodo::SamplerProperties(Dodo::SamplerFilter::FILTER_MIN_MAG_MIP_NEAREST, Dodo::SamplerWrapMode::WRAP_REPEAT,
+        Dodo::SamplerProperties(Dodo::SamplerFilter::MIN_MAG_NEAREST, Dodo::SamplerWrapMode::WRAP_REPEAT,
                                 Dodo::SamplerWrapMode::WRAP_REPEAT));
 
     // Dodo::ShaderID id = assetManager.LoadSlangShaderFromPath("res/shader/block.slang");
-    Dodo::ShaderID id = assetManager.LoadGLSLShaderFromPath("res/shader/block.glsl");
-    Ref<Dodo::Pipeline> shader = assetManager.GetShader(id);
+    Dodo::ShaderID id = assetManager.LoadShaderFromPath("res/shader/block.glsl");
+    Dodo::PipelineDesc desc;
+    desc.shaderID = id;
+
+    Dodo::PipelineID pipeId = assetManager.CreatePipeline(desc, renderAPI);
+    Ref<Dodo::Pipeline> shader = assetManager.GetPipeline(pipeId);
     // Dodo::ShaderParser::Parse(Dodo::FileUtils::ReadTextFile("res/shader/block.glsl"))
 
     m_TextureAtlas = std::make_shared<Dodo::Material>(shader, atlas, sampler);

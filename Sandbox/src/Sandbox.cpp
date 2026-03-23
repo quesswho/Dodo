@@ -14,7 +14,7 @@ GameLayer::GameLayer(Application& app)
 
     // FPS camera containing view matrix
     m_Camera = new FreeCameraController(
-        Vec3(0.0f, 0.0f, 0.0f), -90.0f, 0.0f,
+        Vec3(0.0f, 0.0f, 15.0f), -90.0f, 0.0f,
         (float)Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferWidth /
             (float)Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferHeight,
         0.04f, 10.0f);

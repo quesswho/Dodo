@@ -242,10 +242,11 @@ bool Interface::BeginViewport()
     return false;
 }
 
-void Interface::EndViewport(FrameBuffer* framebuffer)
+void Interface::EndViewport(RenderAPI& renderAPI, Ref<FrameBuffer> framebuffer)
 {
     // TODO: This is the OpenGL way of doing things
     if (m_ViewportState.visible) {
+        renderAPI.BindFrameBufferTexture(0, framebuffer);
         ImGui::Image((void*)(intptr_t)framebuffer->GetTextureHandle(),
                      ImVec2((float)m_ViewportState.width, (float)m_ViewportState.height), ImVec2(0, 1), ImVec2(1, 0));
         ImGui::End();

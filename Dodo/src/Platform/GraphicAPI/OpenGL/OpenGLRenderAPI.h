@@ -87,6 +87,8 @@ namespace Dodo::Platform {
         uint m_FrameUBO = 0;
         uint m_PushConstantUBO = 0;
 
+        bool m_ImGuiLoaded = false;
+
         int m_Version;
         NativeWindowHandle m_Handle;
     };

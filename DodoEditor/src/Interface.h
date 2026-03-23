@@ -35,7 +35,7 @@ class Interface {
     bool BeginDraw();
     bool BeginViewport();
     bool ViewportResize();
-    void EndViewport(FrameBuffer* framebuffer);
+    void EndViewport(RenderAPI& renderAPI, Ref<FrameBuffer> framebuffer);
     void EndDraw();
 
     void ChangeScene(EditorScene* scene);

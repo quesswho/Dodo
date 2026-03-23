@@ -24,7 +24,7 @@ class GameLayer : public Layer {
     Ref<ResourceManager> m_ResourceManager;
     Ref<WorldManager> m_WorldManager;
 
-    Math::FreeCamera* m_Camera;
+    FreeCameraController* m_Camera;
 
     Renderer3D* m_Renderer;
     Scene* m_Scene;

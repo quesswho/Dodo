@@ -22,14 +22,9 @@ namespace Dodo {
         LightSystem m_LightSystem;
 
       public:
-        Scene(Math::FreeCamera* camera, std::string name = "Unnamed");
+        Scene(std::string name = "Unnamed");
         ~Scene();
 
         World& GetWorld();
-
-        inline void UpdateCamera(Math::FreeCamera* camera) { m_Camera = camera; }
-
-      private:
-        Math::FreeCamera* m_Camera;
     };
 } // namespace Dodo

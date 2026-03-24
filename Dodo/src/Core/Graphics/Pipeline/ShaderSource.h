@@ -18,6 +18,9 @@ namespace Dodo {
         std::string EntryPoint = "main"; // Vulkan uses entry points, so we need to specify it.
     };
 
+    /**
+     * TODO: This is all wrong
+     */
     struct ShaderSource {
         std::string name;
         std::vector<ShaderStageSource> stages;

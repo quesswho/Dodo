@@ -4,7 +4,7 @@
 #include "Core/Math/Matrix/Mat3.h"
 #include "Core/Math/Vector/Vec4.h"
 
-namespace Dodo { namespace Platform {
+namespace Dodo::Platform {
 
     // Column Major Right hand 4x4 matrix
     template <typename T = float>
@@ -68,6 +68,8 @@ namespace Dodo { namespace Platform {
 
         CRHMat4x4(const Math::Mat3x3<T>& mat)
         {
+            Identity();
+
             m_Elements[GetIndex(0, 0)] = mat.m_Elements[0];
             m_Elements[GetIndex(0, 1)] = mat.m_Elements[1];
             m_Elements[GetIndex(0, 2)] = mat.m_Elements[2];
@@ -431,11 +433,11 @@ namespace Dodo { namespace Platform {
             result.m_Elements[GetIndex(3, 0)] = 0.0f;
             result.m_Elements[GetIndex(3, 1)] = 0.0f;
             result.m_Elements[GetIndex(3, 2)] = 0.0f;
-            result.m_Elements[GetIndex(3, 3)] = 0.0f;
+            result.m_Elements[GetIndex(3, 3)] = 1.0f;
             return result;
         }
 
       private:
         static constexpr inline int GetIndex(int column, int row) { return (column * 4) + row; }
     };
-}} // namespace Dodo::Platform
+} // namespace Dodo::Platform

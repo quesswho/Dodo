@@ -31,5 +31,6 @@ namespace Dodo::Platform {
 
       private:
         void Create();
+        void SetFilter(SamplerFilter filter);
     };
 } // namespace Dodo::Platform

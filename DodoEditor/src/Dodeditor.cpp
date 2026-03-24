@@ -22,6 +22,7 @@ GameLayer::GameLayer(Application& app)
     FrameBufferProperties frameprop;
     frameprop.m_Width = app.m_Window->GetWindowProperties().m_Width;
     frameprop.m_Height = app.m_Window->GetWindowProperties().m_Height;
+    frameprop.m_SamplerProperties = SamplerProperties(SamplerFilter::MIN_MAG_LINEAR);
 
     m_FrameBuffer = std::make_shared<FrameBuffer>(frameprop);
 

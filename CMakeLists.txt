@@ -42,6 +42,7 @@ include(cmake/Slang.cmake)
 if (DD_API_OPENGL)
     message(STATUS "=== Configuring GLAD ===")
     add_subdirectory(Dodo/lib/glad)
+    add_subdirectory(Dodo/lib/SPIRV-Cross)
 endif()
 
 if (DD_API_VULKAN)

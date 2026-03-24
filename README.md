@@ -31,8 +31,10 @@ The engine features an Entity Component System (ECS), model loading, materials, 
 
 ## Libraries Used
 - **GLFW** - Window creation & input (optional, cross-platform)
-- **Volk** - Vulkan loader
-- **GLAD** - OpenGL function loader
+- **Slang** - Intermediate shading language compiler
+- **Volk** - Vulkan loader (only Vulkan)
+- **GLAD** - OpenGL function loader (only OpenGL)
+- **SPIRV-Cross** - Convertes SPIR-V to GLSL (only OpenGL)
 - **ImGui** - GUI for the level editor
 - **spdlog** - High-performance logging
 - **stb_image** - Texture loading

@@ -74,7 +74,7 @@ endif()
 
 if (DD_API_OPENGL)
     target_include_directories(Dodo PUBLIC lib/glad/include)
-    target_link_libraries(Dodo PUBLIC glad)
+    target_link_libraries(Dodo PUBLIC glad spirv-cross-core spirv-cross-glsl)
     target_compile_definitions(Dodo PUBLIC DD_API_OPENGL)
 elseif (DD_API_VULKAN)
     target_link_libraries(Dodo PUBLIC volk)

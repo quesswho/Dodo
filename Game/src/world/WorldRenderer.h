@@ -8,6 +8,7 @@
 class WorldRenderer {
   private:
     Ref<ResourceManager> m_ResourceManager;
+
   public:
     WorldRenderer(Ref<ResourceManager> resourceManager);
 

@@ -5,9 +5,7 @@
 
 class EditorScene {
   public:
-    explicit EditorScene(const std::string& name = "Unnamed")
-        : EditorScene(new Dodo::Scene(name))
-    {}
+    explicit EditorScene(const std::string& name = "Unnamed") : EditorScene(new Dodo::Scene(name)) {}
 
     explicit EditorScene(Dodo::Scene* runtimeScene)
         : m_RuntimeScene(runtimeScene), m_Name(m_RuntimeScene->m_Name), m_SkyBox(m_RuntimeScene->m_SkyBox),

@@ -9,8 +9,8 @@ GameLayer::GameLayer(Application& app)
     AssetManager& assets = *app.m_AssetManager;
 
     renderAPI.ClearColor(0.2f, 0.2f, 0.9f);
-    //renderAPI.DepthTest(true);
-    //renderAPI.Blending(true);
+    // renderAPI.DepthTest(true);
+    // renderAPI.Blending(true);
 
     // FPS camera containing view matrix
     m_Camera = new FreeCameraController(
@@ -24,7 +24,7 @@ GameLayer::GameLayer(Application& app)
     frameprop.m_Width = app.GetWindowProperties().m_Width;
     frameprop.m_Height = app.GetWindowProperties().m_Height;
 
-    m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.fx", renderAPI, assets);
+    m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.slang", renderAPI, assets);
     m_PostEffectData.gamma = 1.0f;
     m_PostEffect->SetEffectData(m_PostEffectData);
 

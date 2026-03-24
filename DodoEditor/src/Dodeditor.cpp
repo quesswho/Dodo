@@ -54,7 +54,8 @@ GameLayer::~GameLayer()
 
 void GameLayer::Update(float elapsed)
 {
-    if (m_Interface->m_EditorProperties.m_ViewportInput) m_Camera->Update(Application::s_Application->GetInput(), elapsed);
+    if (m_Interface->m_EditorProperties.m_ViewportInput)
+        m_Camera->Update(Application::s_Application->GetInput(), elapsed);
 }
 
 void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
@@ -116,7 +117,8 @@ void GameLayer::OnEvent(const Event& event)
     case EventType::MOUSE_PRESSED:
         break;
     case EventType::MOUSE_POSITION:
-        if (m_Interface->m_EditorProperties.m_ViewportInput) m_Camera->UpdateRotation(Application::s_Application->GetInput());
+        if (m_Interface->m_EditorProperties.m_ViewportInput)
+            m_Camera->UpdateRotation(Application::s_Application->GetInput());
         break;
     }
 }

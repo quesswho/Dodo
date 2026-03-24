@@ -1,7 +1,6 @@
 #include "WorldManager.h"
 
-WorldManager::WorldManager(Ref<ResourceManager> resourceManager)
-    : m_ResourceManager(resourceManager)
+WorldManager::WorldManager(Ref<ResourceManager> resourceManager) : m_ResourceManager(resourceManager)
 {
     m_WorldRenderer = std::make_shared<WorldRenderer>(m_ResourceManager);
     m_World = std::make_shared<World>(m_ResourceManager, m_WorldRenderer);

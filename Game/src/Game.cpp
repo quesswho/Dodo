@@ -42,7 +42,7 @@ GameLayer::GameLayer(Application& app)
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    m_Scene->m_SkyBox = new Skybox(m_Camera->GetCamera().GetProjectionMatrix(), skyboxPath, assets, renderAPI);
+    m_Scene->m_SkyBox = new Skybox(skyboxPath, assets, renderAPI);
     m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(Vec3(0.2f, -0.5f, -0.5f));
     m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
     app.m_Window->SetCursorVisible(false);
@@ -114,7 +114,7 @@ void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
 {
     m_PostEffect->Bind();
     m_WorldManager->Draw(m_Camera->GetCamera(), renderAPI);
-    m_Scene->m_SkyBox->Draw(m_Camera->GetCamera().GetViewMatrix(), renderAPI);
+    m_Scene->m_SkyBox->Draw(m_Camera->GetCamera(), renderAPI);
     m_PostEffect->Draw(renderAPI);
 }
 
@@ -142,7 +142,6 @@ void GameLayer::OnEvent(const Event& event)
     case EventType::WINDOW_RESIZE:
         TVec2<int> screen = static_cast<const WindowResizeEvent&>(event).m_ScreenSize;
         m_Camera->Resize(screen.x, screen.y);
-        m_Scene->m_SkyBox->m_Projection = m_Camera->GetCamera().GetProjectionMatrix();
         break;
     }
 }

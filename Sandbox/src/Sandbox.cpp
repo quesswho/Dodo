@@ -45,7 +45,7 @@ GameLayer::GameLayer(Application& app)
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    m_Scene->m_SkyBox = new Skybox(m_Camera->GetCamera().GetProjectionMatrix(), skyboxPath, assets, renderAPI);
+    m_Scene->m_SkyBox = new Skybox(skyboxPath, assets, renderAPI);
     DD_INFO("Finished loading skybox");
     m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(Vec3(0.2f, -0.5f, -0.5f));
     m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;

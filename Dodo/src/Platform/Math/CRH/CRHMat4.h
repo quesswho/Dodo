@@ -433,7 +433,7 @@ namespace Dodo::Platform {
             result.m_Elements[GetIndex(3, 0)] = 0.0f;
             result.m_Elements[GetIndex(3, 1)] = 0.0f;
             result.m_Elements[GetIndex(3, 2)] = 0.0f;
-            result.m_Elements[GetIndex(3, 3)] = 1.0f;
+            result.m_Elements[GetIndex(3, 3)] = 0.0f;
             return result;
         }
 

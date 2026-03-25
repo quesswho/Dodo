@@ -1,6 +1,8 @@
 #include "OpenGLCubeMap.h"
 #include "pch.h"
 
+#include <cmath>
+
 #include <glad/gl.h>
 #include <stb_image.h>
 
@@ -40,9 +42,7 @@ namespace Dodo::Platform {
             }
             // Allocate storage based on first face
             if (i == 0) {
-                // TODO: Store mip map level in texture settings and use it here
-                // int mipLevels = 1 + (int)floor(log2((double)std::max(width, height)));
-                int mipLevels = 1;
+                const int mipLevels = 1 + (int)std::floor(std::log2((double)std::max(width, height)));
                 glTextureStorage2D(m_TextureID, mipLevels, internalFormat, width, height);
             }
 
@@ -51,7 +51,7 @@ namespace Dodo::Platform {
             stbi_image_free(data);
         }
 
-        // glGenerateTextureMipmap(m_TextureID);
+        glGenerateTextureMipmap(m_TextureID);
     }
 
     OpenGLCubeMap::~OpenGLCubeMap()

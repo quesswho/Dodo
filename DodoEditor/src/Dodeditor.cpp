@@ -34,8 +34,7 @@ GameLayer::GameLayer(Application& app)
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    // Note: skyboxes projection matrix is updated after resizing the window
-    m_Scene->m_SkyBox = new Skybox(m_Camera->GetCamera().GetProjectionMatrix(), skyboxPath, assets, renderAPI);
+    m_Scene->m_SkyBox = new Skybox(skyboxPath, assets, renderAPI);
 
     m_Interface = new Interface(m_Scene);
 }
@@ -68,8 +67,6 @@ void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
     if (m_Interface->ViewportResize()) {
         m_Camera->Resize(m_Interface->m_ViewportState.width, m_Interface->m_ViewportState.height);
         m_FrameBuffer->Resize(m_Interface->m_ViewportState.width, m_Interface->m_ViewportState.height);
-
-        if (m_Scene->m_SkyBox != nullptr) m_Scene->m_SkyBox->m_Projection = m_Camera->GetCamera().GetProjectionMatrix();
     }
     DrawScene(renderAPI, assets);
     m_Interface->EndViewport(renderAPI, m_FrameBuffer);

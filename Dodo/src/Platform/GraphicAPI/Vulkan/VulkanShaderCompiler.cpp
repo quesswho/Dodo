@@ -2,7 +2,7 @@
 
 namespace Dodo::Platform {
 
-    uint VulkanShaderCompiler::Compile(const ShaderSource& source)
+    uint VulkanShaderCompiler::Compile(const ShaderAsset& source)
     {
         return 0;
     }

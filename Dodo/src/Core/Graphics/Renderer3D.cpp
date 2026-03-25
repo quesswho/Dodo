@@ -2,42 +2,53 @@
 #include "pch.h"
 
 #include "Core/Application/Application.h"
-#include "Core/Graphics/Pipeline/ShaderCompiler.h"
-#include "Core/Graphics/Pipeline/ShaderParser.h"
 
 namespace Dodo {
 
-    static std::string s_ShadowShader = R"(#shader fragment
+    static SlangSource s_ShadowShader = {.name = "ShadowShader", .source = R"(
+[[vk::binding(0, 0)]] cbuffer FrameData : register(b0)
+{
+    float4x4 u_Camera;
+    float4x4 u_LightCamera;
+    float3 u_LightDir;
+    float u_FramePadding0;
+    float3 u_CameraPos;
+    float u_FramePadding1;
+};
 
-	#version 420 core
+[[vk::binding(1, 0)]] cbuffer ModelData : register(b1)
+{
+    float4x4 u_Model;
+};
 
-	void main()
-	{
-		gl_FragDepth = gl_FragCoord.z;
-	}
+struct VertexInput
+{
+    float3 position : POSITION;
+};
 
-	#shader vertex
+struct VertexOutput
+{
+    float4 position : SV_Position;
+};
 
-	#version 420 core
-	layout(location = 0) in vec3 a_Position;
+[shader("vertex")]
+VertexOutput vertexMain(VertexInput input)
+{
+    VertexOutput output;
+    output.position = mul(u_LightCamera, mul(u_Model, float4(input.position, 1.0f)));
+    return output;
+}
 
-	layout(std140, binding = 0) uniform FrameData {
-        mat4 u_Camera;
-        mat4 u_LightCamera;
-        vec3 u_LightDir;
-        vec3 u_CameraPos;
-    } frame;
-
-	uniform mat4 u_Model;
-
-	void main()
-	{
-		gl_Position = frame.u_LightCamera * u_Model * vec4(a_Position, 1.0);
-	})";
+[shader("fragment")]
+float4 fragmentMain(VertexOutput input) : SV_Target
+{
+    return float4(1.0f, 1.0f, 1.0f, 1.0f);
+}
+    )"};
 
     Renderer3D::Renderer3D(RenderAPI& renderAPI, AssetManager& assets) : m_ShadowMap(new ShadowMap())
     {
-        ShaderID id = assets.LoadShader(ShaderParser::Parse(s_ShadowShader));
+        ShaderID id = assets.LoadShader(s_ShadowShader);
         PipelineDesc shadowPipelineDesc;
         shadowPipelineDesc.shaderID = id;
         shadowPipelineDesc.culling = true;
@@ -63,7 +74,7 @@ namespace Dodo {
             for (auto mesh : model->GetMeshes()) {
                 Ref<Material> mat = mesh->GetMaterial();
                 mat->Bind(renderAPI);
-                renderAPI.SetDrawData({modelComponent.m_Transformation.m_Model});
+                renderAPI.SetDrawData(MakeDrawData(modelComponent.m_Transformation.m_Model));
                 mesh->DrawGeometry(renderAPI);
             }
         }
@@ -74,7 +85,7 @@ namespace Dodo {
         // Draw ModelComponents with custom material
         const auto& modelPool = world.GetPool<ModelComponent>();
         for (const auto& modelComponent : modelPool.GetComponents()) {
-            renderAPI.SetDrawData({modelComponent.m_Transformation.m_Model});
+            renderAPI.SetDrawData(MakeDrawData(modelComponent.m_Transformation.m_Model));
             Model* model = assets.GetModel(modelComponent.m_ModelID);
             model->DrawGeometry(renderAPI);
         }
@@ -83,7 +94,7 @@ namespace Dodo {
     void Renderer3D::DrawScene(Scene* scene, const Math::FreeCamera& camera, RenderAPI& renderAPI, AssetManager& assets)
     {
         RenderEntities(scene->GetWorld(), camera, scene->m_LightSystem, renderAPI, assets);
-        if (scene->m_SkyBox) scene->m_SkyBox->Draw(camera.GetViewMatrix(), renderAPI);
+        if (scene->m_SkyBox) scene->m_SkyBox->Draw(camera, renderAPI);
     }
 
     void Renderer3D::DrawShadowedScene(Scene* scene, const Math::FreeCamera& camera, RenderAPI& renderAPI,
@@ -112,5 +123,17 @@ namespace Dodo {
 
         // Draw postfx to screen target
         m_PostEffect->Draw(renderAPI);
+    }
+
+    DrawData Renderer3D::MakeDrawData(const Math::Mat4& model)
+    {
+        const Math::Mat3 model3x3(Math::Vec3(model.m_Columns[0].x, model.m_Columns[0].y, model.m_Columns[0].z),
+                                  Math::Vec3(model.m_Columns[1].x, model.m_Columns[1].y, model.m_Columns[1].z),
+                                  Math::Vec3(model.m_Columns[2].x, model.m_Columns[2].y, model.m_Columns[2].z));
+
+        return DrawData{
+            .model = model,
+            .normalMatrix = Math::Mat3::Transpose(Math::Mat3::Inverse(model3x3)),
+        };
     }
 } // namespace Dodo

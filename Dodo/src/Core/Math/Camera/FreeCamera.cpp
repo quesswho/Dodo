@@ -5,7 +5,7 @@ namespace Dodo::Math {
     FreeCamera::FreeCamera(const Vec3& pos, float yaw, float pitch, float aspectRatio)
         : m_CameraPos(pos), m_Yaw(yaw), m_Pitch(pitch), m_WorldUp(Vec3(0.0f, 1.0f, 0.0f))
     {
-        m_ProjectionMatrix = Mat4::Perspective(45.0f, aspectRatio, 1.0f, 1000.0f);
+        m_ProjectionMatrix = Mat4::Perspective(45.0f, aspectRatio, 0.1f, 1000.0f);
         m_Dirty = true;
     }
 

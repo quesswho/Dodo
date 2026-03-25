@@ -38,5 +38,6 @@ namespace Dodo {
 
     struct DrawData {
         Math::Mat4 model;
+        Math::Mat3 normalMatrix;
     };
 } // namespace Dodo

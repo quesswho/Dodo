@@ -32,5 +32,8 @@ namespace Dodo {
         void RenderGeometry(World& world, RenderAPI& renderApi, AssetManager& assets);
 
         void SetPostEffect(PostEffect* fx) { m_PostEffect = fx; }
+
+      private:
+        static DrawData MakeDrawData(const Math::Mat4& model);
     };
 } // namespace Dodo

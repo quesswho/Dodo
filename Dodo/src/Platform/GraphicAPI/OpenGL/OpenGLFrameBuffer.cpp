@@ -46,7 +46,8 @@ namespace Dodo::Platform {
     }
 
     /**
-     * Unfortunately OpenGLSampler is not compatible with ImGui as far as I know. Therefore we must set the sampler filters directly in to the textures.
+     * Unfortunately OpenGLSampler is not compatible with ImGui as far as I know. Therefore we must set the sampler
+     * filters directly in to the textures.
      */
     void OpenGLFrameBuffer::SetFilter(SamplerFilter filter)
     {

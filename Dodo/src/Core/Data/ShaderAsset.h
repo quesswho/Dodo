@@ -1,9 +1,18 @@
 #pragma once
+
 #include <cstdint>
 #include <string>
 #include <vector>
 
 namespace Dodo {
+
+    enum class ShaderStage {
+        Unknown,
+        Vertex,
+        Fragment,
+        Geometry,
+        Compute
+    };
 
     /**
      * Every different shader backend supported
@@ -11,7 +20,7 @@ namespace Dodo {
     enum class ShaderBackendTarget {
         VulkanSPIRV,
         OpenGLGLSL,
-        //MetalMSL,
+        // MetalMSL,
     };
 
     /**

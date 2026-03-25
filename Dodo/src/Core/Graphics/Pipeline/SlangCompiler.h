@@ -1,8 +1,9 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
-#include "ShaderSource.h"
+#include "Core/Data/ShaderAsset.h"
 
 #include <slang-com-ptr.h>
 #include <slang.h>
@@ -11,18 +12,17 @@ namespace Dodo {
 
     class SlangCompiler {
       public:
-        enum class Target {
-            GLSL,
-            SPIRV,
-        };
-        SlangCompiler(Target target); // Init happens in constructor
-        ~SlangCompiler();             // Shutdown happens in destructor
+        SlangCompiler();
+        ~SlangCompiler();
 
-        ShaderSource CompileFile(const std::string& path);
-        ShaderSource CompileFromString(const std::string& source, const std::string& name);
+        ShaderAsset CompileFile(const std::string& path);
+        ShaderAsset CompileFromString(const std::string& source, const std::string& name);
 
       private:
-        ShaderSource CompileModule(slang::IModule* module);
+        ShaderAsset CompileModule(slang::IModule* module, const std::string& path, std::string slangSource);
+        ShaderStageBinary CompileEntryPoint(slang::IModule* module, slang::IEntryPoint* entryPoint);
+        static ShaderStage GetShaderStage(SlangStage stage);
+        static std::vector<uint32_t> BlobToSPIRV(slang::IBlob* code);
 
         Slang::ComPtr<slang::IGlobalSession> m_GlobalSession;
         Slang::ComPtr<slang::ISession> m_Session;

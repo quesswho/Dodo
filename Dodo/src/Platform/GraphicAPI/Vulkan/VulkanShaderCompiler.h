@@ -1,12 +1,12 @@
 #pragma once
 
 #include <Core/Common.h>
-#include <Core/Graphics/Pipeline/ShaderSource.h>
+#include <Core/Data/ShaderAsset.h>
 
 namespace Dodo::Platform {
     class VulkanShaderCompiler {
       public:
-        static uint Compile(const ShaderSource& source);
+        static uint Compile(const ShaderAsset& source);
 
       private:
         static uint CompileStage(const std::string& source);

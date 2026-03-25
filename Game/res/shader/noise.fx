@@ -1,12 +1,12 @@
 #shader fragment
 
-#version 330 core
+#version 420 core
 
 out vec4 pixel;
 
 in vec2 f_TexCoord;
 
-uniform sampler2D u_Texture;
+layout(binding = 0) uniform sampler2D u_Texture;
 
 uniform float u_Gamma;
 
@@ -73,7 +73,7 @@ float sumSimplex(vec2 v, int num_iterations, float persistence, float scale) {
 
 #shader vertex
 
-#version 330 core
+#version 420 core
 layout(location = 0) in vec2 a_Position;
 layout(location = 1) in vec2 a_TexCoord;
 

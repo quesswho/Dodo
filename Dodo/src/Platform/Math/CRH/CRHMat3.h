@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Core/Math/Vector/Vec3.h"
+#include <string.h>
 
-namespace Dodo { namespace Platform {
+namespace Dodo::Platform {
 
     // Column Major 3x3 matrix
     template <typename T = float>
@@ -208,6 +209,40 @@ namespace Dodo { namespace Platform {
                 mat.m_Elements[GetIndex(0, 2)], mat.m_Elements[GetIndex(1, 2)], mat.m_Elements[GetIndex(2, 2)]);
         }
 
+        static const CRHMat3x3 Inverse(const CRHMat3x3& mat)
+        {
+            const T a00 = mat.m_Elements[GetIndex(0, 0)];
+            const T a01 = mat.m_Elements[GetIndex(1, 0)];
+            const T a02 = mat.m_Elements[GetIndex(2, 0)];
+            const T a10 = mat.m_Elements[GetIndex(0, 1)];
+            const T a11 = mat.m_Elements[GetIndex(1, 1)];
+            const T a12 = mat.m_Elements[GetIndex(2, 1)];
+            const T a20 = mat.m_Elements[GetIndex(0, 2)];
+            const T a21 = mat.m_Elements[GetIndex(1, 2)];
+            const T a22 = mat.m_Elements[GetIndex(2, 2)];
+
+            const T c00 = a11 * a22 - a12 * a21;
+            const T c01 = -(a10 * a22 - a12 * a20);
+            const T c02 = a10 * a21 - a11 * a20;
+
+            const T c10 = -(a01 * a22 - a02 * a21);
+            const T c11 = a00 * a22 - a02 * a20;
+            const T c12 = -(a00 * a21 - a01 * a20);
+
+            const T c20 = a01 * a12 - a02 * a11;
+            const T c21 = -(a00 * a12 - a02 * a10);
+            const T c22 = a00 * a11 - a01 * a10;
+
+            const T determinant = a00 * c00 + a01 * c01 + a02 * c02;
+            if (determinant == T(0)) {
+                return CRHMat3x3(T(1));
+            }
+
+            const T invDet = T(1) / determinant;
+            return CRHMat3x3(c00 * invDet, c10 * invDet, c20 * invDet, c01 * invDet, c11 * invDet, c21 * invDet,
+                             c02 * invDet, c12 * invDet, c22 * invDet);
+        }
+
         static const CRHMat3x3 Translate(const Math::TVec2<T>& translation)
         {
             CRHMat3x3 result;
@@ -248,4 +283,4 @@ namespace Dodo { namespace Platform {
       private:
         static constexpr inline int GetIndex(int column, int row) { return (column * 3) + row; }
     };
-}} // namespace Dodo::Platform
+} // namespace Dodo::Platform

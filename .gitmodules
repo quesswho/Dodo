@@ -10,3 +10,6 @@
 [submodule "Dodo/lib/volk"]
 	path = Dodo/lib/volk
 	url = https://github.com/zeux/volk.git
+[submodule "Dodo/lib/SPIRV-Cross"]
+	path = Dodo/lib/SPIRV-Cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross.git

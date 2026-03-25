@@ -17,7 +17,13 @@ void EditorRenderer::RenderEntities(EditorWorld& world, const Math::FreeCamera& 
         for (auto mesh : model->GetMeshes()) {
             Ref<Material> mat = mesh->GetMaterial();
             mat->Bind(renderAPI);
-            renderAPI.SetDrawData({modelComponent.m_Transformation.m_Model});
+            const Math::Mat4& modelMatrix = modelComponent.m_Transformation.m_Model;
+            const Math::Mat3 model3x3(
+                Math::Vec3(modelMatrix.m_Columns[0].x, modelMatrix.m_Columns[0].y, modelMatrix.m_Columns[0].z),
+                Math::Vec3(modelMatrix.m_Columns[1].x, modelMatrix.m_Columns[1].y, modelMatrix.m_Columns[1].z),
+                Math::Vec3(modelMatrix.m_Columns[2].x, modelMatrix.m_Columns[2].y, modelMatrix.m_Columns[2].z));
+            renderAPI.SetDrawData(
+                {.model = modelMatrix, .normalMatrix = Math::Mat3::Transpose(Math::Mat3::Inverse(model3x3))});
             mesh->DrawGeometry(renderAPI);
         }
     }
@@ -28,5 +34,5 @@ void EditorRenderer::DrawScene(EditorScene* scene, const Math::FreeCamera& camer
 {
     auto& world = scene->GetWorld();
     RenderEntities(world, camera, scene->m_LightSystem, renderAPI, assets);
-    if (scene->m_SkyBox) scene->m_SkyBox->Draw(camera.GetViewMatrix(), renderAPI);
+    if (scene->m_SkyBox) scene->m_SkyBox->Draw(camera, renderAPI);
 }

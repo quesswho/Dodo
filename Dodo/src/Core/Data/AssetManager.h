@@ -6,8 +6,8 @@
 #include "Core/Graphics/CubeMap.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
 #include "Core/Graphics/Pipeline/PipelineDesc.h"
-#include "Core/Graphics/Pipeline/ShaderGenerator.h"
 #include "Core/Graphics/Pipeline/SlangCompiler.h"
+#include "Core/Graphics/Pipeline/SlangGenerator.h"
 #include "Core/Graphics/Scene/Mesh/MeshFactory.h"
 #include "Core/Graphics/Scene/Model.h"
 #include "MaterialLoader.h"
@@ -22,7 +22,7 @@ namespace Dodo {
 
     class AssetManager {
       private:
-        std::unordered_map<ShaderID, ShaderSource> m_Shaders;
+        std::unordered_map<ShaderID, ShaderAsset> m_Shaders;
         std::unordered_map<std::string, ShaderID> m_ShaderPathLookup;
         std::unordered_map<ShaderBuilderFlags, ShaderID>
             m_ShaderBuilderShaders; // Stores all shaders created by shaderbuilder
@@ -44,9 +44,11 @@ namespace Dodo {
 
         ShaderID LoadShader(
             ShaderBuilderFlags flags,
-            RenderAPI& renderAPI); // We will do something different here so that we do not need renderAPI
+            RenderAPI& renderAPI); // TODO: We will do something different here so that we do not need renderAPI
         ShaderID LoadShaderFromPath(const std::string& path);
-        ShaderID LoadShader(ShaderSource source);
+        ShaderID LoadShader(SlangSource source);
+        ShaderAsset& GetShaderAsset(ShaderID id); // This function is used when by the OpenGL backend to cache glsl code
+        const ShaderAsset& GetShaderAsset(ShaderID id) const;
 
         PipelineID CreatePipeline(const PipelineDesc& desc, RenderAPI& renderAPI);
         PipelineID CreatePipeline(ShaderBuilderFlags flags, RenderAPI& renderAPI);
@@ -64,6 +66,8 @@ namespace Dodo {
         bool HasPath(ModelID id) const { return m_ModelPath.find(id) != m_ModelPath.end(); }
 
       private:
+        ShaderAsset SlangSourceToAsset(const SlangSource& source);
+
         ModelLoader m_ModelLoader;
         MaterialLoader m_MaterialLoader;
         MeshFactory m_MeshFactory;

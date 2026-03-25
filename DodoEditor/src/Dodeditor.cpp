@@ -22,8 +22,9 @@ GameLayer::GameLayer(Application& app)
     FrameBufferProperties frameprop;
     frameprop.m_Width = app.m_Window->GetWindowProperties().m_Width;
     frameprop.m_Height = app.m_Window->GetWindowProperties().m_Height;
+    frameprop.m_SamplerProperties = SamplerProperties(SamplerFilter::MIN_MAG_LINEAR);
 
-    m_FrameBuffer = new FrameBuffer(frameprop);
+    m_FrameBuffer = std::make_shared<FrameBuffer>(frameprop);
 
     m_Renderer = new EditorRenderer();
     m_Scene = new EditorScene();
@@ -33,8 +34,7 @@ GameLayer::GameLayer(Application& app)
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    // Note: skyboxes projection matrix is not updated after this, so after resizing the skybox might look stretched
-    m_Scene->m_SkyBox = new Skybox(m_Camera->GetCamera().GetProjectionMatrix(), skyboxPath, assets, renderAPI);
+    m_Scene->m_SkyBox = new Skybox(skyboxPath, assets, renderAPI);
 
     m_Interface = new Interface(m_Scene);
 }
@@ -46,7 +46,6 @@ void GameLayer::SetScene(EditorScene* scene)
 
 GameLayer::~GameLayer()
 {
-    delete m_FrameBuffer;
     delete m_Camera;
     delete m_Scene;
     delete m_Interface;
@@ -54,7 +53,8 @@ GameLayer::~GameLayer()
 
 void GameLayer::Update(float elapsed)
 {
-    if (m_Interface->m_EditorProperties.m_ViewportInput) m_Camera->Update(elapsed);
+    if (m_Interface->m_EditorProperties.m_ViewportInput)
+        m_Camera->Update(Application::s_Application->GetInput(), elapsed);
 }
 
 void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
@@ -67,11 +67,9 @@ void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
     if (m_Interface->ViewportResize()) {
         m_Camera->Resize(m_Interface->m_ViewportState.width, m_Interface->m_ViewportState.height);
         m_FrameBuffer->Resize(m_Interface->m_ViewportState.width, m_Interface->m_ViewportState.height);
-
-        if (m_Scene->m_SkyBox != nullptr) m_Scene->m_SkyBox->m_Projection = m_Camera->GetProjectionMatrix();
     }
     DrawScene(renderAPI, assets);
-    m_Interface->EndViewport(m_FrameBuffer);
+    m_Interface->EndViewport(renderAPI, m_FrameBuffer);
     m_Interface->EndDraw();
 }
 
@@ -79,8 +77,7 @@ void GameLayer::DrawScene(RenderAPI& renderAPI, AssetManager& assets)
 {
     m_FrameBuffer->Bind();
 
-    m_Renderer->UpdateCamera(m_Camera);
-    m_Renderer->DrawScene(m_Scene, renderAPI, assets);
+    m_Renderer->DrawScene(m_Scene, m_Camera->GetCamera(), renderAPI, assets);
 
     renderAPI.DefaultFrameBuffer();
 }
@@ -117,7 +114,8 @@ void GameLayer::OnEvent(const Event& event)
     case EventType::MOUSE_PRESSED:
         break;
     case EventType::MOUSE_POSITION:
-        if (m_Interface->m_EditorProperties.m_ViewportInput) m_Camera->UpdateRotation();
+        if (m_Interface->m_EditorProperties.m_ViewportInput)
+            m_Camera->UpdateRotation(Application::s_Application->GetInput());
         break;
     }
 }

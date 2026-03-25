@@ -228,7 +228,7 @@ namespace Dodo {
                           "    float3 N = normalize(mul(u_NormalMatrix, float4(input.normal, 0.0f)).xyz);\n"
                           "    T = normalize(T - dot(T, N) * N);\n"
                           "    float3 B = cross(N, T);\n"
-                          "    float3x3 TBN = transpose(float3x3(T, B, N));\n"
+                          "    float3x3 TBN = float3x3(T, B, N);\n"
                           "    output.tangentCameraPos = mul(TBN, u_CameraPos);\n"
                           "    output.tangentFragPos = mul(TBN, output.fragPos);\n"
                           "    output.lightDirection = mul(TBN, normalize(-u_LightDir));\n");
@@ -249,6 +249,10 @@ namespace Dodo {
         }
 
         source.append("    return output;\n}\n\n");
+
+        /**
+         * Pixel shader
+         */
 
         source.append("[shader(\"fragment\")]\n");
         source.append("float4 fragmentMain(VertexOutput input) : SV_Target\n{\n");

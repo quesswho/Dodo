@@ -17,7 +17,7 @@ class ResourceManager {
     std::unordered_map<BlockType, ChunkPos> m_RightTexture;
 
   public:
-    ResourceManager(Dodo::AssetManager& assetManager);
+    ResourceManager(Dodo::AssetManager& assetManager, Dodo::RenderAPI& renderAPI);
 
     Ref<Dodo::IndexBuffer> m_FaceIBuffer;
 

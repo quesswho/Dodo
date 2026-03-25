@@ -2,18 +2,14 @@
 #include "pch.h"
 
 #include "Core/Application/Application.h"
-#include "Core/Graphics/Pipeline/ShaderCompiler.h"
-#include "Core/Graphics/Pipeline/ShaderParser.h"
-#include "Core/System/FileUtils.h"
 
 namespace Dodo {
 
-    AssetManager::AssetManager() : m_SlangCompiler(SlangCompiler::Target::GLSL)
+    AssetManager::AssetManager() : m_SlangCompiler()
     {
-        ShaderSource fallback = ShaderGenerator::GetFallbackShader().source;
-        m_Shaders.emplace(0, std::move(fallback));
-        m_Pipelines.emplace(0,
-                            Application::s_Application->m_RenderAPI->CreatePipeline(PipelineDesc{0}, m_Shaders.at(0)));
+        ShaderAsset fallbackAsset = SlangSourceToAsset(ShaderGenerator::GetFallbackShader());
+        m_Shaders.emplace(0, fallbackAsset);
+        m_Pipelines.emplace(0, Application::s_Application->m_RenderAPI->CreatePipeline(PipelineDesc{0}, *this));
     }
 
     AssetManager::~AssetManager()
@@ -26,13 +22,22 @@ namespace Dodo {
     {
         if (m_ShaderBuilderShaders.count(flags)) return m_ShaderBuilderShaders[flags];
 
-        GeneratedShaderSource source = ShaderGenerator::Generate(flags);
+        ShaderAsset asset = SlangSourceToAsset(ShaderGenerator::Generate(flags));
+        if (asset.stages.empty()) {
+            DD_ERR("Failed to compile generated slang shader for flags {}", flags);
+            return 0;
+        }
+
         ShaderID id = m_NextShaderID++;
         m_ShaderBuilderShaders.emplace(flags, id);
-        m_Shaders.emplace(id, std::move(source.source));
+        m_Shaders.emplace(id, std::move(asset));
         return id;
     }
 
+    /**
+     * Loads a slang shader from path.
+     * Returns 0 on fail
+     */
     ShaderID AssetManager::LoadShaderFromPath(const std::string& path)
     {
         if (m_ShaderPathLookup.count(path)) {
@@ -40,8 +45,11 @@ namespace Dodo {
             return m_ShaderPathLookup.at(path);
         }
 
-        ShaderSource source = path.ends_with(".slang") ? m_SlangCompiler.CompileFile(path)
-                                                       : ShaderParser::Parse(FileUtils::ReadTextFile(path.c_str()));
+        ShaderAsset source = m_SlangCompiler.CompileFile(path);
+        if (source.stages.empty()) {
+            DD_ERR("Failed to compile slang shader: {}", path);
+            return 0; // Intentionally returns id of fallback shader
+        }
 
         ShaderID id = m_NextShaderID++;
         m_ShaderPathLookup.emplace(path, id);
@@ -50,11 +58,33 @@ namespace Dodo {
         return id;
     }
 
-    ShaderID AssetManager::LoadShader(ShaderSource source)
+    ShaderID AssetManager::LoadShader(SlangSource source)
     {
+        ShaderAsset asset = SlangSourceToAsset(source);
+        if (asset.stages.empty()) {
+            DD_ERR("Failed to compile slang shader source: {}", source.name);
+            return 0;
+        }
+
         ShaderID id = m_NextShaderID++;
-        m_Shaders.emplace(id, std::move(source));
+        m_Shaders.emplace(id, std::move(asset));
         return id;
+    }
+
+    ShaderAsset& AssetManager::GetShaderAsset(ShaderID id)
+    {
+        auto it = m_Shaders.find(id);
+        if (it != m_Shaders.end()) return it->second;
+        DD_ERR("Trying to get shader asset that doesn't exist! Returning fallback shader instead. ID: {0}", id);
+        return m_Shaders.at(0);
+    }
+
+    const ShaderAsset& AssetManager::GetShaderAsset(ShaderID id) const
+    {
+        auto it = m_Shaders.find(id);
+        if (it != m_Shaders.end()) return it->second;
+        DD_ERR("Trying to get shader asset that doesn't exist! Returning fallback shader instead. ID: {0}", id);
+        return m_Shaders.at(0);
     }
 
     PipelineID AssetManager::CreatePipeline(const PipelineDesc& desc, RenderAPI& renderAPI)
@@ -65,7 +95,12 @@ namespace Dodo {
             return 0;
         }
 
-        Ref<Pipeline> pipeline = renderAPI.CreatePipeline(desc, shaderIt->second);
+        if (shaderIt->second.stages.empty()) {
+            DD_ERR("CreatePipeline: shader has no pipeline-compatible stages!");
+            return 0;
+        }
+
+        Ref<Pipeline> pipeline = renderAPI.CreatePipeline(desc, *this);
         PipelineID id = m_NextPipelineID++;
         m_Pipelines.emplace(id, pipeline);
         return id;
@@ -73,18 +108,15 @@ namespace Dodo {
 
     PipelineID AssetManager::CreatePipeline(ShaderBuilderFlags flags, RenderAPI& renderAPI)
     {
-        // Return existing pipeline if already created for these flags
         if (m_ShaderBuilderPipelines.count(flags)) {
             return m_ShaderBuilderPipelines.at(flags);
         }
 
         ShaderID shaderID = LoadShader(flags, renderAPI);
-        ShaderSource source = m_Shaders.at(shaderID);
-
         PipelineDesc desc;
         desc.shaderID = shaderID;
 
-        Ref<Pipeline> pipeline = renderAPI.CreatePipeline(desc, source);
+        Ref<Pipeline> pipeline = renderAPI.CreatePipeline(desc, *this);
         PipelineID pipelineID = m_NextPipelineID++;
         m_ShaderBuilderPipelines.emplace(flags, pipelineID);
         m_Pipelines.emplace(pipelineID, pipeline);
@@ -96,6 +128,30 @@ namespace Dodo {
         auto it = m_Pipelines.find(id);
         if (it != m_Pipelines.end()) return it->second;
         DD_ERR("Trying to get pipeline that doesn't exist! ID: {0}", id);
+        return nullptr;
+    }
+
+    MaterialID AssetManager::LoadMaterial(const std::string& path)
+    {
+        auto it = m_MaterialID.find(path);
+        if (it != m_MaterialID.end()) {
+            DD_WARN("Material already loaded: {0}", path);
+            return it->second;
+        }
+
+        Ref<Material> mat = m_MaterialLoader.LoadMaterial(path, *this, *Application::s_Application->m_RenderAPI);
+        MaterialID id = m_NextMaterialID++;
+
+        m_MaterialID.emplace(path, id);
+        m_Materials.emplace(id, std::move(mat));
+        return id;
+    }
+
+    Ref<Material> AssetManager::GetMaterial(MaterialID id)
+    {
+        auto it = m_Materials.find(id);
+        if (it != m_Materials.end()) return it->second;
+        DD_ERR("Trying to get material that doesn't exist! ID: {0}", id);
         return nullptr;
     }
 
@@ -131,7 +187,6 @@ namespace Dodo {
         switch (type) {
         case BuiltinModel::Cube: {
             std::vector<Mesh*> meshes;
-            // TODO: We should ideally have a fallback material stored in asset manager instead of creating a new one
             meshes.push_back(m_MeshFactory.CreateCube(std::make_shared<Material>(Material())));
             model = new Model(meshes);
             break;
@@ -163,27 +218,8 @@ namespace Dodo {
         return it->second;
     }
 
-    MaterialID AssetManager::LoadMaterial(const std::string& path)
+    ShaderAsset AssetManager::SlangSourceToAsset(const SlangSource& source)
     {
-        auto it = m_MaterialID.find(path);
-        if (it != m_MaterialID.end()) {
-            DD_WARN("Material already loaded: {0}", path);
-            return it->second;
-        }
-
-        Ref<Material> mat = m_MaterialLoader.LoadMaterial(path, *this, *Application::s_Application->m_RenderAPI);
-        MaterialID id = m_NextMaterialID++;
-
-        m_MaterialID.emplace(path, id);
-        m_Materials.emplace(id, std::move(mat));
-        return id;
-    }
-
-    Ref<Material> AssetManager::GetMaterial(MaterialID id)
-    {
-        auto it = m_Materials.find(id);
-        if (it != m_Materials.end()) return it->second;
-        DD_ERR("Trying to get material that doesn't exist! ID: {0}", id);
-        return nullptr;
+        return m_SlangCompiler.CompileFromString(source.source, source.name);
     }
 } // namespace Dodo

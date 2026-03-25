@@ -18,6 +18,7 @@ namespace Dodo::Platform {
         if (m_FrameBufferProperties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL) {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, m_FrameBufferProperties.m_Width, m_FrameBufferProperties.m_Height,
                          0, GL_RGB, GL_FLOAT, 0);
+            SetFilter(m_FrameBufferProperties.m_SamplerProperties.m_Filter);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_TextureID, 0);
 
             glGenRenderbuffers(1, &m_RenderBuffer);
@@ -28,6 +29,7 @@ namespace Dodo::Platform {
         } else if (m_FrameBufferProperties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_DEPTH) {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_FrameBufferProperties.m_Width,
                          m_FrameBufferProperties.m_Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+            SetFilter(m_FrameBufferProperties.m_SamplerProperties.m_Filter);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_TextureID, 0);
             glDrawBuffer(GL_NONE);
             glReadBuffer(GL_NONE);
@@ -41,6 +43,56 @@ namespace Dodo::Platform {
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    /**
+     * Unfortunately OpenGLSampler is not compatible with ImGui as far as I know. Therefore we must set the sampler
+     * filters directly in to the textures.
+     */
+    void OpenGLFrameBuffer::SetFilter(SamplerFilter filter)
+    {
+        switch (filter) {
+        case SamplerFilter::MIN_MAG_NEAREST:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            break;
+        case SamplerFilter::MIN_MAG_LINEAR:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            break;
+        case SamplerFilter::MIN_MAG_MIP_LINEAR:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            break;
+        case SamplerFilter::MIN_LINEAR_MAG_MIP_NEAREST:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            break;
+        case SamplerFilter::MIN_LINEAR_MAG_NEAREST_MIP_LINEAR:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            break;
+        case SamplerFilter::MIN_MAG_LINEAR_MIP_NEAREST:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            break;
+        case SamplerFilter::FILTER_MIN_MAG_MIP_NEAREST:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            break;
+        case SamplerFilter::FILTER_MIN_MAG_NEAREST_MIP_LINEAR:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            break;
+        case SamplerFilter::FILTER_MIN_NEAREST_MAG_LINEAR_MIP_NEAREST:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            break;
+        case SamplerFilter::FILTER_MIN_NEAREST_MAG_MIP_LINEAR:
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            break;
+        }
     }
 
     OpenGLFrameBuffer::~OpenGLFrameBuffer()

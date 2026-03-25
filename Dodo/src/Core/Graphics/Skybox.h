@@ -7,6 +7,7 @@
 #include "Core/Graphics/Pipeline/Pipeline.h"
 #include "Core/Graphics/RenderAPI.h"
 
+#include "Core/Math/Camera/FreeCamera.h"
 #include "Core/Math/Matrix/Mat4.h"
 
 namespace Dodo {
@@ -19,11 +20,9 @@ namespace Dodo {
         Ref<Pipeline> m_Shader;
 
       public:
-        Math::Mat4 m_Projection;
-        Skybox(const Math::Mat4& projection, std::vector<std::string> paths, AssetManager& assets,
-               RenderAPI& renderAPI);
+        Skybox(std::vector<std::string> paths, AssetManager& assets, RenderAPI& renderAPI);
         ~Skybox();
 
-        void Draw(const Math::Mat4& viewMatrix, RenderAPI& renderAPI) const;
+        void Draw(const Math::FreeCamera& camera, RenderAPI& renderAPI) const;
     };
 } // namespace Dodo

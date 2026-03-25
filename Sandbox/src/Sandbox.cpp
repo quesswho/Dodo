@@ -14,7 +14,7 @@ GameLayer::GameLayer(Application& app)
 
     // FPS camera containing view matrix
     m_Camera = new FreeCameraController(
-        Vec3(0.0f, 0.0f, 0.0f), -90.0f, 0.0f,
+        Vec3(0.0f, 0.0f, 15.0f), -90.0f, 0.0f,
         (float)Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferWidth /
             (float)Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferHeight,
         0.04f, 10.0f);
@@ -25,7 +25,7 @@ GameLayer::GameLayer(Application& app)
     frameprop.m_Height = Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferHeight;
     frameprop.m_FrameBufferType = FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL;
 
-    m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.fx", renderAPI, assets);
+    m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.slang", renderAPI, assets);
     m_PostEffectData.gamma = 1.0f;
     m_PostEffect->SetEffectData(m_PostEffectData);
 
@@ -45,7 +45,7 @@ GameLayer::GameLayer(Application& app)
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    m_Scene->m_SkyBox = new Skybox(m_Camera->GetCamera().GetProjectionMatrix(), skyboxPath, assets, renderAPI);
+    m_Scene->m_SkyBox = new Skybox(skyboxPath, assets, renderAPI);
     DD_INFO("Finished loading skybox");
     m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(Vec3(0.2f, -0.5f, -0.5f));
     m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;

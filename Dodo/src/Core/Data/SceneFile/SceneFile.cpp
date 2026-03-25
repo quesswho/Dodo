@@ -79,11 +79,7 @@ namespace Dodo {
             return nullptr;
         }
 
-        Scene* result =
-            new Scene(new Math::FreeCamera(Math::Vec3(0.0f, 0.0f, 20.0f),
-                                           (float)Application::s_Application->m_RenderAPI->m_ViewportWidth /
-                                               (float)Application::s_Application->m_RenderAPI->m_ViewportHeight,
-                                           0.04f, 10.0f));
+        Scene* result = new Scene();
 
         EntityID currentEntityId = -1;
 
@@ -99,8 +95,6 @@ namespace Dodo {
             // Entity header: Entity:0
             if (section.find("Entity:") == 0) {
                 // Currently unused
-                // EntityID fileEntityId = (EntityID)std::stoi(section.substr(7));
-
                 World& world = result->GetWorld();
                 currentEntityId = world.CreateEntity();
                 continue;
@@ -124,7 +118,7 @@ namespace Dodo {
                 result->GetWorld().AddComponent<ModelComponent>(currentEntityId, ModelComponent(id, transform));
                 continue;
             } else {
-                // Skip unknown sections (e.g. [Editor] tail) gracefully
+                // Skip unknown sections (e.g. [Editor] tail)
                 while (m_File.HasMore() && !m_File.IsSection())
                     m_File.SkipLine();
             }

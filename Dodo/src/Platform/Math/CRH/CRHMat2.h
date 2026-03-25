@@ -2,7 +2,7 @@
 
 #include "Core/Math/Vector/Vec2.h"
 
-namespace Dodo { namespace Platform {
+namespace Dodo::Platform {
 
     // Column Major 2x2 matrix
     template <typename T = float>
@@ -163,4 +163,4 @@ namespace Dodo { namespace Platform {
       private:
         static constexpr inline int GetIndex(int column, int row) { return (column * 2) + row; }
     };
-}} // namespace Dodo::Platform
+} // namespace Dodo::Platform

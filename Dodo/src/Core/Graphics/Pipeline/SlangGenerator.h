@@ -2,8 +2,10 @@
 
 #include <Core/Common.h>
 
-#include "Core/Graphics/Pipeline/Pipeline.h"
-#include "Core/Graphics/Pipeline/ShaderSource.h"
+#include "ShaderSource.h"
+
+#include <string>
+#include <type_traits>
 
 namespace Dodo {
 
@@ -25,11 +27,16 @@ namespace Dodo {
         ShaderBuilderFlagShadowMap = 1 << 13,
     };
 
-    // TEMPORARY //
     inline ShaderBuilderFlags operator|(ShaderBuilderFlags a, ShaderBuilderFlags b) noexcept
     {
         using U = std::underlying_type_t<ShaderBuilderFlags>;
         return static_cast<ShaderBuilderFlags>(static_cast<U>(a) | static_cast<U>(b));
+    }
+
+    inline ShaderBuilderFlags operator&(ShaderBuilderFlags a, ShaderBuilderFlags b) noexcept
+    {
+        using U = std::underlying_type_t<ShaderBuilderFlags>;
+        return static_cast<ShaderBuilderFlags>(static_cast<U>(a) & static_cast<U>(b));
     }
 
     inline ShaderBuilderFlags& operator|=(ShaderBuilderFlags& a, ShaderBuilderFlags b) noexcept
@@ -38,18 +45,11 @@ namespace Dodo {
         return a;
     }
 
-    struct GeneratedShaderSource {
-        ShaderSource source;
-        ShaderBuilderFlags flags;
+    class SlangGenerator {
+      public:
+        static SlangSource Generate(ShaderBuilderFlags flags);
+        static SlangSource GetFallbackShader();
     };
 
-    namespace Platform {
-
-        class OpenGLShaderGenerator {
-          public:
-            static GeneratedShaderSource Generate(const ShaderBuilderFlags flags);
-
-            static GeneratedShaderSource GetFallbackShader();
-        };
-    } // namespace Platform
+    using ShaderGenerator = SlangGenerator;
 } // namespace Dodo

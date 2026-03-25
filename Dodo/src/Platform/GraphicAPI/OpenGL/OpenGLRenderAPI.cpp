@@ -14,7 +14,11 @@ namespace Dodo::Platform {
 
     OpenGLRenderAPI::~OpenGLRenderAPI()
     {
+        if (m_ImGuiLoaded) {
+            ImGui_ImplOpenGL3_Shutdown();
+        }
         glDeleteBuffers(1, &m_FrameUBO);
+        glDeleteBuffers(1, &m_ModelUBO);
         glDeleteBuffers(1, &m_PushConstantUBO);
         gladLoaderUnloadGL();
     }
@@ -52,6 +56,7 @@ namespace Dodo::Platform {
         if (winprop.m_Settings.imgui) {
             m_Context.InitializeImGui();
             ImGui_ImplOpenGL3_Init();
+            m_ImGuiLoaded = true;
         }
 
         // Create frame UBO
@@ -61,11 +66,18 @@ namespace Dodo::Platform {
         glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_FrameUBO); // Bind to slot 0
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        // Create push constant UBO (binding 1, 128 bytes max)
+        // Create model UBO
+        glGenBuffers(1, &m_ModelUBO);
+        glBindBuffer(GL_UNIFORM_BUFFER, m_ModelUBO);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(DrawDataUBO), nullptr, GL_DYNAMIC_DRAW);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 1, m_ModelUBO); // Bind to slot 1
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        // Create push constant UBO
         glGenBuffers(1, &m_PushConstantUBO);
         glBindBuffer(GL_UNIFORM_BUFFER, m_PushConstantUBO);
         glBufferData(GL_UNIFORM_BUFFER, 128, nullptr, GL_DYNAMIC_DRAW); // 128 byte Vulkan guaranteed min
-        glBindBufferBase(GL_UNIFORM_BUFFER, 1, m_PushConstantUBO);      // binding point 1
+        glBindBufferBase(GL_UNIFORM_BUFFER, 2, m_PushConstantUBO);      // binding point 2
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         return RenderInitError(RenderInitStatus::Success, "");
@@ -125,21 +137,17 @@ namespace Dodo::Platform {
         glBindBuffer(GL_UNIFORM_BUFFER, m_FrameUBO);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(FrameData), &uboData);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-        /*GLint uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_LightCamera");
-        glUniformMatrix4fv(uLoc, 1, GL_FALSE, &data.lightCamera.m_Elements[0]);
-        uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_LightDir");
-        glUniform3f(uLoc, data.lightDir.x, data.lightDir.y, data.lightDir.z);
-        uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_Camera");
-        glUniformMatrix4fv(uLoc, 1, GL_FALSE, &data.camera.m_Elements[0]);
-        uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_CameraPos");
-        glUniform3f(uLoc, data.cameraPos.x, data.cameraPos.y, data.cameraPos.z);*/
     }
 
     void OpenGLRenderAPI::SetDrawData(const DrawData& data)
     {
-        GLint uLoc = glGetUniformLocation(m_CurrentPipelineID, "u_Model");
-        glUniformMatrix4fv(uLoc, 1, GL_FALSE, &data.model.m_Elements[0]);
+        DrawDataUBO uboData{};
+        uboData.model = data.model;
+        uboData.normalMatrix = Math::Mat4(data.normalMatrix);
+
+        glBindBuffer(GL_UNIFORM_BUFFER, m_ModelUBO);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(DrawDataUBO), &uboData);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
 
     void OpenGLRenderAPI::DefaultFrameBuffer() const
@@ -163,9 +171,9 @@ namespace Dodo::Platform {
         SetViewport(width, height);
     }
 
-    Ref<Pipeline> OpenGLRenderAPI::CreatePipeline(const PipelineDesc& desc, const ShaderSource& source)
+    Ref<Pipeline> OpenGLRenderAPI::CreatePipeline(const PipelineDesc& desc, AssetManager& assets)
     {
-        uint program = OpenGLShaderCompiler::Compile(source);
+        uint program = OpenGLShaderCompiler::Compile(desc.shaderID, assets);
 
         return std::make_shared<Pipeline>(desc, program);
     }

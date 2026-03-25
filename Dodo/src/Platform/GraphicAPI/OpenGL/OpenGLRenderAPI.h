@@ -9,7 +9,6 @@
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
 #include "Core/Graphics/Pipeline/PipelineDesc.h"
-#include "Core/Graphics/Pipeline/ShaderSource.h"
 #include "Core/Graphics/RenderAPITypes.h"
 
 #include <glad/gl.h>
@@ -22,6 +21,10 @@ using OpenGLContext = Dodo::Platform::WGLContext;
 #include "GLFWContext.h"
 using OpenGLContext = Dodo::Platform::GLFWContext;
 #endif
+
+namespace Dodo {
+    class AssetManager;
+}
 
 namespace Dodo::Platform {
     class OpenGLRenderAPI {
@@ -62,7 +65,7 @@ namespace Dodo::Platform {
         void SetViewport(uint width, uint height);
         void SetViewport(uint width, uint height, uint posX, uint posY);
 
-        Ref<Pipeline> CreatePipeline(const PipelineDesc& desc, const ShaderSource& source);
+        Ref<Pipeline> CreatePipeline(const PipelineDesc& desc, AssetManager& assets);
 
         inline const char* GetAPIName() const { return "OpenGL"; }
         int CurrentVRamUsage() const
@@ -83,9 +86,17 @@ namespace Dodo::Platform {
         bool m_CullingDefault;
 
       private:
+        struct DrawDataUBO { // This struct is padded to stb140
+            Math::Mat4 model;
+            Math::Mat4 normalMatrix; // Note: This is a padded mat3
+        };
+
         uint m_CurrentPipelineID;
         uint m_FrameUBO = 0;
+        uint m_ModelUBO = 0;
         uint m_PushConstantUBO = 0;
+
+        bool m_ImGuiLoaded = false;
 
         int m_Version;
         NativeWindowHandle m_Handle;

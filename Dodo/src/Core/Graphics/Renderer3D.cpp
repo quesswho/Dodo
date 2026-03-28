@@ -5,50 +5,9 @@
 
 namespace Dodo {
 
-    static SlangSource s_ShadowShader = {.name = "ShadowShader", .source = R"(
-[[vk::binding(0, 0)]] cbuffer FrameData : register(b0)
-{
-    float4x4 u_Camera;
-    float4x4 u_LightCamera;
-    float3 u_LightDir;
-    float u_FramePadding0;
-    float3 u_CameraPos;
-    float u_FramePadding1;
-};
-
-[[vk::binding(1, 0)]] cbuffer ModelData : register(b1)
-{
-    float4x4 u_Model;
-};
-
-struct VertexInput
-{
-    float3 position : POSITION;
-};
-
-struct VertexOutput
-{
-    float4 position : SV_Position;
-};
-
-[shader("vertex")]
-VertexOutput vertexMain(VertexInput input)
-{
-    VertexOutput output;
-    output.position = mul(u_LightCamera, mul(u_Model, float4(input.position, 1.0f)));
-    return output;
-}
-
-[shader("fragment")]
-float4 fragmentMain(VertexOutput input) : SV_Target
-{
-    return float4(1.0f, 1.0f, 1.0f, 1.0f);
-}
-    )"};
-
     Renderer3D::Renderer3D(RenderAPI& renderAPI, AssetManager& assets) : m_ShadowMap(new ShadowMap())
     {
-        ShaderID id = assets.LoadShader(s_ShadowShader);
+        ShaderID id = assets.LoadShaderFromPath("res/shader/builtin/Passes/Shadow.slang");
         PipelineDesc shadowPipelineDesc;
         shadowPipelineDesc.shaderID = id;
         shadowPipelineDesc.culling = CullMode::Front;

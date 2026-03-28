@@ -10,9 +10,8 @@ namespace Dodo {
         ShaderID id = assets.LoadShaderFromPath(path);
         PipelineDesc pipelineDesc;
         pipelineDesc.shaderID = id;
-        pipelineDesc.depthTest = false;
-        pipelineDesc.culling = false;
-        pipelineDesc.backfaceCull = false;
+        pipelineDesc.depthMode = DepthMode::None;
+        pipelineDesc.culling = CullMode::None;
         PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
         m_Shader = assets.GetPipeline(pipelineID);
 

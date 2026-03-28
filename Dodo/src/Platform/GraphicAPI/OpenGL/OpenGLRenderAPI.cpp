@@ -89,25 +89,77 @@ namespace Dodo::Platform {
         glUseProgram(pipeline->m_ShaderID);
 
         // Apply pipeline state from desc
-        if (pipeline->m_Desc.depthTest) {
-            glEnable(GL_DEPTH_TEST);
-            glDepthFunc(GL_NEVER + (uint)pipeline->m_Desc.depthMode);
-        } else {
+        switch (pipeline->m_Desc.depthMode) {
+        case DepthMode::None:
             glDisable(GL_DEPTH_TEST);
+            break;
+        case DepthMode::Never:
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_NEVER);
+            break;
+        case DepthMode::Less:
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_LESS);
+            break;
+        case DepthMode::Equal:
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_EQUAL);
+            break;
+        case DepthMode::LessEqual:
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_LEQUAL);
+            break;
+        case DepthMode::Greater:
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_GREATER);
+            break;
+        case DepthMode::NotEqual:
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_NOTEQUAL);
+            break;
+        case DepthMode::GreaterEqual:
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_GEQUAL);
+            break;
+        case DepthMode::Always:
+            glEnable(GL_DEPTH_TEST);
+            glDepthFunc(GL_ALWAYS);
+            break;
         }
 
-        if (pipeline->m_Desc.blending) {
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glEnable(GL_BLEND);
-        } else {
+        switch (pipeline->m_Desc.blendMode) {
+        case BlendMode::None:
             glDisable(GL_BLEND);
+            break;
+        case BlendMode::Opaque:
+            glDisable(GL_BLEND);
+            break;
+        case BlendMode::AlphaBlend:
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            break;
+        case BlendMode::Additive:
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            break;
+        case BlendMode::Multiply:
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_DST_COLOR, GL_ZERO);
+            break;
         }
 
-        if (pipeline->m_Desc.culling) {
-            glEnable(GL_CULL_FACE);
-            glCullFace(pipeline->m_Desc.backfaceCull ? GL_BACK : GL_FRONT);
-        } else {
+        switch (pipeline->m_Desc.culling) {
+        case CullMode::None:
             glDisable(GL_CULL_FACE);
+            break;
+        case CullMode::Back:
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+            break;
+        case CullMode::Front:
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
+            break;
         }
 
         if (pipeline->m_Desc.stencilTest) {

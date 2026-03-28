@@ -51,8 +51,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target
         ShaderID id = assets.LoadShader(s_ShadowShader);
         PipelineDesc shadowPipelineDesc;
         shadowPipelineDesc.shaderID = id;
-        shadowPipelineDesc.culling = true;
-        shadowPipelineDesc.backfaceCull = false;
+        shadowPipelineDesc.culling = CullMode::Front;
         PipelineID shadowPipelineID = assets.CreatePipeline(shadowPipelineDesc, renderAPI);
         m_ShadowMapMaterial = std::make_shared<Material>(assets.GetPipeline(shadowPipelineID));
     }

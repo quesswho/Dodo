@@ -15,6 +15,7 @@ namespace Dodo {
         slang::SessionDesc sessionDesc = {};
         sessionDesc.targets = &targetDesc;
         sessionDesc.targetCount = 1;
+
         // Default to column-major layout to match the engine's matrix implementation
         sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
 

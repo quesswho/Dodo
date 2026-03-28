@@ -35,9 +35,8 @@ namespace Dodo {
                                         renderAPI);
         PipelineDesc pipelineDesc;
         pipelineDesc.shaderID = id;
-        pipelineDesc.depthMode = DepthComparisonMethod::LESS_EQUAL;
-        pipelineDesc.culling = false;
-        pipelineDesc.backfaceCull = false;
+        pipelineDesc.depthMode = DepthMode::LessEqual;
+        pipelineDesc.culling = CullMode::None;
         PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
         m_Shader = assets.GetPipeline(pipelineID);
     }

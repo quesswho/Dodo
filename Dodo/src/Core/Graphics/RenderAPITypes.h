@@ -3,18 +3,6 @@
 #include "Core/Math/Maths.h"
 #include <string>
 namespace Dodo {
-    enum class DepthComparisonMethod {
-        NEVER,
-        LESS,
-        EQUAL,
-        LESS_EQUAL,
-        GREATER,
-        NOT_EQUAL,
-        GREATER_EQUAL,
-        ALWAYS,
-        DEFAULT = LESS
-    };
-
     enum class RenderInitStatus {
         Success,
         Failed

@@ -1,3 +1,5 @@
+// Uniforms.slang
+
 // Frame-level uniforms (uploaded once per frame)
 [[vk::binding(0, 0)]] cbuffer FrameData : register(b0)
 {

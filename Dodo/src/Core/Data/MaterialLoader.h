@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Graphics/Material/Material.h"
-#include "Core/Graphics/Pipeline/SlangGenerator.h"
+#include "Core/Graphics/Material/MaterialFeatures.h"
 
 #include <filesystem>
 
@@ -18,7 +18,7 @@ namespace Dodo {
                                    RenderAPI& renderAPI);
 
       private:
-        Ref<Texture> LoadTextureFromMaterial(aiMaterial* material, int type, ShaderBuilderFlags& outFlags,
+        Ref<Texture> LoadTextureFromMaterial(aiMaterial* material, int type, MaterialFeatures& features,
                                              const std::filesystem::path& modelDir);
     };
 } // namespace Dodo

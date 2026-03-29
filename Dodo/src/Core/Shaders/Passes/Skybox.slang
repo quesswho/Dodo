@@ -1,3 +1,4 @@
+// Skybox.slang
 #include "../Common/Uniforms.slang"
 
 [[vk::binding(0, 1)]] SamplerCube<float4> cubeMapTexture : register(t0) : register(s0);
@@ -11,8 +12,8 @@ struct VertexInput
 // Output from vertex shader
 struct VertexOutput
 {
-    float4 position : SV_Position;
-    float3 fragPos;
+    float4 positionSS : SV_Position;
+    float3 positionWS;
     float3 texCoord;
 };
 
@@ -20,10 +21,10 @@ struct VertexOutput
 VertexOutput vertexMain(VertexInput input)
 {
     VertexOutput output;
-    output.fragPos = mul(u_Model, float4(input.position, 1.0f)).xyz;
+    output.positionWS = mul(u_Model, float4(input.position, 1.0f)).xyz;
     output.texCoord = input.position;
-    float4 clipPos = mul(u_Camera, mul(u_Model, float4(input.position, 1.0f)));
-    output.position = float4(clipPos.xy, clipPos.w, clipPos.w);
+    float4 clipPos = mul(u_Camera, float4(output.positionWS, 1.0f));
+    output.positionSS = float4(clipPos.xy, clipPos.w, clipPos.w);
     return output;
 }
 

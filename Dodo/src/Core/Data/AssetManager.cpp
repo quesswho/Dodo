@@ -7,7 +7,7 @@ namespace Dodo {
 
     AssetManager::AssetManager() : m_SlangCompiler()
     {
-        ShaderAsset fallbackAsset = SlangSourceToAsset(ShaderGenerator::GetFallbackShader());
+        ShaderAsset fallbackAsset = m_SlangCompiler.CompileFile("res/shader/builtin/Common/Fallback.slang");
         m_Shaders.emplace(0, fallbackAsset);
         m_Pipelines.emplace(0, Application::s_Application->m_RenderAPI->CreatePipeline(PipelineDesc{0}, *this));
     }
@@ -16,22 +16,6 @@ namespace Dodo {
     {
         for (auto& model : m_Models)
             delete model.second;
-    }
-
-    ShaderID AssetManager::LoadShader(ShaderBuilderFlags flags, RenderAPI& renderAPI)
-    {
-        if (m_ShaderBuilderShaders.count(flags)) return m_ShaderBuilderShaders[flags];
-
-        ShaderAsset asset = SlangSourceToAsset(ShaderGenerator::Generate(flags));
-        if (asset.stages.empty()) {
-            DD_ERR("Failed to compile generated slang shader for flags {}", flags);
-            return 0;
-        }
-
-        ShaderID id = m_NextShaderID++;
-        m_ShaderBuilderShaders.emplace(flags, id);
-        m_Shaders.emplace(id, std::move(asset));
-        return id;
     }
 
     /**
@@ -106,19 +90,19 @@ namespace Dodo {
         return id;
     }
 
-    PipelineID AssetManager::CreatePipeline(ShaderBuilderFlags flags, RenderAPI& renderAPI)
+    PipelineID AssetManager::CreatePipeline(MaterialFeatures features, RenderAPI& renderAPI)
     {
-        if (m_ShaderBuilderPipelines.count(flags)) {
-            return m_ShaderBuilderPipelines.at(flags);
+        if (m_ShaderBuilderPipelines.count(features)) {
+            return m_ShaderBuilderPipelines.at(features);
         }
 
-        ShaderID shaderID = LoadShader(flags, renderAPI);
+        ShaderID shaderID = LoadShaderFromPath("res/shader/builtin/Passes/ForwardLit.slang");
         PipelineDesc desc;
         desc.shaderID = shaderID;
 
         Ref<Pipeline> pipeline = renderAPI.CreatePipeline(desc, *this);
         PipelineID pipelineID = m_NextPipelineID++;
-        m_ShaderBuilderPipelines.emplace(flags, pipelineID);
+        m_ShaderBuilderPipelines.emplace(features, pipelineID);
         m_Pipelines.emplace(pipelineID, pipeline);
         return pipelineID;
     }

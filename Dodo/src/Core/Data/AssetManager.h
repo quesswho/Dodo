@@ -7,7 +7,7 @@
 #include "Core/Graphics/Pipeline/Pipeline.h"
 #include "Core/Graphics/Pipeline/PipelineDesc.h"
 #include "Core/Graphics/Pipeline/SlangCompiler.h"
-#include "Core/Graphics/Pipeline/SlangGenerator.h"
+#include "Core/Graphics/Pipeline/ShaderSource.h"
 #include "Core/Graphics/Scene/Mesh/MeshFactory.h"
 #include "Core/Graphics/Scene/Model.h"
 #include "MaterialLoader.h"
@@ -24,11 +24,10 @@ namespace Dodo {
       private:
         std::unordered_map<ShaderID, ShaderAsset> m_Shaders;
         std::unordered_map<std::string, ShaderID> m_ShaderPathLookup;
-        std::unordered_map<ShaderBuilderFlags, ShaderID>
-            m_ShaderBuilderShaders; // Stores all shaders created by shaderbuilder
+        std::unordered_map<MaterialFeatures, ShaderID> m_ShaderBuilderShaders;
 
         std::unordered_map<PipelineID, Ref<Pipeline>> m_Pipelines;
-        std::unordered_map<ShaderBuilderFlags, PipelineID> m_ShaderBuilderPipelines;
+        std::unordered_map<MaterialFeatures, PipelineID> m_ShaderBuilderPipelines;
 
         std::unordered_map<MaterialID, Ref<Material>> m_Materials;
         std::unordered_map<std::string, MaterialID> m_MaterialID;
@@ -42,16 +41,13 @@ namespace Dodo {
         AssetManager();
         ~AssetManager();
 
-        ShaderID LoadShader(
-            ShaderBuilderFlags flags,
-            RenderAPI& renderAPI); // TODO: We will do something different here so that we do not need renderAPI
         ShaderID LoadShaderFromPath(const std::string& path);
         ShaderID LoadShader(SlangSource source);
         ShaderAsset& GetShaderAsset(ShaderID id); // This function is used when by the OpenGL backend to cache glsl code
         const ShaderAsset& GetShaderAsset(ShaderID id) const;
 
         PipelineID CreatePipeline(const PipelineDesc& desc, RenderAPI& renderAPI);
-        PipelineID CreatePipeline(ShaderBuilderFlags flags, RenderAPI& renderAPI);
+        PipelineID CreatePipeline(MaterialFeatures features, RenderAPI& renderAPI);
         Ref<Pipeline> GetPipeline(PipelineID id);
         Ref<Pipeline> GetFallbackPipeline() const { return m_Pipelines.at(0); }
 

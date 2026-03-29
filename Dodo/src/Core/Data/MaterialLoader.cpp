@@ -8,9 +8,9 @@
 namespace Dodo {
     Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, AssetManager& assets, RenderAPI& renderAPI)
     {
-        ShaderID id = assets.LoadShader(ShaderBuilderFlags::ShaderBuilderFlagBasicTexture, renderAPI);
+        ShaderID shaderID = assets.LoadShaderFromPath("res/shader/builtin/Passes/ForwardLit.slang");
         PipelineDesc pipelineDesc;
-        pipelineDesc.shaderID = id;
+        pipelineDesc.shaderID = shaderID;
         PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
         return std::make_shared<Material>(
             assets.GetPipeline(pipelineID), std::make_shared<Texture>(path),
@@ -20,7 +20,7 @@ namespace Dodo {
     Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, aiMaterial* aiMat, AssetManager& assets,
                                                RenderAPI& renderAPI)
     {
-        ShaderBuilderFlags flags = ShaderBuilderFlagShadowMap;
+        MaterialFeatures flags = MaterialFeatures::None;
         std::filesystem::path modelDir = std::filesystem::path(path).parent_path();
 
         Ref<Material> material = std::make_shared<Material>();
@@ -59,7 +59,10 @@ namespace Dodo {
             return std::make_shared<Material>(); // fallback
         }
 
-        PipelineID pipelineID = assets.CreatePipeline(flags, renderAPI);
+        ShaderID shaderID = assets.LoadShaderFromPath("res/shader/builtin/Passes/ForwardLit.slang");
+        PipelineDesc pipelineDesc;
+        pipelineDesc.shaderID = shaderID;
+        PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
         Ref<Pipeline> shader = assets.GetPipeline(pipelineID);
         if (!shader) DD_WARN("Could not create shader");
 
@@ -70,7 +73,7 @@ namespace Dodo {
     }
 
     Ref<Texture> MaterialLoader::LoadTextureFromMaterial(aiMaterial* material, int type,
-                                                         ShaderBuilderFlags& shaderFlags,
+                                                         MaterialFeatures& features,
                                                          const std::filesystem::path& modelDir)
     {
         aiTextureType typeEnum = static_cast<aiTextureType>(type);
@@ -80,20 +83,20 @@ namespace Dodo {
         }
         switch (type) {
         case aiTextureType_DIFFUSE:
-            shaderFlags |= ShaderBuilderFlagDiffuseMap;
+            features |= MaterialFeatures::AlbedoMap;
             break;
         case aiTextureType_SPECULAR:
-            shaderFlags |= ShaderBuilderFlagSpecularMap;
+            features |= MaterialFeatures::SpecularMap;
             break;
         case aiTextureType_NORMALS:
         case aiTextureType_DISPLACEMENT:
-            shaderFlags |= ShaderBuilderFlagNormalMap;
+            features |= MaterialFeatures::NormalMap;
             break;
         default:
             break;
         }
         std::string rawPath = str.C_Str();
-        std::replace(rawPath.begin(), rawPath.end(), '\\', '/'); /// Fix windows generated paths
+        std::replace(rawPath.begin(), rawPath.end(), '\\', '/'); // Fix windows generated paths
         std::filesystem::path texturePath = modelDir / rawPath;
 
         DD_INFO("Texture: {}", texturePath.string());

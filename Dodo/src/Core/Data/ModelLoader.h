@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/Graphics/Pipeline/SlangGenerator.h"
 #include "Core/Graphics/Scene/Model.h"
+#include "Core/Graphics/Material/MaterialFeatures.h"
 
 struct aiMesh;
 
@@ -28,16 +28,16 @@ namespace Dodo {
         };
 
         struct MaterialData {
-            MaterialData(std::unordered_map<const char*, uint> textureInfo, ShaderBuilderFlags flags)
+            MaterialData(std::unordered_map<const char*, uint> textureInfo, MaterialFeatures flags)
                 : m_TextureInfo(textureInfo), m_Flags(flags)
             {}
             std::unordered_map<const char*, uint> m_TextureInfo;
-            ShaderBuilderFlags m_Flags;
+            MaterialFeatures m_Flags;
         };
 
         struct ModelData {
             ModelData(std::vector<Vertex> vertices, std::vector<uint> indices,
-                      std::unordered_map<const char*, uint> textureInfo, ShaderBuilderFlags flags)
+                      std::unordered_map<const char*, uint> textureInfo, MaterialFeatures flags)
                 : m_MeshData(new MeshData(vertices, indices)), m_MaterialData(new MaterialData(textureInfo, flags))
             {}
 

@@ -35,7 +35,7 @@ namespace Dodo {
         Ref<TextureSampler> GetSampler() const { return m_Sampler; }
 
         void Bind(RenderAPI& renderAPI) const;
-
+        
       private:
         Ref<Pipeline> m_Shader;
         std::unordered_map<uint, Ref<Texture>> m_Textures;

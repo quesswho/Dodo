@@ -7,7 +7,7 @@ using namespace Dodo;
 
 class EditorRenderer {
   public:
-    EditorRenderer() = default;
+    EditorRenderer(RenderAPI& renderAPI, AssetManager& assets) : m_Renderer3D(renderAPI, assets) {};
 
     ~EditorRenderer() = default;
 
@@ -15,4 +15,7 @@ class EditorRenderer {
                         RenderAPI& renderAPI, AssetManager& assets);
 
     void DrawScene(EditorScene* scene, const Math::FreeCamera& camera, RenderAPI& renderAPI, AssetManager& assets);
+
+  private:
+    Renderer3D m_Renderer3D;
 };

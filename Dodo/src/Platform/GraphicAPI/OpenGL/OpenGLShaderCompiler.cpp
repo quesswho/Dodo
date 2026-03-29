@@ -27,8 +27,6 @@ namespace Dodo::Platform {
                 stageSource.glsl = TranslateSPIRVToGLSL(stageSource);
             }
 
-            DD_INFO("{}", stageSource.glsl);
-
             const std::string& glslSource = stageSource.glsl;
             if (glslSource.empty()) {
                 DD_ERR("OpenGL shader stage has no GLSL source and SPIR-V translation failed.");

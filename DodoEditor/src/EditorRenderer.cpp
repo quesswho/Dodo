@@ -32,8 +32,8 @@ void EditorRenderer::RenderEntities(EditorWorld& world, const Math::FreeCamera& 
 void EditorRenderer::DrawScene(EditorScene* scene, const Math::FreeCamera& camera, RenderAPI& renderAPI,
                                AssetManager& assets)
 {
-    //Dodo::Scene* runtimeScene = &scene->GetRuntimeScene();
-    //m_Renderer3D.DrawShadowedScene(runtimeScene, camera, renderAPI, assets);
+    // Dodo::Scene* runtimeScene = &scene->GetRuntimeScene();
+    // m_Renderer3D.DrawShadowedScene(runtimeScene, camera, renderAPI, assets);
     auto& world = scene->GetWorld();
     RenderEntities(world, camera, scene->m_LightSystem, renderAPI, assets);
     if (scene->m_SkyBox) scene->m_SkyBox->Draw(camera, renderAPI);

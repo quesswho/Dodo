@@ -5,7 +5,7 @@
 #include <chrono>
 #include <time.h>
 
-namespace Dodo { namespace Math {
+namespace Dodo::Math {
 
     //
     // (P)seudo (R)andom (N)umber (G)enerator
@@ -63,4 +63,4 @@ namespace Dodo { namespace Math {
         // Rotate left
         static constexpr uint64 RotL(const uint64 x, const int s) noexcept { return (x << s) | (x >> (64 - s)); }
     };
-}} // namespace Dodo::Math
+} // namespace Dodo::Math

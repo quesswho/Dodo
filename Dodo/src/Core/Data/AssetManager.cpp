@@ -175,6 +175,13 @@ namespace Dodo {
             model = new Model(meshes);
             break;
         }
+        case BuiltinModel::Terrain: {
+            std::vector<Mesh*> terrainMeshes;
+            terrainMeshes.push_back(
+                m_MeshFactory.CreateTerrain(TerrainConfig(), std::make_shared<Material>(Material())));
+            model = new Model(terrainMeshes);
+            break;
+        }
         }
 
         ModelID id = m_NextModelID++;

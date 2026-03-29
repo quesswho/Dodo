@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-namespace Dodo { namespace Math {
+namespace Dodo::Math {
 
     static inline int32_t fastfloor(float fp)
     {
@@ -100,11 +100,11 @@ namespace Dodo { namespace Math {
         return 45.23065f * (n0 + n1 + n2);
     }
 
-    float Noise::SumSimplex(float x, float y, int num_iterations, float persistence, float scale)
+    float Noise::SumSimplex(float x, float y, int num_iterations, float persistence, float frequency)
     {
         float maxAmp = 0;
         float amp = 1;
-        float freq = scale;
+        float freq = frequency;
         float noise = 0;
 
         // add successively smaller, higher - frequency terms
@@ -118,4 +118,4 @@ namespace Dodo { namespace Math {
 
         return noise;
     }
-}} // namespace Dodo::Math
+} // namespace Dodo::Math

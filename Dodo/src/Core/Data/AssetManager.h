@@ -18,6 +18,7 @@ namespace Dodo {
 
     enum class BuiltinModel {
         Cube,
+        Terrain,
     };
 
     class AssetManager {

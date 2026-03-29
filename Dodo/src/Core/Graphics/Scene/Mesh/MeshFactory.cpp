@@ -1,6 +1,8 @@
 #include "MeshFactory.h"
 #include "pch.h"
 
+#include "Core/Math/Random/Noise.h"
+
 namespace Dodo {
     MeshFactory::MeshFactory() : m_BasicProperties({{"POSITION", 3}, {"TEXCOORD", 2}}) {}
 
@@ -76,5 +78,97 @@ namespace Dodo {
                               new IndexBuffer(indices, sizeof(indices) / sizeof(indices[0])), material);
 
         return m_CubeMesh;
+    }
+
+    Mesh* MeshFactory::CreateTerrain(const TerrainConfig& config, Ref<Material> material)
+    {
+        const uint32_t res = config.resolution;
+        const float step = config.size / (res - 1);
+        const float halfSize = config.size * 0.5f;
+
+        // Calculate vertex count (POSITION + NORMAL + TEXCOORD = 3 + 3 + 2 = 8 floats per vertex)
+        std::vector<float> vertices;
+        vertices.reserve(res * res * 8);
+
+        std::vector<uint32_t> indices;
+        indices.reserve((res - 1) * (res - 1) * 6);
+
+        // Temporary storage for positions to calculate normals
+        std::vector<Math::Vec3> positions(res * res);
+
+        // Generate vertex positions
+        for (uint32_t z = 0; z < res; ++z) {
+            for (uint32_t x = 0; x < res; ++x) {
+                float worldX = x * step - halfSize;
+                float worldZ = z * step - halfSize;
+                float height =
+                    Math::Noise::SumSimplex(worldX, worldZ, config.octaves, config.persistence, config.frequency) * config.heightScale;
+
+                uint32_t idx = z * res + x;
+                positions[idx] = {worldX, height, worldZ};
+            }
+        }
+
+        // Generate vertices with normals
+        BufferProperties terrainProps = {{"POSITION", 3}, {"NORMAL", 3}, {"TEXCOORD", 2}};
+
+        for (uint32_t z = 0; z < res; ++z) {
+            for (uint32_t x = 0; x < res; ++x) {
+                uint32_t idx = z * res + x;
+                const Math::Vec3& pos = positions[idx];
+
+                // Calculate normal using finite differences
+                Math::Vec3 normal(0.0f, 1.0f, 0.0f);
+
+                if (x > 0 && x < res - 1 && z > 0 && z < res - 1) {
+                    Math::Vec3 left = positions[idx - 1];
+                    Math::Vec3 right = positions[idx + 1];
+                    Math::Vec3 down = positions[idx - res];
+                    Math::Vec3 up = positions[idx + res];
+
+                    Math::Vec3 dx = right - left;
+                    Math::Vec3 dz = up - down;
+
+                    normal = Math::Vec3::Normalize(Math::Vec3::Cross(dz, dx));
+                }
+
+                // Position
+                vertices.push_back(pos.x);
+                vertices.push_back(pos.y);
+                vertices.push_back(pos.z);
+
+                // Normal
+                vertices.push_back(normal.x);
+                vertices.push_back(normal.y);
+                vertices.push_back(normal.z);
+
+                // TexCoord
+                vertices.push_back((float)x / (res - 1));
+                vertices.push_back((float)z / (res - 1));
+            }
+        }
+
+        // Generate indices
+        for (uint32_t z = 0; z < res - 1; ++z) {
+            for (uint32_t x = 0; x < res - 1; ++x) {
+                uint32_t topLeft = z * res + x;
+                uint32_t topRight = topLeft + 1;
+                uint32_t bottomLeft = (z + 1) * res + x;
+                uint32_t bottomRight = bottomLeft + 1;
+
+                // Triangle 1
+                indices.push_back(topLeft);
+                indices.push_back(bottomLeft);
+                indices.push_back(topRight);
+
+                // Triangle 2
+                indices.push_back(topRight);
+                indices.push_back(bottomLeft);
+                indices.push_back(bottomRight);
+            }
+        }
+
+        return new Mesh(new VertexBuffer(vertices.data(), vertices.size() * sizeof(float), terrainProps),
+                        new IndexBuffer(indices.data(), indices.size()), material);
     }
 } // namespace Dodo

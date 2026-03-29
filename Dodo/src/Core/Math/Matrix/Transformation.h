@@ -2,7 +2,7 @@
 
 #include "Mat4.h"
 
-namespace Dodo { namespace Math {
+namespace Dodo::Math {
 
     struct Transformation {
 
@@ -67,4 +67,4 @@ namespace Dodo { namespace Math {
                       Mat4::Rotate(m_Rotation.y, Vec3(0.0f, 1.0f, 0.0f)) * Mat4::Scale(m_Scale);
         }
     };
-}} // namespace Dodo::Math
+} // namespace Dodo::Math

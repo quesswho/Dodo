@@ -26,7 +26,7 @@ GameLayer::GameLayer(Application& app)
 
     m_FrameBuffer = std::make_shared<FrameBuffer>(frameprop);
 
-    m_Renderer = new EditorRenderer();
+    m_Renderer = new EditorRenderer(renderAPI, assets);
     m_Scene = new EditorScene();
 
     std::vector<std::string> skyboxPath = {

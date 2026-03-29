@@ -13,6 +13,12 @@ namespace Dodo {
         shadowPipelineDesc.culling = CullMode::Front;
         PipelineID shadowPipelineID = assets.CreatePipeline(shadowPipelineDesc, renderAPI);
         m_ShadowMapMaterial = std::make_shared<Material>(assets.GetPipeline(shadowPipelineID));
+
+        FrameBufferProperties frameprop;
+        frameprop.m_Width = renderAPI.m_ViewportWidth;
+        frameprop.m_Height = renderAPI.m_ViewportHeight;
+        frameprop.m_FrameBufferType = FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL;
+        m_PostEffect = new PostEffect(frameprop, "res/shader/builtin/Passes/Gamma.slang", renderAPI, assets);
     }
 
     void Renderer3D::RenderEntities(World& world, const Math::FreeCamera& camera, LightSystem& lightSystem,

@@ -14,16 +14,19 @@ namespace Dodo {
         AoMap = 1 << 7
     };
 
-    inline MaterialFeatures operator|(MaterialFeatures a, MaterialFeatures b) {
+    inline MaterialFeatures operator|(MaterialFeatures a, MaterialFeatures b)
+    {
         return static_cast<MaterialFeatures>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
     }
 
-    inline MaterialFeatures& operator|=(MaterialFeatures& a, MaterialFeatures b) {
+    inline MaterialFeatures& operator|=(MaterialFeatures& a, MaterialFeatures b)
+    {
         a = a | b;
         return a;
     }
-    
-    inline bool HasFeature(MaterialFeatures features, MaterialFeatures flag) {
+
+    inline bool HasFeature(MaterialFeatures features, MaterialFeatures flag)
+    {
         return (static_cast<uint32_t>(features) & static_cast<uint32_t>(flag)) != 0;
     }
 } // namespace Dodo

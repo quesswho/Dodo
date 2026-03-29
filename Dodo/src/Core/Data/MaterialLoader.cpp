@@ -72,8 +72,7 @@ namespace Dodo {
         return material;
     }
 
-    Ref<Texture> MaterialLoader::LoadTextureFromMaterial(aiMaterial* material, int type,
-                                                         MaterialFeatures& features,
+    Ref<Texture> MaterialLoader::LoadTextureFromMaterial(aiMaterial* material, int type, MaterialFeatures& features,
                                                          const std::filesystem::path& modelDir)
     {
         aiTextureType typeEnum = static_cast<aiTextureType>(type);

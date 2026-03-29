@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/Graphics/Scene/Model.h"
 #include "Core/Graphics/Material/MaterialFeatures.h"
+#include "Core/Graphics/Scene/Model.h"
 
 struct aiMesh;
 

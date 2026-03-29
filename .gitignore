@@ -1,3 +1,7 @@
+# Assets
+DodoEditor/res/san_miguel/*
+!DodoEditor/res/san_miguel/README.txt
+
 
 # Build results
 [Dd]ebug/

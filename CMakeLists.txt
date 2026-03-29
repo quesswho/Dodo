@@ -7,8 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Export compile commands, useful for IntelliSense
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+# Set default build type to Debug
 set(CMAKE_DEFAULT_BUILD_TYPE Debug)
-
 
 # Load Opengl or Vulkan
 option(DD_API_OPENGL "Enable OpenGL loader" ON)
@@ -30,7 +30,6 @@ message(STATUS "DD_API_OPENGL=${DD_API_OPENGL}")
 message(STATUS "DD_API_VULKAN=${DD_API_VULKAN}")
 message(STATUS "DD_API_WIN32=${DD_API_WIN32}")
 message(STATUS "DD_API_GLFW=${DD_API_GLFW}")
-
 
 # Output dirs
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

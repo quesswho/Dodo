@@ -29,10 +29,7 @@ namespace Dodo {
                                                                        SamplerWrapMode::WRAP_CLAMP_TO_EDGE))),
           m_CubeMap(std::make_shared<CubeMap>(paths))
     {
-        ShaderID id = assets.LoadShader(ShaderBuilderFlags::ShaderBuilderFlagCubeMap |
-                                            ShaderBuilderFlags::ShaderBuilderFlagMaxDepth |
-                                            ShaderBuilderFlags::ShaderBuilderFlagNoTexcoord,
-                                        renderAPI);
+        ShaderID id = assets.LoadShaderFromPath("res/shader/builtin/Passes/Skybox.slang");
         PipelineDesc pipelineDesc;
         pipelineDesc.shaderID = id;
         pipelineDesc.depthMode = DepthMode::LessEqual;

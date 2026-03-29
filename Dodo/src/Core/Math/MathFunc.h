@@ -6,7 +6,7 @@
 
 #define MATH_PI 3.1415926535897932f
 
-namespace Dodo { namespace Math {
+namespace Dodo::Math {
 
     static inline constexpr float ToRadians(int degrees)
     {
@@ -33,4 +33,4 @@ namespace Dodo { namespace Math {
     {
         return x == 1 ? 0 : 1 + floorlog2(x >> 1);
     }
-}} // namespace Dodo::Math
+} // namespace Dodo::Math

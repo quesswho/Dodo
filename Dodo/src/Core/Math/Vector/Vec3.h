@@ -123,6 +123,16 @@ namespace Dodo { namespace Math {
             }
         }
 
+        // Return normalized vector
+        static inline TVec3 Normalize(const TVec3& vec)
+        {
+            float mag = vec.Magnitude();
+            if (mag > 0) {
+                return vec / mag;
+            }
+            return vec;
+        }
+
         // Given a targeet vector, return a vector that is the linear interpolation between this vector and the target
         // vector by t
         inline TVec3 Lerp(const TVec3& target, float t) const { return (1.0f - t) * *this + t * target; }
@@ -164,6 +174,11 @@ namespace Dodo { namespace Math {
         {
             return TVec3(this->y * other.z - this->z * other.y, this->z * other.x - this->x * other.z,
                          this->x * other.y - this->y * other.x);
+        }
+
+        static inline TVec3 Cross(const TVec3& a, const TVec3& b)
+        {
+            return TVec3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
         }
 
         // Unary operations

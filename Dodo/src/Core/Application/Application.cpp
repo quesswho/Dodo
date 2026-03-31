@@ -32,6 +32,7 @@ namespace Dodo {
         uint frames = 0;
 
         m_ThreadManager->WaitMain();
+        m_AssetManager->FlushStagingQueue(*m_RenderAPI); // Upload assets loaded during Init()
         m_Initializing = false;
         while (!m_Closed) {
             timer.Start();
@@ -74,7 +75,7 @@ namespace Dodo {
             DD_FATAL("{0}", res.message);
         }
 
-        m_AssetManager = ddnew AssetManager();
+        m_AssetManager = ddnew AssetManager(*m_RenderAPI, *m_ThreadManager);
     }
 
     void Application::Init() {}
@@ -90,6 +91,7 @@ namespace Dodo {
 
         m_Window->Update();
         m_RenderAPI->End();
+        m_AssetManager->FlushStagingQueue(*m_RenderAPI);
     }
 
     void Application::OnEvent(const Event& event)

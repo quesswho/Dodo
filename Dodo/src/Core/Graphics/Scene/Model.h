@@ -8,7 +8,7 @@ namespace Dodo {
     class Model {
       private:
         std::vector<Ref<Mesh>> m_Meshes;
-        
+
       public:
         Model(std::vector<Ref<Mesh>> meshes);
         ~Model();

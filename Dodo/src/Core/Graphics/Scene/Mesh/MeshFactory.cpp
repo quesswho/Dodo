@@ -13,7 +13,8 @@ namespace Dodo {
         float vertices[] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
                             1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f};
         uint indices[] = {0, 1, 2, 3, 2, 1};
-        m_RectangleMesh = std::make_shared<Mesh>(new VertexBuffer(vertices, sizeof(vertices), m_BasicProperties),
+        m_RectangleMesh =
+            std::make_shared<Mesh>(new VertexBuffer(vertices, sizeof(vertices), m_BasicProperties),
                                    new IndexBuffer(indices, sizeof(indices) / sizeof(indices[0])), material);
 
         return m_RectangleMesh;
@@ -75,7 +76,7 @@ namespace Dodo {
                           // Bottom
                           20, 21, 22, 22, 21, 23};
         m_CubeMesh = std::make_shared<Mesh>(new VertexBuffer(vertices, sizeof(vertices), m_BasicProperties),
-                              new IndexBuffer(indices, sizeof(indices) / sizeof(indices[0])), material);
+                                            new IndexBuffer(indices, sizeof(indices) / sizeof(indices[0])), material);
 
         return m_CubeMesh;
     }
@@ -102,7 +103,8 @@ namespace Dodo {
                 float worldX = x * step - halfSize;
                 float worldZ = z * step - halfSize;
                 float height =
-                    Math::Noise::SumSimplex(worldX, worldZ, config.octaves, config.persistence, config.frequency) * config.heightScale;
+                    Math::Noise::SumSimplex(worldX, worldZ, config.octaves, config.persistence, config.frequency) *
+                    config.heightScale;
 
                 uint32_t idx = z * res + x;
                 positions[idx] = {worldX, height, worldZ};
@@ -169,6 +171,6 @@ namespace Dodo {
         }
 
         return std::make_shared<Mesh>(new VertexBuffer(vertices.data(), vertices.size() * sizeof(float), terrainProps),
-                        new IndexBuffer(indices.data(), indices.size()), material);
+                                      new IndexBuffer(indices.data(), indices.size()), material);
     }
 } // namespace Dodo

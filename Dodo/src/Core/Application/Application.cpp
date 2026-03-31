@@ -32,6 +32,7 @@ namespace Dodo {
         uint frames = 0;
 
         m_ThreadManager->WaitMain();
+        m_AssetManager->FlushStagingQueue(*m_RenderAPI); // Upload assets loaded during Init()
         m_Initializing = false;
         while (!m_Closed) {
             timer.Start();
@@ -62,7 +63,11 @@ namespace Dodo {
         m_TotalPhysMemGbs = round(m_Window->m_Pcspecs.m_TotalPhysicalMemory / 1073741824.0f * 100) / 100; // 1024^3
         m_CpuBrand = m_Window->m_Pcspecs.m_CpuBrand;
         m_NumLogicalProcessors = std::thread::hardware_concurrency();
-        m_ThreadManager = ddnew ThreadManager(m_NumLogicalProcessors - 1 == 0 ? 1 : m_NumLogicalProcessors - 1);
+
+        uint numWorkerThreads = m_NumLogicalProcessors - 1 == 0 ? 1 : m_NumLogicalProcessors - 1;
+        m_ThreadManager = ddnew ThreadManager(numWorkerThreads);
+        DD_INFO("Allocating {} worker threads ({} logical processors detected)", numWorkerThreads,
+                m_NumLogicalProcessors);
 
         // Set event callback in input manager
         m_InputManager.SetEventCallback([this](const Event& e) { OnEvent(e); });
@@ -74,7 +79,7 @@ namespace Dodo {
             DD_FATAL("{0}", res.message);
         }
 
-        m_AssetManager = ddnew AssetManager();
+        m_AssetManager = ddnew AssetManager(*m_RenderAPI, *m_ThreadManager);
     }
 
     void Application::Init() {}
@@ -90,6 +95,7 @@ namespace Dodo {
 
         m_Window->Update();
         m_RenderAPI->End();
+        m_AssetManager->FlushStagingQueue(*m_RenderAPI);
     }
 
     void Application::OnEvent(const Event& event)

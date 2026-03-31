@@ -10,10 +10,10 @@ namespace Dodo {
     using ModelID = uint64_t;
 
     enum class AssetState {
-        NotLoaded,  // ID allocated but loading hasn't started
-        Loading,    // Currently loading on worker thread
-        Staging,    // Loaded, waiting to be uploaded to GPU
-        Loaded,     // Fully loaded and ready to use
-        Failed      // Loading failed
+        NotLoaded, // ID allocated but loading hasn't started
+        Loading,   // Currently loading on worker thread
+        Staging,   // Loaded, waiting to be uploaded to GPU
+        Loaded,    // Fully loaded and ready to use
+        Failed     // Loading failed
     };
 } // namespace Dodo

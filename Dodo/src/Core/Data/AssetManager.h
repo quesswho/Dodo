@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Core/Common.h>
+#include <mutex>
 
 #include "AssetTypes.h"
 #include "Core/Graphics/CubeMap.h"
@@ -18,33 +19,16 @@
 
 namespace Dodo {
 
+    class ThreadManager;
+
     enum class BuiltinModel {
         Cube,
         Terrain,
     };
 
     class AssetManager {
-      private:
-        std::unordered_map<ShaderID, ShaderAsset> m_Shaders;
-        std::unordered_map<std::string, ShaderID> m_ShaderPathLookup;
-        std::unordered_map<MaterialFeatures, ShaderID> m_ShaderBuilderShaders;
-
-        std::unordered_map<PipelineID, Ref<Pipeline>> m_Pipelines;
-        std::unordered_map<MaterialFeatures, PipelineID> m_ShaderBuilderPipelines;
-
-        std::unordered_map<TextureID, Ref<Texture>> m_Textures;
-        std::unordered_map<std::string, TextureID> m_TexturePathLookup;
-
-        std::unordered_map<MaterialID, Ref<Material>> m_Materials;
-        std::unordered_map<std::string, MaterialID> m_MaterialID;
-
-        std::unordered_map<ModelID, Ref<Model>> m_Models;         // Stores id as key and model pointer as value
-        std::unordered_map<std::string, ModelID> m_ModelID;   // Stores path as key and id as value
-        std::unordered_map<ModelID, std::string> m_ModelPath; // Stores id as key and path as value
-        std::unordered_map<BuiltinModel, ModelID> builtinIDs;
-
       public:
-        AssetManager();
+        AssetManager(RenderAPI& renderAPI, ThreadManager& threadManager);
         ~AssetManager();
 
         ShaderID LoadShaderFromPath(const std::string& path);
@@ -66,6 +50,10 @@ namespace Dodo {
         ModelID LoadModel(const std::string& path);
         ModelID GetBuiltinModel(BuiltinModel type);
         Ref<Model> GetModel(ModelID id);
+        AssetState GetModelState(ModelID id) const;
+
+        // Uploads all staged CPU data to the GPU. Must be called from the render thread.
+        void FlushStagingQueue(RenderAPI& renderAPI);
 
         std::string GetModelPath(ModelID id);
         bool HasPath(ModelID id) const { return m_ModelPath.find(id) != m_ModelPath.end(); }
@@ -73,11 +61,57 @@ namespace Dodo {
       private:
         ShaderAsset SlangSourceToAsset(const SlangSource& source);
 
+        RenderAPI& m_RenderAPI;
+        ThreadManager& m_ThreadManager;
+
         ModelLoader m_ModelLoader;
         MaterialLoader m_MaterialLoader;
         MeshFactory m_MeshFactory;
         SlangCompiler m_SlangCompiler;
         TextureLoader m_TextureLoader;
+
+        std::unordered_map<ShaderID, ShaderAsset> m_Shaders;
+        std::unordered_map<std::string, ShaderID> m_ShaderPathLookup;
+        std::unordered_map<MaterialFeatures, ShaderID> m_ShaderBuilderShaders;
+
+        std::unordered_map<PipelineID, Ref<Pipeline>> m_Pipelines;
+        std::unordered_map<MaterialFeatures, PipelineID> m_ShaderBuilderPipelines;
+
+        std::unordered_map<TextureID, Ref<Texture>> m_Textures;
+        std::unordered_map<std::string, TextureID> m_TexturePathLookup;
+        std::unordered_map<TextureID, AssetState> m_TextureStates;
+
+        std::unordered_map<MaterialID, Ref<Material>> m_Materials;
+        std::unordered_map<std::string, MaterialID> m_MaterialID;
+
+        std::unordered_map<ModelID, Ref<Model>> m_Models;     // Stores id as key and model pointer as value
+        std::unordered_map<std::string, ModelID> m_ModelID;   // Stores path as key and id as value
+        std::unordered_map<ModelID, std::string> m_ModelPath; // Stores id as key and path as value
+        std::unordered_map<BuiltinModel, ModelID> builtinIDs;
+        std::unordered_map<ModelID, AssetState> m_ModelStates;
+
+        // Staging queues written by worker threads, drained by main thread in FlushStagingQueue
+        struct PendingTextureUpload {
+            TextureID id;
+            TextureData data;
+        };
+        // Written by Assimp worker; processed by FlushStagingQueue which dispatches per-texture LoadTexture tasks
+        struct PendingModelUpload {
+            ModelID id;
+            ModelLoader::ModelData modelData;
+        };
+        // Built by FlushStagingQueue once Assimp is done; held until all texture IDs are in m_Textures
+        struct PendingModelAssembly {
+            ModelID id;
+            ModelLoader::ModelData modelData;
+            std::vector<TextureID> waitingFor; // texture IDs that must be in m_Textures before building
+        };
+        std::mutex m_StagingMutex;
+        std::vector<PendingTextureUpload> m_StagingTextures;
+        std::vector<TextureID> m_FailedTextureIDs;
+        std::vector<PendingModelUpload> m_StagingModels;
+        std::vector<ModelID> m_FailedModels;
+        std::vector<PendingModelAssembly> m_PendingModelAssemblies;
 
         ShaderID m_NextShaderID = 1;
         PipelineID m_NextPipelineID = 1;

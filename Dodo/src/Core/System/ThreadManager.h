@@ -1,9 +1,9 @@
 #pragma once
 
+#include <atomic>
+#include <deque>
 #include <thread>
 #include <vector>
-#include <deque>
-#include <atomic>
 
 namespace Dodo {
     class ThreadManager {
@@ -17,6 +17,7 @@ namespace Dodo {
 
         std::atomic<bool> m_Terminate;
         std::atomic<int> m_NumActiveJobs;
+
       public:
         std::vector<std::thread> m_WorkThreads;
         ThreadManager(int numThreads);
@@ -28,7 +29,8 @@ namespace Dodo {
         size_t GetQueueSize();
 
         int GetActiveJobs() const { return m_NumActiveJobs.load(); }
-    private:
+
+      private:
         void Loop();
     };
 } // namespace Dodo

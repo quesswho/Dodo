@@ -16,13 +16,19 @@ namespace Dodo {
             return result;
         }
 
-        result.props.m_Width  = (uint)width;
+        result.props.m_Width = (uint)width;
         result.props.m_Height = (uint)height;
 
         switch (channels) {
-        case 1: result.props.m_Format = TextureFormat::FORMAT_RED;  break;
-        case 3: result.props.m_Format = TextureFormat::FORMAT_RGB;  break;
-        case 4: result.props.m_Format = TextureFormat::FORMAT_RGBA; break;
+        case 1:
+            result.props.m_Format = TextureFormat::FORMAT_RED;
+            break;
+        case 3:
+            result.props.m_Format = TextureFormat::FORMAT_RGB;
+            break;
+        case 4:
+            result.props.m_Format = TextureFormat::FORMAT_RGBA;
+            break;
         default:
             DD_ERR("TextureLoader: unsupported channel count {} in '{}'", channels, path);
             stbi_image_free(data);
@@ -31,6 +37,7 @@ namespace Dodo {
 
         result.pixels.assign(data, data + (size_t)width * height * channels);
         stbi_image_free(data);
+        DD_INFO("TextureLoader: finished loading texture to CPU '{}'", path);
         return result;
     }
 

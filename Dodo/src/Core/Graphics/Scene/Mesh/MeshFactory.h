@@ -4,7 +4,7 @@
 
 namespace Dodo {
     struct TerrainConfig {
-        uint32_t resolution = 256;  // Vertices per side (e.g., 256 = 256x256 grid)
+        uint32_t resolution = 256; // Vertices per side (e.g., 256 = 256x256 grid)
         float size = 100.0f;       // World-space size
         float heightScale = 50.0f; // Multiplier for height values
         uint32_t seed = 0;

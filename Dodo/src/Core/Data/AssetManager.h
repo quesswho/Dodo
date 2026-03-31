@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Core/Common.h>
+#include <mutex>
 
 #include "AssetTypes.h"
 #include "Core/Graphics/CubeMap.h"
@@ -18,6 +19,8 @@
 
 namespace Dodo {
 
+    class ThreadManager;
+
     enum class BuiltinModel {
         Cube,
         Terrain,
@@ -25,7 +28,7 @@ namespace Dodo {
 
     class AssetManager {
       public:
-        AssetManager();
+        AssetManager(RenderAPI& renderAPI, ThreadManager& threadManager);
         ~AssetManager();
 
         ShaderID LoadShaderFromPath(const std::string& path);
@@ -47,12 +50,19 @@ namespace Dodo {
         ModelID LoadModel(const std::string& path);
         ModelID GetBuiltinModel(BuiltinModel type);
         Ref<Model> GetModel(ModelID id);
+        AssetState GetModelState(ModelID id) const;
+
+        // Uploads all staged CPU data to the GPU. Must be called from the render thread.
+        void FlushStagingQueue(RenderAPI& renderAPI);
 
         std::string GetModelPath(ModelID id);
         bool HasPath(ModelID id) const { return m_ModelPath.find(id) != m_ModelPath.end(); }
 
       private:
         ShaderAsset SlangSourceToAsset(const SlangSource& source);
+
+        RenderAPI& m_RenderAPI;
+        ThreadManager& m_ThreadManager;
 
         ModelLoader m_ModelLoader;
         MaterialLoader m_MaterialLoader;
@@ -73,10 +83,20 @@ namespace Dodo {
         std::unordered_map<MaterialID, Ref<Material>> m_Materials;
         std::unordered_map<std::string, MaterialID> m_MaterialID;
 
-        std::unordered_map<ModelID, Ref<Model>> m_Models;         // Stores id as key and model pointer as value
+        std::unordered_map<ModelID, Ref<Model>> m_Models;     // Stores id as key and model pointer as value
         std::unordered_map<std::string, ModelID> m_ModelID;   // Stores path as key and id as value
         std::unordered_map<ModelID, std::string> m_ModelPath; // Stores id as key and path as value
         std::unordered_map<BuiltinModel, ModelID> builtinIDs;
+        std::unordered_map<ModelID, AssetState> m_ModelStates;
+
+        // Staging queue written by worker threads, called by main thread to upload to GPU
+        struct PendingModelUpload {
+            ModelID id;
+            ModelLoader::ModelData modelData;
+        };
+        std::mutex m_StagingMutex;
+        std::vector<PendingModelUpload> m_StagingModels;
+        std::vector<ModelID> m_FailedModels;
 
         ShaderID m_NextShaderID = 1;
         PipelineID m_NextPipelineID = 1;

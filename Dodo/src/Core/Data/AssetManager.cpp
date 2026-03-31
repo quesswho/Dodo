@@ -1,15 +1,16 @@
 #include "AssetManager.h"
 #include "pch.h"
 
-#include "Core/Application/Application.h"
+#include "Core/System/ThreadManager.h"
 
 namespace Dodo {
 
-    AssetManager::AssetManager() : m_SlangCompiler()
+    AssetManager::AssetManager(RenderAPI& renderAPI, ThreadManager& threadManager)
+        : m_RenderAPI(renderAPI), m_ThreadManager(threadManager), m_SlangCompiler()
     {
         ShaderAsset fallbackAsset = m_SlangCompiler.CompileFile("res/shader/builtin/Common/Fallback.slang");
         m_Shaders.emplace(0, fallbackAsset);
-        m_Pipelines.emplace(0, Application::s_Application->m_RenderAPI->CreatePipeline(PipelineDesc{0}, *this));
+        m_Pipelines.emplace(0, m_RenderAPI.CreatePipeline(PipelineDesc{0}, *this));
     }
 
     AssetManager::~AssetManager() {}
@@ -145,7 +146,7 @@ namespace Dodo {
             return it->second;
         }
 
-        Ref<Material> mat = m_MaterialLoader.LoadMaterial(path, *this, *Application::s_Application->m_RenderAPI);
+        Ref<Material> mat = m_MaterialLoader.LoadMaterial(path, *this, m_RenderAPI);
         MaterialID id = m_NextMaterialID++;
 
         m_MaterialID.emplace(path, id);
@@ -169,18 +170,84 @@ namespace Dodo {
             return it->second;
         }
 
-        Ref<Model> model = m_ModelLoader.LoadModel(path, m_MaterialLoader, *this, *Application::s_Application->m_RenderAPI);
-        if (model == nullptr) {
-            DD_ERR("Failed to load model: {0}, Loading default cube", path);
-            return GetBuiltinModel(BuiltinModel::Cube);
-        }
-
-        int id = m_NextModelID++;
-
+        ModelID id = m_NextModelID++;
         m_ModelID.emplace(path, id);
         m_ModelPath.emplace(id, path);
-        m_Models.emplace(id, model);
+        m_ModelStates.emplace(id, AssetState::Loading);
+
+        m_ThreadManager.Task([this, id, path]() {
+            ModelLoader::ModelData modelData = m_ModelLoader.LoadModelData(path, m_TextureLoader);
+            std::lock_guard<std::mutex> lock(m_StagingMutex);
+            if (modelData.failed)
+                m_FailedModels.push_back(id);
+            else
+                m_StagingModels.push_back({id, std::move(modelData)});
+        });
+
         return id;
+    }
+
+    AssetState AssetManager::GetModelState(ModelID id) const
+    {
+        auto it = m_ModelStates.find(id);
+        if (it != m_ModelStates.end()) return it->second;
+        return AssetState::NotLoaded;
+    }
+
+    void AssetManager::FlushStagingQueue(RenderAPI& renderAPI)
+    {
+        std::vector<PendingModelUpload> models;
+        std::vector<ModelID> failedModels;
+        {
+            std::lock_guard<std::mutex> lock(m_StagingMutex);
+            std::swap(models, m_StagingModels);
+            std::swap(failedModels, m_FailedModels);
+        }
+
+        for (ModelID id : failedModels) {
+            DD_ERR("Async model load failed, ID: {}", id);
+            m_ModelStates[id] = AssetState::Failed;
+        }
+
+        for (auto& pending : models) {
+            const auto& modelData = pending.modelData;
+
+            // Build materials, upload textures, create pipelines
+            std::vector<Ref<Material>> materials;
+            materials.reserve(modelData.materials.size());
+
+            for (const auto& matEntry : modelData.materials) {
+                Ref<Material> material = std::make_shared<Material>();
+
+                for (const auto& texEntry : matEntry.textures) {
+                    Ref<Texture> tex;
+                    auto pathIt = m_TexturePathLookup.find(texEntry.path);
+                    if (pathIt != m_TexturePathLookup.end()) {
+                        tex = m_Textures.at(pathIt->second);
+                    } else {
+                        tex = std::make_shared<Texture>(const_cast<uchar*>(texEntry.pixels.pixels.data()),
+                                                        texEntry.pixels.props);
+                        TextureID texID = m_NextTextureID++;
+                        m_TexturePathLookup.emplace(texEntry.path, texID);
+                        m_Textures.emplace(texID, tex);
+                    }
+                    material->AddTexture(texEntry.slot, tex);
+                }
+
+                if (!matEntry.textures.empty()) {
+                    ShaderID shaderID = LoadShaderFromPath("res/shader/builtin/Passes/ForwardLit.slang");
+                    PipelineDesc desc;
+                    desc.shaderID = shaderID;
+                    material->SetShader(GetPipeline(CreatePipeline(desc, renderAPI)));
+                    material->SetSampler(std::make_shared<TextureSampler>(SamplerProperties()));
+                }
+
+                materials.push_back(std::move(material));
+            }
+
+            m_Models.emplace(pending.id, m_ModelLoader.BuildModel(modelData, materials));
+            m_ModelStates[pending.id] = AssetState::Loaded;
+        }
     }
 
     ModelID AssetManager::GetBuiltinModel(BuiltinModel type)
@@ -217,6 +284,10 @@ namespace Dodo {
     {
         auto it = m_Models.find(id);
         if (it != m_Models.end()) return it->second;
+
+        if (m_ModelStates.count(id))
+            return GetModel(GetBuiltinModel(BuiltinModel::Cube)); // Model still loading, return fallback cube model
+
         DD_ERR("Trying to get model that doesn't exist! ID: {0}", id);
         return nullptr;
     }

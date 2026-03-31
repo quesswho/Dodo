@@ -5,10 +5,10 @@
 
 namespace Dodo {
 
-    ThreadManager::ThreadManager(int amount) : m_Terminate(false), m_Amount(0)
+    ThreadManager::ThreadManager(int numThreads) : m_Terminate(false), m_NumThreads(numThreads), m_NumActiveJobs(0)
     {
-        m_WorkThreads.resize(amount);
-        for (int i = 0; i < amount; i++)
+        m_WorkThreads.resize(numThreads);
+        for (int i = 0; i < numThreads; i++)
             m_WorkThreads[i] = std::thread(&ThreadManager::Loop, this);
     }
 
@@ -21,7 +21,7 @@ namespace Dodo {
     {
         std::unique_lock<std::mutex> lock(m_Mutex);
         m_MainConditional.wait(lock, [&]() { // Make Main thread wait until workthreads are done
-            return m_Queue.empty();
+            return m_Queue.empty() && m_NumActiveJobs.load() == 0;
         });
     }
 
@@ -29,38 +29,62 @@ namespace Dodo {
     {
         {
             std::unique_lock<std::mutex> lock(m_Mutex);
-            m_Queue.push_back(task);
+            m_Queue.push_back(std::move(task));
         }
         m_WorkConditional.notify_one(); // Tell one thread to check the queue
+    }
+
+    size_t ThreadManager::GetQueueSize()
+    {
+        std::unique_lock<std::mutex> lock(m_Mutex);
+        return m_Queue.size();
     }
 
     void ThreadManager::Terminate()
     {
         {
             std::unique_lock<std::mutex> lock(m_Mutex);
-            m_Terminate = true; // Flag to tell threads to wake up and exit
+            m_Terminate.store(true);
         }
 
         m_WorkConditional.notify_all();
 
         for (std::thread& thread : m_WorkThreads)
-            thread.join();
+            if(thread.joinable()) thread.join();
 
         m_WorkThreads.clear();
     }
 
     void ThreadManager::Loop()
     {
-        std::function<void()> job;
         while (true) {
+            std::function<void()> job;
             {
                 std::unique_lock<std::mutex> lock(m_Mutex);
-                m_WorkConditional.wait(lock, [&]() { return !m_Queue.empty() || m_Terminate; });
-                if (m_Terminate) return;
-                job = m_Queue.back();
-                m_Queue.pop_back();
+                m_WorkConditional.wait(lock, [&]() { return !m_Queue.empty() || m_Terminate.load(); });
+                if (m_Terminate.load()) return;
+
+                if (m_Terminate.load() && m_Queue.empty()) {
+                    return;
+                }
+
+                if (!m_Queue.empty()) {
+                    job = std::move(m_Queue.front());
+                    m_Queue.pop_front();
+                    m_NumActiveJobs.fetch_add(1);
+                }
             }
-            job();
+            if (job) {
+                job();
+                int remaining = m_NumActiveJobs.fetch_sub(1) - 1;
+                if (remaining == 0) {
+                    // Double-check that queue is also empty before notifying
+                    std::unique_lock<std::mutex> lock(m_Mutex);
+                    if (m_Queue.empty()) {
+                        m_MainConditional.notify_all();
+                    }
+                }
+            }
         }
     }
 } // namespace Dodo

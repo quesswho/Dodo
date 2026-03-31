@@ -13,7 +13,7 @@ namespace Dodo {
         pipelineDesc.shaderID = shaderID;
         PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
         return std::make_shared<Material>(
-            assets.GetPipeline(pipelineID), std::make_shared<Texture>(path),
+            assets.GetPipeline(pipelineID), assets.GetTexture(assets.LoadTexture(path)),
             std::make_shared<TextureSampler>(SamplerProperties(SamplerWrapMode::WRAP_CLAMP_TO_EDGE)));
     }
 
@@ -27,14 +27,14 @@ namespace Dodo {
         uint numTextures = 0;
 
         // Diffuse map
-        Ref<Texture> tex = LoadTextureFromMaterial(aiMat, aiTextureType_DIFFUSE, flags, modelDir);
+        Ref<Texture> tex = LoadTextureFromMaterial(aiMat, aiTextureType_DIFFUSE, flags, modelDir, assets);
         if (tex) {
             material->AddTexture(0, tex);
             numTextures++;
         }
 
         // Specular map
-        tex = LoadTextureFromMaterial(aiMat, aiTextureType_SPECULAR, flags, modelDir);
+        tex = LoadTextureFromMaterial(aiMat, aiTextureType_SPECULAR, flags, modelDir, assets);
         if (tex) {
             material->AddTexture(1, tex);
             numTextures++;
@@ -44,7 +44,7 @@ namespace Dodo {
         aiTextureType normalType = aiTextureType_NORMALS;
         aiString str;
         if (aiMat->GetTexture(normalType, 0, &str) != AI_SUCCESS) normalType = aiTextureType_DISPLACEMENT;
-        tex = LoadTextureFromMaterial(aiMat, normalType, flags, modelDir);
+        tex = LoadTextureFromMaterial(aiMat, normalType, flags, modelDir, assets);
         if (tex) {
             material->AddTexture(2, tex);
             numTextures++;
@@ -73,7 +73,7 @@ namespace Dodo {
     }
 
     Ref<Texture> MaterialLoader::LoadTextureFromMaterial(aiMaterial* material, int type, MaterialFeatures& features,
-                                                         const std::filesystem::path& modelDir)
+                                                         const std::filesystem::path& modelDir, AssetManager& assets)
     {
         aiTextureType typeEnum = static_cast<aiTextureType>(type);
         aiString str;
@@ -100,6 +100,7 @@ namespace Dodo {
 
         DD_INFO("Texture: {}", texturePath.string());
 
-        return std::make_shared<Texture>(texturePath.string().c_str());
+        TextureID id = assets.LoadTexture(texturePath.string());
+        return assets.GetTexture(id);
     }
 } // namespace Dodo

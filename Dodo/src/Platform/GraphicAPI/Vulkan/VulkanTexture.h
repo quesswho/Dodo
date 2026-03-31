@@ -5,7 +5,6 @@
 namespace Dodo::Platform {
     class VulkanTexture {
       public:
-        VulkanTexture(const std::string& path);
         VulkanTexture(uchar* data, const TextureProperties& prop);
         ~VulkanTexture();
 

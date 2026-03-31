@@ -9,9 +9,11 @@ namespace Dodo {
     using TextureID = uint64_t;
     using ModelID = uint64_t;
 
-    struct TextureData {
-        std::vector<uint8_t> pixels;
-        int width, height, channels;
-        std::string path;
+    enum class AssetState {
+        NotLoaded,  // ID allocated but loading hasn't started
+        Loading,    // Currently loading on worker thread
+        Staging,    // Loaded, waiting to be uploaded to GPU
+        Loaded,     // Fully loaded and ready to use
+        Failed      // Loading failed
     };
 } // namespace Dodo

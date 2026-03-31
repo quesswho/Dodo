@@ -4,6 +4,7 @@
 #include "Core/Graphics/Scene/Model.h"
 
 struct aiMesh;
+struct aiMaterial;
 
 namespace Dodo {
     class AssetManager;
@@ -18,48 +19,29 @@ namespace Dodo {
             Math::Vec3 m_Tangent;
         };
 
-        struct MeshData {
-            MeshData(const std::vector<Vertex> vertices, const std::vector<uint> indices)
-                : m_Vertices(vertices), m_Indices(indices)
-            {}
-
-            std::vector<Vertex> m_Vertices;
-            std::vector<uint> m_Indices;
-        };
-
-        struct MaterialData {
-            MaterialData(std::unordered_map<const char*, uint> textureInfo, MaterialFeatures flags)
-                : m_TextureInfo(textureInfo), m_Flags(flags)
-            {}
-            std::unordered_map<const char*, uint> m_TextureInfo;
-            MaterialFeatures m_Flags;
-        };
-
         struct ModelData {
-            ModelData(std::vector<Vertex> vertices, std::vector<uint> indices,
-                      std::unordered_map<const char*, uint> textureInfo, MaterialFeatures flags)
-                : m_MeshData(new MeshData(vertices, indices)), m_MaterialData(new MaterialData(textureInfo, flags))
-            {}
-
-            ModelData(MeshData* meshData, MaterialData* materialData)
-                : m_MeshData(meshData), m_MaterialData(materialData)
-            {}
-
-            ~ModelData()
-            {
-                delete m_MeshData;
-                delete m_MaterialData;
-            }
-            MeshData* m_MeshData;
-            MaterialData* m_MaterialData;
+            struct TextureEntry {
+                int slot;
+                std::string path;
+            };
+            struct MaterialEntry {
+                std::vector<TextureEntry> textures;
+                MaterialFeatures features = MaterialFeatures::None;
+            };
+            struct MeshEntry {
+                std::vector<Vertex> vertices;
+                std::vector<uint> indices;
+                uint materialIndex;
+            };
+            std::vector<MeshEntry> meshes;
+            std::vector<MaterialEntry> materials;
+            bool failed = false;
         };
 
-        ///////////////////////////////////////////////////
+        // Load model and texture paths to CPU memory. Thread-safe.
+        ModelData LoadModelData(const std::string& path);
 
-        Ref<Model> LoadModel(const std::string& path, MaterialLoader& materialLoader, AssetManager& assets,
-                         RenderAPI& renderAPI);
-
-      private:
-        Ref<Mesh> LoadMesh(::aiMesh* mesh, Ref<Material> material);
+        // Uploads CPU mesh data to the GPU
+        Ref<Model> BuildModel(const ModelData& data, const std::vector<Ref<Material>>& materials);
     };
 } // namespace Dodo

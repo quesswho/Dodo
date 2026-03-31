@@ -13,8 +13,10 @@ namespace Dodo {
     };
 
     struct TextureLoader {
-        // Loads pixel data from disk (CPU only, no GPU calls).
-        // Returns TextureData with empty pixels on failure.
+        /**
+         * Loads pixel data to CPU memory from disk. Thread-safe.
+         * Returns TextureData with empty pixels on failure.
+         */
         TextureData Load(const std::string& path);
     };
 

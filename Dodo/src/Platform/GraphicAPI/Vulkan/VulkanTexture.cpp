@@ -1,7 +1,6 @@
 #include "VulkanTexture.h"
 #include "pch.h"
 
-
 namespace Dodo::Platform {
 
     VulkanTexture::VulkanTexture(uchar* data, const TextureProperties& prop) : m_TextureProperties(prop), m_TextureID(0)

@@ -6,20 +6,20 @@
 namespace Dodo {
     MeshFactory::MeshFactory() : m_BasicProperties({{"POSITION", 3}, {"TEXCOORD", 2}}) {}
 
-    Mesh* MeshFactory::GetRectangleMesh(Ref<Material> material)
+    Ref<Mesh> MeshFactory::GetRectangleMesh(Ref<Material> material)
     {
         if (m_RectangleMesh) return m_RectangleMesh;
 
         float vertices[] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
                             1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f};
         uint indices[] = {0, 1, 2, 3, 2, 1};
-        m_RectangleMesh = new Mesh(new VertexBuffer(vertices, sizeof(vertices), m_BasicProperties),
+        m_RectangleMesh = std::make_shared<Mesh>(new VertexBuffer(vertices, sizeof(vertices), m_BasicProperties),
                                    new IndexBuffer(indices, sizeof(indices) / sizeof(indices[0])), material);
 
         return m_RectangleMesh;
     }
 
-    Mesh* MeshFactory::CreateCube(Ref<Material> material)
+    Ref<Mesh> MeshFactory::CreateCube(Ref<Material> material)
     {
         if (m_CubeMesh) return m_CubeMesh;
 
@@ -74,13 +74,13 @@ namespace Dodo {
                           16, 17, 18, 18, 17, 19,
                           // Bottom
                           20, 21, 22, 22, 21, 23};
-        m_CubeMesh = new Mesh(new VertexBuffer(vertices, sizeof(vertices), m_BasicProperties),
+        m_CubeMesh = std::make_shared<Mesh>(new VertexBuffer(vertices, sizeof(vertices), m_BasicProperties),
                               new IndexBuffer(indices, sizeof(indices) / sizeof(indices[0])), material);
 
         return m_CubeMesh;
     }
 
-    Mesh* MeshFactory::CreateTerrain(const TerrainConfig& config, Ref<Material> material)
+    Ref<Mesh> MeshFactory::CreateTerrain(const TerrainConfig& config, Ref<Material> material)
     {
         const uint32_t res = config.resolution;
         const float step = config.size / (res - 1);
@@ -168,7 +168,7 @@ namespace Dodo {
             }
         }
 
-        return new Mesh(new VertexBuffer(vertices.data(), vertices.size() * sizeof(float), terrainProps),
+        return std::make_shared<Mesh>(new VertexBuffer(vertices.data(), vertices.size() * sizeof(float), terrainProps),
                         new IndexBuffer(indices.data(), indices.size()), material);
     }
 } // namespace Dodo

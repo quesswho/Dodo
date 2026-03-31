@@ -12,11 +12,7 @@ namespace Dodo {
         m_Pipelines.emplace(0, Application::s_Application->m_RenderAPI->CreatePipeline(PipelineDesc{0}, *this));
     }
 
-    AssetManager::~AssetManager()
-    {
-        for (auto& model : m_Models)
-            delete model.second;
-    }
+    AssetManager::~AssetManager() {}
 
     /**
      * Loads a slang shader from path.
@@ -147,7 +143,7 @@ namespace Dodo {
             return it->second;
         }
 
-        Model* model = m_ModelLoader.LoadModel(path, m_MaterialLoader, *this, *Application::s_Application->m_RenderAPI);
+        Ref<Model> model = m_ModelLoader.LoadModel(path, m_MaterialLoader, *this, *Application::s_Application->m_RenderAPI);
         if (model == nullptr) {
             DD_ERR("Failed to load model: {0}, Loading default cube", path);
             return GetBuiltinModel(BuiltinModel::Cube);
@@ -166,20 +162,20 @@ namespace Dodo {
         auto it = builtinIDs.find(type);
         if (it != builtinIDs.end()) return it->second;
 
-        Model* model = nullptr;
+        Ref<Model> model = nullptr;
 
         switch (type) {
         case BuiltinModel::Cube: {
-            std::vector<Mesh*> meshes;
+            std::vector<Ref<Mesh>> meshes;
             meshes.push_back(m_MeshFactory.CreateCube(std::make_shared<Material>(Material())));
-            model = new Model(meshes);
+            model = std::make_shared<Model>(meshes);
             break;
         }
         case BuiltinModel::Terrain: {
-            std::vector<Mesh*> terrainMeshes;
+            std::vector<Ref<Mesh>> terrainMeshes;
             terrainMeshes.push_back(
                 m_MeshFactory.CreateTerrain(TerrainConfig(), std::make_shared<Material>(Material())));
-            model = new Model(terrainMeshes);
+            model = std::make_shared<Model>(terrainMeshes);
             break;
         }
         }
@@ -191,7 +187,7 @@ namespace Dodo {
         return id;
     }
 
-    Model* AssetManager::GetModel(ModelID id)
+    Ref<Model> AssetManager::GetModel(ModelID id)
     {
         auto it = m_Models.find(id);
         if (it != m_Models.end()) return it->second;

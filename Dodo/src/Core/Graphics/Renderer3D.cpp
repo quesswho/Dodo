@@ -34,7 +34,7 @@ namespace Dodo {
         // Draw ModelComponent
         const auto& modelPool = world.GetPool<ModelComponent>();
         for (const auto& modelComponent : modelPool.GetComponents()) {
-            Model* model = assets.GetModel(modelComponent.m_ModelID);
+            Ref<Model> model = assets.GetModel(modelComponent.m_ModelID);
             for (auto mesh : model->GetMeshes()) {
                 Ref<Material> mat = mesh->GetMaterial();
                 mat->Bind(renderAPI);
@@ -50,7 +50,7 @@ namespace Dodo {
         const auto& modelPool = world.GetPool<ModelComponent>();
         for (const auto& modelComponent : modelPool.GetComponents()) {
             renderAPI.SetDrawData(MakeDrawData(modelComponent.m_Transformation.m_Model));
-            Model* model = assets.GetModel(modelComponent.m_ModelID);
+            Ref<Model> model = assets.GetModel(modelComponent.m_ModelID);
             model->DrawGeometry(renderAPI);
         }
     }

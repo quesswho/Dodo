@@ -3,13 +3,9 @@
 
 namespace Dodo {
 
-    Model::Model(std::vector<Mesh*> meshes) : m_Meshes(meshes) {}
+    Model::Model(std::vector<Ref<Mesh>> meshes) : m_Meshes(meshes) {}
 
-    Model::~Model()
-    {
-        for (auto mesh : m_Meshes)
-            delete mesh;
-    }
+    Model::~Model() {}
 
     void Model::Draw(RenderAPI& renderAPI) const
     {

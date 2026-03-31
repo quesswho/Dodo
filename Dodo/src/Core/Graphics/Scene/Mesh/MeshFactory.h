@@ -17,14 +17,14 @@ namespace Dodo {
       public:
         MeshFactory();
 
-        Mesh* GetRectangleMesh(Ref<Material> material);
-        Mesh* CreateCube(Ref<Material> material);
+        Ref<Mesh> GetRectangleMesh(Ref<Material> material);
+        Ref<Mesh> CreateCube(Ref<Material> material);
 
-        Mesh* CreateTerrain(const TerrainConfig& config, Ref<Material> material);
+        Ref<Mesh> CreateTerrain(const TerrainConfig& config, Ref<Material> material);
 
       private:
         const BufferProperties m_BasicProperties;
-        Mesh* m_RectangleMesh = nullptr;
-        Mesh* m_CubeMesh = nullptr;
+        Ref<Mesh> m_RectangleMesh = nullptr;
+        Ref<Mesh> m_CubeMesh = nullptr;
     };
 } // namespace Dodo

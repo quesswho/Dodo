@@ -9,7 +9,7 @@
 
 namespace Dodo {
 
-    Mesh* ModelLoader::LoadMesh(aiMesh* mesh, Ref<Material> material)
+    Ref<Mesh> ModelLoader::LoadMesh(aiMesh* mesh, Ref<Material> material)
     {
         std::vector<Vertex> vertices;
         std::vector<uint> indices;
@@ -48,13 +48,13 @@ namespace Dodo {
                 indices.push_back(face.mIndices[j]);
         }
 
-        return new Mesh(
+        return std::make_shared<Mesh>(
             new VertexBuffer((float*)&vertices[0], totalVertices * sizeof(Vertex),
                              BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 3}})),
             new IndexBuffer(indices.data(), totalIndices), material);
     }
 
-    Model* ModelLoader::LoadModel(const std::string& path, MaterialLoader& materialLoader, AssetManager& assets,
+    Ref<Model> ModelLoader::LoadModel(const std::string& path, MaterialLoader& materialLoader, AssetManager& assets,
                                   RenderAPI& renderAPI)
     {
         Assimp::Importer imp;
@@ -83,13 +83,13 @@ namespace Dodo {
 
         DD_INFO("{} materials loaded", materials.size());
 
-        std::vector<Mesh*> meshes;
+        std::vector<Ref<Mesh>> meshes;
         meshes.reserve(model->mNumMeshes);
 
         for (uint i = 0; i < model->mNumMeshes; i++) {
             meshes.push_back(LoadMesh(model->mMeshes[i], materials[model->mMeshes[i]->mMaterialIndex]));
         }
 
-        return new Model(meshes);
+        return std::make_shared<Model>(meshes);
     }
 } // namespace Dodo

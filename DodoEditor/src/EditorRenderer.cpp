@@ -13,7 +13,7 @@ void EditorRenderer::RenderEntities(EditorWorld& world, const Math::FreeCamera& 
     // Draw ModelComponent
     const auto& modelPool = world.template GetPool<ModelComponent>();
     for (const auto& modelComponent : modelPool.GetComponents()) {
-        Model* model = assets.GetModel(modelComponent.m_ModelID);
+        Ref<Model> model = assets.GetModel(modelComponent.m_ModelID);
         for (auto mesh : model->GetMeshes()) {
             Ref<Material> mat = mesh->GetMaterial();
             mat->Bind(renderAPI);

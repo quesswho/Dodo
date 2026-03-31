@@ -7,13 +7,13 @@ namespace Dodo {
 
     class Model {
       private:
-        std::vector<Mesh*> m_Meshes;
+        std::vector<Ref<Mesh>> m_Meshes;
         
       public:
-        Model(std::vector<Mesh*> meshes);
+        Model(std::vector<Ref<Mesh>> meshes);
         ~Model();
 
-        const std::vector<Mesh*>& GetMeshes() const { return m_Meshes; }
+        const std::vector<Ref<Mesh>>& GetMeshes() const { return m_Meshes; }
         void Draw(RenderAPI& renderAPI) const;
         void DrawGeometry(RenderAPI& renderAPI) const;
         void Draw(Ref<Material> material, RenderAPI& renderAPI) const;

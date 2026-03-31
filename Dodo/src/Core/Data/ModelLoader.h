@@ -56,10 +56,10 @@ namespace Dodo {
 
         ///////////////////////////////////////////////////
 
-        Model* LoadModel(const std::string& path, MaterialLoader& materialLoader, AssetManager& assets,
+        Ref<Model> LoadModel(const std::string& path, MaterialLoader& materialLoader, AssetManager& assets,
                          RenderAPI& renderAPI);
 
       private:
-        Mesh* LoadMesh(::aiMesh* mesh, Ref<Material> material);
+        Ref<Mesh> LoadMesh(::aiMesh* mesh, Ref<Material> material);
     };
 } // namespace Dodo

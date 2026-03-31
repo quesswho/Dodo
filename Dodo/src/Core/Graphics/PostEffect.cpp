@@ -15,7 +15,7 @@ namespace Dodo {
         PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
         m_Shader = assets.GetPipeline(pipelineID);
 
-        m_Sampler = std::make_shared<TextureSampler>(SamplerProperties(
+        m_Sampler = renderAPI.CreateSampler(SamplerProperties(
             SamplerFilter::MIN_MAG_LINEAR, SamplerWrapMode::WRAP_CLAMP_TO_EDGE, SamplerWrapMode::WRAP_CLAMP_TO_EDGE));
 
         float screenQuad[] = {

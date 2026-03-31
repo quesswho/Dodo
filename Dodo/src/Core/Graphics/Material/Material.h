@@ -14,8 +14,7 @@ namespace Dodo {
       public:
         Material();
         Material(Ref<Pipeline> shader);
-        Material(Ref<Pipeline> shader, Ref<Texture> texture,
-                 Ref<TextureSampler> sampler = std::make_shared<TextureSampler>());
+        Material(Ref<Pipeline> shader, Ref<Texture> texture, Ref<TextureSampler> sampler);
         ~Material();
 
         void SetShader(Ref<Pipeline> shader) { m_Shader = shader; }

@@ -14,7 +14,7 @@ namespace Dodo {
         PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
         return std::make_shared<Material>(
             assets.GetPipeline(pipelineID), assets.GetTexture(assets.LoadTexture(path)),
-            std::make_shared<TextureSampler>(SamplerProperties(SamplerWrapMode::WRAP_CLAMP_TO_EDGE)));
+            renderAPI.CreateSampler(SamplerProperties(SamplerWrapMode::WRAP_CLAMP_TO_EDGE)));
     }
 
     Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, aiMaterial* aiMat, AssetManager& assets,
@@ -40,7 +40,7 @@ namespace Dodo {
             numTextures++;
         }
 
-        // Normal map — NORMALS and DISPLACEMENT are the same thing
+        // Normal map: NORMALS and DISPLACEMENT are the same thing
         aiTextureType normalType = aiTextureType_NORMALS;
         aiString str;
         if (aiMat->GetTexture(normalType, 0, &str) != AI_SUCCESS) normalType = aiTextureType_DISPLACEMENT;
@@ -67,7 +67,7 @@ namespace Dodo {
         if (!shader) DD_WARN("Could not create shader");
 
         material->SetShader(shader);
-        material->SetSampler(std::make_shared<TextureSampler>(SamplerProperties()));
+        material->SetSampler(renderAPI.CreateSampler(SamplerProperties()));
 
         return material;
     }

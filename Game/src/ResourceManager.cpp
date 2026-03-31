@@ -22,7 +22,7 @@ ResourceManager::ResourceManager(Dodo::AssetManager& assetManager, Dodo::RenderA
 {
     Dodo::TextureID blocks = assetManager.LoadTexture("res/texture/blocks.png");
     Ref<Dodo::Texture> atlas = assetManager.GetTexture(blocks);
-    Ref<Dodo::TextureSampler> sampler = std::make_shared<Dodo::TextureSampler>(Dodo::SamplerProperties(
+    Ref<Dodo::TextureSampler> sampler = renderAPI.CreateSampler(Dodo::SamplerProperties(
         Dodo::SamplerFilter::MIN_MAG_NEAREST, Dodo::SamplerWrapMode::WRAP_REPEAT, Dodo::SamplerWrapMode::WRAP_REPEAT));
 
     Dodo::ShaderID id = assetManager.LoadShaderFromPath("res/shader/block.slang");

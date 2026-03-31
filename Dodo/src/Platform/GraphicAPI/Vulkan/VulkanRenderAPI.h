@@ -4,6 +4,7 @@
 #include "Core/Common.h"
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/CubeMap.h"
+#include "Core/Graphics/FrameBuffer.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
@@ -20,6 +21,10 @@ using VulkanContext = Dodo::Platform::VulkanGLFWContext;
 
 #include <array>
 #include <optional>
+
+namespace Dodo {
+    class AssetManager;
+}
 
 namespace Dodo::Platform {
 
@@ -64,18 +69,22 @@ namespace Dodo::Platform {
         void BindCubeMap(uint slot, Ref<CubeMap> cubemap);
         void BindTexture(uint slot, Ref<Texture> texture);
         void BindTextureSampler(uint slot, Ref<TextureSampler> sampler);
+        void BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer);
         void BindPipeline(Ref<Pipeline> pipeline);
+        void PushConstants(const void* data, size_t size);
+        void SetFrameData(const Dodo::FrameData& data);
+        void SetDrawData(const DrawData& data);
+        void DrawIndexed(const Ref<VertexBuffer>& va);
         void DrawIndices(uint count) const;
         void DrawArray(uint count) const;
         void DefaultFrameBuffer() const;
         void SetViewport(uint width, uint height);
         void SetViewport(uint width, uint height, uint posX, uint posY);
 
-        void DepthComparisonMethod(DepthComparisonMethod method) const;
-        void DepthTest(bool depthtest) const;
-        void StencilTest(bool stenciltest) const;
-        void Blending(bool blending) const;
-        void Culling(bool cull, bool backface = true);
+        // Factory methods, these are needed because we need context info
+        Ref<Pipeline> CreatePipeline(const PipelineDesc& desc, AssetManager& assets);
+        Ref<Texture> CreateTexture(uchar* data, const TextureProperties& prop);
+        Ref<TextureSampler> CreateSampler(const SamplerProperties& prop);
 
         inline const char* GetAPIName() const { return "Vulkan"; }
         int CurrentVRamUsage() const;
@@ -145,6 +154,12 @@ namespace Dodo::Platform {
         VkExtent2D m_SwapChainExtent;
         VkCommandPool m_CommandPool;
         VkPipeline m_BoundPipeline;
+        VkPipelineLayout m_BoundPipelineLayout = VK_NULL_HANDLE;
+
+        // Note: This is temporary for now
+        static constexpr int maxTextureSlots = 3;
+        VkImageView m_PendingImageViews[maxTextureSlots] = {};
+        VkSampler m_PendingSamplers[maxTextureSlots] = {};
 
         // Frame stuff
         static constexpr int maxFramesInFlight = 2;

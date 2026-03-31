@@ -117,16 +117,20 @@ namespace Dodo {
         auto it = m_TexturePathLookup.find(path);
         if (it != m_TexturePathLookup.end()) return it->second;
 
-        TextureData data = m_TextureLoader.Load(path);
-        if (data.pixels.empty()) {
-            DD_ERR("Failed to load texture: {}", path);
-            return 0;
-        }
-
-        Ref<Texture> texture = std::make_shared<Texture>(data.pixels.data(), data.props);
         TextureID id = m_NextTextureID++;
         m_TexturePathLookup.emplace(path, id);
-        m_Textures.emplace(id, std::move(texture));
+        m_TextureStates.emplace(id, AssetState::Loading);
+
+        // Setup async task to load texture data
+        m_ThreadManager.Task([this, id, path]() {
+            TextureData data = m_TextureLoader.Load(path);
+            std::lock_guard<std::mutex> lock(m_StagingMutex);
+            if (data.pixels.empty())
+                m_FailedTextureIDs.push_back(id);
+            else
+                m_StagingTextures.push_back({id, std::move(data)});
+        });
+
         return id;
     }
 
@@ -176,7 +180,7 @@ namespace Dodo {
         m_ModelStates.emplace(id, AssetState::Loading);
 
         m_ThreadManager.Task([this, id, path]() {
-            ModelLoader::ModelData modelData = m_ModelLoader.LoadModelData(path, m_TextureLoader);
+            ModelLoader::ModelData modelData = m_ModelLoader.LoadModelData(path);
             std::lock_guard<std::mutex> lock(m_StagingMutex);
             if (modelData.failed)
                 m_FailedModels.push_back(id);
@@ -196,12 +200,27 @@ namespace Dodo {
 
     void AssetManager::FlushStagingQueue(RenderAPI& renderAPI)
     {
+        std::vector<PendingTextureUpload> textures;
+        std::vector<TextureID> failedTextureIDs;
         std::vector<PendingModelUpload> models;
         std::vector<ModelID> failedModels;
         {
             std::lock_guard<std::mutex> lock(m_StagingMutex);
+            std::swap(textures, m_StagingTextures);
+            std::swap(failedTextureIDs, m_FailedTextureIDs);
             std::swap(models, m_StagingModels);
             std::swap(failedModels, m_FailedModels);
+        }
+
+        for (TextureID id : failedTextureIDs) {
+            DD_ERR("Async texture load failed, ID: {}", id);
+            m_TextureStates[id] = AssetState::Failed;
+        }
+
+        for (auto& pending : textures) {
+            Ref<Texture> tex = std::make_shared<Texture>(pending.data.pixels.data(), pending.data.props);
+            m_Textures.emplace(pending.id, std::move(tex));
+            m_TextureStates[pending.id] = AssetState::Loaded;
         }
 
         for (ModelID id : failedModels) {
@@ -209,31 +228,50 @@ namespace Dodo {
             m_ModelStates[id] = AssetState::Failed;
         }
 
+        // Assimp parse is done. Dispatch one LoadTexture task per unique texture path,
+        // then put the model in m_PendingModelAssemblies until all textures are ready.
         for (auto& pending : models) {
-            const auto& modelData = pending.modelData;
+            PendingModelAssembly assembly;
+            assembly.id = pending.id;
+            assembly.modelData = std::move(pending.modelData);
 
-            // Build materials, upload textures, create pipelines
+            for (const auto& matEntry : assembly.modelData.materials) {
+                for (const auto& texEntry : matEntry.textures) {
+                    TextureID texID = LoadTexture(texEntry.path); // dispatches async if not already loading
+                    assembly.waitingFor.push_back(texID);
+                }
+            }
+
+            m_PendingModelAssemblies.push_back(std::move(assembly));
+        }
+
+        // Check which models whose textures have all been uploaded, and build them
+        auto it = m_PendingModelAssemblies.begin();
+        while (it != m_PendingModelAssemblies.end()) {
+            bool ready = true;
+            for (TextureID texID : it->waitingFor) {
+                if (!m_Textures.count(texID)) {
+                    ready = false;
+                    break;
+                }
+            }
+            if (!ready) { // If not all textures are ready, skip for now
+                ++it;
+                continue;
+            }
+
+            const auto& modelData = it->modelData;
             std::vector<Ref<Material>> materials;
             materials.reserve(modelData.materials.size());
 
+            // Track which texture in waitingFor corresponds to which material/slot
+            size_t texIdx = 0;
             for (const auto& matEntry : modelData.materials) {
                 Ref<Material> material = std::make_shared<Material>();
-
                 for (const auto& texEntry : matEntry.textures) {
-                    Ref<Texture> tex;
-                    auto pathIt = m_TexturePathLookup.find(texEntry.path);
-                    if (pathIt != m_TexturePathLookup.end()) {
-                        tex = m_Textures.at(pathIt->second);
-                    } else {
-                        tex = std::make_shared<Texture>(const_cast<uchar*>(texEntry.pixels.pixels.data()),
-                                                        texEntry.pixels.props);
-                        TextureID texID = m_NextTextureID++;
-                        m_TexturePathLookup.emplace(texEntry.path, texID);
-                        m_Textures.emplace(texID, tex);
-                    }
-                    material->AddTexture(texEntry.slot, tex);
+                    TextureID texID = it->waitingFor[texIdx++];
+                    material->AddTexture(texEntry.slot, m_Textures.at(texID));
                 }
-
                 if (!matEntry.textures.empty()) {
                     ShaderID shaderID = LoadShaderFromPath("res/shader/builtin/Passes/ForwardLit.slang");
                     PipelineDesc desc;
@@ -241,12 +279,12 @@ namespace Dodo {
                     material->SetShader(GetPipeline(CreatePipeline(desc, renderAPI)));
                     material->SetSampler(std::make_shared<TextureSampler>(SamplerProperties()));
                 }
-
                 materials.push_back(std::move(material));
             }
 
-            m_Models.emplace(pending.id, m_ModelLoader.BuildModel(modelData, materials));
-            m_ModelStates[pending.id] = AssetState::Loaded;
+            m_Models.emplace(it->id, m_ModelLoader.BuildModel(modelData, materials));
+            m_ModelStates[it->id] = AssetState::Loaded;
+            it = m_PendingModelAssemblies.erase(it);
         }
     }
 

@@ -79,6 +79,7 @@ namespace Dodo {
 
         std::unordered_map<TextureID, Ref<Texture>> m_Textures;
         std::unordered_map<std::string, TextureID> m_TexturePathLookup;
+        std::unordered_map<TextureID, AssetState> m_TextureStates;
 
         std::unordered_map<MaterialID, Ref<Material>> m_Materials;
         std::unordered_map<std::string, MaterialID> m_MaterialID;
@@ -89,14 +90,28 @@ namespace Dodo {
         std::unordered_map<BuiltinModel, ModelID> builtinIDs;
         std::unordered_map<ModelID, AssetState> m_ModelStates;
 
-        // Staging queue written by worker threads, called by main thread to upload to GPU
+        // Staging queues written by worker threads, drained by main thread in FlushStagingQueue
+        struct PendingTextureUpload {
+            TextureID id;
+            TextureData data;
+        };
+        // Written by Assimp worker; processed by FlushStagingQueue which dispatches per-texture LoadTexture tasks
         struct PendingModelUpload {
             ModelID id;
             ModelLoader::ModelData modelData;
         };
+        // Built by FlushStagingQueue once Assimp is done; held until all texture IDs are in m_Textures
+        struct PendingModelAssembly {
+            ModelID id;
+            ModelLoader::ModelData modelData;
+            std::vector<TextureID> waitingFor; // texture IDs that must be in m_Textures before building
+        };
         std::mutex m_StagingMutex;
+        std::vector<PendingTextureUpload> m_StagingTextures;
+        std::vector<TextureID> m_FailedTextureIDs;
         std::vector<PendingModelUpload> m_StagingModels;
         std::vector<ModelID> m_FailedModels;
+        std::vector<PendingModelAssembly> m_PendingModelAssemblies;
 
         ShaderID m_NextShaderID = 1;
         PipelineID m_NextPipelineID = 1;

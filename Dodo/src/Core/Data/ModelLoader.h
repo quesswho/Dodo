@@ -2,7 +2,6 @@
 
 #include "Core/Graphics/Material/MaterialFeatures.h"
 #include "Core/Graphics/Scene/Model.h"
-#include "TextureLoader.h"
 
 struct aiMesh;
 struct aiMaterial;
@@ -24,7 +23,6 @@ namespace Dodo {
             struct TextureEntry {
                 int slot;
                 std::string path;
-                TextureData pixels;
             };
             struct MaterialEntry {
                 std::vector<TextureEntry> textures;
@@ -40,12 +38,10 @@ namespace Dodo {
             bool failed = false;
         };
 
-        // Load model data to CPU memory
-        ModelData LoadModelData(const std::string& path, TextureLoader& textureLoader);
+        // Load model and texture paths to CPU memory. Thread-safe.
+        ModelData LoadModelData(const std::string& path);
 
-        // Uploads CPU data to the GPU
+        // Uploads CPU mesh data to the GPU
         Ref<Model> BuildModel(const ModelData& data, const std::vector<Ref<Material>>& materials);
-      private:
-        Ref<Mesh> LoadMesh(::aiMesh* mesh, Ref<Material> material);
     };
 } // namespace Dodo

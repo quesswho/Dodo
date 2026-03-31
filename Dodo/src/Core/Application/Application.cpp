@@ -63,7 +63,11 @@ namespace Dodo {
         m_TotalPhysMemGbs = round(m_Window->m_Pcspecs.m_TotalPhysicalMemory / 1073741824.0f * 100) / 100; // 1024^3
         m_CpuBrand = m_Window->m_Pcspecs.m_CpuBrand;
         m_NumLogicalProcessors = std::thread::hardware_concurrency();
-        m_ThreadManager = ddnew ThreadManager(m_NumLogicalProcessors - 1 == 0 ? 1 : m_NumLogicalProcessors - 1);
+
+        uint numWorkerThreads = m_NumLogicalProcessors - 1 == 0 ? 1 : m_NumLogicalProcessors - 1;
+        m_ThreadManager = ddnew ThreadManager(numWorkerThreads);
+        DD_INFO("Allocating {} worker threads ({} logical processors detected)", numWorkerThreads,
+                m_NumLogicalProcessors);
 
         // Set event callback in input manager
         m_InputManager.SetEventCallback([this](const Event& e) { OnEvent(e); });

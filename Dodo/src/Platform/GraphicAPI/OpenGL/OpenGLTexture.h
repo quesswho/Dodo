@@ -5,7 +5,6 @@
 namespace Dodo::Platform {
     class OpenGLTexture {
       public:
-        OpenGLTexture(const std::string& path);
         OpenGLTexture(uchar* data, const TextureProperties& prop);
         ~OpenGLTexture();
 

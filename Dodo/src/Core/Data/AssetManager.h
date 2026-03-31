@@ -4,6 +4,7 @@
 
 #include "AssetTypes.h"
 #include "Core/Graphics/CubeMap.h"
+#include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
 #include "Core/Graphics/Pipeline/PipelineDesc.h"
 #include "Core/Graphics/Pipeline/ShaderSource.h"
@@ -13,6 +14,7 @@
 #include "MaterialLoader.h"
 #include "ModelLoader.h"
 #include "ShaderAsset.h"
+#include "TextureLoader.h"
 
 namespace Dodo {
 
@@ -29,6 +31,9 @@ namespace Dodo {
 
         std::unordered_map<PipelineID, Ref<Pipeline>> m_Pipelines;
         std::unordered_map<MaterialFeatures, PipelineID> m_ShaderBuilderPipelines;
+
+        std::unordered_map<TextureID, Ref<Texture>> m_Textures;
+        std::unordered_map<std::string, TextureID> m_TexturePathLookup;
 
         std::unordered_map<MaterialID, Ref<Material>> m_Materials;
         std::unordered_map<std::string, MaterialID> m_MaterialID;
@@ -52,6 +57,9 @@ namespace Dodo {
         Ref<Pipeline> GetPipeline(PipelineID id);
         Ref<Pipeline> GetFallbackPipeline() const { return m_Pipelines.at(0); }
 
+        TextureID LoadTexture(const std::string& path);
+        Ref<Texture> GetTexture(TextureID id);
+
         MaterialID LoadMaterial(const std::string& path);
         Ref<Material> GetMaterial(MaterialID id);
 
@@ -69,10 +77,12 @@ namespace Dodo {
         MaterialLoader m_MaterialLoader;
         MeshFactory m_MeshFactory;
         SlangCompiler m_SlangCompiler;
+        TextureLoader m_TextureLoader;
 
         ShaderID m_NextShaderID = 1;
         PipelineID m_NextPipelineID = 1;
         MaterialID m_NextMaterialID = 1;
         ModelID m_NextModelID = 1;
+        TextureID m_NextTextureID = 1;
     };
 } // namespace Dodo

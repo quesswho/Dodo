@@ -111,6 +111,32 @@ namespace Dodo {
         return nullptr;
     }
 
+    TextureID AssetManager::LoadTexture(const std::string& path)
+    {
+        auto it = m_TexturePathLookup.find(path);
+        if (it != m_TexturePathLookup.end()) return it->second;
+
+        TextureData data = m_TextureLoader.Load(path);
+        if (data.pixels.empty()) {
+            DD_ERR("Failed to load texture: {}", path);
+            return 0;
+        }
+
+        Ref<Texture> texture = std::make_shared<Texture>(data.pixels.data(), data.props);
+        TextureID id = m_NextTextureID++;
+        m_TexturePathLookup.emplace(path, id);
+        m_Textures.emplace(id, std::move(texture));
+        return id;
+    }
+
+    Ref<Texture> AssetManager::GetTexture(TextureID id)
+    {
+        auto it = m_Textures.find(id);
+        if (it != m_Textures.end()) return it->second;
+        DD_ERR("Trying to get texture that doesn't exist! ID: {0}", id);
+        return nullptr;
+    }
+
     MaterialID AssetManager::LoadMaterial(const std::string& path)
     {
         auto it = m_MaterialID.find(path);

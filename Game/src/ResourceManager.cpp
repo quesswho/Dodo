@@ -20,7 +20,8 @@ float right_verts[] = {0.5, -0.5, 0.5,  0.0, 1.0, 1.0, 0.0, 0.0, 0.5, -0.5, -0.5
 
 ResourceManager::ResourceManager(Dodo::AssetManager& assetManager, Dodo::RenderAPI& renderAPI)
 {
-    Ref<Dodo::Texture> atlas = std::make_shared<Dodo::Texture>("res/texture/blocks.png");
+    Dodo::TextureID blocks = assetManager.LoadTexture("res/texture/blocks.png"); 
+    Ref<Dodo::Texture> atlas = assetManager.GetTexture(blocks);
     Ref<Dodo::TextureSampler> sampler = std::make_shared<Dodo::TextureSampler>(Dodo::SamplerProperties(
         Dodo::SamplerFilter::MIN_MAG_NEAREST, Dodo::SamplerWrapMode::WRAP_REPEAT, Dodo::SamplerWrapMode::WRAP_REPEAT));
 

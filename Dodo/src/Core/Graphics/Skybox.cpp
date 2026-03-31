@@ -24,9 +24,9 @@ namespace Dodo {
     Skybox::Skybox(std::vector<std::string> paths, AssetManager& assets, RenderAPI& renderAPI)
         : m_VertexBuffer(std::make_unique<VertexBuffer>(s_SkyboxVertices, sizeof(s_SkyboxVertices),
                                                         BufferProperties({{"POSITION", 3}}))),
-          m_Sampler(std::make_shared<TextureSampler>(SamplerProperties(SamplerFilter::MIN_MAG_MIP_LINEAR,
-                                                                       SamplerWrapMode::WRAP_CLAMP_TO_EDGE,
-                                                                       SamplerWrapMode::WRAP_CLAMP_TO_EDGE))),
+          m_Sampler(renderAPI.CreateSampler(SamplerProperties(SamplerFilter::MIN_MAG_MIP_LINEAR,
+                                                              SamplerWrapMode::WRAP_CLAMP_TO_EDGE,
+                                                              SamplerWrapMode::WRAP_CLAMP_TO_EDGE))),
           m_CubeMap(std::make_shared<CubeMap>(paths))
     {
         ShaderID id = assets.LoadShaderFromPath("res/shader/builtin/Passes/Skybox.slang");

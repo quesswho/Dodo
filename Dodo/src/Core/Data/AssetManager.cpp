@@ -218,7 +218,7 @@ namespace Dodo {
         }
 
         for (auto& pending : textures) {
-            Ref<Texture> tex = std::make_shared<Texture>(pending.data.pixels.data(), pending.data.props);
+            Ref<Texture> tex = renderAPI.CreateTexture(pending.data.pixels.data(), pending.data.props);
             m_Textures.emplace(pending.id, std::move(tex));
             m_TextureStates[pending.id] = AssetState::Loaded;
         }
@@ -277,7 +277,7 @@ namespace Dodo {
                     PipelineDesc desc;
                     desc.shaderID = shaderID;
                     material->SetShader(GetPipeline(CreatePipeline(desc, renderAPI)));
-                    material->SetSampler(std::make_shared<TextureSampler>(SamplerProperties()));
+                    material->SetSampler(renderAPI.CreateSampler(SamplerProperties()));
                 }
                 materials.push_back(std::move(material));
             }

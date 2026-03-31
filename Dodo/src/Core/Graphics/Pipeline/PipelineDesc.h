@@ -5,7 +5,7 @@
 
 namespace Dodo {
 
-    enum class BlendMode : uint8_t {
+    enum class BlendMode : uint8_t { // TODO: Add more blend modes supported by vulkan
         None,
         Opaque,
         AlphaBlend,

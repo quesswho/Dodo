@@ -1,6 +1,11 @@
 #include "VulkanRenderAPI.h"
 #include "pch.h"
 
+#include "Core/Data/AssetManager.h"
+#include "VulkanPipeline.h"
+#include "VulkanSampler.h"
+#include "VulkanTexture.h"
+
 #include <backends/imgui_impl_vulkan.h>
 #include <unordered_set>
 
@@ -81,6 +86,7 @@ namespace Dodo::Platform {
         if (Try(CreateCommandPool())) return result;
         if (Try(CreateCommandBuffer())) return result;
         if (Try(CreateSyncObjects())) return result;
+
         if (winprop.m_Settings.imgui)
             if (Try(InitImGui())) return result;
 
@@ -521,8 +527,20 @@ namespace Dodo::Platform {
     void VulkanRenderAPI::ClearColor(float r, float g, float b) const {}
     void VulkanRenderAPI::Viewport(uint width, uint height) const {}
     void VulkanRenderAPI::BindCubeMap(uint slot, Ref<CubeMap> cubemap) {}
-    void VulkanRenderAPI::BindTexture(uint slot, Ref<Texture> texture) {}
-    void VulkanRenderAPI::BindTextureSampler(uint slot, Ref<TextureSampler> sampler) {}
+
+    void VulkanRenderAPI::BindTexture(uint slot, Ref<Texture> texture)
+    {
+        if (slot >= maxTextureSlots || !texture) return;
+        m_PendingImageViews[slot] = texture->GetImageView();
+    }
+
+    void VulkanRenderAPI::BindTextureSampler(uint slot, Ref<TextureSampler> sampler)
+    {
+        if (slot >= maxTextureSlots || !sampler) return;
+        m_PendingSamplers[slot] = sampler->GetSampler();
+    }
+
+    void VulkanRenderAPI::BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer) {}
 
     void VulkanRenderAPI::BindPipeline(Ref<Pipeline> pipeline)
     {
@@ -530,8 +548,28 @@ namespace Dodo::Platform {
         vkCmdBindPipeline(m_Frames[m_CurrentFrame].commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                           pipeline->m_Pipeline);
         m_BoundPipeline = pipeline->m_Pipeline;
+        m_BoundPipelineLayout = pipeline->m_Layout;
     }
 
+    void VulkanRenderAPI::PushConstants(const void* data, size_t size)
+    {
+        if (m_BoundPipelineLayout == VK_NULL_HANDLE) return;
+        vkCmdPushConstants(m_Frames[m_CurrentFrame].commandBuffer, m_BoundPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
+                           (uint32_t)size, data);
+    }
+
+    void VulkanRenderAPI::SetFrameData(const Dodo::FrameData& data)
+    {
+        // TODO: Update descriptor set 0 (FrameData UBO) and vkCmdBindDescriptorSets
+    }
+
+    void VulkanRenderAPI::SetDrawData(const DrawData& data)
+    {
+        // TODO: Needs std430-aligned version of DrawData (mat3 is 48B in GLSL, 36B in C++)
+        // Once aligned, call PushConstants(&data, alignedSize)
+    }
+
+    void VulkanRenderAPI::DrawIndexed(const Ref<VertexBuffer>& va) {}
     void VulkanRenderAPI::DrawIndices(uint count) const {}
     void VulkanRenderAPI::DrawArray(uint count) const {}
 
@@ -545,11 +583,22 @@ namespace Dodo::Platform {
         m_SwapChainNeedsRecreation = true;
     }
 
-    void VulkanRenderAPI::DepthComparisonMethod(Dodo::DepthComparisonMethod method) const {}
-    void VulkanRenderAPI::DepthTest(bool depthtest) const {}
-    void VulkanRenderAPI::StencilTest(bool stenciltest) const {}
-    void VulkanRenderAPI::Blending(bool blending) const {}
-    void VulkanRenderAPI::Culling(bool cull, bool backface) {}
+    Ref<Pipeline> VulkanRenderAPI::CreatePipeline(const PipelineDesc& desc, AssetManager& assets)
+    {
+        const ShaderAsset& shader = assets.GetShaderAsset(desc.shaderID);
+        // VK_FORMAT_D32_SFLOAT matches the depth image that must be created alongside the swapchain
+        return std::make_shared<VulkanPipeline>(m_Device, m_SwapChainImageFormat, VK_FORMAT_D32_SFLOAT, shader, desc);
+    }
+
+    Ref<Texture> VulkanRenderAPI::CreateTexture(uchar* data, const TextureProperties& prop)
+    {
+        return std::make_shared<VulkanTexture>(data, prop, m_Device, m_PhysicalDevice, m_CommandPool, m_PresentQueue);
+    }
+
+    Ref<TextureSampler> VulkanRenderAPI::CreateSampler(const SamplerProperties& prop)
+    {
+        return std::make_shared<VulkanSampler>(prop, m_Device);
+    }
 
     void VulkanRenderAPI::ImGuiNewFrame() const
     {

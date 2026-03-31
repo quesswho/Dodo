@@ -1,9 +1,10 @@
 #pragma once
 
 #include <Core/Common.h>
+#include <Core/Data/ShaderAsset.h>
 #include <volk.h>
 
-#include "Core/Math/Maths.h"
+#include "Core/Graphics/Pipeline/PipelineDesc.h"
 
 namespace Dodo::Platform {
 
@@ -11,10 +12,19 @@ namespace Dodo::Platform {
         friend class VulkanRenderAPI;
 
       public:
-        VulkanPipeline(const PipelineDesc& desc, uint shaderID) {}
+        VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, const ShaderAsset& shader,
+                       const PipelineDesc& desc);
         ~VulkanPipeline();
 
+        VkPipeline GetPipeline() const { return m_Pipeline; }
+        VkPipelineLayout GetLayout() const { return m_Layout; }
+
       private:
-        VkPipeline m_Pipeline;
+        VkDevice m_Device;
+        VkPipeline m_Pipeline = VK_NULL_HANDLE;
+        VkPipelineLayout m_Layout = VK_NULL_HANDLE;
+        VkDescriptorSetLayout m_FrameSetLayout = VK_NULL_HANDLE;   // Set 0: FrameData UBO
+        VkDescriptorSetLayout m_TextureSetLayout = VK_NULL_HANDLE; // Set 1: albedo/specular/normal samplers
     };
+
 } // namespace Dodo::Platform

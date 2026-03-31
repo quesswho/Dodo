@@ -66,6 +66,14 @@ namespace Dodo::Platform {
         void SetViewport(uint width, uint height, uint posX, uint posY);
 
         Ref<Pipeline> CreatePipeline(const PipelineDesc& desc, AssetManager& assets);
+        inline Ref<Texture> CreateTexture(uchar* data, const TextureProperties& prop)
+        {
+            return std::make_shared<Texture>(data, prop);
+        }
+        inline Ref<TextureSampler> CreateSampler(const SamplerProperties& prop)
+        {
+            return std::make_shared<TextureSampler>(prop);
+        }
 
         inline const char* GetAPIName() const { return "OpenGL"; }
         int CurrentVRamUsage() const

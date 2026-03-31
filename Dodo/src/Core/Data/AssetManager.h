@@ -24,25 +24,6 @@ namespace Dodo {
     };
 
     class AssetManager {
-      private:
-        std::unordered_map<ShaderID, ShaderAsset> m_Shaders;
-        std::unordered_map<std::string, ShaderID> m_ShaderPathLookup;
-        std::unordered_map<MaterialFeatures, ShaderID> m_ShaderBuilderShaders;
-
-        std::unordered_map<PipelineID, Ref<Pipeline>> m_Pipelines;
-        std::unordered_map<MaterialFeatures, PipelineID> m_ShaderBuilderPipelines;
-
-        std::unordered_map<TextureID, Ref<Texture>> m_Textures;
-        std::unordered_map<std::string, TextureID> m_TexturePathLookup;
-
-        std::unordered_map<MaterialID, Ref<Material>> m_Materials;
-        std::unordered_map<std::string, MaterialID> m_MaterialID;
-
-        std::unordered_map<ModelID, Ref<Model>> m_Models;         // Stores id as key and model pointer as value
-        std::unordered_map<std::string, ModelID> m_ModelID;   // Stores path as key and id as value
-        std::unordered_map<ModelID, std::string> m_ModelPath; // Stores id as key and path as value
-        std::unordered_map<BuiltinModel, ModelID> builtinIDs;
-
       public:
         AssetManager();
         ~AssetManager();
@@ -78,6 +59,24 @@ namespace Dodo {
         MeshFactory m_MeshFactory;
         SlangCompiler m_SlangCompiler;
         TextureLoader m_TextureLoader;
+
+        std::unordered_map<ShaderID, ShaderAsset> m_Shaders;
+        std::unordered_map<std::string, ShaderID> m_ShaderPathLookup;
+        std::unordered_map<MaterialFeatures, ShaderID> m_ShaderBuilderShaders;
+
+        std::unordered_map<PipelineID, Ref<Pipeline>> m_Pipelines;
+        std::unordered_map<MaterialFeatures, PipelineID> m_ShaderBuilderPipelines;
+
+        std::unordered_map<TextureID, Ref<Texture>> m_Textures;
+        std::unordered_map<std::string, TextureID> m_TexturePathLookup;
+
+        std::unordered_map<MaterialID, Ref<Material>> m_Materials;
+        std::unordered_map<std::string, MaterialID> m_MaterialID;
+
+        std::unordered_map<ModelID, Ref<Model>> m_Models;         // Stores id as key and model pointer as value
+        std::unordered_map<std::string, ModelID> m_ModelID;   // Stores path as key and id as value
+        std::unordered_map<ModelID, std::string> m_ModelPath; // Stores id as key and path as value
+        std::unordered_map<BuiltinModel, ModelID> builtinIDs;
 
         ShaderID m_NextShaderID = 1;
         PipelineID m_NextPipelineID = 1;

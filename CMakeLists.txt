@@ -47,6 +47,8 @@ endif()
 if (DD_API_VULKAN)
     message(STATUS "=== Configuring Volk ===")
     add_subdirectory(Dodo/lib/volk)
+    message(STATUS "=== Configuring VMA ===")
+    add_subdirectory(Dodo/lib/vma)
 endif()
 
 message(STATUS "=== Configuring ImGui ===")

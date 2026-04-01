@@ -13,3 +13,6 @@
 [submodule "Dodo/lib/SPIRV-Cross"]
 	path = Dodo/lib/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross.git
+[submodule "Dodo/lib/vma"]
+	path = Dodo/lib/vma
+	url = git@github.com:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git

@@ -77,7 +77,7 @@ if (DD_API_OPENGL)
     target_link_libraries(Dodo PUBLIC glad spirv-cross-core spirv-cross-glsl)
     target_compile_definitions(Dodo PUBLIC DD_API_OPENGL)
 elseif (DD_API_VULKAN)
-    target_link_libraries(Dodo PUBLIC volk)
+    target_link_libraries(Dodo PUBLIC volk vma)
     target_compile_definitions(Dodo PUBLIC DD_API_VULKAN)
 endif()
 

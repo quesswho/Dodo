@@ -19,6 +19,8 @@ using VulkanContext = Dodo::Platform::VulkanWGLContext;
 using VulkanContext = Dodo::Platform::VulkanGLFWContext;
 #endif
 
+#define DODO_VULKAN_VERSION VK_API_VERSION_1_3
+
 #include <array>
 #include <optional>
 
@@ -106,6 +108,7 @@ namespace Dodo::Platform {
         RenderInitError SetupDebug();
         RenderInitError PickPhysicalDevice();
         RenderInitError InitDevice();
+        RenderInitError InitVMA();
         RenderInitError CreateSwapChain(VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE);
         RenderInitError CreateImageViews();
         RenderInitError CreateCommandPool();

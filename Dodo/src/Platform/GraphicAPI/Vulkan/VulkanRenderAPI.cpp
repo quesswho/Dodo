@@ -9,6 +9,11 @@
 #include <backends/imgui_impl_vulkan.h>
 #include <unordered_set>
 
+#define VMA_STATIC_VULKAN_FUNCTIONS  0
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 0
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
+
 namespace Dodo::Platform {
 
     VulkanRenderAPI::VulkanRenderAPI(const NativeWindowHandle& handle) : m_Handle(handle)
@@ -106,7 +111,7 @@ namespace Dodo::Platform {
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.pEngineName = "Dodo Engine";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion = VK_API_VERSION_1_3;
+        appInfo.apiVersion = DODO_VULKAN_VERSION;
 
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -282,6 +287,36 @@ namespace Dodo::Platform {
         volkLoadDevice(m_Device);
 
         vkGetDeviceQueue(m_Device, indices.presentFamily.value(), 0, &m_PresentQueue);
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    /**
+     * Initialize Vulkan Memory Allocator library
+     */
+    RenderInitError VulkanRenderAPI::InitVMA()
+    {
+        VmaAllocatorCreateInfo allocatorCreateInfo = {};
+        allocatorCreateInfo.physicalDevice = m_PhysicalDevice;
+        allocatorCreateInfo.device = m_Device;
+        allocatorCreateInfo.instance = m_VkInstance;
+        allocatorCreateInfo.vulkanApiVersion = DODO_VULKAN_VERSION;
+        allocatorCreateInfo.flags =
+            VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT | VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT;
+
+        VmaVulkanFunctions vulkanFunctions;
+        VkResult res = vmaImportVulkanFunctionsFromVolk(&allocatorCreateInfo, &vulkanFunctions);
+        if (res != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "VMA: Failed to import Vulkan functions from Volk!");
+        }
+
+        allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
+
+        VmaAllocator allocator;
+        res = vmaCreateAllocator(&allocatorCreateInfo, &allocator);
+        if (res != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "VMA: Failed to create VMA allocator!");
+        }
 
         return RenderInitError(RenderInitStatus::Success);
     }

@@ -48,7 +48,7 @@ namespace Dodo::Platform {
         : m_Device(device)
     {
         // Setup descriptor set layouts for frame data and texture samplers
-        
+
         // Set 0: FrameData UBO
         VkDescriptorSetLayoutBinding frameUBOBinding{};
         frameUBOBinding.binding = 0;
@@ -122,7 +122,6 @@ namespace Dodo::Platform {
             stages.push_back(stageInfo);
         }
 
-        
         // Mesh layout
         //   vec3 position  (offset  0, 12 bytes)
         //   vec2 texcoord  (offset 12,  8 bytes)

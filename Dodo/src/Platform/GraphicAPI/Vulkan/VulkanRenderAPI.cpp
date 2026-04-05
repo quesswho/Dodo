@@ -796,7 +796,7 @@ namespace Dodo::Platform {
 
     Ref<Texture> VulkanRenderAPI::CreateTexture(uchar* data, const TextureProperties& prop)
     {
-        return std::make_shared<VulkanTexture>(data, prop, m_Device, m_PhysicalDevice, m_CommandPool, m_GraphicsQueue);
+        return std::make_shared<VulkanTexture>(data, prop, m_Device, m_VmaAllocator, m_CommandPool, m_GraphicsQueue);
     }
 
     Ref<TextureSampler> VulkanRenderAPI::CreateSampler(const SamplerProperties& prop)

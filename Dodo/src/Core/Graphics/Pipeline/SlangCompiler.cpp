@@ -4,15 +4,18 @@
 
 namespace Dodo {
 
-    static DescriptorType SlangKindToDescriptorType(slang::TypeReflection::Kind kind)
+    static DescriptorType SlangBindingTypeToDescriptorType(slang::BindingType bindingType)
     {
-        switch (kind) {
-        case slang::TypeReflection::Kind::ConstantBuffer:
+        switch (bindingType) {
+        case slang::BindingType::ConstantBuffer:
             return DescriptorType::UniformBuffer;
-        case slang::TypeReflection::Kind::Resource:
+        case slang::BindingType::Texture:
             return DescriptorType::SampledTexture;
-        case slang::TypeReflection::Kind::SamplerState:
+        case slang::BindingType::Sampler:
             return DescriptorType::Sampler;
+        case slang::BindingType::CombinedTextureSampler:
+            DD_WARN("Slang: combined texture sampler detected — use separate Texture2D + SamplerState instead");
+            return DescriptorType::CombinedImageSampler;
         default:
             return DescriptorType::UniformBuffer;
         }
@@ -134,7 +137,7 @@ namespace Dodo {
             b.set = (uint32_t)param->getBindingSpace();
             b.binding = (uint32_t)param->getBindingIndex();
             b.count = 1;
-            b.type = SlangKindToDescriptorType(param->getVariable()->getType()->getKind());
+            b.type = SlangBindingTypeToDescriptorType(param->getTypeLayout()->getBindingRangeType(0));
             result.descriptorBindings.push_back(b);
         }
 

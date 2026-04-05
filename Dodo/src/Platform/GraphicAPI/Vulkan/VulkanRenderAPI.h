@@ -158,6 +158,7 @@ namespace Dodo::Platform {
         VkDebugUtilsMessengerEXT m_DebugMessenger;
         VkSurfaceKHR m_Surface;
         VkSwapchainKHR m_SwapChain;
+        VkQueue m_GraphicsQueue;
         VkQueue m_PresentQueue;
         std::vector<VkImage> m_SwapChainImages;
         std::vector<VkImageView> m_SwapChainImageViews;
@@ -177,8 +178,10 @@ namespace Dodo::Platform {
         std::array<FrameData, maxFramesInFlight> m_Frames;
         std::vector<VkSemaphore> m_RenderFinishedSemaphores;
         uint m_CurrentFrame = 0;
+        uint32_t m_CurrentImageIndex = 0;
 
         VkDescriptorPool m_ImGuiDescriptorPool;
+        bool m_ImGuiActive = false;
 
         bool m_SwapChainNeedsRecreation = false;
         bool m_EnableValidationLayers;

@@ -37,6 +37,7 @@ namespace Dodo {
         UniformBuffer,
         SampledTexture,
         Sampler,
+        CombinedImageSampler, // Legacy, use separate Texture2D + SamplerState instead
     };
 
     struct DescriptorBindingReflection {

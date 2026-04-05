@@ -16,8 +16,6 @@ namespace Dodo::Platform {
         const BufferProperties& GetBufferProperties() const { return m_BufferProperties; }
         uint GetVAOID() const { return m_ABufferID; }
 
-        void Bind() const;
-
       private:
         const BufferProperties m_BufferProperties;
     };

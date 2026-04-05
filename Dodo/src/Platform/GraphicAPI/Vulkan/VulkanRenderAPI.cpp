@@ -29,6 +29,8 @@ namespace Dodo::Platform {
 
     VulkanRenderAPI::~VulkanRenderAPI()
     {
+        // TODO: I am unsure if we need to wait for both, but should be for good measure
+        vkQueueWaitIdle(m_GraphicsQueue);
         vkQueueWaitIdle(m_PresentQueue);
 
         for (const auto& semaphore : m_RenderFinishedSemaphores) {
@@ -43,7 +45,7 @@ namespace Dodo::Platform {
 
         vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
         // TODO: There should be a check for imgui here...
-        ImGui_ImplVulkan_Shutdown();
+        if (m_ImGuiActive) ImGui_ImplVulkan_Shutdown();
         vkDestroyDescriptorPool(m_Device, m_ImGuiDescriptorPool, nullptr);
 
         for (auto imageView : m_SwapChainImageViews) {
@@ -289,6 +291,7 @@ namespace Dodo::Platform {
 
         volkLoadDevice(m_Device);
 
+        vkGetDeviceQueue(m_Device, indices.graphicsFamily.value(), 0, &m_GraphicsQueue);
         vkGetDeviceQueue(m_Device, indices.presentFamily.value(), 0, &m_PresentQueue);
 
         return RenderInitError(RenderInitStatus::Success);
@@ -520,7 +523,7 @@ namespace Dodo::Platform {
         vulkanInfo.PhysicalDevice = m_PhysicalDevice;
         vulkanInfo.Device = m_Device;
         vulkanInfo.QueueFamily = indices.graphicsFamily.value();
-        vulkanInfo.Queue = m_PresentQueue;
+        vulkanInfo.Queue = m_GraphicsQueue;
         vulkanInfo.DescriptorPool = m_ImGuiDescriptorPool;
         vulkanInfo.MinImageCount = 2;
         vulkanInfo.ImageCount = static_cast<uint32_t>(m_SwapChainImages.size());
@@ -539,6 +542,7 @@ namespace Dodo::Platform {
 
         ImGui_ImplVulkan_Init(&vulkanInfo);
 
+        m_ImGuiActive = true;
         return RenderInitError(RenderInitStatus::Success);
     }
 
@@ -557,8 +561,141 @@ namespace Dodo::Platform {
             RecreateSwapChain();
             m_SwapChainNeedsRecreation = false;
         }
+
+        VkFence inFlightFence = m_Frames[m_CurrentFrame].inFlightFence;
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+
+        vkWaitForFences(m_Device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+        vkResetFences(m_Device, 1, &inFlightFence);
+
+        vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_Frames[m_CurrentFrame].imageAvailableSemaphore,
+                              VK_NULL_HANDLE, &m_CurrentImageIndex);
+
+        vkResetCommandBuffer(cmd, 0);
+
+        VkCommandBufferBeginInfo beginInfo = {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+        if (vkBeginCommandBuffer(cmd, &beginInfo) != VK_SUCCESS) {
+            DD_ERR("failed to begin recording command buffer!");
+            return;
+        }
+
+        // Transition swapchain image to color attachment layout
+        VkImageMemoryBarrier barrier = {};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = m_SwapChainImages[m_CurrentImageIndex];
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
+                             0, nullptr, 0, nullptr, 1, &barrier);
+
+        VkRenderingAttachmentInfo colorAttachment = {};
+        colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+        colorAttachment.imageView = m_SwapChainImageViews[m_CurrentImageIndex];
+        colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.clearValue.color = {{0.1f, 0.1f, 0.1f, 1.0f}};
+
+        VkRenderingInfo renderingInfo = {};
+        renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+        renderingInfo.renderArea = {{0, 0}, m_SwapChainExtent};
+        renderingInfo.layerCount = 1;
+        renderingInfo.colorAttachmentCount = 1;
+        renderingInfo.pColorAttachments = &colorAttachment;
+
+        vkCmdBeginRendering(cmd, &renderingInfo);
+
+        VkViewport viewport = {};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(m_SwapChainExtent.width);
+        viewport.height = static_cast<float>(m_SwapChainExtent.height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+        VkRect2D scissor = {};
+        scissor.offset = {0, 0};
+        scissor.extent = m_SwapChainExtent;
+        vkCmdSetScissor(cmd, 0, 1, &scissor);
     }
-    void VulkanRenderAPI::End() {}
+
+    void VulkanRenderAPI::End()
+    {
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+        uint32_t imageIndex = m_CurrentImageIndex;
+
+        vkCmdEndRendering(cmd);
+
+        // TODO: Deprecated stuff, use VkImageMemoryBarrier2KHR instead
+        // Transition swapchain image back to present layout
+        VkImageMemoryBarrier presentBarrier = {};
+        presentBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        presentBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        presentBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        presentBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        presentBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        presentBarrier.image = m_SwapChainImages[imageIndex];
+        presentBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        presentBarrier.subresourceRange.baseMipLevel = 0;
+        presentBarrier.subresourceRange.levelCount = 1;
+        presentBarrier.subresourceRange.baseArrayLayer = 0;
+        presentBarrier.subresourceRange.layerCount = 1;
+        presentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        presentBarrier.dstAccessMask = 0;
+
+        vkCmdPipelineBarrier(cmd,
+                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
+
+        vkEndCommandBuffer(cmd);
+
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+        VkSemaphore waitSemaphores[] = {m_Frames[m_CurrentFrame].imageAvailableSemaphore};
+        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitDstStageMask = waitStages;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmd;
+
+        VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphores[imageIndex]};
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
+
+        if (vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, m_Frames[m_CurrentFrame].inFlightFence) != VK_SUCCESS) {
+            DD_ERR("failed to submit draw command buffer!");
+            return;
+        }
+
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
+
+        VkSwapchainKHR swapChains[] = {m_SwapChain};
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = swapChains;
+        presentInfo.pImageIndices = &imageIndex;
+
+        vkQueuePresentKHR(m_PresentQueue, &presentInfo);
+
+        m_CurrentFrame = (m_CurrentFrame + 1) % maxFramesInFlight;
+    }
 
     void VulkanRenderAPI::ClearColor(float r, float g, float b) const {}
     void VulkanRenderAPI::Viewport(uint width, uint height) const {}
@@ -648,18 +785,18 @@ namespace Dodo::Platform {
                                                           const BufferProperties& prop)
     {
         return std::make_shared<VulkanVertexBuffer>(vertices, size, prop, m_Device, m_VmaAllocator, m_CommandPool,
-                                                    m_PresentQueue);
+                                                    m_GraphicsQueue);
     }
 
     Ref<IndexBuffer> VulkanRenderAPI::CreateIndexBuffer(const uint* indices, uint count)
     {
         return std::make_shared<VulkanIndexBuffer>(indices, count, m_Device, m_VmaAllocator, m_CommandPool,
-                                                   m_PresentQueue);
+                                                   m_GraphicsQueue);
     }
 
     Ref<Texture> VulkanRenderAPI::CreateTexture(uchar* data, const TextureProperties& prop)
     {
-        return std::make_shared<VulkanTexture>(data, prop, m_Device, m_PhysicalDevice, m_CommandPool, m_PresentQueue);
+        return std::make_shared<VulkanTexture>(data, prop, m_Device, m_PhysicalDevice, m_CommandPool, m_GraphicsQueue);
     }
 
     Ref<TextureSampler> VulkanRenderAPI::CreateSampler(const SamplerProperties& prop)
@@ -674,56 +811,16 @@ namespace Dodo::Platform {
 
     void VulkanRenderAPI::ImGuiEndFrame()
     {
-        VkSemaphore renderFinished = m_Frames[m_CurrentFrame].renderFinishedSemaphore;
-        VkFence inFlightFence = m_Frames[m_CurrentFrame].inFlightFence;
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
-
-        // Wait until previous frame is finished
-        vkWaitForFences(m_Device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
-        vkResetFences(m_Device, 1, &inFlightFence);
-
-        // Get the current image index in the swap chain
-        uint32_t imageIndex;
-        vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_Frames[m_CurrentFrame].imageAvailableSemaphore,
-                              VK_NULL_HANDLE, &imageIndex);
-
-        vkResetCommandBuffer(cmd, 0);
-
-        VkCommandBufferBeginInfo beginInfo = {};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-
-        if (vkBeginCommandBuffer(cmd, &beginInfo) != VK_SUCCESS) {
-            DD_ERR("failed to begin recording command buffer!");
-            return;
-        }
-
-        // TODO: Deprecated stuff, use VkImageMemoryBarrier2KHR instead
-        VkImageMemoryBarrier barrier = {};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = m_SwapChainImages[imageIndex];
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
-        barrier.srcAccessMask = 0;
-        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
-                             0, nullptr, 0, nullptr, 1, &barrier);
+        uint32_t imageIndex = m_CurrentImageIndex;
 
         // Setup dynamic rendering target
         VkRenderingAttachmentInfo colorAttachment = {};
         colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
         colorAttachment.imageView = m_SwapChainImageViews[imageIndex];
         colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorAttachment.clearValue.color = {{0.1f, 0.1f, 1.0f, 1.0f}}; // Dark gray background
 
         VkRenderingInfo renderingInfo = {};
         renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
@@ -738,64 +835,7 @@ namespace Dodo::Platform {
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 
         vkCmdEndRendering(cmd);
-
-        // TODO: Deprecated stuff, use VkImageMemoryBarrier2KHR instead
-        // Transition swapchain image back to present layout
-        VkImageMemoryBarrier presentBarrier = {};
-        presentBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        presentBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        presentBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        presentBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        presentBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        presentBarrier.image = m_SwapChainImages[imageIndex];
-        presentBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        presentBarrier.subresourceRange.baseMipLevel = 0;
-        presentBarrier.subresourceRange.levelCount = 1;
-        presentBarrier.subresourceRange.baseArrayLayer = 0;
-        presentBarrier.subresourceRange.layerCount = 1;
-        presentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        presentBarrier.dstAccessMask = 0;
-
-        vkCmdPipelineBarrier(cmd,
-                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // wait for rendering to finish
-                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
-
-        vkEndCommandBuffer(cmd);
-
-        // Setup semaphore and submit command buffer
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-        VkSemaphore waitSemaphores[] = {m_Frames[m_CurrentFrame].imageAvailableSemaphore};
-        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &cmd;
-
-        VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphores[imageIndex]};
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSemaphores;
-
-        if (vkQueueSubmit(m_PresentQueue, 1, &submitInfo, m_Frames[m_CurrentFrame].inFlightFence) != VK_SUCCESS) {
-            DD_ERR("failed to submit draw command buffer!");
-            return;
-        }
-
-        VkPresentInfoKHR presentInfo{};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores;
-
-        VkSwapchainKHR swapChains[] = {m_SwapChain};
-        presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = swapChains;
-        presentInfo.pImageIndices = &imageIndex;
-
-        vkQueuePresentKHR(m_PresentQueue, &presentInfo);
-
-        m_CurrentFrame = (m_CurrentFrame + 1) % maxFramesInFlight;
+        // Submit and present are handled by End()
     }
 
     /**

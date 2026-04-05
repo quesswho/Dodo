@@ -14,6 +14,8 @@ namespace Dodo::Platform {
             return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
         case DescriptorType::Sampler:
             return VK_DESCRIPTOR_TYPE_SAMPLER;
+        case DescriptorType::CombinedImageSampler:
+            return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         default:
             return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         }

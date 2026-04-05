@@ -1,7 +1,8 @@
 // Skybox.slang
 #include "../Common/Uniforms.slang"
 
-[[vk::binding(0, 1)]] SamplerCube<float4> cubeMapTexture : register(t0) : register(s0);
+[[vk::binding(0, 1)]] TextureCube<float4> cubeMapTexture : register(t0);
+[[vk::binding(1, 1)]] SamplerState cubeMapSampler : register(s0);
 
 struct VertexInput
 {
@@ -31,6 +32,6 @@ VertexOutput vertexMain(VertexInput input)
 [shader("fragment")]
 float4 fragmentMain(VertexOutput input) : SV_Target
 {
-    float4 result = cubeMapTexture.Sample(input.texCoord.xyz);
+    float4 result = cubeMapTexture.Sample(cubeMapSampler, input.texCoord.xyz);
     return result;
 }

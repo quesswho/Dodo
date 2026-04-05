@@ -82,14 +82,16 @@ namespace Dodo::Platform {
             options.vulkan_semantics = false;
             compiler.set_common_options(options);
 
-            // These two settings are particularly important since older GLSL requires a that the sampler is owned by
-            // the texture
+            // GLSL requires combined image samplers (sampler2D), so combine separate Texture2D + SamplerState.
+            // build_dummy_sampler_for_combined_images handles textures that have no explicit sampler.
             compiler.build_dummy_sampler_for_combined_images();
             compiler.build_combined_image_samplers();
 
-            // Flatten separate texture/sampler resources back into explicit OpenGL texture-unit bindings.
-            // We use the original texture binding as the combined sampler binding so unit 0 maps to t0/s0, etc.
+            // Assign each combined sampler the image's binding index so that texture unit N maps to binding N.
+            // Without this, SPIRV-Cross leaves the combined binding unset and samplers end up on wrong units.
             for (const auto& combinedSampler : compiler.get_combined_image_samplers()) {
+                compiler.set_decoration(combinedSampler.combined_id, spv::DecorationBinding,
+                    compiler.get_decoration(combinedSampler.image_id, spv::DecorationBinding));
                 compiler.set_name(combinedSampler.combined_id, "SPIRV_Cross_Combined" +
                                                                    compiler.get_name(combinedSampler.image_id) +
                                                                    compiler.get_name(combinedSampler.sampler_id));

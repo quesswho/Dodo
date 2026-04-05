@@ -3,6 +3,21 @@
 #include "Core/System/FileUtils.h"
 
 namespace Dodo {
+
+    static DescriptorType SlangKindToDescriptorType(slang::TypeReflection::Kind kind)
+    {
+        switch (kind) {
+        case slang::TypeReflection::Kind::ConstantBuffer:
+            return DescriptorType::UniformBuffer;
+        case slang::TypeReflection::Kind::Resource:
+            return DescriptorType::SampledTexture;
+        case slang::TypeReflection::Kind::SamplerState:
+            return DescriptorType::Sampler;
+        default:
+            return DescriptorType::UniformBuffer;
+        }
+    }
+
     SlangCompiler::SlangCompiler()
     {
         SlangGlobalSessionDesc globalDesc = {};
@@ -77,14 +92,50 @@ namespace Dodo {
         result.slangSource = std::move(slangSource);
 
         const int entryPointCount = module->getDefinedEntryPointCount();
-        for (int i = 0; i < entryPointCount; ++i) {
-            Slang::ComPtr<slang::IEntryPoint> entryPoint;
-            module->getDefinedEntryPoint(i, entryPoint.writeRef());
 
-            ShaderStageBinary stage = CompileEntryPoint(module, entryPoint);
+        // Collect entry points for SPIR-V compilation
+        std::vector<Slang::ComPtr<slang::IEntryPoint>> entryPoints(entryPointCount);
+        for (int i = 0; i < entryPointCount; ++i) {
+            module->getDefinedEntryPoint(i, entryPoints[i].writeRef());
+
+            ShaderStageBinary stage = CompileEntryPoint(module, entryPoints[i]);
             if (stage.stage == ShaderStage::Unknown) continue;
 
             result.stages.push_back(std::move(stage));
+        }
+
+        // Build a full composite program (module + all entry points) for reflection
+        std::vector<slang::IComponentType*> components;
+        components.push_back(module);
+        for (auto& ep : entryPoints)
+            components.push_back(ep);
+
+        Slang::ComPtr<slang::IComponentType> fullProgram;
+        SlangResult cr = m_Session->createCompositeComponentType(components.data(), (SlangInt)components.size(),
+                                                                 fullProgram.writeRef());
+        if (SLANG_FAILED(cr) || !fullProgram) {
+            DD_WARN("Slang: failed to create composite for reflection: {}", path);
+            return result;
+        }
+
+        Slang::ComPtr<slang::IComponentType> linked;
+        Slang::ComPtr<slang::IBlob> diag;
+        fullProgram->link(linked.writeRef(), diag.writeRef());
+        if (!linked) {
+            DD_WARN("Slang: failed to link for reflection: {}", path);
+            return result;
+        }
+
+        slang::ProgramLayout* layout = linked->getLayout();
+        for (unsigned i = 0; i < layout->getParameterCount(); ++i) {
+            slang::VariableLayoutReflection* param = layout->getParameterByIndex(i);
+
+            DescriptorBindingReflection b{};
+            b.set = (uint32_t)param->getBindingSpace();
+            b.binding = (uint32_t)param->getBindingIndex();
+            b.count = 1;
+            b.type = SlangKindToDescriptorType(param->getVariable()->getType()->getKind());
+            result.descriptorBindings.push_back(b);
         }
 
         return result;

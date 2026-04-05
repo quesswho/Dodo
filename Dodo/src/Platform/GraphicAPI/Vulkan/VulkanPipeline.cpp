@@ -1,7 +1,23 @@
 #include "VulkanPipeline.h"
 #include "pch.h"
 
+#include <map>
+
 namespace Dodo::Platform {
+
+    VkDescriptorType VulkanPipeline::ToVkDescriptorType(DescriptorType type)
+    {
+        switch (type) {
+        case DescriptorType::UniformBuffer:
+            return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        case DescriptorType::SampledTexture:
+            return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        case DescriptorType::Sampler:
+            return VK_DESCRIPTOR_TYPE_SAMPLER;
+        default:
+            return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        }
+    }
 
     static VkShaderStageFlagBits ToVkStage(ShaderStage stage)
     {
@@ -47,49 +63,39 @@ namespace Dodo::Platform {
                                    const ShaderAsset& shader, const PipelineDesc& desc)
         : m_Device(device)
     {
-        // Setup descriptor set layouts for frame data and texture samplers
-
-        // Set 0: FrameData UBO
-        VkDescriptorSetLayoutBinding frameUBOBinding{};
-        frameUBOBinding.binding = 0;
-        frameUBOBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        frameUBOBinding.descriptorCount = 1;
-        frameUBOBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-
-        VkDescriptorSetLayoutCreateInfo frameSetInfo{};
-        frameSetInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        frameSetInfo.bindingCount = 1;
-        frameSetInfo.pBindings = &frameUBOBinding;
-        vkCreateDescriptorSetLayout(m_Device, &frameSetInfo, nullptr, &m_FrameSetLayout);
-
-        // Set 1: Texture samplers
-        VkDescriptorSetLayoutBinding texBindings[3] = {};
-        for (uint32_t i = 0; i < 3; i++) {
-            texBindings[i].binding = i;
-            texBindings[i].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            texBindings[i].descriptorCount = 1;
-            texBindings[i].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        // Build descriptor set layouts from shader reflection data
+        std::map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> setBindings;
+        for (const auto& b : shader.descriptorBindings) {
+            VkDescriptorSetLayoutBinding vkb{};
+            vkb.binding = b.binding;
+            vkb.descriptorCount = b.count;
+            vkb.descriptorType = ToVkDescriptorType(b.type);
+            vkb.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+            setBindings[b.set].push_back(vkb);
         }
 
-        VkDescriptorSetLayoutCreateInfo texSetInfo{};
-        texSetInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        texSetInfo.bindingCount = 3;
-        texSetInfo.pBindings = texBindings;
-        vkCreateDescriptorSetLayout(m_Device, &texSetInfo, nullptr, &m_TextureSetLayout);
+        if (!setBindings.empty()) {
+            m_SetLayouts.resize(setBindings.rbegin()->first + 1, VK_NULL_HANDLE);
+            for (auto& [set, bindings] : setBindings) {
+                VkDescriptorSetLayoutCreateInfo info{};
+                info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                info.bindingCount = (uint32_t)bindings.size();
+                info.pBindings = bindings.data();
+                vkCreateDescriptorSetLayout(m_Device, &info, nullptr, &m_SetLayouts[set]);
+            }
+        }
 
         // Push constants: DrawData (model matrix + normal matrix)
-        // GLSL std430: mat4 = 64B, mat3 = 48B (3 columns aligned to vec4): 112 bytes
+        // std430: mat4 = 64B, mat4 = 64B: 128 bytes total
         VkPushConstantRange pushConstRange{};
         pushConstRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
         pushConstRange.offset = 0;
         pushConstRange.size = 112;
 
-        VkDescriptorSetLayout setLayouts[] = {m_FrameSetLayout, m_TextureSetLayout};
-
         VkPipelineLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        layoutInfo.setLayoutCount = 2;
-        layoutInfo.pSetLayouts = setLayouts;
+        layoutInfo.setLayoutCount = (uint32_t)m_SetLayouts.size();
+        layoutInfo.pSetLayouts = m_SetLayouts.data();
         layoutInfo.pushConstantRangeCount = 1;
         layoutInfo.pPushConstantRanges = &pushConstRange;
         vkCreatePipelineLayout(m_Device, &layoutInfo, nullptr, &m_Layout);
@@ -274,7 +280,7 @@ namespace Dodo::Platform {
     {
         vkDestroyPipeline(m_Device, m_Pipeline, nullptr);
         vkDestroyPipelineLayout(m_Device, m_Layout, nullptr);
-        vkDestroyDescriptorSetLayout(m_Device, m_TextureSetLayout, nullptr);
-        vkDestroyDescriptorSetLayout(m_Device, m_FrameSetLayout, nullptr);
+        for (auto layout : m_SetLayouts)
+            vkDestroyDescriptorSetLayout(m_Device, layout, nullptr);
     }
 } // namespace Dodo::Platform

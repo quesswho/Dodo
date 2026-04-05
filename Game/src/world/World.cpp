@@ -1,6 +1,6 @@
 #include "World.h"
 
-World::World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRenderer)
+World::World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRenderer, Dodo::RenderAPI& renderAPI)
     : m_WorldRenderer(worldRenderer), m_ResourceManager(resourceManager)
 {
     m_WorldGen = std::make_shared<WorldGeneration>(0, resourceManager);
@@ -15,12 +15,12 @@ World::World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRende
     // Update chunks
     for (int x = -20; x <= 20; x++) {
         for (int y = -20; y <= 20; y++) {
-            UpdateChunk(ChunkPos(x, y));
+            UpdateChunk(ChunkPos(x, y), renderAPI);
         }
     }
 }
 
-void World::UpdateChunk(ChunkPos chunkpos)
+void World::UpdateChunk(ChunkPos chunkpos, Dodo::RenderAPI& renderAPI)
 {
     Ref<Chunk> chunk = m_Chunks.at(chunkpos);
     std::vector<FaceData> faces;
@@ -69,10 +69,9 @@ void World::UpdateChunk(ChunkPos chunkpos)
             }
         }
     }
-    chunk->m_Vertbuffer =
-        std::make_shared<Dodo::VertexBuffer>((float*)&faces[0], faces.size() * sizeof(FaceData),
-                                             Dodo::BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}}));
-    chunk->m_Indexbuffer = std::make_shared<Dodo::IndexBuffer>(indices.data(), indices.size());
+    chunk->m_Vertbuffer = renderAPI.CreateVertexBuffer((float*)&faces[0], faces.size() * sizeof(FaceData),
+                                                       Dodo::BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}}));
+    chunk->m_Indexbuffer = renderAPI.CreateIndexBuffer(indices.data(), indices.size());
 }
 
 BlockType World::GetBlockType(int x, int y, int z)

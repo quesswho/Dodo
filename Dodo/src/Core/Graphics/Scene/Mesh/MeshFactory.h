@@ -17,10 +17,10 @@ namespace Dodo {
       public:
         MeshFactory();
 
-        Ref<Mesh> GetRectangleMesh(Ref<Material> material);
-        Ref<Mesh> CreateCube(Ref<Material> material);
+        Ref<Mesh> GetRectangleMesh(Ref<Material> material, RenderAPI& renderAPI);
+        Ref<Mesh> CreateCube(Ref<Material> material, RenderAPI& renderAPI);
 
-        Ref<Mesh> CreateTerrain(const TerrainConfig& config, Ref<Material> material);
+        Ref<Mesh> CreateTerrain(const TerrainConfig& config, Ref<Material> material, RenderAPI& renderAPI);
 
       private:
         const BufferProperties m_BasicProperties;

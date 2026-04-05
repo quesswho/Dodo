@@ -80,7 +80,8 @@ namespace Dodo {
         return result;
     }
 
-    Ref<Model> ModelLoader::BuildModel(const ModelData& data, const std::vector<Ref<Material>>& materials)
+    Ref<Model> ModelLoader::BuildModel(const ModelData& data, const std::vector<Ref<Material>>& materials,
+                                       RenderAPI& renderAPI)
     {
         std::vector<Ref<Mesh>> meshes;
         meshes.reserve(data.meshes.size());
@@ -90,10 +91,10 @@ namespace Dodo {
                                                                            : std::make_shared<Material>();
 
             meshes.push_back(std::make_shared<Mesh>(
-                new VertexBuffer((const float*)meshEntry.vertices.data(),
-                                 (uint)(meshEntry.vertices.size() * sizeof(Vertex)),
-                                 BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 3}})),
-                new IndexBuffer(meshEntry.indices.data(), (uint)meshEntry.indices.size()), mat));
+                renderAPI.CreateVertexBuffer((const float*)meshEntry.vertices.data(),
+                                             (uint)(meshEntry.vertices.size() * sizeof(Vertex)),
+                                             BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 3}})),
+                renderAPI.CreateIndexBuffer(meshEntry.indices.data(), (uint)meshEntry.indices.size()), mat));
         }
 
         return std::make_shared<Model>(meshes);

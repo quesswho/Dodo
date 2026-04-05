@@ -12,7 +12,7 @@
 namespace Dodo {
     class PostEffect {
       private:
-        VertexBuffer* m_Vertexbuffer;
+        Ref<VertexBuffer> m_Vertexbuffer;
         Ref<FrameBuffer> m_Framebuffer;
         Ref<Pipeline> m_Shader;
         Ref<TextureSampler> m_Sampler;

@@ -14,6 +14,7 @@ namespace Dodo::Platform {
         ~OpenGLVertexBuffer();
 
         const BufferProperties& GetBufferProperties() const { return m_BufferProperties; }
+        uint GetVAOID() const { return m_ABufferID; }
 
         void Bind() const;
 
@@ -31,6 +32,7 @@ namespace Dodo::Platform {
 
         void Bind() const;
 
+        uint GetEBOID() const { return m_BufferID; }
         inline const uint GetCount() const { return m_Count; }
 
       private:

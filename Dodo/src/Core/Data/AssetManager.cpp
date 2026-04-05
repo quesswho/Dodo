@@ -282,7 +282,7 @@ namespace Dodo {
                 materials.push_back(std::move(material));
             }
 
-            m_Models.emplace(it->id, m_ModelLoader.BuildModel(modelData, materials));
+            m_Models.emplace(it->id, m_ModelLoader.BuildModel(modelData, materials, renderAPI));
             m_ModelStates[it->id] = AssetState::Loaded;
             it = m_PendingModelAssemblies.erase(it);
         }
@@ -298,14 +298,14 @@ namespace Dodo {
         switch (type) {
         case BuiltinModel::Cube: {
             std::vector<Ref<Mesh>> meshes;
-            meshes.push_back(m_MeshFactory.CreateCube(std::make_shared<Material>(Material())));
+            meshes.push_back(m_MeshFactory.CreateCube(std::make_shared<Material>(Material()), m_RenderAPI));
             model = std::make_shared<Model>(meshes);
             break;
         }
         case BuiltinModel::Terrain: {
             std::vector<Ref<Mesh>> terrainMeshes;
             terrainMeshes.push_back(
-                m_MeshFactory.CreateTerrain(TerrainConfig(), std::make_shared<Material>(Material())));
+                m_MeshFactory.CreateTerrain(TerrainConfig(), std::make_shared<Material>(Material()), m_RenderAPI));
             model = std::make_shared<Model>(terrainMeshes);
             break;
         }

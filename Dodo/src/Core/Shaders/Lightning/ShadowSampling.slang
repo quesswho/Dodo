@@ -1,9 +1,10 @@
 // PCF shadow sampling with 3x3 kernel
 float shadowCalculationPCF(
-    float4 lightFragPos, 
-    float3 normal, 
+    float4 lightFragPos,
+    float3 normal,
     float3 lightDirection,
-    Sampler2D<float> shadowMap
+    Texture2D<float> shadowMap,
+    SamplerState shadowSampler
 )
 {
     // Perspective divide
@@ -34,7 +35,7 @@ float shadowCalculationPCF(
         for (int y = -kernelRadius; y <= kernelRadius; ++y)
         {
             float2 offset = float2(x, y) * texelSize;
-            float closestDepth = shadowMap.Sample(projCoords.xy + offset);
+            float closestDepth = shadowMap.Sample(shadowSampler, projCoords.xy + offset);
             if (currentDepth - bias > closestDepth)
                 shadow += 1.0f;
         }

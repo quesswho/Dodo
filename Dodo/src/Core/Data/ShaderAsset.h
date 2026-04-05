@@ -33,14 +33,27 @@ namespace Dodo {
         std::string glsl; // (OpenGL)
     };
 
+    enum class DescriptorType {
+        UniformBuffer,
+        SampledTexture,
+        Sampler,
+    };
+
+    struct DescriptorBindingReflection {
+        uint32_t set;
+        uint32_t binding;
+        uint32_t count;
+        DescriptorType type;
+    };
+
     /**
-     * Slang shader owning compiled backend specific binaries
+     * Slang shader owning compiled backend specific binaries and reflection data
      */
     struct ShaderAsset {
         std::string path;
         std::string slangSource;
 
         std::vector<ShaderStageBinary> stages;
-        // TODO: Reflection, layout maybe hash?
+        std::vector<DescriptorBindingReflection> descriptorBindings;
     };
 } // namespace Dodo

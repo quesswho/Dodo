@@ -6,6 +6,8 @@
 
 #include "Core/Graphics/Pipeline/PipelineDesc.h"
 
+#include <vector>
+
 namespace Dodo::Platform {
 
     class VulkanPipeline {
@@ -20,11 +22,12 @@ namespace Dodo::Platform {
         VkPipelineLayout GetLayout() const { return m_Layout; }
 
       private:
+        static VkDescriptorType ToVkDescriptorType(DescriptorType type);
+
         VkDevice m_Device;
         VkPipeline m_Pipeline = VK_NULL_HANDLE;
         VkPipelineLayout m_Layout = VK_NULL_HANDLE;
-        VkDescriptorSetLayout m_FrameSetLayout = VK_NULL_HANDLE;   // Set 0: FrameData UBO
-        VkDescriptorSetLayout m_TextureSetLayout = VK_NULL_HANDLE; // Set 1: albedo/specular/normal samplers
+        std::vector<VkDescriptorSetLayout> m_SetLayouts;
     };
 
 } // namespace Dodo::Platform

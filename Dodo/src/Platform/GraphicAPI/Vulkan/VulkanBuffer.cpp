@@ -38,8 +38,8 @@ namespace Dodo::Platform {
     }
 
     VulkanVertexBuffer::VulkanVertexBuffer(const float* vertices, uint size, const BufferProperties& prop,
-                                           VkDevice device, VmaAllocator allocator,
-                                           VkCommandPool commandPool, VkQueue queue)
+                                           VkDevice device, VmaAllocator allocator, VkCommandPool commandPool,
+                                           VkQueue queue)
         : m_BufferProperties(prop), m_Device(device), m_Allocator(allocator)
     {
         VkDeviceSize bufSize = (VkDeviceSize)size;
@@ -120,8 +120,7 @@ namespace Dodo::Platform {
         vkFreeCommandBuffers(m_Device, commandPool, 1, &cmd);
     }
 
-    VulkanIndexBuffer::VulkanIndexBuffer(const uint* indices, uint count,
-                                         VkDevice device, VmaAllocator allocator,
+    VulkanIndexBuffer::VulkanIndexBuffer(const uint* indices, uint count, VkDevice device, VmaAllocator allocator,
                                          VkCommandPool commandPool, VkQueue queue)
         : m_Count(count), m_Device(device), m_Allocator(allocator)
     {

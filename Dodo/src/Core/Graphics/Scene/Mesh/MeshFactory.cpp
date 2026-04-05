@@ -13,9 +13,9 @@ namespace Dodo {
         float vertices[] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
                             1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f};
         uint indices[] = {0, 1, 2, 3, 2, 1};
-        m_RectangleMesh =
-            std::make_shared<Mesh>(renderAPI.CreateVertexBuffer(vertices, sizeof(vertices), m_BasicProperties),
-                                   renderAPI.CreateIndexBuffer(indices, sizeof(indices) / sizeof(indices[0])), material);
+        m_RectangleMesh = std::make_shared<Mesh>(
+            renderAPI.CreateVertexBuffer(vertices, sizeof(vertices), m_BasicProperties),
+            renderAPI.CreateIndexBuffer(indices, sizeof(indices) / sizeof(indices[0])), material);
 
         return m_RectangleMesh;
     }
@@ -75,9 +75,9 @@ namespace Dodo {
                           16, 17, 18, 18, 17, 19,
                           // Bottom
                           20, 21, 22, 22, 21, 23};
-        m_CubeMesh =
-            std::make_shared<Mesh>(renderAPI.CreateVertexBuffer(vertices, sizeof(vertices), m_BasicProperties),
-                                   renderAPI.CreateIndexBuffer(indices, sizeof(indices) / sizeof(indices[0])), material);
+        m_CubeMesh = std::make_shared<Mesh>(renderAPI.CreateVertexBuffer(vertices, sizeof(vertices), m_BasicProperties),
+                                            renderAPI.CreateIndexBuffer(indices, sizeof(indices) / sizeof(indices[0])),
+                                            material);
 
         return m_CubeMesh;
     }

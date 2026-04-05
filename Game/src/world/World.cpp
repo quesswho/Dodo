@@ -69,8 +69,9 @@ void World::UpdateChunk(ChunkPos chunkpos, Dodo::RenderAPI& renderAPI)
             }
         }
     }
-    chunk->m_Vertbuffer = renderAPI.CreateVertexBuffer((float*)&faces[0], faces.size() * sizeof(FaceData),
-                                                       Dodo::BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}}));
+    chunk->m_Vertbuffer =
+        renderAPI.CreateVertexBuffer((float*)&faces[0], faces.size() * sizeof(FaceData),
+                                     Dodo::BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}}));
     chunk->m_Indexbuffer = renderAPI.CreateIndexBuffer(indices.data(), indices.size());
 }
 

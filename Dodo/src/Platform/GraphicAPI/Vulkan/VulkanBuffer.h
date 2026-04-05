@@ -13,9 +13,8 @@ typedef struct VmaAllocation_T* VmaAllocation;
 namespace Dodo::Platform {
     class VulkanVertexBuffer {
       public:
-        VulkanVertexBuffer(const float* vertices, uint size, const BufferProperties& prop,
-                           VkDevice device, VmaAllocator allocator,
-                           VkCommandPool commandPool, VkQueue queue);
+        VulkanVertexBuffer(const float* vertices, uint size, const BufferProperties& prop, VkDevice device,
+                           VmaAllocator allocator, VkCommandPool commandPool, VkQueue queue);
         ~VulkanVertexBuffer();
 
         const BufferProperties& GetBufferProperties() const { return m_BufferProperties; }
@@ -34,8 +33,7 @@ namespace Dodo::Platform {
 
     class VulkanIndexBuffer {
       public:
-        VulkanIndexBuffer(const uint* indices, uint count,
-                          VkDevice device, VmaAllocator allocator,
+        VulkanIndexBuffer(const uint* indices, uint count, VkDevice device, VmaAllocator allocator,
                           VkCommandPool commandPool, VkQueue queue);
         ~VulkanIndexBuffer();
 

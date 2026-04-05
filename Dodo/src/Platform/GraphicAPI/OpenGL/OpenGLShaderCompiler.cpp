@@ -91,7 +91,7 @@ namespace Dodo::Platform {
             // Without this, SPIRV-Cross leaves the combined binding unset and samplers end up on wrong units.
             for (const auto& combinedSampler : compiler.get_combined_image_samplers()) {
                 compiler.set_decoration(combinedSampler.combined_id, spv::DecorationBinding,
-                    compiler.get_decoration(combinedSampler.image_id, spv::DecorationBinding));
+                                        compiler.get_decoration(combinedSampler.image_id, spv::DecorationBinding));
                 compiler.set_name(combinedSampler.combined_id, "SPIRV_Cross_Combined" +
                                                                    compiler.get_name(combinedSampler.image_id) +
                                                                    compiler.get_name(combinedSampler.sampler_id));

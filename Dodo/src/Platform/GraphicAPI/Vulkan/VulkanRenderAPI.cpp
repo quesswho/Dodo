@@ -644,14 +644,17 @@ namespace Dodo::Platform {
         return std::make_shared<VulkanPipeline>(m_Device, m_SwapChainImageFormat, VK_FORMAT_D32_SFLOAT, shader, desc);
     }
 
-    Ref<VertexBuffer> VulkanRenderAPI::CreateVertexBuffer(const float* vertices, uint size, const BufferProperties& prop)
+    Ref<VertexBuffer> VulkanRenderAPI::CreateVertexBuffer(const float* vertices, uint size,
+                                                          const BufferProperties& prop)
     {
-        return std::make_shared<VulkanVertexBuffer>(vertices, size, prop, m_Device, m_VmaAllocator, m_CommandPool, m_PresentQueue);
+        return std::make_shared<VulkanVertexBuffer>(vertices, size, prop, m_Device, m_VmaAllocator, m_CommandPool,
+                                                    m_PresentQueue);
     }
 
     Ref<IndexBuffer> VulkanRenderAPI::CreateIndexBuffer(const uint* indices, uint count)
     {
-        return std::make_shared<VulkanIndexBuffer>(indices, count, m_Device, m_VmaAllocator, m_CommandPool, m_PresentQueue);
+        return std::make_shared<VulkanIndexBuffer>(indices, count, m_Device, m_VmaAllocator, m_CommandPool,
+                                                   m_PresentQueue);
     }
 
     Ref<Texture> VulkanRenderAPI::CreateTexture(uchar* data, const TextureProperties& prop)

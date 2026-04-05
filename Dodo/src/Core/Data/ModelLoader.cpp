@@ -91,9 +91,9 @@ namespace Dodo {
                                                                            : std::make_shared<Material>();
 
             meshes.push_back(std::make_shared<Mesh>(
-                renderAPI.CreateVertexBuffer((const float*)meshEntry.vertices.data(),
-                                             (uint)(meshEntry.vertices.size() * sizeof(Vertex)),
-                                             BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 3}})),
+                renderAPI.CreateVertexBuffer(
+                    (const float*)meshEntry.vertices.data(), (uint)(meshEntry.vertices.size() * sizeof(Vertex)),
+                    BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 3}})),
                 renderAPI.CreateIndexBuffer(meshEntry.indices.data(), (uint)meshEntry.indices.size()), mat));
         }
 

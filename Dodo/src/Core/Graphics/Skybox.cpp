@@ -23,7 +23,7 @@ namespace Dodo {
 
     Skybox::Skybox(std::vector<std::string> paths, AssetManager& assets, RenderAPI& renderAPI)
         : m_VertexBuffer(renderAPI.CreateVertexBuffer(s_SkyboxVertices, sizeof(s_SkyboxVertices),
-                                                        BufferProperties({{"POSITION", 3}}))),
+                                                      BufferProperties({{"POSITION", 3}}))),
           m_Sampler(renderAPI.CreateSampler(SamplerProperties(SamplerFilter::MIN_MAG_MIP_LINEAR,
                                                               SamplerWrapMode::WRAP_CLAMP_TO_EDGE,
                                                               SamplerWrapMode::WRAP_CLAMP_TO_EDGE))),

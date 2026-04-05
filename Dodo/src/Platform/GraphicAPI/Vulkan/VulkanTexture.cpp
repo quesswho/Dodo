@@ -1,13 +1,14 @@
 #include "VulkanTexture.h"
 #include "pch.h"
+#include <vk_mem_alloc.h>
 
 namespace Dodo::Platform {
 
     VulkanTexture::VulkanTexture(uchar* data, const TextureProperties& prop, VkDevice device,
-                                 VkPhysicalDevice physicalDevice, VkCommandPool commandPool, VkQueue queue)
-        : m_TextureProperties(prop), m_Device(device)
+                                 VmaAllocator allocator, VkCommandPool commandPool, VkQueue queue)
+        : m_TextureProperties(prop), m_Device(device), m_Allocator(allocator)
     {
-        Init(data, physicalDevice, commandPool, queue);
+        Init(data, commandPool, queue);
     }
 
     static VkFormat ToVkFormat(TextureFormat format)
@@ -24,42 +25,6 @@ namespace Dodo::Platform {
         default:
             return VK_FORMAT_R8G8B8A8_UNORM;
         }
-    }
-
-    uint32_t VulkanTexture::FindMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter,
-                                           VkMemoryPropertyFlags properties)
-    {
-        VkPhysicalDeviceMemoryProperties memProps;
-        vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProps);
-
-        for (uint32_t i = 0; i < memProps.memoryTypeCount; i++) {
-            if ((typeFilter & (1u << i)) && (memProps.memoryTypes[i].propertyFlags & properties) == properties)
-                return i;
-        }
-
-        DD_ERR("VulkanTexture: failed to find suitable memory type!");
-        return 0;
-    }
-
-    void VulkanTexture::CreateBuffer(VkPhysicalDevice physicalDevice, VkDeviceSize size, VkBufferUsageFlags usage,
-                                     VkMemoryPropertyFlags memProps, VkBuffer& buffer, VkDeviceMemory& memory)
-    {
-        VkBufferCreateInfo bufferInfo{};
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = size;
-        bufferInfo.usage = usage;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        vkCreateBuffer(m_Device, &bufferInfo, nullptr, &buffer);
-
-        VkMemoryRequirements memReqs;
-        vkGetBufferMemoryRequirements(m_Device, buffer, &memReqs);
-
-        VkMemoryAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memReqs.size;
-        allocInfo.memoryTypeIndex = FindMemoryType(physicalDevice, memReqs.memoryTypeBits, memProps);
-        vkAllocateMemory(m_Device, &allocInfo, nullptr, &memory);
-        vkBindBufferMemory(m_Device, buffer, memory, 0);
     }
 
     VkCommandBuffer VulkanTexture::BeginOneTimeCommands(VkCommandPool commandPool)
@@ -144,7 +109,7 @@ namespace Dodo::Platform {
         vkCmdCopyBufferToImage(cmd, buffer, m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
     }
 
-    void VulkanTexture::Init(uchar* data, VkPhysicalDevice physicalDevice, VkCommandPool commandPool, VkQueue queue)
+    void VulkanTexture::Init(uchar* data, VkCommandPool commandPool, VkQueue queue)
     {
         VkFormat format = ToVkFormat(m_TextureProperties.m_Format);
         uint32_t pixelCount = m_TextureProperties.m_Width * m_TextureProperties.m_Height;
@@ -171,18 +136,24 @@ namespace Dodo::Platform {
         }
 
         // Upload pixel data via a host-visible staging buffer
+        VkBufferCreateInfo stagingCI{};
+        stagingCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        stagingCI.size = imageSize;
+        stagingCI.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        stagingCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        VmaAllocationCreateInfo stagingAllocCI{};
+        stagingAllocCI.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+
         VkBuffer stagingBuffer;
-        VkDeviceMemory stagingMemory;
-        CreateBuffer(physicalDevice, imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer,
-                     stagingMemory);
+        VmaAllocation stagingAlloc;
+        vmaCreateBuffer(m_Allocator, &stagingCI, &stagingAllocCI, &stagingBuffer, &stagingAlloc, nullptr);
 
         void* mapped;
-        vkMapMemory(m_Device, stagingMemory, 0, imageSize, 0, &mapped);
+        vmaMapMemory(m_Allocator, stagingAlloc, &mapped);
         memcpy(mapped, uploadData, (size_t)imageSize);
-        vkUnmapMemory(m_Device, stagingMemory);
+        vmaUnmapMemory(m_Allocator, stagingAlloc);
 
-        // Create device-local VkImage
+        // Create device-local VkImage via VMA
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -197,18 +168,11 @@ namespace Dodo::Platform {
         imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        vkCreateImage(m_Device, &imageInfo, nullptr, &m_Image);
 
-        VkMemoryRequirements memReqs;
-        vkGetImageMemoryRequirements(m_Device, m_Image, &memReqs);
+        VmaAllocationCreateInfo imageAllocCI{};
+        imageAllocCI.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-        VkMemoryAllocateInfo allocInfo{};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memReqs.size;
-        allocInfo.memoryTypeIndex =
-            FindMemoryType(physicalDevice, memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-        vkAllocateMemory(m_Device, &allocInfo, nullptr, &m_Memory);
-        vkBindImageMemory(m_Device, m_Image, m_Memory, 0);
+        vmaCreateImage(m_Allocator, &imageInfo, &imageAllocCI, &m_Image, &m_Allocation, nullptr);
 
         // Transfer: UNDEFINED to TRANSFER_DST, copy, TRANSFER_DST to SHADER_READ_ONLY
         VkCommandBuffer cmd = BeginOneTimeCommands(commandPool);
@@ -217,8 +181,7 @@ namespace Dodo::Platform {
         TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         EndOneTimeCommands(cmd, commandPool, queue);
 
-        vkDestroyBuffer(m_Device, stagingBuffer, nullptr);
-        vkFreeMemory(m_Device, stagingMemory, nullptr);
+        vmaDestroyBuffer(m_Allocator, stagingBuffer, stagingAlloc);
 
         // Create image view
         VkImageViewCreateInfo viewInfo{};
@@ -237,7 +200,6 @@ namespace Dodo::Platform {
     VulkanTexture::~VulkanTexture()
     {
         vkDestroyImageView(m_Device, m_ImageView, nullptr);
-        vkDestroyImage(m_Device, m_Image, nullptr);
-        vkFreeMemory(m_Device, m_Memory, nullptr);
+        vmaDestroyImage(m_Allocator, m_Image, m_Allocation);
     }
 } // namespace Dodo::Platform

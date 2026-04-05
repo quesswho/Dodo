@@ -27,8 +27,8 @@ namespace Dodo {
             1.0f,  -1.0f, 1.0f, 0.0f, // bottom right
             1.0f,  1.0f,  1.0f, 1.0f  // top right
         };
-        m_Vertexbuffer =
-            new VertexBuffer(screenQuad, 6 * 4 * sizeof(float), BufferProperties({{"POSITION", 2}, {"TEXCOORD", 2}}));
+        m_Vertexbuffer = renderAPI.CreateVertexBuffer(screenQuad, 6 * 4 * sizeof(float),
+                                                      BufferProperties({{"POSITION", 2}, {"TEXCOORD", 2}}));
     }
 
     void PostEffect::Draw(RenderAPI& renderAPI) const
@@ -36,14 +36,11 @@ namespace Dodo {
         renderAPI.DefaultFrameBuffer();
         renderAPI.BindPipeline(m_Shader);
         renderAPI.PushConstants(m_PushConstantData.data(), m_PushConstantData.size());
-        m_Vertexbuffer->Bind();
+        renderAPI.BindVertexBuffer(m_Vertexbuffer);
         renderAPI.BindTextureSampler(0, m_Sampler);
         renderAPI.BindFrameBufferTexture(0, m_Framebuffer);
         renderAPI.DrawArray(6);
     }
 
-    PostEffect::~PostEffect()
-    {
-        delete m_Vertexbuffer;
-    }
+    PostEffect::~PostEffect() {}
 } // namespace Dodo

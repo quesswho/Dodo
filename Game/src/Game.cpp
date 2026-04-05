@@ -48,7 +48,7 @@ GameLayer::GameLayer(Application& app)
     app.m_Window->SetCursorVisible(false);
     m_Camera->ResetMouse();
     m_ResourceManager = std::make_shared<ResourceManager>(assets, renderAPI);
-    m_WorldManager = std::make_shared<WorldManager>(m_ResourceManager);
+    m_WorldManager = std::make_shared<WorldManager>(m_ResourceManager, renderAPI);
 }
 GameLayer::~GameLayer()
 {

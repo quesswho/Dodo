@@ -65,7 +65,18 @@ namespace Dodo::Platform {
         void SetViewport(uint width, uint height);
         void SetViewport(uint width, uint height, uint posX, uint posY);
 
+        inline void BindVertexBuffer(const Ref<VertexBuffer>& vb) { glBindVertexArray(vb->GetVAOID()); }
+        inline void BindIndexBuffer(const Ref<IndexBuffer>& ib) { glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->GetEBOID()); }
+
         Ref<Pipeline> CreatePipeline(const PipelineDesc& desc, AssetManager& assets);
+        inline Ref<VertexBuffer> CreateVertexBuffer(const float* v, uint size, const BufferProperties& prop)
+        {
+            return std::make_shared<VertexBuffer>(v, size, prop);
+        }
+        inline Ref<IndexBuffer> CreateIndexBuffer(const uint* i, uint count)
+        {
+            return std::make_shared<IndexBuffer>(i, count);
+        }
         inline Ref<Texture> CreateTexture(uchar* data, const TextureProperties& prop)
         {
             return std::make_shared<Texture>(data, prop);

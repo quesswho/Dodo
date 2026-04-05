@@ -14,7 +14,7 @@ namespace Dodo {
 
     class Skybox {
       private:
-        std::unique_ptr<VertexBuffer> m_VertexBuffer;
+        Ref<VertexBuffer> m_VertexBuffer;
         Ref<CubeMap> m_CubeMap;
         Ref<TextureSampler> m_Sampler;
         Ref<Pipeline> m_Shader;

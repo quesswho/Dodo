@@ -72,6 +72,8 @@ namespace Dodo::Platform {
         void BindTexture(uint slot, Ref<Texture> texture);
         void BindTextureSampler(uint slot, Ref<TextureSampler> sampler);
         void BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer);
+        void BindVertexBuffer(const Ref<VertexBuffer>& vb);
+        void BindIndexBuffer(const Ref<IndexBuffer>& ib);
         void BindPipeline(Ref<Pipeline> pipeline);
         void PushConstants(const void* data, size_t size);
         void SetFrameData(const Dodo::FrameData& data);
@@ -85,6 +87,8 @@ namespace Dodo::Platform {
 
         // Factory methods, these are needed because we need context info
         Ref<Pipeline> CreatePipeline(const PipelineDesc& desc, AssetManager& assets);
+        Ref<VertexBuffer> CreateVertexBuffer(const float* vertices, uint size, const BufferProperties& prop);
+        Ref<IndexBuffer> CreateIndexBuffer(const uint* indices, uint count);
         Ref<Texture> CreateTexture(uchar* data, const TextureProperties& prop);
         Ref<TextureSampler> CreateSampler(const SamplerProperties& prop);
 
@@ -143,6 +147,10 @@ namespace Dodo::Platform {
                                                             VkDebugUtilsMessageTypeFlagsEXT messageType,
                                                             const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                             void* pUserData);
+
+        // Forward-declared to avoid including vk_mem_alloc.h before VMA_IMPLEMENTATION is defined
+        typedef struct VmaAllocator_T* VmaAllocator;
+        VmaAllocator m_VmaAllocator = nullptr;
 
         VkInstance m_VkInstance;
         VkDevice m_Device;

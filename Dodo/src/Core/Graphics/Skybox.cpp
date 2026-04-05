@@ -22,7 +22,7 @@ namespace Dodo {
                                              1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f};
 
     Skybox::Skybox(std::vector<std::string> paths, AssetManager& assets, RenderAPI& renderAPI)
-        : m_VertexBuffer(std::make_unique<VertexBuffer>(s_SkyboxVertices, sizeof(s_SkyboxVertices),
+        : m_VertexBuffer(renderAPI.CreateVertexBuffer(s_SkyboxVertices, sizeof(s_SkyboxVertices),
                                                         BufferProperties({{"POSITION", 3}}))),
           m_Sampler(renderAPI.CreateSampler(SamplerProperties(SamplerFilter::MIN_MAG_MIP_LINEAR,
                                                               SamplerWrapMode::WRAP_CLAMP_TO_EDGE,
@@ -50,7 +50,7 @@ namespace Dodo {
         renderAPI.SetDrawData({.model = Math::Mat4(1.0f), .normalMatrix = Math::Mat3(1.0f)});
         renderAPI.BindTextureSampler(0, m_Sampler);
         renderAPI.BindCubeMap(0, m_CubeMap);
-        m_VertexBuffer->Bind();
+        renderAPI.BindVertexBuffer(m_VertexBuffer);
         renderAPI.DrawArray(36);
     }
 } // namespace Dodo

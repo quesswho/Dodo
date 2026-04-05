@@ -2,6 +2,7 @@
 #include "pch.h"
 
 #include "Core/Data/AssetManager.h"
+#include "VulkanBuffer.h"
 #include "VulkanPipeline.h"
 #include "VulkanSampler.h"
 #include "VulkanTexture.h"
@@ -49,6 +50,7 @@ namespace Dodo::Platform {
             vkDestroyImageView(m_Device, imageView, nullptr);
         }
         vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+        vmaDestroyAllocator(m_VmaAllocator);
         vkDestroyDevice(m_Device, nullptr);
         if (m_EnableValidationLayers) {
             DestroyDebugUtilsMessengerEXT(m_VkInstance, m_DebugMessenger, nullptr);
@@ -86,6 +88,7 @@ namespace Dodo::Platform {
         }
         if (Try(PickPhysicalDevice())) return result;
         if (Try(InitDevice())) return result;
+        if (Try(InitVMA())) return result;
         if (Try(CreateSwapChain())) return result;
         if (Try(CreateImageViews())) return result;
         if (Try(CreateCommandPool())) return result;
@@ -301,8 +304,7 @@ namespace Dodo::Platform {
         allocatorCreateInfo.device = m_Device;
         allocatorCreateInfo.instance = m_VkInstance;
         allocatorCreateInfo.vulkanApiVersion = DODO_VULKAN_VERSION;
-        allocatorCreateInfo.flags =
-            VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT | VMA_ALLOCATOR_CREATE_EXT_MEMORY_PRIORITY_BIT;
+        allocatorCreateInfo.flags = 0;
 
         VmaVulkanFunctions vulkanFunctions;
         VkResult res = vmaImportVulkanFunctionsFromVolk(&allocatorCreateInfo, &vulkanFunctions);
@@ -312,8 +314,7 @@ namespace Dodo::Platform {
 
         allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
 
-        VmaAllocator allocator;
-        res = vmaCreateAllocator(&allocatorCreateInfo, &allocator);
+        res = vmaCreateAllocator(&allocatorCreateInfo, &m_VmaAllocator);
         if (res != VK_SUCCESS) {
             return RenderInitError(RenderInitStatus::Failed, "VMA: Failed to create VMA allocator!");
         }
@@ -604,9 +605,27 @@ namespace Dodo::Platform {
         // Once aligned, call PushConstants(&data, alignedSize)
     }
 
+    void VulkanRenderAPI::BindVertexBuffer(const Ref<VertexBuffer>& vb)
+    {
+        VkDeviceSize offset = 0;
+        VkBuffer buf = vb->GetBuffer();
+        vkCmdBindVertexBuffers(m_Frames[m_CurrentFrame].commandBuffer, 0, 1, &buf, &offset);
+    }
+
+    void VulkanRenderAPI::BindIndexBuffer(const Ref<IndexBuffer>& ib)
+    {
+        vkCmdBindIndexBuffer(m_Frames[m_CurrentFrame].commandBuffer, ib->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+    }
+
     void VulkanRenderAPI::DrawIndexed(const Ref<VertexBuffer>& va) {}
-    void VulkanRenderAPI::DrawIndices(uint count) const {}
-    void VulkanRenderAPI::DrawArray(uint count) const {}
+    void VulkanRenderAPI::DrawIndices(uint count) const
+    {
+        vkCmdDrawIndexed(m_Frames[m_CurrentFrame].commandBuffer, count, 1, 0, 0, 0);
+    }
+    void VulkanRenderAPI::DrawArray(uint count) const
+    {
+        vkCmdDraw(m_Frames[m_CurrentFrame].commandBuffer, count, 1, 0, 0);
+    }
 
     void VulkanRenderAPI::DefaultFrameBuffer() const {}
     void VulkanRenderAPI::SetViewport(uint width, uint height)
@@ -623,6 +642,16 @@ namespace Dodo::Platform {
         const ShaderAsset& shader = assets.GetShaderAsset(desc.shaderID);
         // VK_FORMAT_D32_SFLOAT matches the depth image that must be created alongside the swapchain
         return std::make_shared<VulkanPipeline>(m_Device, m_SwapChainImageFormat, VK_FORMAT_D32_SFLOAT, shader, desc);
+    }
+
+    Ref<VertexBuffer> VulkanRenderAPI::CreateVertexBuffer(const float* vertices, uint size, const BufferProperties& prop)
+    {
+        return std::make_shared<VulkanVertexBuffer>(vertices, size, prop, m_Device, m_VmaAllocator, m_CommandPool, m_PresentQueue);
+    }
+
+    Ref<IndexBuffer> VulkanRenderAPI::CreateIndexBuffer(const uint* indices, uint count)
+    {
+        return std::make_shared<VulkanIndexBuffer>(indices, count, m_Device, m_VmaAllocator, m_CommandPool, m_PresentQueue);
     }
 
     Ref<Texture> VulkanRenderAPI::CreateTexture(uchar* data, const TextureProperties& prop)

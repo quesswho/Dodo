@@ -26,6 +26,18 @@ namespace Dodo {
         }
     }
 
+    static void CollectVaryingInputLocations(slang::VariableLayoutReflection* var, std::vector<uint32_t>& locations)
+    {
+        slang::TypeLayoutReflection* typeLayout = var->getTypeLayout();
+        if (typeLayout->getKind() == slang::TypeReflection::Kind::Struct) {
+            for (unsigned i = 0; i < typeLayout->getFieldCount(); ++i) {
+                CollectVaryingInputLocations(typeLayout->getFieldByIndex(i), locations);
+            }
+        } else {
+            locations.push_back((uint32_t)var->getOffset(slang::ParameterCategory::VaryingInput));
+        }
+    }
+
     SlangCompiler::SlangCompiler()
     {
         SlangGlobalSessionDesc globalDesc = {};
@@ -144,6 +156,17 @@ namespace Dodo {
             b.count = 1;
             b.type = ReflectDescriptorType(param);
             result.descriptorBindings.push_back(b);
+        }
+
+        // Reflect vertex shader input locations so the pipeline only declares attributes the shader consumes
+        for (SlangUInt ep = 0; ep < layout->getEntryPointCount(); ++ep) {
+            slang::EntryPointReflection* epRefl = layout->getEntryPointByIndex(ep);
+            if (epRefl->getStage() != SLANG_STAGE_VERTEX) continue;
+
+            for (unsigned p = 0; p < epRefl->getParameterCount(); ++p) {
+                slang::VariableLayoutReflection* param = epRefl->getParameterByIndex(p);
+                CollectVaryingInputLocations(param, result.vertexInputLocations);
+            }
         }
 
         return result;

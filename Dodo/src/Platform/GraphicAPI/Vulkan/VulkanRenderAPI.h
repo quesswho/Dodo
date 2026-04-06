@@ -55,7 +55,6 @@ namespace Dodo::Platform {
     struct FrameData {
         VkCommandBuffer commandBuffer;
         VkSemaphore imageAvailableSemaphore;
-        VkSemaphore renderFinishedSemaphore;
         VkFence inFlightFence;
     };
 
@@ -65,6 +64,7 @@ namespace Dodo::Platform {
         ~VulkanRenderAPI();
         RenderInitError Init(const WindowProperties& winprop);
 
+        void WaitIdle() const;
         void Begin();
         void End();
 

@@ -57,5 +57,6 @@ namespace Dodo {
 
         std::vector<ShaderStageBinary> stages;
         std::vector<DescriptorBindingReflection> descriptorBindings;
+        std::vector<uint32_t> vertexInputLocations; // Locations consumed by the vertex shader
     };
 } // namespace Dodo

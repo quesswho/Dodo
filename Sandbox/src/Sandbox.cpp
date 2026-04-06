@@ -55,6 +55,7 @@ GameLayer::GameLayer(Application& app)
 }
 GameLayer::~GameLayer()
 {
+    delete m_Renderer;
     delete m_PostEffect;
     delete m_Camera;
     delete m_Scene;

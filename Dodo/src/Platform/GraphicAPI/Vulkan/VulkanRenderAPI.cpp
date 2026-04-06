@@ -56,6 +56,9 @@ namespace Dodo::Platform {
         }
         if (m_GlobalSet0Layout) vkDestroyDescriptorSetLayout(m_Device, m_GlobalSet0Layout, nullptr);
         if (m_AppDescriptorPool) vkDestroyDescriptorPool(m_Device, m_AppDescriptorPool, nullptr);
+        if (m_DummySampler) vkDestroySampler(m_Device, m_DummySampler, nullptr);
+        if (m_DummyImageView) vkDestroyImageView(m_Device, m_DummyImageView, nullptr);
+        if (m_DummyImage) vmaDestroyImage(m_VmaAllocator, m_DummyImage, m_DummyAllocation);
 
         // TODO: There should be a check for imgui here...
         if (m_ImGuiActive) ImGui_ImplVulkan_Shutdown();
@@ -627,6 +630,76 @@ namespace Dodo::Platform {
                 return RenderInitError(RenderInitStatus::Failed, "Failed to create transient descriptor pool!");
         }
 
+        // Create a 1x1 black RGBA fallback image for unbound set-1 descriptor slots
+        {
+            VkImageCreateInfo imageCI{};
+            imageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageCI.imageType = VK_IMAGE_TYPE_2D;
+            imageCI.format = VK_FORMAT_R8G8B8A8_UNORM;
+            imageCI.extent = {1, 1, 1};
+            imageCI.mipLevels = 1;
+            imageCI.arrayLayers = 1;
+            imageCI.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
+            imageCI.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+            imageCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            VmaAllocationCreateInfo allocCI{};
+            allocCI.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+            vmaCreateImage(m_VmaAllocator, &imageCI, &allocCI, &m_DummyImage, &m_DummyAllocation, nullptr);
+
+            // Transition to SHADER_READ_ONLY_OPTIMAL via a one-time command
+            VkCommandBufferAllocateInfo cbAllocInfo{};
+            cbAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            cbAllocInfo.commandPool = m_CommandPool;
+            cbAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            cbAllocInfo.commandBufferCount = 1;
+            VkCommandBuffer cb = VK_NULL_HANDLE;
+            vkAllocateCommandBuffers(m_Device, &cbAllocInfo, &cb);
+            VkCommandBufferBeginInfo cbBegin{};
+            cbBegin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            cbBegin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+            vkBeginCommandBuffer(cb, &cbBegin);
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.image = m_DummyImage;
+            barrier.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+            barrier.srcAccessMask = 0;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
+                                 nullptr, 0, nullptr, 1, &barrier);
+            vkEndCommandBuffer(cb);
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &cb;
+            vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(m_GraphicsQueue);
+            vkFreeCommandBuffers(m_Device, m_CommandPool, 1, &cb);
+
+            VkImageViewCreateInfo viewCI{};
+            viewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            viewCI.image = m_DummyImage;
+            viewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewCI.format = VK_FORMAT_R8G8B8A8_UNORM;
+            viewCI.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+            vkCreateImageView(m_Device, &viewCI, nullptr, &m_DummyImageView);
+
+            VkSamplerCreateInfo samplerCI{};
+            samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+            samplerCI.magFilter = VK_FILTER_NEAREST;
+            samplerCI.minFilter = VK_FILTER_NEAREST;
+            samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+            samplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            vkCreateSampler(m_Device, &samplerCI, nullptr, &m_DummySampler);
+        }
+
         return RenderInitError(RenderInitStatus::Success);
     }
 
@@ -857,6 +930,7 @@ namespace Dodo::Platform {
     {
         if (slot >= maxTextureSlots || !cubemap) return;
         m_PendingImageViews[slot] = cubemap->GetImageView();
+        m_PendingIsCubeMap[slot] = true;
         m_TexturesDirty = true;
     }
 
@@ -864,6 +938,7 @@ namespace Dodo::Platform {
     {
         if (slot >= maxTextureSlots || !texture) return;
         m_PendingImageViews[slot] = texture->GetImageView();
+        m_PendingIsCubeMap[slot] = false;
         m_TexturesDirty = true;
     }
 
@@ -990,9 +1065,26 @@ namespace Dodo::Platform {
             w.descriptorCount = 1;
 
             if (b.type == DescriptorType::SampledTexture) {
-                if (b.binding >= maxTextureSlots || !m_PendingImageViews[b.binding]) continue;
+                // Only use the pending view if it is a 2D view. Never bind a cube view to a Texture2D binding
+                bool hasPending = b.binding < maxTextureSlots && m_PendingImageViews[b.binding] &&
+                                  !m_PendingIsCubeMap[b.binding];
+                VkImageView view = hasPending ? m_PendingImageViews[b.binding] : m_DummyImageView;
+                if (!view) continue;
                 VkDescriptorImageInfo info{};
-                info.imageView = m_PendingImageViews[b.binding];
+                info.imageView = view;
+                info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfos.push_back(info);
+                w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                w.pImageInfo = &imageInfos.back();
+                writes.push_back(w);
+            } else if (b.type == DescriptorType::SampledCubeMap) {
+                // Only use the pending view if it is a cube view
+                bool hasPending =
+                    b.binding < maxTextureSlots && m_PendingImageViews[b.binding] && m_PendingIsCubeMap[b.binding];
+                VkImageView view = hasPending ? m_PendingImageViews[b.binding] : m_DummyImageView;
+                if (!view) continue;
+                VkDescriptorImageInfo info{};
+                info.imageView = view;
                 info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 imageInfos.push_back(info);
                 w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
@@ -1001,7 +1093,7 @@ namespace Dodo::Platform {
             } else if (b.type == DescriptorType::Sampler) {
                 VkSampler sampler = (b.binding < maxTextureSlots && m_PendingSamplers[b.binding])
                                         ? m_PendingSamplers[b.binding]
-                                        : firstSampler;
+                                        : (firstSampler ? firstSampler : m_DummySampler);
                 if (!sampler) continue;
                 VkDescriptorImageInfo info{};
                 info.sampler = sampler;
@@ -1010,13 +1102,15 @@ namespace Dodo::Platform {
                 w.pImageInfo = &imageInfos.back();
                 writes.push_back(w);
             } else if (b.type == DescriptorType::CombinedImageSampler) {
-                if (b.binding >= maxTextureSlots || !m_PendingImageViews[b.binding]) continue;
+                VkImageView view = (b.binding < maxTextureSlots && m_PendingImageViews[b.binding])
+                                       ? m_PendingImageViews[b.binding]
+                                       : m_DummyImageView;
                 VkSampler sampler = (b.binding < maxTextureSlots && m_PendingSamplers[b.binding])
                                         ? m_PendingSamplers[b.binding]
-                                        : firstSampler;
-                if (!sampler) continue;
+                                        : (firstSampler ? firstSampler : m_DummySampler);
+                if (!view || !sampler) continue;
                 VkDescriptorImageInfo info{};
-                info.imageView = m_PendingImageViews[b.binding];
+                info.imageView = view;
                 info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 info.sampler = sampler;
                 imageInfos.push_back(info);

@@ -152,18 +152,27 @@ namespace Dodo::Platform {
         bindingDesc.stride = 11 * sizeof(float);
         bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-        VkVertexInputAttributeDescription attribDescs[4] = {};
-        attribDescs[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0};  // position
-        attribDescs[1] = {1, 0, VK_FORMAT_R32G32_SFLOAT, 12};    // texcoord
-        attribDescs[2] = {2, 0, VK_FORMAT_R32G32B32_SFLOAT, 20}; // normal
-        attribDescs[3] = {3, 0, VK_FORMAT_R32G32B32_SFLOAT, 32}; // tangent
+        VkVertexInputAttributeDescription allAttribs[4] = {};
+        allAttribs[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0};  // position
+        allAttribs[1] = {1, 0, VK_FORMAT_R32G32_SFLOAT, 12};    // texcoord
+        allAttribs[2] = {2, 0, VK_FORMAT_R32G32B32_SFLOAT, 20}; // normal
+        allAttribs[3] = {3, 0, VK_FORMAT_R32G32B32_SFLOAT, 32}; // tangent
+
+        std::vector<VkVertexInputAttributeDescription> attribDescs;
+        for (const auto& a : allAttribs) {
+            if (shader.vertexInputLocations.empty() ||
+                std::find(shader.vertexInputLocations.begin(), shader.vertexInputLocations.end(), a.location) !=
+                    shader.vertexInputLocations.end()) {
+                attribDescs.push_back(a);
+            }
+        }
 
         VkPipelineVertexInputStateCreateInfo vertexInput{};
         vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInput.vertexBindingDescriptionCount = 1;
         vertexInput.pVertexBindingDescriptions = &bindingDesc;
-        vertexInput.vertexAttributeDescriptionCount = 4;
-        vertexInput.pVertexAttributeDescriptions = attribDescs;
+        vertexInput.vertexAttributeDescriptionCount = (uint32_t)attribDescs.size();
+        vertexInput.pVertexAttributeDescriptions = attribDescs.data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;

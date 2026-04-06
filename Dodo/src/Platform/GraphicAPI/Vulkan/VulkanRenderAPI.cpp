@@ -40,7 +40,6 @@ namespace Dodo::Platform {
 
         for (int i = 0; i < maxFramesInFlight; i++) {
             vkDestroySemaphore(m_Device, m_Frames[i].imageAvailableSemaphore, nullptr);
-            vkDestroySemaphore(m_Device, m_Frames[i].renderFinishedSemaphore, nullptr);
             vkDestroyFence(m_Device, m_Frames[i].inFlightFence, nullptr);
         }
 
@@ -60,10 +59,11 @@ namespace Dodo::Platform {
         if (m_DummyImageView) vkDestroyImageView(m_Device, m_DummyImageView, nullptr);
         if (m_DummyImage) vmaDestroyImage(m_VmaAllocator, m_DummyImage, m_DummyAllocation);
 
-        // TODO: There should be a check for imgui here...
-        if (m_ImGuiActive) ImGui_ImplVulkan_Shutdown();
-        vkDestroyDescriptorPool(m_Device, m_ImGuiDescriptorPool, nullptr);
-
+        if (m_ImGuiActive) {
+            ImGui_ImplVulkan_Shutdown();
+            vkDestroyDescriptorPool(m_Device, m_ImGuiDescriptorPool, nullptr);
+        }
+        
         for (auto imageView : m_SwapChainImageViews) {
             vkDestroyImageView(m_Device, imageView, nullptr);
         }
@@ -76,6 +76,8 @@ namespace Dodo::Platform {
         vkDestroySurfaceKHR(m_VkInstance, m_Surface, nullptr);
         vkDestroyInstance(m_VkInstance, nullptr);
     }
+
+    void VulkanRenderAPI::WaitIdle() const { vkDeviceWaitIdle(m_Device); }
 
     /**
      * Initializes the Vulkan instance, picks a physical device, creates a logical device and initializes ImGui if

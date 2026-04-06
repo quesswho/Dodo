@@ -23,6 +23,8 @@ using VulkanContext = Dodo::Platform::VulkanGLFWContext;
 
 #include <array>
 #include <optional>
+#include <string>
+#include <vector>
 
 namespace Dodo {
     class AssetManager;
@@ -79,8 +81,8 @@ namespace Dodo::Platform {
         void SetFrameData(const Dodo::FrameData& data);
         void SetDrawData(const DrawData& data);
         void DrawIndexed(const Ref<VertexBuffer>& va);
-        void DrawIndices(uint count) const;
-        void DrawArray(uint count) const;
+        void DrawIndices(uint count);
+        void DrawArray(uint count);
         void DefaultFrameBuffer() const;
         void SetViewport(uint width, uint height);
         void SetViewport(uint width, uint height, uint posX, uint posY);
@@ -91,6 +93,7 @@ namespace Dodo::Platform {
         Ref<IndexBuffer> CreateIndexBuffer(const uint* indices, uint count);
         Ref<Texture> CreateTexture(uchar* data, const TextureProperties& prop);
         Ref<TextureSampler> CreateSampler(const SamplerProperties& prop);
+        Ref<CubeMap> CreateCubeMap(const std::vector<std::string>& paths);
 
         inline const char* GetAPIName() const { return "Vulkan"; }
         int CurrentVRamUsage() const;
@@ -118,7 +121,10 @@ namespace Dodo::Platform {
         RenderInitError CreateCommandPool();
         RenderInitError CreateCommandBuffer();
         RenderInitError CreateSyncObjects();
+        RenderInitError InitDescriptors();
         RenderInitError InitImGui();
+
+        void BindPendingSet1(VkCommandBuffer cmd);
 
         bool IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device);
         bool IsDeviceSuitable(PhyisicalDeviceInfo device);
@@ -150,6 +156,7 @@ namespace Dodo::Platform {
 
         // Forward-declared to avoid including vk_mem_alloc.h before VMA_IMPLEMENTATION is defined
         typedef struct VmaAllocator_T* VmaAllocator;
+        typedef struct VmaAllocation_T* VmaAllocation;
         VmaAllocator m_VmaAllocator = nullptr;
 
         VkInstance m_VkInstance;
@@ -168,13 +175,47 @@ namespace Dodo::Platform {
         VkPipeline m_BoundPipeline;
         VkPipelineLayout m_BoundPipelineLayout = VK_NULL_HANDLE;
 
-        // Note: This is temporary for now
-        static constexpr int maxTextureSlots = 3;
+        // Pending texture/sampler state (bound before each draw)
+        static constexpr int maxTextureSlots = 8;
         VkImageView m_PendingImageViews[maxTextureSlots] = {};
         VkSampler m_PendingSamplers[maxTextureSlots] = {};
 
-        // Frame stuff
+        // Application descriptor infrastructure (separate from ImGui pool)
         static constexpr int maxFramesInFlight = 2;
+        VkDescriptorPool m_AppDescriptorPool = VK_NULL_HANDLE;
+        VkDescriptorSetLayout m_GlobalSet0Layout = VK_NULL_HANDLE;
+        std::array<VkDescriptorSet, maxFramesInFlight> m_GlobalSet0{};
+
+        // GPU-side layout for ModelData cbuffer (float4x4 model + float4x4 normal = 128 bytes)
+        struct GPUModelData {
+            float model[16];  // Mat4
+            float normal[16]; // Mat4 (Mat3 zero-padded into 4th column)
+        };
+
+        // Persistently-mapped UBOs for FrameData (one per frame)
+        struct MappedBuffer {
+            VkBuffer buffer = VK_NULL_HANDLE;
+            VmaAllocation allocation = nullptr;
+            void* mapped = nullptr;
+        };
+        std::array<MappedBuffer, maxFramesInFlight> m_FrameDataUBOs{};
+
+        // Dynamic UBO ring buffer for per-draw ModelData (one large buffer per frame)
+        static constexpr uint32_t maxDrawsPerFrame = 1024;
+        std::array<MappedBuffer, maxFramesInFlight> m_ModelDataUBOs{};
+        uint32_t m_ModelUBOSlotSize = 0; // sizeof(GPUModelData) aligned to minUniformBufferOffsetAlignment
+        uint32_t m_ModelUBOCursor = 0;   // next free slot index within the current frame
+        uint32_t m_LastModelOffset = 0;  // byte offset written by the most recent SetDrawData
+
+        // Per-frame transient descriptor pool for set-1 (material textures), reset each frame
+        std::array<VkDescriptorPool, maxFramesInFlight> m_TransientPools{};
+
+        // Current pipeline reference (needed for set-1 layout when binding textures)
+        class VulkanPipeline* m_BoundPipelinePtr = nullptr;
+        bool m_TexturesDirty = false;
+        VkDescriptorSet m_BoundTextureSet = VK_NULL_HANDLE;
+
+        // Frame stuff
         std::array<FrameData, maxFramesInFlight> m_Frames;
         std::vector<VkSemaphore> m_RenderFinishedSemaphores;
         uint m_CurrentFrame = 0;

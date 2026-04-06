@@ -1,4 +1,4 @@
-[[vk::binding(2, 0)]] cbuffer PushConstants : register(b2)
+[[vk::push_constant]] cbuffer PushConstants : register(b2)
 {
     float gamma;
     float3 _pushPadding;

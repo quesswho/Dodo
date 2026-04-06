@@ -27,7 +27,7 @@ namespace Dodo {
           m_Sampler(renderAPI.CreateSampler(SamplerProperties(SamplerFilter::MIN_MAG_MIP_LINEAR,
                                                               SamplerWrapMode::WRAP_CLAMP_TO_EDGE,
                                                               SamplerWrapMode::WRAP_CLAMP_TO_EDGE))),
-          m_CubeMap(std::make_shared<CubeMap>(paths))
+          m_CubeMap(renderAPI.CreateCubeMap(paths))
     {
         ShaderID id = assets.LoadShaderFromPath("res/shader/builtin/Passes/Skybox.slang");
         PipelineDesc pipelineDesc;

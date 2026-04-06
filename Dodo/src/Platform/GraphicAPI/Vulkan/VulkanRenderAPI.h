@@ -178,7 +178,14 @@ namespace Dodo::Platform {
         // Pending texture/sampler state (bound before each draw)
         static constexpr int maxTextureSlots = 8;
         VkImageView m_PendingImageViews[maxTextureSlots] = {};
+        bool m_PendingIsCubeMap[maxTextureSlots] = {};
         VkSampler m_PendingSamplers[maxTextureSlots] = {};
+
+        // Fallback 1x1 resources used for set-1 bindings with no pending image
+        VkImage m_DummyImage = VK_NULL_HANDLE;
+        VmaAllocation m_DummyAllocation = nullptr;
+        VkImageView m_DummyImageView = VK_NULL_HANDLE;
+        VkSampler m_DummySampler = VK_NULL_HANDLE;
 
         // Application descriptor infrastructure (separate from ImGui pool)
         static constexpr int maxFramesInFlight = 2;

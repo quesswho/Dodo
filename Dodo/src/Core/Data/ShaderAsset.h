@@ -36,6 +36,7 @@ namespace Dodo {
     enum class DescriptorType {
         UniformBuffer,
         SampledTexture,
+        SampledCubeMap,
         Sampler,
         CombinedImageSampler, // Legacy, use separate Texture2D + SamplerState instead
     };

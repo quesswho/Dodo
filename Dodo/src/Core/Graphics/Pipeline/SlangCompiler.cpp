@@ -4,13 +4,18 @@
 
 namespace Dodo {
 
-    static DescriptorType SlangBindingTypeToDescriptorType(slang::BindingType bindingType)
+    static DescriptorType ReflectDescriptorType(slang::VariableLayoutReflection* param)
     {
+        slang::BindingType bindingType = param->getTypeLayout()->getBindingRangeType(0);
         switch (bindingType) {
         case slang::BindingType::ConstantBuffer:
             return DescriptorType::UniformBuffer;
-        case slang::BindingType::Texture:
-            return DescriptorType::SampledTexture;
+        case slang::BindingType::Texture: {
+            // TODO: Perhaps we should do this differently if we decide to support more texture types
+            SlangResourceShape shape = static_cast<SlangResourceShape>(
+                param->getTypeLayout()->getType()->getResourceShape() & SLANG_RESOURCE_BASE_SHAPE_MASK);
+            return (shape == SLANG_TEXTURE_CUBE) ? DescriptorType::SampledCubeMap : DescriptorType::SampledTexture;
+        }
         case slang::BindingType::Sampler:
             return DescriptorType::Sampler;
         case slang::BindingType::CombinedTextureSampler:
@@ -137,7 +142,7 @@ namespace Dodo {
             b.set = (uint32_t)param->getBindingSpace();
             b.binding = (uint32_t)param->getBindingIndex();
             b.count = 1;
-            b.type = SlangBindingTypeToDescriptorType(param->getTypeLayout()->getBindingRangeType(0));
+            b.type = ReflectDescriptorType(param);
             result.descriptorBindings.push_back(b);
         }
 

@@ -11,6 +11,7 @@ namespace Dodo::Platform {
         case DescriptorType::UniformBuffer:
             return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         case DescriptorType::SampledTexture:
+        case DescriptorType::SampledCubeMap:
             return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
         case DescriptorType::Sampler:
             return VK_DESCRIPTOR_TYPE_SAMPLER;

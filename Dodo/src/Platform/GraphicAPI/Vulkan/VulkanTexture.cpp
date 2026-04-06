@@ -4,8 +4,8 @@
 
 namespace Dodo::Platform {
 
-    VulkanTexture::VulkanTexture(uchar* data, const TextureProperties& prop, VkDevice device,
-                                 VmaAllocator allocator, VkCommandPool commandPool, VkQueue queue)
+    VulkanTexture::VulkanTexture(uchar* data, const TextureProperties& prop, VkDevice device, VmaAllocator allocator,
+                                 VkCommandPool commandPool, VkQueue queue)
         : m_TextureProperties(prop), m_Device(device), m_Allocator(allocator)
     {
         Init(data, commandPool, queue);

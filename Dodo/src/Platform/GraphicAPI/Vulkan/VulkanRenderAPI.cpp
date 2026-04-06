@@ -3,6 +3,7 @@
 
 #include "Core/Data/AssetManager.h"
 #include "VulkanBuffer.h"
+#include "VulkanCubeMap.h"
 #include "VulkanPipeline.h"
 #include "VulkanSampler.h"
 #include "VulkanTexture.h"
@@ -44,6 +45,18 @@ namespace Dodo::Platform {
         }
 
         vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
+
+        // Descriptor infrastructure
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            if (m_FrameDataUBOs[i].buffer)
+                vmaDestroyBuffer(m_VmaAllocator, m_FrameDataUBOs[i].buffer, m_FrameDataUBOs[i].allocation);
+            if (m_ModelDataUBOs[i].buffer)
+                vmaDestroyBuffer(m_VmaAllocator, m_ModelDataUBOs[i].buffer, m_ModelDataUBOs[i].allocation);
+            if (m_TransientPools[i]) vkDestroyDescriptorPool(m_Device, m_TransientPools[i], nullptr);
+        }
+        if (m_GlobalSet0Layout) vkDestroyDescriptorSetLayout(m_Device, m_GlobalSet0Layout, nullptr);
+        if (m_AppDescriptorPool) vkDestroyDescriptorPool(m_Device, m_AppDescriptorPool, nullptr);
+
         // TODO: There should be a check for imgui here...
         if (m_ImGuiActive) ImGui_ImplVulkan_Shutdown();
         vkDestroyDescriptorPool(m_Device, m_ImGuiDescriptorPool, nullptr);
@@ -96,6 +109,7 @@ namespace Dodo::Platform {
         if (Try(CreateCommandPool())) return result;
         if (Try(CreateCommandBuffer())) return result;
         if (Try(CreateSyncObjects())) return result;
+        if (Try(InitDescriptors())) return result;
 
         if (winprop.m_Settings.imgui)
             if (Try(InitImGui())) return result;
@@ -485,6 +499,137 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success);
     }
 
+    RenderInitError VulkanRenderAPI::InitDescriptors()
+    {
+        // Compute slot size for the dynamic ModelData UBO (must be aligned to device limit)
+        VkPhysicalDeviceProperties devProps{};
+        vkGetPhysicalDeviceProperties(m_PhysicalDevice, &devProps);
+        uint32_t alignment = (uint32_t)devProps.limits.minUniformBufferOffsetAlignment;
+        uint32_t rawSize = (uint32_t)sizeof(GPUModelData);
+        m_ModelUBOSlotSize = (rawSize + alignment - 1) & ~(alignment - 1);
+
+        // --- Application descriptor pool ---
+        VkDescriptorPoolSize poolSizes[] = {
+            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 64},          {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 64},
+            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 256},          {VK_DESCRIPTOR_TYPE_SAMPLER, 256},
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 256},
+        };
+        VkDescriptorPoolCreateInfo poolCI{};
+        poolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolCI.maxSets = 256;
+        poolCI.poolSizeCount = (uint32_t)std::size(poolSizes);
+        poolCI.pPoolSizes = poolSizes;
+        if (vkCreateDescriptorPool(m_Device, &poolCI, nullptr, &m_AppDescriptorPool) != VK_SUCCESS)
+            return RenderInitError(RenderInitStatus::Failed, "Failed to create application descriptor pool!");
+
+        // --- Global set-0 layout: binding 0 = FrameData UBO, binding 1 = ModelData dynamic UBO ---
+        VkDescriptorSetLayoutBinding set0Bindings[2]{};
+        set0Bindings[0].binding = 0;
+        set0Bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        set0Bindings[0].descriptorCount = 1;
+        set0Bindings[0].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+        set0Bindings[1].binding = 1;
+        set0Bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        set0Bindings[1].descriptorCount = 1;
+        set0Bindings[1].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+
+        VkDescriptorSetLayoutCreateInfo layoutCI{};
+        layoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutCI.bindingCount = 2;
+        layoutCI.pBindings = set0Bindings;
+        if (vkCreateDescriptorSetLayout(m_Device, &layoutCI, nullptr, &m_GlobalSet0Layout) != VK_SUCCESS)
+            return RenderInitError(RenderInitStatus::Failed, "Failed to create global set-0 descriptor set layout!");
+
+        // Allocate one descriptor set per frame
+        VkDescriptorSetLayout layouts[maxFramesInFlight];
+        for (int i = 0; i < maxFramesInFlight; i++)
+            layouts[i] = m_GlobalSet0Layout;
+
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = m_AppDescriptorPool;
+        allocInfo.descriptorSetCount = maxFramesInFlight;
+        allocInfo.pSetLayouts = layouts;
+        if (vkAllocateDescriptorSets(m_Device, &allocInfo, m_GlobalSet0.data()) != VK_SUCCESS)
+            return RenderInitError(RenderInitStatus::Failed, "Failed to allocate global set-0 descriptor sets!");
+
+        // --- Create per-frame UBOs via VMA ---
+        VkBufferCreateInfo bufCI{};
+        bufCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        bufCI.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+        VmaAllocationCreateInfo allocCI{};
+        allocCI.usage = VMA_MEMORY_USAGE_AUTO;
+        allocCI.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            VmaAllocationInfo vmaInfo{};
+
+            // FrameData UBO
+            bufCI.size = sizeof(Dodo::FrameData);
+            if (vmaCreateBuffer(m_VmaAllocator, &bufCI, &allocCI, &m_FrameDataUBOs[i].buffer,
+                                &m_FrameDataUBOs[i].allocation, &vmaInfo) != VK_SUCCESS)
+                return RenderInitError(RenderInitStatus::Failed, "Failed to create FrameData UBO!");
+            m_FrameDataUBOs[i].mapped = vmaInfo.pMappedData;
+
+            // ModelData dynamic UBO (ring buffer for up to maxDrawsPerFrame draws)
+            bufCI.size = (VkDeviceSize)m_ModelUBOSlotSize * maxDrawsPerFrame;
+            if (vmaCreateBuffer(m_VmaAllocator, &bufCI, &allocCI, &m_ModelDataUBOs[i].buffer,
+                                &m_ModelDataUBOs[i].allocation, &vmaInfo) != VK_SUCCESS)
+                return RenderInitError(RenderInitStatus::Failed, "Failed to create ModelData UBO!");
+            m_ModelDataUBOs[i].mapped = vmaInfo.pMappedData;
+        }
+
+        // --- Point each descriptor set at the corresponding UBOs ---
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            VkDescriptorBufferInfo frameBI{};
+            frameBI.buffer = m_FrameDataUBOs[i].buffer;
+            frameBI.offset = 0;
+            frameBI.range = sizeof(Dodo::FrameData);
+
+            VkDescriptorBufferInfo modelBI{};
+            modelBI.buffer = m_ModelDataUBOs[i].buffer;
+            modelBI.offset = 0;
+            modelBI.range = sizeof(GPUModelData);
+
+            VkWriteDescriptorSet writes[2]{};
+            writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[0].dstSet = m_GlobalSet0[i];
+            writes[0].dstBinding = 0;
+            writes[0].descriptorCount = 1;
+            writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            writes[0].pBufferInfo = &frameBI;
+
+            writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[1].dstSet = m_GlobalSet0[i];
+            writes[1].dstBinding = 1;
+            writes[1].descriptorCount = 1;
+            writes[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+            writes[1].pBufferInfo = &modelBI;
+
+            vkUpdateDescriptorSets(m_Device, 2, writes, 0, nullptr);
+        }
+
+        // --- Per-frame transient pools for set-1 (material textures) ---
+        VkDescriptorPoolSize transientSizes[] = {
+            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 64},
+            {VK_DESCRIPTOR_TYPE_SAMPLER, 64},
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 64},
+        };
+        VkDescriptorPoolCreateInfo transientCI{};
+        transientCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        transientCI.maxSets = 64;
+        transientCI.poolSizeCount = (uint32_t)std::size(transientSizes);
+        transientCI.pPoolSizes = transientSizes;
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            if (vkCreateDescriptorPool(m_Device, &transientCI, nullptr, &m_TransientPools[i]) != VK_SUCCESS)
+                return RenderInitError(RenderInitStatus::Failed, "Failed to create transient descriptor pool!");
+        }
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
     RenderInitError VulkanRenderAPI::InitImGui()
     {
         m_Context.InitializeImGui();
@@ -567,6 +712,16 @@ namespace Dodo::Platform {
 
         vkWaitForFences(m_Device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
         vkResetFences(m_Device, 1, &inFlightFence);
+
+        // Reset per-frame state now that the GPU has finished with this frame slot
+        m_BoundPipeline = VK_NULL_HANDLE;
+        m_BoundPipelinePtr = nullptr;
+        m_ModelUBOCursor = 0;
+        m_LastModelOffset = 0;
+        m_TexturesDirty = false;
+        m_BoundTextureSet = VK_NULL_HANDLE;
+        if (m_TransientPools[m_CurrentFrame] != VK_NULL_HANDLE)
+            vkResetDescriptorPool(m_Device, m_TransientPools[m_CurrentFrame], 0);
 
         vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_Frames[m_CurrentFrame].imageAvailableSemaphore,
                               VK_NULL_HANDLE, &m_CurrentImageIndex);
@@ -656,9 +811,8 @@ namespace Dodo::Platform {
         presentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         presentBarrier.dstAccessMask = 0;
 
-        vkCmdPipelineBarrier(cmd,
-                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                             0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
 
         vkEndCommandBuffer(cmd);
 
@@ -699,47 +853,80 @@ namespace Dodo::Platform {
 
     void VulkanRenderAPI::ClearColor(float r, float g, float b) const {}
     void VulkanRenderAPI::Viewport(uint width, uint height) const {}
-    void VulkanRenderAPI::BindCubeMap(uint slot, Ref<CubeMap> cubemap) {}
+    void VulkanRenderAPI::BindCubeMap(uint slot, Ref<CubeMap> cubemap)
+    {
+        if (slot >= maxTextureSlots || !cubemap) return;
+        m_PendingImageViews[slot] = cubemap->GetImageView();
+        m_TexturesDirty = true;
+    }
 
     void VulkanRenderAPI::BindTexture(uint slot, Ref<Texture> texture)
     {
         if (slot >= maxTextureSlots || !texture) return;
         m_PendingImageViews[slot] = texture->GetImageView();
+        m_TexturesDirty = true;
     }
 
     void VulkanRenderAPI::BindTextureSampler(uint slot, Ref<TextureSampler> sampler)
     {
         if (slot >= maxTextureSlots || !sampler) return;
         m_PendingSamplers[slot] = sampler->GetSampler();
+        m_TexturesDirty = true;
     }
 
     void VulkanRenderAPI::BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer) {}
 
     void VulkanRenderAPI::BindPipeline(Ref<Pipeline> pipeline)
     {
-        if (pipeline->m_Pipeline == m_BoundPipeline) return;
-        vkCmdBindPipeline(m_Frames[m_CurrentFrame].commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          pipeline->m_Pipeline);
-        m_BoundPipeline = pipeline->m_Pipeline;
-        m_BoundPipelineLayout = pipeline->m_Layout;
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+        if (pipeline->m_Pipeline != m_BoundPipeline) {
+            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->m_Pipeline);
+            m_BoundPipeline = pipeline->m_Pipeline;
+            m_BoundPipelineLayout = pipeline->m_Layout;
+            m_BoundPipelinePtr = pipeline.get();
+        }
+        m_TexturesDirty = true;
+
+        // Bind set-0 (FrameData + ModelData) with current model offset as dynamic offset
+        if (m_GlobalSet0Layout != VK_NULL_HANDLE) {
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BoundPipelineLayout, 0, 1,
+                                    &m_GlobalSet0[m_CurrentFrame], 1, &m_LastModelOffset);
+        }
     }
 
     void VulkanRenderAPI::PushConstants(const void* data, size_t size)
     {
         if (m_BoundPipelineLayout == VK_NULL_HANDLE) return;
-        vkCmdPushConstants(m_Frames[m_CurrentFrame].commandBuffer, m_BoundPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0,
-                           (uint32_t)size, data);
+        vkCmdPushConstants(m_Frames[m_CurrentFrame].commandBuffer, m_BoundPipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, (uint32_t)size, data);
     }
 
     void VulkanRenderAPI::SetFrameData(const Dodo::FrameData& data)
     {
-        // TODO: Update descriptor set 0 (FrameData UBO) and vkCmdBindDescriptorSets
+        if (m_FrameDataUBOs[m_CurrentFrame].mapped)
+            memcpy(m_FrameDataUBOs[m_CurrentFrame].mapped, &data, sizeof(Dodo::FrameData));
     }
 
     void VulkanRenderAPI::SetDrawData(const DrawData& data)
     {
-        // TODO: Needs std430-aligned version of DrawData (mat3 is 48B in GLSL, 36B in C++)
-        // Once aligned, call PushConstants(&data, alignedSize)
+        if (!m_ModelDataUBOs[m_CurrentFrame].mapped) return;
+
+        // Expand Mat4 model and Mat3 normal into GPU-aligned GPUModelData (128 bytes)
+        GPUModelData gpu{};
+        memcpy(gpu.model, data.model.m_Elements, sizeof(gpu.model));
+        // Mat3 is column-major (m_Columns[3] of Vec3); pad each column into vec4
+        for (int c = 0; c < 3; c++) {
+            gpu.normal[c * 4 + 0] = data.normalMatrix.m_Columns[c].x;
+            gpu.normal[c * 4 + 1] = data.normalMatrix.m_Columns[c].y;
+            gpu.normal[c * 4 + 2] = data.normalMatrix.m_Columns[c].z;
+            // gpu.normal[c * 4 + 3] stays 0
+        }
+
+        uint32_t slot = m_ModelUBOCursor < maxDrawsPerFrame ? m_ModelUBOCursor++ : maxDrawsPerFrame - 1;
+        m_LastModelOffset = slot * m_ModelUBOSlotSize;
+
+        auto* dst = static_cast<uint8_t*>(m_ModelDataUBOs[m_CurrentFrame].mapped) + m_LastModelOffset;
+        memcpy(dst, &gpu, sizeof(gpu));
     }
 
     void VulkanRenderAPI::BindVertexBuffer(const Ref<VertexBuffer>& vb)
@@ -755,13 +942,102 @@ namespace Dodo::Platform {
     }
 
     void VulkanRenderAPI::DrawIndexed(const Ref<VertexBuffer>& va) {}
-    void VulkanRenderAPI::DrawIndices(uint count) const
+    void VulkanRenderAPI::DrawIndices(uint count)
     {
-        vkCmdDrawIndexed(m_Frames[m_CurrentFrame].commandBuffer, count, 1, 0, 0, 0);
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+
+        // Re-bind set-0 with the per-draw dynamic offset for ModelData
+        if (m_GlobalSet0Layout != VK_NULL_HANDLE) {
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BoundPipelineLayout, 0, 1,
+                                    &m_GlobalSet0[m_CurrentFrame], 1, &m_LastModelOffset);
+        }
+
+        BindPendingSet1(cmd);
+
+        vkCmdDrawIndexed(cmd, count, 1, 0, 0, 0);
     }
-    void VulkanRenderAPI::DrawArray(uint count) const
+
+    void VulkanRenderAPI::BindPendingSet1(VkCommandBuffer cmd)
     {
-        vkCmdDraw(m_Frames[m_CurrentFrame].commandBuffer, count, 1, 0, 0);
+        if (!m_TexturesDirty || !m_BoundPipelinePtr || m_BoundPipelinePtr->m_SetLayouts.size() <= 1 ||
+            m_BoundPipelinePtr->m_SetLayouts[1] == VK_NULL_HANDLE)
+            return;
+
+        VkDescriptorSet set1 = VK_NULL_HANDLE;
+        VkDescriptorSetAllocateInfo ai{};
+        ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        ai.descriptorPool = m_TransientPools[m_CurrentFrame];
+        ai.descriptorSetCount = 1;
+        ai.pSetLayouts = &m_BoundPipelinePtr->m_SetLayouts[1];
+
+        if (vkAllocateDescriptorSets(m_Device, &ai, &set1) != VK_SUCCESS) return;
+
+        std::vector<VkWriteDescriptorSet> writes;
+        std::vector<VkDescriptorImageInfo> imageInfos;
+        imageInfos.reserve(maxTextureSlots);
+
+        VkSampler firstSampler = VK_NULL_HANDLE;
+        for (int s = 0; s < maxTextureSlots && firstSampler == VK_NULL_HANDLE; s++)
+            firstSampler = m_PendingSamplers[s];
+
+        for (const auto& b : m_BoundPipelinePtr->m_ShaderBindings) {
+            if (b.set != 1) continue;
+
+            VkWriteDescriptorSet w{};
+            w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            w.dstSet = set1;
+            w.dstBinding = b.binding;
+            w.descriptorCount = 1;
+
+            if (b.type == DescriptorType::SampledTexture) {
+                if (b.binding >= maxTextureSlots || !m_PendingImageViews[b.binding]) continue;
+                VkDescriptorImageInfo info{};
+                info.imageView = m_PendingImageViews[b.binding];
+                info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfos.push_back(info);
+                w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                w.pImageInfo = &imageInfos.back();
+                writes.push_back(w);
+            } else if (b.type == DescriptorType::Sampler) {
+                VkSampler sampler = (b.binding < maxTextureSlots && m_PendingSamplers[b.binding])
+                                        ? m_PendingSamplers[b.binding]
+                                        : firstSampler;
+                if (!sampler) continue;
+                VkDescriptorImageInfo info{};
+                info.sampler = sampler;
+                imageInfos.push_back(info);
+                w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+                w.pImageInfo = &imageInfos.back();
+                writes.push_back(w);
+            } else if (b.type == DescriptorType::CombinedImageSampler) {
+                if (b.binding >= maxTextureSlots || !m_PendingImageViews[b.binding]) continue;
+                VkSampler sampler = (b.binding < maxTextureSlots && m_PendingSamplers[b.binding])
+                                        ? m_PendingSamplers[b.binding]
+                                        : firstSampler;
+                if (!sampler) continue;
+                VkDescriptorImageInfo info{};
+                info.imageView = m_PendingImageViews[b.binding];
+                info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                info.sampler = sampler;
+                imageInfos.push_back(info);
+                w.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                w.pImageInfo = &imageInfos.back();
+                writes.push_back(w);
+            }
+        }
+
+        if (!writes.empty()) vkUpdateDescriptorSets(m_Device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
+
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BoundPipelineLayout, 1, 1, &set1, 0, nullptr);
+        m_BoundTextureSet = set1;
+        m_TexturesDirty = false;
+    }
+
+    void VulkanRenderAPI::DrawArray(uint count)
+    {
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+        BindPendingSet1(cmd);
+        vkCmdDraw(cmd, count, 1, 0, 0);
     }
 
     void VulkanRenderAPI::DefaultFrameBuffer() const {}
@@ -778,7 +1054,8 @@ namespace Dodo::Platform {
     {
         const ShaderAsset& shader = assets.GetShaderAsset(desc.shaderID);
         // VK_FORMAT_D32_SFLOAT matches the depth image that must be created alongside the swapchain
-        return std::make_shared<VulkanPipeline>(m_Device, m_SwapChainImageFormat, VK_FORMAT_D32_SFLOAT, shader, desc);
+        return std::make_shared<VulkanPipeline>(m_Device, m_SwapChainImageFormat, VK_FORMAT_D32_SFLOAT, shader, desc,
+                                                m_GlobalSet0Layout);
     }
 
     Ref<VertexBuffer> VulkanRenderAPI::CreateVertexBuffer(const float* vertices, uint size,
@@ -802,6 +1079,11 @@ namespace Dodo::Platform {
     Ref<TextureSampler> VulkanRenderAPI::CreateSampler(const SamplerProperties& prop)
     {
         return std::make_shared<VulkanSampler>(prop, m_Device);
+    }
+
+    Ref<CubeMap> VulkanRenderAPI::CreateCubeMap(const std::vector<std::string>& paths)
+    {
+        return std::make_shared<VulkanCubeMap>(paths, m_Device, m_VmaAllocator, m_CommandPool, m_GraphicsQueue);
     }
 
     void VulkanRenderAPI::ImGuiNewFrame() const

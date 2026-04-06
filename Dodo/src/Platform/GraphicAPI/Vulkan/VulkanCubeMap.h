@@ -1,23 +1,29 @@
 #pragma once
 
-#include "Core/Graphics/Material/TextureProperties.h"
-
 #include <string>
 #include <vector>
+#include <volk.h>
+
+// Forward-declare VMA types to avoid including vk_mem_alloc.h before VMA_IMPLEMENTATION
+// is defined in VulkanRenderAPI.cpp.
+typedef struct VmaAllocator_T* VmaAllocator;
+typedef struct VmaAllocation_T* VmaAllocation;
 
 namespace Dodo::Platform {
 
     class VulkanCubeMap {
-      private:
-        uint m_TextureID;
-
       public:
-        VulkanCubeMap(std::vector<std::string> paths);
+        VulkanCubeMap(const std::vector<std::string>& paths, VkDevice device, VmaAllocator allocator,
+                      VkCommandPool commandPool, VkQueue queue);
         ~VulkanCubeMap();
 
-        void Bind() const;
+        VkImageView GetImageView() const { return m_ImageView; }
 
-      public:
-        uint m_Index;
+      private:
+        VkDevice m_Device = VK_NULL_HANDLE;
+        VmaAllocator m_Allocator = nullptr;
+        VkImage m_Image = VK_NULL_HANDLE;
+        VmaAllocation m_Allocation = nullptr;
+        VkImageView m_ImageView = VK_NULL_HANDLE;
     };
 } // namespace Dodo::Platform

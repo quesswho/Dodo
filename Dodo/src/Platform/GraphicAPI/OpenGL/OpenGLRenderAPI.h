@@ -88,6 +88,10 @@ namespace Dodo::Platform {
         {
             return std::make_shared<TextureSampler>(prop);
         }
+        inline Ref<CubeMap> CreateCubeMap(const std::vector<std::string>& paths)
+        {
+            return std::make_shared<CubeMap>(paths);
+        }
 
         inline const char* GetAPIName() const { return "OpenGL"; }
         int CurrentVRamUsage() const

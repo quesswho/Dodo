@@ -62,7 +62,8 @@ namespace Dodo::Platform {
     }
 
     VulkanPipeline::VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat,
-                                   const ShaderAsset& shader, const PipelineDesc& desc)
+                                   const ShaderAsset& shader, const PipelineDesc& desc,
+                                   VkDescriptorSetLayout globalSet0Layout)
         : m_Device(device)
     {
         // Build descriptor set layouts from shader reflection data
@@ -76,9 +77,18 @@ namespace Dodo::Platform {
             setBindings[b.set].push_back(vkb);
         }
 
+        m_ShaderBindings = shader.descriptorBindings;
+
         if (!setBindings.empty()) {
             m_SetLayouts.resize(setBindings.rbegin()->first + 1, VK_NULL_HANDLE);
             for (auto& [set, bindings] : setBindings) {
+                // Set-0 is owned by VulkanRenderAPI (global UBOs with dynamic binding).
+                // Use the pre-built layout so both sides agree on UNIFORM_BUFFER_DYNAMIC.
+                if (set == 0 && globalSet0Layout != VK_NULL_HANDLE) {
+                    m_SetLayouts[set] = globalSet0Layout;
+                    m_OwnedSet0 = false;
+                    continue;
+                }
                 VkDescriptorSetLayoutCreateInfo info{};
                 info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
                 info.bindingCount = (uint32_t)bindings.size();
@@ -90,7 +100,7 @@ namespace Dodo::Platform {
         // Push constants: DrawData (model matrix + normal matrix)
         // std430: mat4 = 64B, mat4 = 64B: 128 bytes total
         VkPushConstantRange pushConstRange{};
-        pushConstRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        pushConstRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
         pushConstRange.offset = 0;
         pushConstRange.size = 112;
 
@@ -282,7 +292,10 @@ namespace Dodo::Platform {
     {
         vkDestroyPipeline(m_Device, m_Pipeline, nullptr);
         vkDestroyPipelineLayout(m_Device, m_Layout, nullptr);
-        for (auto layout : m_SetLayouts)
-            vkDestroyDescriptorSetLayout(m_Device, layout, nullptr);
+        for (size_t i = 0; i < m_SetLayouts.size(); ++i) {
+            // Set-0 may be borrowed from VulkanRenderAPI; only destroy layouts we own.
+            if (i == 0 && !m_OwnedSet0) continue;
+            vkDestroyDescriptorSetLayout(m_Device, m_SetLayouts[i], nullptr);
+        }
     }
 } // namespace Dodo::Platform

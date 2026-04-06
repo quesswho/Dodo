@@ -15,7 +15,7 @@ namespace Dodo::Platform {
 
       public:
         VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, const ShaderAsset& shader,
-                       const PipelineDesc& desc);
+                       const PipelineDesc& desc, VkDescriptorSetLayout globalSet0Layout = VK_NULL_HANDLE);
         ~VulkanPipeline();
 
         VkPipeline GetPipeline() const { return m_Pipeline; }
@@ -28,6 +28,8 @@ namespace Dodo::Platform {
         VkPipeline m_Pipeline = VK_NULL_HANDLE;
         VkPipelineLayout m_Layout = VK_NULL_HANDLE;
         std::vector<VkDescriptorSetLayout> m_SetLayouts;
+        std::vector<DescriptorBindingReflection> m_ShaderBindings;
+        bool m_OwnedSet0 = true; // false when set-0 layout is borrowed from VulkanRenderAPI
     };
 
 } // namespace Dodo::Platform

@@ -36,6 +36,8 @@ namespace Dodo::Platform {
         inline void Begin() const { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); }
         inline void End() { m_Context.SwapBuffer(); }
 
+        void WaitIdle() const { glFinish(); }
+
         void ImGuiNewFrame() const;
         void ImGuiEndFrame() const;
 

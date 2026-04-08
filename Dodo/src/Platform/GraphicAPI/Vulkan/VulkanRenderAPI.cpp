@@ -1324,30 +1324,11 @@ namespace Dodo::Platform {
     void VulkanRenderAPI::ImGuiEndFrame()
     {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
-        uint32_t imageIndex = m_CurrentImageIndex;
 
-        // Setup dynamic rendering target
-        VkRenderingAttachmentInfo colorAttachment = {};
-        colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-        colorAttachment.imageView = m_SwapChainImageViews[imageIndex];
-        colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-
-        VkRenderingInfo renderingInfo = {};
-        renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-        renderingInfo.renderArea = {{0, 0}, m_SwapChainExtent};
-        renderingInfo.layerCount = 1;
-        renderingInfo.colorAttachmentCount = 1;
-        renderingInfo.pColorAttachments = &colorAttachment;
-
-        vkCmdBeginRendering(cmd, &renderingInfo);
-
+        // Render ImGui into the currently active swapchain pass (started by DefaultFrameBuffer or Begin)
         ImGui::Render();
         ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
-
-        vkCmdEndRendering(cmd);
-        // Submit and present are handled by End()
+        // Pass is ended by End()
     }
 
     /**

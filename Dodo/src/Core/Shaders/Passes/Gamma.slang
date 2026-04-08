@@ -33,5 +33,6 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 {
     float3 color = textureMap.Sample(textureSampler, input.texCoord).rgb;
     float3 result = pow(color / (color + float3(1.0f, 1.0f, 1.0f)), float3(1.0f / gamma));
+    result = float3(1.0f, 0.0f, 0.0f);
     return float4(result, 1.0f);
 }

@@ -23,7 +23,7 @@ namespace Dodo {
                    AssetManager& assets);
         ~PostEffect();
 
-        inline void Bind() const { m_Framebuffer->Bind(); }
+        inline void Bind(RenderAPI& renderAPI) { renderAPI.BindFrameBuffer(m_Framebuffer); }
 
         /**
          * Set data for the post effect shader.

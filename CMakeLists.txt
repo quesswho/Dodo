@@ -19,7 +19,7 @@ option(DD_API_GLFW "Enable GLFW" ON)
 
 option(COMPILE_EDITOR "Compile DodoEditor project" ON)
 option(COMPILE_SANDBOX "Compile Sandbox project" ON)
-option(COMPILE_GAME "Compile Game project" ON)
+option(COMPILE_GAME "Compile Game project" OFF)
 
 message(STATUS "=== Configuring Dodo ===")
 message(STATUS "CMake version: ${CMAKE_VERSION}")

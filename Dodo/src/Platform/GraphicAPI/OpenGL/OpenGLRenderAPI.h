@@ -92,6 +92,11 @@ namespace Dodo::Platform {
         {
             return std::make_shared<CubeMap>(paths);
         }
+        inline Ref<FrameBuffer> CreateFrameBuffer(const FrameBufferProperties& props)
+        {
+            return std::make_shared<FrameBuffer>(props);
+        }
+        inline void BindFrameBuffer(Ref<FrameBuffer> framebuffer) { framebuffer->Bind(); }
 
         inline const char* GetAPIName() const { return "OpenGL"; }
         int CurrentVRamUsage() const

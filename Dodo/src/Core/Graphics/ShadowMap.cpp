@@ -3,15 +3,15 @@
 
 namespace Dodo {
 
-    ShadowMap::ShadowMap()
+    ShadowMap::ShadowMap(RenderAPI& renderAPI)
         : m_FrameBuffer(
-              std::make_shared<FrameBuffer>(FrameBufferProperties(4096, 4096, FrameBufferType::FRAMEBUFFER_DEPTH)))
+              renderAPI.CreateFrameBuffer(FrameBufferProperties(4096, 4096, FrameBufferType::FRAMEBUFFER_DEPTH)))
     {}
 
     ShadowMap::~ShadowMap() {}
 
-    void ShadowMap::Bind() const
+    void ShadowMap::Bind(RenderAPI& renderAPI)
     {
-        m_FrameBuffer->Bind();
+        renderAPI.BindFrameBuffer(m_FrameBuffer);
     }
 } // namespace Dodo

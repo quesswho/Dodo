@@ -253,8 +253,8 @@ namespace Dodo::Platform {
         VkPipelineColorBlendStateCreateInfo colorBlending{};
         colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         colorBlending.logicOpEnable = VK_FALSE;
-        colorBlending.attachmentCount = 1;
-        colorBlending.pAttachments = &blendAttachment;
+        colorBlending.attachmentCount = desc.depthOnly ? 0 : 1;
+        colorBlending.pAttachments = desc.depthOnly ? nullptr : &blendAttachment;
 
         // Dynamic states, we like to change the viewport and scissor without recreating pipelines
         VkDynamicState dynamicStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
@@ -267,8 +267,8 @@ namespace Dodo::Platform {
         // Dynamic rendering
         VkPipelineRenderingCreateInfo renderingInfo{};
         renderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-        renderingInfo.colorAttachmentCount = 1;
-        renderingInfo.pColorAttachmentFormats = &colorFormat;
+        renderingInfo.colorAttachmentCount = desc.depthOnly ? 0 : 1;
+        renderingInfo.pColorAttachmentFormats = desc.depthOnly ? nullptr : &colorFormat;
         renderingInfo.depthAttachmentFormat = depthFormat;
 
         // Create pipeline

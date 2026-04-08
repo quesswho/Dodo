@@ -83,7 +83,8 @@ namespace Dodo::Platform {
         void DrawIndexed(const Ref<VertexBuffer>& va);
         void DrawIndices(uint count);
         void DrawArray(uint count);
-        void DefaultFrameBuffer() const;
+        void DefaultFrameBuffer();
+        void BindFrameBuffer(Ref<FrameBuffer> framebuffer);
         void SetViewport(uint width, uint height);
         void SetViewport(uint width, uint height, uint posX, uint posY);
 
@@ -94,6 +95,7 @@ namespace Dodo::Platform {
         Ref<Texture> CreateTexture(uchar* data, const TextureProperties& prop);
         Ref<TextureSampler> CreateSampler(const SamplerProperties& prop);
         Ref<CubeMap> CreateCubeMap(const std::vector<std::string>& paths);
+        Ref<FrameBuffer> CreateFrameBuffer(const FrameBufferProperties& props);
 
         inline const char* GetAPIName() const { return "Vulkan"; }
         int CurrentVRamUsage() const;
@@ -179,6 +181,7 @@ namespace Dodo::Platform {
         static constexpr int maxTextureSlots = 8;
         VkImageView m_PendingImageViews[maxTextureSlots] = {};
         bool m_PendingIsCubeMap[maxTextureSlots] = {};
+        bool m_PendingIsDepth[maxTextureSlots] = {};
         VkSampler m_PendingSamplers[maxTextureSlots] = {};
 
         // Fallback 1x1 resources used for set-1 bindings with no pending image
@@ -219,6 +222,7 @@ namespace Dodo::Platform {
 
         // Current pipeline reference (needed for set-1 layout when binding textures)
         class VulkanPipeline* m_BoundPipelinePtr = nullptr;
+        class VulkanFrameBuffer* m_BoundFrameBuffer = nullptr;
         bool m_TexturesDirty = false;
         VkDescriptorSet m_BoundTextureSet = VK_NULL_HANDLE;
 

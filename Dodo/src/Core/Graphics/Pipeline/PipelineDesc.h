@@ -39,5 +39,7 @@ namespace Dodo {
         DepthMode depthMode = DepthMode::Less;
         CullMode culling = CullMode::Back;
         bool stencilTest = false;
+        bool depthOnly = false;        // No color attachment (e.g. shadow pass)
+        bool renderToSwapchain = false; // Outputs directly to the swapchain; most pipelines render to the HDR offscreen buffer
     };
 } // namespace Dodo

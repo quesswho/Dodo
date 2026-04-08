@@ -24,7 +24,7 @@ GameLayer::GameLayer(Application& app)
     frameprop.m_Height = app.m_Window->GetWindowProperties().m_Height;
     frameprop.m_SamplerProperties = SamplerProperties(SamplerFilter::MIN_MAG_LINEAR);
 
-    m_FrameBuffer = std::make_shared<FrameBuffer>(frameprop);
+    m_FrameBuffer = renderAPI.CreateFrameBuffer(frameprop);
 
     m_Renderer = new EditorRenderer(renderAPI, assets);
     m_Scene = new EditorScene();
@@ -75,7 +75,7 @@ void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
 
 void GameLayer::DrawScene(RenderAPI& renderAPI, AssetManager& assets)
 {
-    m_FrameBuffer->Bind();
+    renderAPI.BindFrameBuffer(m_FrameBuffer);
 
     m_Renderer->DrawScene(m_Scene, m_Camera->GetCamera(), renderAPI, assets);
 

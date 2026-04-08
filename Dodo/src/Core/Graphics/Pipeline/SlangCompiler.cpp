@@ -26,18 +26,6 @@ namespace Dodo {
         }
     }
 
-    static void CollectVaryingInputLocations(slang::VariableLayoutReflection* var, std::vector<uint32_t>& locations)
-    {
-        slang::TypeLayoutReflection* typeLayout = var->getTypeLayout();
-        if (typeLayout->getKind() == slang::TypeReflection::Kind::Struct) {
-            for (unsigned i = 0; i < typeLayout->getFieldCount(); ++i) {
-                CollectVaryingInputLocations(typeLayout->getFieldByIndex(i), locations);
-            }
-        } else {
-            locations.push_back((uint32_t)var->getOffset(slang::ParameterCategory::VaryingInput));
-        }
-    }
-
     SlangCompiler::SlangCompiler()
     {
         SlangGlobalSessionDesc globalDesc = {};
@@ -158,15 +146,27 @@ namespace Dodo {
             result.descriptorBindings.push_back(b);
         }
 
-        // Reflect vertex shader input locations so the pipeline only declares attributes the shader consumes
-        for (SlangUInt ep = 0; ep < layout->getEntryPointCount(); ++ep) {
+        // Reflect vertex input locations via Slang entry point reflection.
+        for (SlangUInt ep = 0; ep < (SlangUInt)layout->getEntryPointCount(); ++ep) {
             slang::EntryPointReflection* epRefl = layout->getEntryPointByIndex(ep);
-            if (epRefl->getStage() != SLANG_STAGE_VERTEX) continue;
+            if (!epRefl || epRefl->getStage() != SLANG_STAGE_VERTEX) continue;
 
             for (unsigned p = 0; p < epRefl->getParameterCount(); ++p) {
                 slang::VariableLayoutReflection* param = epRefl->getParameterByIndex(p);
-                CollectVaryingInputLocations(param, result.vertexInputLocations);
+                slang::TypeLayoutReflection* typeLayout = param->getTypeLayout();
+
+                if (typeLayout->getKind() == slang::TypeReflection::Kind::Struct) {
+                    for (unsigned f = 0; f < typeLayout->getFieldCount(); ++f) {
+                        slang::VariableLayoutReflection* field = typeLayout->getFieldByIndex(f);
+                        result.vertexInputLocations.push_back(
+                            (uint32_t)field->getOffset(SLANG_PARAMETER_CATEGORY_VARYING_INPUT));
+                    }
+                } else {
+                    result.vertexInputLocations.push_back(
+                        (uint32_t)param->getOffset(SLANG_PARAMETER_CATEGORY_VARYING_INPUT));
+                }
             }
+            break; // only one vertex entry point expected
         }
 
         return result;

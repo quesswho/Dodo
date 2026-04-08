@@ -5,13 +5,14 @@
 namespace Dodo {
     PostEffect::PostEffect(const FrameBufferProperties& framebufferprop, const char* path, RenderAPI& renderAPI,
                            AssetManager& assets)
-        : m_Framebuffer(std::make_shared<FrameBuffer>(framebufferprop))
+        : m_Framebuffer(renderAPI.CreateFrameBuffer(framebufferprop))
     {
         ShaderID id = assets.LoadShaderFromPath(path);
         PipelineDesc pipelineDesc;
         pipelineDesc.shaderID = id;
         pipelineDesc.depthMode = DepthMode::None;
         pipelineDesc.culling = CullMode::None;
+        pipelineDesc.renderToSwapchain = true;
         PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
         m_Shader = assets.GetPipeline(pipelineID);
 

@@ -4,6 +4,7 @@
 #include "Core/Data/AssetManager.h"
 #include "VulkanBuffer.h"
 #include "VulkanCubeMap.h"
+#include "VulkanFrameBuffer.h"
 #include "VulkanPipeline.h"
 #include "VulkanSampler.h"
 #include "VulkanTexture.h"
@@ -63,7 +64,7 @@ namespace Dodo::Platform {
             ImGui_ImplVulkan_Shutdown();
             vkDestroyDescriptorPool(m_Device, m_ImGuiDescriptorPool, nullptr);
         }
-        
+
         for (auto imageView : m_SwapChainImageViews) {
             vkDestroyImageView(m_Device, imageView, nullptr);
         }
@@ -91,7 +92,7 @@ namespace Dodo::Platform {
 
         // Preload Vulkan using volk
         if (volkInitialize() != VK_SUCCESS) {
-            return RenderInitError(RenderInitStatus::Failed, "Glad: Unable to load Vulkan symbols!");
+            return RenderInitError(RenderInitStatus::Failed, "Volk: Unable to load Vulkan symbols!");
         }
 
         // Lambda to simplify error checking
@@ -408,6 +409,8 @@ namespace Dodo::Platform {
 
         m_SwapChainImageFormat = surfaceFormat.format;
         m_SwapChainExtent = extent;
+        m_ViewportWidth = extent.width;
+        m_ViewportHeight = extent.height;
 
         return RenderInitError(RenderInitStatus::Success);
     }
@@ -933,6 +936,7 @@ namespace Dodo::Platform {
         if (slot >= maxTextureSlots || !cubemap) return;
         m_PendingImageViews[slot] = cubemap->GetImageView();
         m_PendingIsCubeMap[slot] = true;
+        m_PendingIsDepth[slot] = false;
         m_TexturesDirty = true;
     }
 
@@ -941,6 +945,7 @@ namespace Dodo::Platform {
         if (slot >= maxTextureSlots || !texture) return;
         m_PendingImageViews[slot] = texture->GetImageView();
         m_PendingIsCubeMap[slot] = false;
+        m_PendingIsDepth[slot] = false;
         m_TexturesDirty = true;
     }
 
@@ -951,7 +956,17 @@ namespace Dodo::Platform {
         m_TexturesDirty = true;
     }
 
-    void VulkanRenderAPI::BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer) {}
+    void VulkanRenderAPI::BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer)
+    {
+        if (slot >= maxTextureSlots || !framebuffer) return;
+        auto* vkFB = static_cast<VulkanFrameBuffer*>(framebuffer.get());
+        const bool depthOnly = !vkFB->HasColor();
+        m_PendingImageViews[slot] = depthOnly ? vkFB->GetDepthImageView() : vkFB->GetColorImageView();
+        m_PendingSamplers[slot] = vkFB->GetSampler();
+        m_PendingIsCubeMap[slot] = false;
+        m_PendingIsDepth[slot] = depthOnly;
+        m_TexturesDirty = true;
+    }
 
     void VulkanRenderAPI::BindPipeline(Ref<Pipeline> pipeline)
     {
@@ -1074,7 +1089,9 @@ namespace Dodo::Platform {
                 if (!view) continue;
                 VkDescriptorImageInfo info{};
                 info.imageView = view;
-                info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                info.imageLayout = (hasPending && m_PendingIsDepth[b.binding])
+                                       ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                                       : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 imageInfos.push_back(info);
                 w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
                 w.pImageInfo = &imageInfos.back();
@@ -1104,16 +1121,17 @@ namespace Dodo::Platform {
                 w.pImageInfo = &imageInfos.back();
                 writes.push_back(w);
             } else if (b.type == DescriptorType::CombinedImageSampler) {
-                VkImageView view = (b.binding < maxTextureSlots && m_PendingImageViews[b.binding])
-                                       ? m_PendingImageViews[b.binding]
-                                       : m_DummyImageView;
+                bool hasPendingView = b.binding < maxTextureSlots && m_PendingImageViews[b.binding];
+                VkImageView view = hasPendingView ? m_PendingImageViews[b.binding] : m_DummyImageView;
                 VkSampler sampler = (b.binding < maxTextureSlots && m_PendingSamplers[b.binding])
                                         ? m_PendingSamplers[b.binding]
                                         : (firstSampler ? firstSampler : m_DummySampler);
                 if (!view || !sampler) continue;
                 VkDescriptorImageInfo info{};
                 info.imageView = view;
-                info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                info.imageLayout = (hasPendingView && m_PendingIsDepth[b.binding])
+                                       ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                                       : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 info.sampler = sampler;
                 imageInfos.push_back(info);
                 w.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -1136,21 +1154,132 @@ namespace Dodo::Platform {
         vkCmdDraw(cmd, count, 1, 0, 0);
     }
 
-    void VulkanRenderAPI::DefaultFrameBuffer() const {}
+    void VulkanRenderAPI::DefaultFrameBuffer()
+    {
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+        vkCmdEndRendering(cmd);
+
+        if (m_BoundFrameBuffer) {
+            m_BoundFrameBuffer->TransitionToReadable(cmd);
+            m_BoundFrameBuffer = nullptr;
+        }
+
+        // Resume rendering to the swapchain image (already in COLOR_ATTACHMENT_OPTIMAL from Begin())
+        VkRenderingAttachmentInfo colorAttachment{};
+        colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+        colorAttachment.imageView = m_SwapChainImageViews[m_CurrentImageIndex];
+        colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.clearValue.color = {{0.1f, 0.1f, 0.1f, 1.0f}};
+
+        VkRenderingInfo renderingInfo{};
+        renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+        renderingInfo.renderArea = {{0, 0}, m_SwapChainExtent};
+        renderingInfo.layerCount = 1;
+        renderingInfo.colorAttachmentCount = 1;
+        renderingInfo.pColorAttachments = &colorAttachment;
+
+        vkCmdBeginRendering(cmd, &renderingInfo);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(m_SwapChainExtent.width);
+        viewport.height = static_cast<float>(m_SwapChainExtent.height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = m_SwapChainExtent;
+        vkCmdSetScissor(cmd, 0, 1, &scissor);
+    }
+
+    void VulkanRenderAPI::BindFrameBuffer(Ref<FrameBuffer> framebuffer)
+    {
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+        vkCmdEndRendering(cmd);
+
+        auto* vkFB = static_cast<VulkanFrameBuffer*>(framebuffer.get());
+
+        if (m_BoundFrameBuffer && m_BoundFrameBuffer != vkFB)
+            m_BoundFrameBuffer->TransitionToReadable(cmd);
+
+        vkFB->TransitionToRenderTarget(cmd);
+        m_BoundFrameBuffer = vkFB;
+
+        VkExtent2D extent = vkFB->GetExtent();
+
+        VkRenderingAttachmentInfo colorAttachment{};
+        VkRenderingAttachmentInfo depthAttachment{};
+
+        VkRenderingInfo renderingInfo{};
+        renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+        renderingInfo.renderArea = {{0, 0}, extent};
+        renderingInfo.layerCount = 1;
+
+        if (vkFB->HasColor()) {
+            colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+            colorAttachment.imageView = vkFB->GetColorImageView();
+            colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            colorAttachment.clearValue.color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            renderingInfo.colorAttachmentCount = 1;
+            renderingInfo.pColorAttachments = &colorAttachment;
+        }
+
+        depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+        depthAttachment.imageView = vkFB->GetDepthImageView();
+        depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        depthAttachment.clearValue.depthStencil = {1.0f, 0};
+        renderingInfo.pDepthAttachment = &depthAttachment;
+
+        vkCmdBeginRendering(cmd, &renderingInfo);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(extent.width);
+        viewport.height = static_cast<float>(extent.height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = extent;
+        vkCmdSetScissor(cmd, 0, 1, &scissor);
+    }
+
     void VulkanRenderAPI::SetViewport(uint width, uint height)
     {
+        m_ViewportWidth = width;
+        m_ViewportHeight = height;
         m_SwapChainNeedsRecreation = true;
     }
     void VulkanRenderAPI::SetViewport(uint width, uint height, uint posX, uint posY)
     {
+        m_ViewportWidth = width;
+        m_ViewportHeight = height;
+        m_ViewportPosX = posX;
+        m_ViewportPosY = posY;
         m_SwapChainNeedsRecreation = true;
     }
 
     Ref<Pipeline> VulkanRenderAPI::CreatePipeline(const PipelineDesc& desc, AssetManager& assets)
     {
         const ShaderAsset& shader = assets.GetShaderAsset(desc.shaderID);
-        // VK_FORMAT_D32_SFLOAT matches the depth image that must be created alongside the swapchain
-        return std::make_shared<VulkanPipeline>(m_Device, m_SwapChainImageFormat, VK_FORMAT_D32_SFLOAT, shader, desc,
+        // Depth-only pipelines have no color attachment; other pipelines default to the HDR offscreen
+        // buffer format (R16G16B16A16_SFLOAT) unless they explicitly target the swapchain.
+        VkFormat colorFormat = VK_FORMAT_UNDEFINED;
+        if (!desc.depthOnly)
+            colorFormat = desc.renderToSwapchain ? m_SwapChainImageFormat : VK_FORMAT_R16G16B16A16_SFLOAT;
+        return std::make_shared<VulkanPipeline>(m_Device, colorFormat, VK_FORMAT_D32_SFLOAT, shader, desc,
                                                 m_GlobalSet0Layout);
     }
 
@@ -1180,6 +1309,11 @@ namespace Dodo::Platform {
     Ref<CubeMap> VulkanRenderAPI::CreateCubeMap(const std::vector<std::string>& paths)
     {
         return std::make_shared<VulkanCubeMap>(paths, m_Device, m_VmaAllocator, m_CommandPool, m_GraphicsQueue);
+    }
+
+    Ref<FrameBuffer> VulkanRenderAPI::CreateFrameBuffer(const FrameBufferProperties& props)
+    {
+        return std::make_shared<VulkanFrameBuffer>(props, m_Device, m_VmaAllocator);
     }
 
     void VulkanRenderAPI::ImGuiNewFrame() const

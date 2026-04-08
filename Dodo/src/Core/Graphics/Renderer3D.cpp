@@ -5,12 +5,13 @@
 
 namespace Dodo {
 
-    Renderer3D::Renderer3D(RenderAPI& renderAPI, AssetManager& assets) : m_ShadowMap(new ShadowMap())
+    Renderer3D::Renderer3D(RenderAPI& renderAPI, AssetManager& assets) : m_ShadowMap(new ShadowMap(renderAPI))
     {
         ShaderID id = assets.LoadShaderFromPath("res/shader/builtin/Passes/Shadow.slang");
         PipelineDesc shadowPipelineDesc;
         shadowPipelineDesc.shaderID = id;
         shadowPipelineDesc.culling = CullMode::Front;
+        shadowPipelineDesc.depthOnly = true;
         PipelineID shadowPipelineID = assets.CreatePipeline(shadowPipelineDesc, renderAPI);
         m_ShadowMapMaterial = std::make_shared<Material>(assets.GetPipeline(shadowPipelineID));
 
@@ -73,13 +74,13 @@ namespace Dodo {
         renderAPI.SetFrameData(frameData);
 
         // Bind target, shadow pipeline and draw geometry to shadowmap
-        m_ShadowMap->Bind();
+        m_ShadowMap->Bind(renderAPI);
         renderAPI.BindPipeline(m_ShadowMapMaterial->GetShader());
         World& world = scene->GetWorld();
         RenderGeometry(world, renderAPI, assets);
 
         // Bind postfx render target
-        m_PostEffect->Bind();
+        m_PostEffect->Bind(renderAPI);
 
         // Bind shadowmap to index 3
         renderAPI.BindFrameBufferTexture(3, m_ShadowMap->GetFrameBuffer());

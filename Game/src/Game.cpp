@@ -112,7 +112,7 @@ void GameLayer::Update(float elapsed)
 
 void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
 {
-    m_PostEffect->Bind();
+    m_PostEffect->Bind(renderAPI);
     m_WorldManager->Draw(m_Camera->GetCamera(), renderAPI);
     m_Scene->m_SkyBox->Draw(m_Camera->GetCamera(), renderAPI);
     m_PostEffect->Draw(renderAPI);

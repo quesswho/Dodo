@@ -96,6 +96,16 @@ namespace Dodo::Platform {
                 info.pBindings = bindings.data();
                 vkCreateDescriptorSetLayout(m_Device, &info, nullptr, &m_SetLayouts[set]);
             }
+
+            // Vulkan requires all pSetLayouts entries to be valid handles.
+            // Fill any gaps (sets with no bindings) with empty layouts.
+            for (auto& layout : m_SetLayouts) {
+                if (layout == VK_NULL_HANDLE) {
+                    VkDescriptorSetLayoutCreateInfo emptyInfo{};
+                    emptyInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                    vkCreateDescriptorSetLayout(m_Device, &emptyInfo, nullptr, &layout);
+                }
+            }
         }
 
         // Push constants: DrawData (model matrix + normal matrix)

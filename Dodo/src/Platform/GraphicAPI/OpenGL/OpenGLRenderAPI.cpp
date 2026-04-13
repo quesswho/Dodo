@@ -86,6 +86,7 @@ namespace Dodo::Platform {
     void OpenGLRenderAPI::BindPipeline(Ref<Pipeline> pipeline)
     {
         m_CurrentPipelineID = pipeline->m_ShaderID;
+        m_CurrentPipeline = pipeline;
         glUseProgram(pipeline->m_ShaderID);
 
         // Apply pipeline state from desc
@@ -171,9 +172,34 @@ namespace Dodo::Platform {
 
     void OpenGLRenderAPI::PushConstants(const void* data, size_t size)
     {
-        glBindBuffer(GL_UNIFORM_BUFFER, m_PushConstantUBO);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0, size, data);
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        if (!m_CurrentPipeline) return;
+        for (const auto& loc : m_CurrentPipeline->m_PushConstantLocs) {
+            if (loc.location == -1) continue;
+            if (loc.offset + loc.elementCount * sizeof(float) > size) continue;
+
+            const float* fptr = reinterpret_cast<const float*>(static_cast<const uint8_t*>(data) + loc.offset);
+            const int*   iptr = reinterpret_cast<const int*>  (static_cast<const uint8_t*>(data) + loc.offset);
+
+            switch (loc.scalarType) {
+            case PushConstantMemberType::Float:
+                switch (loc.elementCount) {
+                case 1: glUniform1fv(loc.location, 1, fptr); break;
+                case 2: glUniform2fv(loc.location, 1, fptr); break;
+                case 3: glUniform3fv(loc.location, 1, fptr); break;
+                case 4: glUniform4fv(loc.location, 1, fptr); break;
+                }
+                break;
+            case PushConstantMemberType::Int:
+            case PushConstantMemberType::UInt:
+                switch (loc.elementCount) {
+                case 1: glUniform1iv(loc.location, 1, iptr); break;
+                case 2: glUniform2iv(loc.location, 1, iptr); break;
+                case 3: glUniform3iv(loc.location, 1, iptr); break;
+                case 4: glUniform4iv(loc.location, 1, iptr); break;
+                }
+                break;
+            }
+        }
     }
 
     void OpenGLRenderAPI::SetFrameData(const FrameData& data)
@@ -226,8 +252,22 @@ namespace Dodo::Platform {
     Ref<Pipeline> OpenGLRenderAPI::CreatePipeline(const PipelineDesc& desc, AssetManager& assets)
     {
         uint program = OpenGLShaderCompiler::Compile(desc.shaderID, assets);
+        auto pipeline = std::make_shared<Pipeline>(desc, program);
 
-        return std::make_shared<Pipeline>(desc, program);
+        const ShaderAsset& asset = assets.GetShaderAsset(desc.shaderID);
+        if (asset.pushConstant.hasPushConstant) {
+            for (const auto& member : asset.pushConstant.members) {
+                std::string uniformName = asset.pushConstant.instanceName + "." + member.name;
+                Platform::PushConstantUniformLoc loc{};
+                loc.location     = glGetUniformLocation(program, uniformName.c_str());
+                loc.offset       = member.offset;
+                loc.elementCount = member.elementCount;
+                loc.scalarType   = member.scalarType;
+                pipeline->m_PushConstantLocs.push_back(loc);
+            }
+        }
+
+        return pipeline;
     }
 
     void OpenGLRenderAPI::ImGuiNewFrame() const

@@ -146,6 +146,74 @@ namespace Dodo {
             result.descriptorBindings.push_back(b);
         }
 
+        // Reflect push constants from entrypoint uniform parameters (native Slang style).
+        // All entrypoint `uniform T name` params are automatically translated to push constants
+        // by Slang and merged across entry points.
+        {
+            for (SlangUInt ep = 0; ep < (SlangUInt)layout->getEntryPointCount(); ++ep) {
+                slang::EntryPointReflection* epRefl = layout->getEntryPointByIndex(ep);
+                if (!epRefl) continue;
+
+                for (unsigned p = 0; p < epRefl->getParameterCount(); ++p) {
+                    slang::VariableLayoutReflection* param = epRefl->getParameterByIndex(p);
+                    slang::ParameterCategory cat = param->getTypeLayout()->getParameterCategory();
+                    // Uniform entry-point params become push constants on Vulkan; skip
+                    // varyings, resources, etc.
+                    if (cat != slang::ParameterCategory::PushConstantBuffer &&
+                        cat != slang::ParameterCategory::Uniform)
+                        continue;
+
+                    result.pushConstant.hasPushConstant = true;
+
+                    slang::TypeLayoutReflection* typeLayout = param->getTypeLayout();
+                    if (typeLayout->getKind() == slang::TypeReflection::Kind::Struct) {
+                        slang::TypeLayoutReflection* elemLayout =
+                            typeLayout->getElementTypeLayout() ? typeLayout->getElementTypeLayout() : typeLayout;
+                        for (unsigned f = 0; f < elemLayout->getFieldCount(); ++f) {
+                            slang::VariableLayoutReflection* field = elemLayout->getFieldByIndex(f);
+                            // Deduplicate — the same struct may appear in multiple entry points
+                            bool seen = false;
+                            for (auto& m : result.pushConstant.members)
+                                if (m.name == field->getName()) { seen = true; break; }
+                            if (seen) continue;
+
+                            PushConstantMember m;
+                            m.name = field->getName();
+                            m.offset = (uint32_t)field->getOffset(SLANG_PARAMETER_CATEGORY_UNIFORM);
+                            slang::TypeReflection* type = field->getTypeLayout()->getType();
+                            switch (type->getScalarType()) {
+                            case SLANG_SCALAR_TYPE_INT32:  m.scalarType = PushConstantMemberType::Int;   break;
+                            case SLANG_SCALAR_TYPE_UINT32: m.scalarType = PushConstantMemberType::UInt;  break;
+                            default:                       m.scalarType = PushConstantMemberType::Float; break;
+                            }
+                            uint32_t rows = (uint32_t)type->getRowCount();
+                            m.elementCount = (rows > 0) ? rows : 1;
+                            result.pushConstant.members.push_back(m);
+                        }
+                    } else {
+                        // Scalar or vector uniform param (e.g. `uniform float gamma`)
+                        bool seen = false;
+                        for (auto& m : result.pushConstant.members)
+                            if (m.name == param->getName()) { seen = true; break; }
+                        if (seen) continue;
+
+                        PushConstantMember m;
+                        m.name = param->getName();
+                        m.offset = (uint32_t)param->getOffset(SLANG_PARAMETER_CATEGORY_UNIFORM);
+                        slang::TypeReflection* type = typeLayout->getType();
+                        switch (type->getScalarType()) {
+                        case SLANG_SCALAR_TYPE_INT32:  m.scalarType = PushConstantMemberType::Int;   break;
+                        case SLANG_SCALAR_TYPE_UINT32: m.scalarType = PushConstantMemberType::UInt;  break;
+                        default:                       m.scalarType = PushConstantMemberType::Float; break;
+                        }
+                        uint32_t rows = (uint32_t)type->getRowCount();
+                        m.elementCount = (rows > 0) ? rows : 1;
+                        result.pushConstant.members.push_back(m);
+                    }
+                }
+            }
+        }
+
         // Reflect vertex input locations via Slang entry point reflection.
         for (SlangUInt ep = 0; ep < (SlangUInt)layout->getEntryPointCount(); ++ep) {
             slang::EntryPointReflection* epRefl = layout->getEntryPointByIndex(ep);

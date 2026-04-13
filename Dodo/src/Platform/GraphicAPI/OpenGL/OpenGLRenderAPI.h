@@ -125,6 +125,7 @@ namespace Dodo::Platform {
         };
 
         uint m_CurrentPipelineID;
+        Ref<Pipeline> m_CurrentPipeline;
         uint m_FrameUBO = 0;
         uint m_ModelUBO = 0;
         uint m_PushConstantUBO = 0;

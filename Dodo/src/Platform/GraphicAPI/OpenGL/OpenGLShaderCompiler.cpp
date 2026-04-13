@@ -25,6 +25,8 @@ namespace Dodo::Platform {
             // If ShaderAsset
             if (stageSource.glsl.empty()) {
                 stageSource.glsl = TranslateSPIRVToGLSL(stageSource);
+                DD_INFO("Translated SPIR-V to GLSL for stage {} of shader {}:\n{}", static_cast<int>(stageSource.stage),
+                        source.path, stageSource.glsl);
             }
 
             const std::string& glslSource = stageSource.glsl;
@@ -52,6 +54,12 @@ namespace Dodo::Platform {
             glDeleteShader(shaderStageId);
         }
 
+        // Native-style push constants (uniform entrypoint params) leave instanceName empty.
+        // We renamed the SPIR-V variable to "PushConstants" in TranslateSPIRVToGLSL, so
+        // mirror that here so glGetUniformLocation("PushConstants.member") works.
+        if (source.pushConstant.hasPushConstant && source.pushConstant.instanceName.empty())
+            source.pushConstant.instanceName = "PushConstants";
+
         glLinkProgram(shaderProgram);
         GLint success;
         glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
@@ -66,6 +74,7 @@ namespace Dodo::Platform {
             glDeleteProgram(shaderProgram);
             return 0;
         }
+
         return shaderProgram;
     }
 
@@ -75,12 +84,18 @@ namespace Dodo::Platform {
 
         try {
             spirv_cross::CompilerGLSL compiler(source.spirv);
-
             auto options = compiler.get_common_options();
             options.version = 420;
             options.es = false;
             options.vulkan_semantics = false;
             compiler.set_common_options(options);
+
+            // Force a predictable instance name for push_constant blocks so that
+            // glGetUniformLocation("PushConstants.member") works regardless of
+            // whether the cbuffer or native-uniform Slang style was used.
+            auto shaderResources = compiler.get_shader_resources();
+            for (const auto& pcb : shaderResources.push_constant_buffers)
+                compiler.set_name(pcb.id, "PushConstants");
 
             // GLSL requires combined image samplers (sampler2D), so combine separate Texture2D + SamplerState.
             // build_dummy_sampler_for_combined_images handles textures that have no explicit sampler.

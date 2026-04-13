@@ -48,6 +48,21 @@ namespace Dodo {
         DescriptorType type;
     };
 
+    enum class PushConstantMemberType { Float, Int, UInt };
+
+    struct PushConstantMember {
+        std::string name;
+        uint32_t offset;       // byte offset within the raw data blob
+        uint32_t elementCount; // 1 = scalar, 2 = vec2, 3 = vec3, 4 = vec4
+        PushConstantMemberType scalarType;
+    };
+
+    struct PushConstantReflection {
+        std::string instanceName;
+        std::vector<PushConstantMember> members;
+        bool hasPushConstant = false;
+    };
+
     /**
      * Slang shader owning compiled backend specific binaries and reflection data
      */
@@ -58,5 +73,6 @@ namespace Dodo {
         std::vector<ShaderStageBinary> stages;
         std::vector<DescriptorBindingReflection> descriptorBindings;
         std::vector<uint32_t> vertexInputLocations; // Locations consumed by the vertex shader
+        PushConstantReflection pushConstant;
     };
 } // namespace Dodo

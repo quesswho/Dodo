@@ -24,7 +24,7 @@ GameLayer::GameLayer(Application& app)
     frameprop.m_Width = app.GetWindowProperties().m_Width;
     frameprop.m_Height = app.GetWindowProperties().m_Height;
 
-    m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.slang", renderAPI, assets);
+    m_PostEffect = new PostEffect(frameprop, "res/shader/game/gamma.slang", renderAPI, assets);
     m_PostEffectData.gamma = 1.0f;
     m_PostEffect->SetEffectData(m_PostEffectData);
 

@@ -1,19 +1,13 @@
 add_executable(DodoEditor)
 
-# Copy builtin shaders to executable directory after build
 add_custom_command(TARGET DodoEditor POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/Dodo/src/Core/Shaders"
-        "$<TARGET_FILE_DIR:DodoEditor>/res/shader/builtin"
-    COMMENT "Copying Dodo builtin shaders to DodoEditor directory"
+    COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:DodoEditor>/res"
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        "${CMAKE_SOURCE_DIR}/res"
+        "$<TARGET_FILE_DIR:DodoEditor>/res"
+    COMMENT "Linking res/ into output directory"
 )
 
-add_custom_command(
-    TARGET DodoEditor POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/res
-            $<TARGET_FILE_DIR:DodoEditor>/res
-)
 
 file(GLOB_RECURSE DODOEDITOR_CPP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp

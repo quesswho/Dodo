@@ -12,6 +12,16 @@ void HierarchyPanel::Draw(EditorState& editorState, InspectorState& inspectorSta
     }
 
     ImGuiIO& io = ImGui::GetIO();
+    if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGuiKey_Delete) &&
+        !editorState.renameState.isActive() && !editorState.selection.Empty()) {
+        auto& world = editorState.scene->GetWorld();
+        for (EntityID id : editorState.selection.entities)
+            world.DeleteEntity(id);
+        editorState.selection.Clear();
+        inspectorState.dirty = false;
+        inspectorState.visible = false;
+    }
+
     if (ImGui::BeginPopupContextWindow("Right-Click Hierarchy", ImGuiPopupFlags_MouseButtonRight)) {
         if (ImGui::MenuItem("Create New")) {
             EntityID newEntity = editorState.scene->GetWorld().CreateEntity();

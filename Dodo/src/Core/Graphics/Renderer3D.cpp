@@ -32,16 +32,30 @@ namespace Dodo {
         frameData.lightDir = lightSystem.m_Directional.m_Direction;
         renderAPI.SetFrameData(frameData); // Uploads frame data to the GPU
 
-        // Draw ModelComponent
+        auto drawMesh = [&](const ModelComponent& mc, Ref<Mesh> mesh) {
+            Ref<Material> mat = mesh->GetMaterial();
+            mat->Bind(renderAPI);
+            renderAPI.SetDrawData(MakeDrawData(mc.m_Transformation.m_Model));
+            mesh->DrawGeometry(renderAPI);
+        };
+
+        auto isTransparent = [](Ref<Mesh> mesh) {
+            auto shader = mesh->GetMaterial()->GetShader();
+            return shader && shader->GetDesc().blendMode == BlendMode::AlphaBlend;
+        };
+
         const auto& modelPool = world.GetPool<ModelComponent>();
-        for (const auto& modelComponent : modelPool.GetComponents()) {
-            Ref<Model> model = assets.GetModel(modelComponent.m_ModelID);
-            for (auto mesh : model->GetMeshes()) {
-                Ref<Material> mat = mesh->GetMaterial();
-                mat->Bind(renderAPI);
-                renderAPI.SetDrawData(MakeDrawData(modelComponent.m_Transformation.m_Model));
-                mesh->DrawGeometry(renderAPI);
-            }
+
+        // Pass 1: opaque and alpha-masked geometry (depth write ON)
+        for (const auto& mc : modelPool.GetComponents()) {
+            for (auto mesh : assets.GetModel(mc.m_ModelID)->GetMeshes())
+                if (!isTransparent(mesh)) drawMesh(mc, mesh);
+        }
+
+        // Pass 2: alpha-blended geometry (depth write OFF, reads depth populated by pass 1)
+        for (const auto& mc : modelPool.GetComponents()) {
+            for (auto mesh : assets.GetModel(mc.m_ModelID)->GetMeshes())
+                if (isTransparent(mesh)) drawMesh(mc, mesh);
         }
     }
 

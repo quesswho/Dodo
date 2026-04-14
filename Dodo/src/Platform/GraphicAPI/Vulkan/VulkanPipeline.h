@@ -20,11 +20,13 @@ namespace Dodo::Platform {
 
         VkPipeline GetPipeline() const { return m_Pipeline; }
         VkPipelineLayout GetLayout() const { return m_Layout; }
+        const PipelineDesc& GetDesc() const { return m_Desc; }
 
       private:
         static VkDescriptorType ToVkDescriptorType(DescriptorType type);
 
         VkDevice m_Device;
+        PipelineDesc m_Desc;
         VkPipeline m_Pipeline = VK_NULL_HANDLE;
         VkPipelineLayout m_Layout = VK_NULL_HANDLE;
         std::vector<VkDescriptorSetLayout> m_SetLayouts;

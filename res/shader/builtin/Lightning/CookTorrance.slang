@@ -69,8 +69,8 @@ float3 evaluateCookTorrance(
     // White unit-intensity directional light; multiply by light colour/intensity here when added
     float3 Lo = (kD * albedo / PI + specular) * NdotL * (1.0f - shadow);
 
-    // Constant ambient term — replace with IBL irradiance map when available
-    float3 ambient = float3(0.03f) * albedo * ao;
+    // Constant ambient term, replace with IBL irradiance map when available
+    float3 ambient = float3(0.1f) * albedo * ao;
 
     return ambient + Lo;
 }

@@ -159,8 +159,7 @@ namespace Dodo {
                     slang::ParameterCategory cat = param->getTypeLayout()->getParameterCategory();
                     // Uniform entry-point params become push constants on Vulkan; skip
                     // varyings, resources, etc.
-                    if (cat != slang::ParameterCategory::PushConstantBuffer &&
-                        cat != slang::ParameterCategory::Uniform)
+                    if (cat != slang::ParameterCategory::PushConstantBuffer && cat != slang::ParameterCategory::Uniform)
                         continue;
 
                     result.pushConstant.hasPushConstant = true;
@@ -174,7 +173,10 @@ namespace Dodo {
                             // Deduplicate — the same struct may appear in multiple entry points
                             bool seen = false;
                             for (auto& m : result.pushConstant.members)
-                                if (m.name == field->getName()) { seen = true; break; }
+                                if (m.name == field->getName()) {
+                                    seen = true;
+                                    break;
+                                }
                             if (seen) continue;
 
                             PushConstantMember m;
@@ -182,9 +184,15 @@ namespace Dodo {
                             m.offset = (uint32_t)field->getOffset(SLANG_PARAMETER_CATEGORY_UNIFORM);
                             slang::TypeReflection* type = field->getTypeLayout()->getType();
                             switch (type->getScalarType()) {
-                            case SLANG_SCALAR_TYPE_INT32:  m.scalarType = PushConstantMemberType::Int;   break;
-                            case SLANG_SCALAR_TYPE_UINT32: m.scalarType = PushConstantMemberType::UInt;  break;
-                            default:                       m.scalarType = PushConstantMemberType::Float; break;
+                            case SLANG_SCALAR_TYPE_INT32:
+                                m.scalarType = PushConstantMemberType::Int;
+                                break;
+                            case SLANG_SCALAR_TYPE_UINT32:
+                                m.scalarType = PushConstantMemberType::UInt;
+                                break;
+                            default:
+                                m.scalarType = PushConstantMemberType::Float;
+                                break;
                             }
                             uint32_t rows = (uint32_t)type->getRowCount();
                             m.elementCount = (rows > 0) ? rows : 1;
@@ -194,7 +202,10 @@ namespace Dodo {
                         // Scalar or vector uniform param (e.g. `uniform float gamma`)
                         bool seen = false;
                         for (auto& m : result.pushConstant.members)
-                            if (m.name == param->getName()) { seen = true; break; }
+                            if (m.name == param->getName()) {
+                                seen = true;
+                                break;
+                            }
                         if (seen) continue;
 
                         PushConstantMember m;
@@ -202,9 +213,15 @@ namespace Dodo {
                         m.offset = (uint32_t)param->getOffset(SLANG_PARAMETER_CATEGORY_UNIFORM);
                         slang::TypeReflection* type = typeLayout->getType();
                         switch (type->getScalarType()) {
-                        case SLANG_SCALAR_TYPE_INT32:  m.scalarType = PushConstantMemberType::Int;   break;
-                        case SLANG_SCALAR_TYPE_UINT32: m.scalarType = PushConstantMemberType::UInt;  break;
-                        default:                       m.scalarType = PushConstantMemberType::Float; break;
+                        case SLANG_SCALAR_TYPE_INT32:
+                            m.scalarType = PushConstantMemberType::Int;
+                            break;
+                        case SLANG_SCALAR_TYPE_UINT32:
+                            m.scalarType = PushConstantMemberType::UInt;
+                            break;
+                        default:
+                            m.scalarType = PushConstantMemberType::Float;
+                            break;
                         }
                         uint32_t rows = (uint32_t)type->getRowCount();
                         m.elementCount = (rows > 0) ? rows : 1;

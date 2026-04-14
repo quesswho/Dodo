@@ -17,6 +17,11 @@ namespace Dodo {
     Application::~Application()
     {
         dddelete m_ThreadManager;
+        m_RenderAPI->WaitIdle();
+        for (auto* layer : m_Layers)
+            delete layer;
+        m_Layers.clear();
+        dddelete m_AssetManager;
         dddelete m_RenderAPI;
         dddelete m_Window;
         dddelete m_Logger;

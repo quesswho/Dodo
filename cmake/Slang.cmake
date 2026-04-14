@@ -1,6 +1,6 @@
 message(STATUS "=== Configuring Slang ===")
 
-set(SLANG_VERSION "2026.4.2" CACHE STRING "Slang version")
+set(SLANG_VERSION "2026.5.2" CACHE STRING "Slang version")
 
 # Detect os and arch
 if(WIN32)
@@ -15,9 +15,13 @@ endif()
 
 include(FetchContent)
 
+set(SLANG_DOWNLOAD_URL https://github.com/shader-slang/slang/releases/download/v${SLANG_VERSION}/slang-${SLANG_VERSION}-${SLANG_OS}-${SLANG_ARCH}.zip)
+message(STATUS "Downloading Slang from ${SLANG_DOWNLOAD_URL}")
+
+set(FETCHCONTENT_QUIET OFF)
 FetchContent_Declare(
     slang_sdk
-    URL "https://github.com/shader-slang/slang/releases/download/v${SLANG_VERSION}/slang-${SLANG_VERSION}-${SLANG_OS}-${SLANG_ARCH}.zip"
+    URL "${SLANG_DOWNLOAD_URL}"
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
 )
 FetchContent_MakeAvailable(slang_sdk)

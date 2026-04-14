@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Graphics/Material/MaterialFeatures.h"
+#include "Core/Graphics/RenderAPI.h"
 #include "Core/Graphics/Scene/Model.h"
 
 struct aiMesh;
@@ -42,6 +43,6 @@ namespace Dodo {
         ModelData LoadModelData(const std::string& path);
 
         // Uploads CPU mesh data to the GPU
-        Ref<Model> BuildModel(const ModelData& data, const std::vector<Ref<Material>>& materials);
+        Ref<Model> BuildModel(const ModelData& data, const std::vector<Ref<Material>>& materials, RenderAPI& renderAPI);
     };
 } // namespace Dodo

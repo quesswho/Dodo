@@ -4,6 +4,7 @@
 #include "Core/Common.h"
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/CubeMap.h"
+#include "Core/Graphics/FrameBuffer.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
@@ -18,8 +19,16 @@ using VulkanContext = Dodo::Platform::VulkanWGLContext;
 using VulkanContext = Dodo::Platform::VulkanGLFWContext;
 #endif
 
+#define DODO_VULKAN_VERSION VK_API_VERSION_1_3
+
 #include <array>
 #include <optional>
+#include <string>
+#include <vector>
+
+namespace Dodo {
+    class AssetManager;
+}
 
 namespace Dodo::Platform {
 
@@ -46,7 +55,6 @@ namespace Dodo::Platform {
     struct FrameData {
         VkCommandBuffer commandBuffer;
         VkSemaphore imageAvailableSemaphore;
-        VkSemaphore renderFinishedSemaphore;
         VkFence inFlightFence;
     };
 
@@ -56,6 +64,7 @@ namespace Dodo::Platform {
         ~VulkanRenderAPI();
         RenderInitError Init(const WindowProperties& winprop);
 
+        void WaitIdle() const;
         void Begin();
         void End();
 
@@ -64,18 +73,29 @@ namespace Dodo::Platform {
         void BindCubeMap(uint slot, Ref<CubeMap> cubemap);
         void BindTexture(uint slot, Ref<Texture> texture);
         void BindTextureSampler(uint slot, Ref<TextureSampler> sampler);
+        void BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer);
+        void BindVertexBuffer(const Ref<VertexBuffer>& vb);
+        void BindIndexBuffer(const Ref<IndexBuffer>& ib);
         void BindPipeline(Ref<Pipeline> pipeline);
-        void DrawIndices(uint count) const;
-        void DrawArray(uint count) const;
-        void DefaultFrameBuffer() const;
+        void PushConstants(const void* data, size_t size);
+        void SetFrameData(const Dodo::FrameData& data);
+        void SetDrawData(const DrawData& data);
+        void DrawIndexed(const Ref<VertexBuffer>& va);
+        void DrawIndices(uint count);
+        void DrawArray(uint count);
+        void DefaultFrameBuffer();
+        void BindFrameBuffer(Ref<FrameBuffer> framebuffer);
         void SetViewport(uint width, uint height);
         void SetViewport(uint width, uint height, uint posX, uint posY);
 
-        void DepthComparisonMethod(DepthComparisonMethod method) const;
-        void DepthTest(bool depthtest) const;
-        void StencilTest(bool stenciltest) const;
-        void Blending(bool blending) const;
-        void Culling(bool cull, bool backface = true);
+        // Factory methods, these are needed because we need context info
+        Ref<Pipeline> CreatePipeline(const PipelineDesc& desc, AssetManager& assets);
+        Ref<VertexBuffer> CreateVertexBuffer(const float* vertices, uint size, const BufferProperties& prop);
+        Ref<IndexBuffer> CreateIndexBuffer(const uint* indices, uint count);
+        Ref<Texture> CreateTexture(uchar* data, const TextureProperties& prop);
+        Ref<TextureSampler> CreateSampler(const SamplerProperties& prop);
+        Ref<CubeMap> CreateCubeMap(const std::vector<std::string>& paths);
+        Ref<FrameBuffer> CreateFrameBuffer(const FrameBufferProperties& props);
 
         inline const char* GetAPIName() const { return "Vulkan"; }
         int CurrentVRamUsage() const;
@@ -97,12 +117,16 @@ namespace Dodo::Platform {
         RenderInitError SetupDebug();
         RenderInitError PickPhysicalDevice();
         RenderInitError InitDevice();
+        RenderInitError InitVMA();
         RenderInitError CreateSwapChain(VkSwapchainKHR oldSwapchain = VK_NULL_HANDLE);
         RenderInitError CreateImageViews();
         RenderInitError CreateCommandPool();
         RenderInitError CreateCommandBuffer();
         RenderInitError CreateSyncObjects();
+        RenderInitError InitDescriptors();
         RenderInitError InitImGui();
+
+        void BindPendingSet1(VkCommandBuffer cmd);
 
         bool IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device);
         bool IsDeviceSuitable(PhyisicalDeviceInfo device);
@@ -132,12 +156,18 @@ namespace Dodo::Platform {
                                                             const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
                                                             void* pUserData);
 
+        // Forward-declared to avoid including vk_mem_alloc.h before VMA_IMPLEMENTATION is defined
+        typedef struct VmaAllocator_T* VmaAllocator;
+        typedef struct VmaAllocation_T* VmaAllocation;
+        VmaAllocator m_VmaAllocator = nullptr;
+
         VkInstance m_VkInstance;
         VkDevice m_Device;
         VkPhysicalDevice m_PhysicalDevice;
         VkDebugUtilsMessengerEXT m_DebugMessenger;
         VkSurfaceKHR m_Surface;
         VkSwapchainKHR m_SwapChain;
+        VkQueue m_GraphicsQueue;
         VkQueue m_PresentQueue;
         std::vector<VkImage> m_SwapChainImages;
         std::vector<VkImageView> m_SwapChainImageViews;
@@ -145,14 +175,65 @@ namespace Dodo::Platform {
         VkExtent2D m_SwapChainExtent;
         VkCommandPool m_CommandPool;
         VkPipeline m_BoundPipeline;
+        VkPipelineLayout m_BoundPipelineLayout = VK_NULL_HANDLE;
+
+        // Pending texture/sampler state (bound before each draw)
+        static constexpr int maxTextureSlots = 8;
+        VkImageView m_PendingImageViews[maxTextureSlots] = {};
+        bool m_PendingIsCubeMap[maxTextureSlots] = {};
+        bool m_PendingIsDepth[maxTextureSlots] = {};
+        VkSampler m_PendingSamplers[maxTextureSlots] = {};
+
+        // Fallback 1x1 resources used for set-1 bindings with no pending image
+        VkImage m_DummyImage = VK_NULL_HANDLE;
+        VmaAllocation m_DummyAllocation = nullptr;
+        VkImageView m_DummyImageView = VK_NULL_HANDLE;
+        VkSampler m_DummySampler = VK_NULL_HANDLE;
+
+        // Application descriptor infrastructure (separate from ImGui pool)
+        static constexpr int maxFramesInFlight = 2;
+        VkDescriptorPool m_AppDescriptorPool = VK_NULL_HANDLE;
+        VkDescriptorSetLayout m_GlobalSet0Layout = VK_NULL_HANDLE;
+        std::array<VkDescriptorSet, maxFramesInFlight> m_GlobalSet0{};
+
+        // GPU-side layout for ModelData cbuffer (float4x4 model + float4x4 normal = 128 bytes)
+        struct GPUModelData {
+            float model[16];  // Mat4
+            float normal[16]; // Mat4 (Mat3 zero-padded into 4th column)
+        };
+
+        // Persistently-mapped UBOs for FrameData (one per frame)
+        struct MappedBuffer {
+            VkBuffer buffer = VK_NULL_HANDLE;
+            VmaAllocation allocation = nullptr;
+            void* mapped = nullptr;
+        };
+        std::array<MappedBuffer, maxFramesInFlight> m_FrameDataUBOs{};
+
+        // Dynamic UBO ring buffer for per-draw ModelData (one large buffer per frame)
+        static constexpr uint32_t maxDrawsPerFrame = 1024;
+        std::array<MappedBuffer, maxFramesInFlight> m_ModelDataUBOs{};
+        uint32_t m_ModelUBOSlotSize = 0; // sizeof(GPUModelData) aligned to minUniformBufferOffsetAlignment
+        uint32_t m_ModelUBOCursor = 0;   // next free slot index within the current frame
+        uint32_t m_LastModelOffset = 0;  // byte offset written by the most recent SetDrawData
+
+        // Per-frame transient descriptor pool for set-1 (material textures), reset each frame
+        std::array<VkDescriptorPool, maxFramesInFlight> m_TransientPools{};
+
+        // Current pipeline reference (needed for set-1 layout when binding textures)
+        class VulkanPipeline* m_BoundPipelinePtr = nullptr;
+        class VulkanFrameBuffer* m_BoundFrameBuffer = nullptr;
+        bool m_TexturesDirty = false;
+        VkDescriptorSet m_BoundTextureSet = VK_NULL_HANDLE;
 
         // Frame stuff
-        static constexpr int maxFramesInFlight = 2;
         std::array<FrameData, maxFramesInFlight> m_Frames;
         std::vector<VkSemaphore> m_RenderFinishedSemaphores;
         uint m_CurrentFrame = 0;
+        uint32_t m_CurrentImageIndex = 0;
 
         VkDescriptorPool m_ImGuiDescriptorPool;
+        bool m_ImGuiActive = false;
 
         bool m_SwapChainNeedsRecreation = false;
         bool m_EnableValidationLayers;

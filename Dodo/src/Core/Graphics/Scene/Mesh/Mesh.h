@@ -13,11 +13,11 @@ namespace Dodo {
     class Mesh {
       private:
         Ref<Material> m_Material;
-        VertexBuffer* m_VBuffer;
-        IndexBuffer* m_IBuffer;
+        Ref<VertexBuffer> m_VBuffer;
+        Ref<IndexBuffer> m_IBuffer;
 
       public:
-        Mesh(VertexBuffer* vertexBuffer, IndexBuffer* indexBuffer, Ref<Material> material);
+        Mesh(Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<Material> material);
         ~Mesh();
 
         Ref<Material> GetMaterial() const { return m_Material; }

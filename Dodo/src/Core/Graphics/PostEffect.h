@@ -12,7 +12,7 @@
 namespace Dodo {
     class PostEffect {
       private:
-        VertexBuffer* m_Vertexbuffer;
+        Ref<VertexBuffer> m_Vertexbuffer;
         Ref<FrameBuffer> m_Framebuffer;
         Ref<Pipeline> m_Shader;
         Ref<TextureSampler> m_Sampler;
@@ -23,7 +23,7 @@ namespace Dodo {
                    AssetManager& assets);
         ~PostEffect();
 
-        inline void Bind() const { m_Framebuffer->Bind(); }
+        inline void Bind(RenderAPI& renderAPI) { renderAPI.BindFrameBuffer(m_Framebuffer); }
 
         /**
          * Set data for the post effect shader.

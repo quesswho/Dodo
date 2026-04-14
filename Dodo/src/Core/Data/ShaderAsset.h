@@ -33,14 +33,46 @@ namespace Dodo {
         std::string glsl; // (OpenGL)
     };
 
+    enum class DescriptorType {
+        UniformBuffer,
+        SampledTexture,
+        SampledCubeMap,
+        Sampler,
+        CombinedImageSampler, // Legacy, use separate Texture2D + SamplerState instead
+    };
+
+    struct DescriptorBindingReflection {
+        uint32_t set;
+        uint32_t binding;
+        uint32_t count;
+        DescriptorType type;
+    };
+
+    enum class PushConstantMemberType { Float, Int, UInt };
+
+    struct PushConstantMember {
+        std::string name;
+        uint32_t offset;       // byte offset within the raw data blob
+        uint32_t elementCount; // 1 = scalar, 2 = vec2, 3 = vec3, 4 = vec4
+        PushConstantMemberType scalarType;
+    };
+
+    struct PushConstantReflection {
+        std::string instanceName;
+        std::vector<PushConstantMember> members;
+        bool hasPushConstant = false;
+    };
+
     /**
-     * Slang shader owning compiled backend specific binaries
+     * Slang shader owning compiled backend specific binaries and reflection data
      */
     struct ShaderAsset {
         std::string path;
         std::string slangSource;
 
         std::vector<ShaderStageBinary> stages;
-        // TODO: Reflection, layout maybe hash?
+        std::vector<DescriptorBindingReflection> descriptorBindings;
+        std::vector<uint32_t> vertexInputLocations; // Locations consumed by the vertex shader
+        PushConstantReflection pushConstant;
     };
 } // namespace Dodo

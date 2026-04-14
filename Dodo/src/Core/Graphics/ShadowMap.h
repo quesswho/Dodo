@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Graphics/FrameBuffer.h"
+#include "Core/Graphics/RenderAPI.h"
 
 namespace Dodo {
 
@@ -10,10 +11,10 @@ namespace Dodo {
         Ref<FrameBuffer> m_FrameBuffer;
 
       public:
-        ShadowMap();
+        ShadowMap(RenderAPI& renderAPI);
         ~ShadowMap();
 
-        void Bind() const;
+        void Bind(RenderAPI& renderAPI);
 
         Ref<FrameBuffer> GetFrameBuffer() const { return m_FrameBuffer; }
     };

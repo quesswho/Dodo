@@ -1,8 +1,21 @@
 #include "VulkanRenderAPI.h"
 #include "pch.h"
 
+#include "Core/Data/AssetManager.h"
+#include "VulkanBuffer.h"
+#include "VulkanCubeMap.h"
+#include "VulkanFrameBuffer.h"
+#include "VulkanPipeline.h"
+#include "VulkanSampler.h"
+#include "VulkanTexture.h"
+
 #include <backends/imgui_impl_vulkan.h>
 #include <unordered_set>
+
+#define VMA_STATIC_VULKAN_FUNCTIONS  0
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 0
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
 
 namespace Dodo::Platform {
 
@@ -18,6 +31,8 @@ namespace Dodo::Platform {
 
     VulkanRenderAPI::~VulkanRenderAPI()
     {
+        // TODO: I am unsure if we need to wait for both, but should be for good measure
+        vkQueueWaitIdle(m_GraphicsQueue);
         vkQueueWaitIdle(m_PresentQueue);
 
         for (const auto& semaphore : m_RenderFinishedSemaphores) {
@@ -26,19 +41,35 @@ namespace Dodo::Platform {
 
         for (int i = 0; i < maxFramesInFlight; i++) {
             vkDestroySemaphore(m_Device, m_Frames[i].imageAvailableSemaphore, nullptr);
-            vkDestroySemaphore(m_Device, m_Frames[i].renderFinishedSemaphore, nullptr);
             vkDestroyFence(m_Device, m_Frames[i].inFlightFence, nullptr);
         }
 
         vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
-        // TODO: There should be a check for imgui here...
-        ImGui_ImplVulkan_Shutdown();
-        vkDestroyDescriptorPool(m_Device, m_ImGuiDescriptorPool, nullptr);
+
+        // Descriptor infrastructure
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            if (m_FrameDataUBOs[i].buffer)
+                vmaDestroyBuffer(m_VmaAllocator, m_FrameDataUBOs[i].buffer, m_FrameDataUBOs[i].allocation);
+            if (m_ModelDataUBOs[i].buffer)
+                vmaDestroyBuffer(m_VmaAllocator, m_ModelDataUBOs[i].buffer, m_ModelDataUBOs[i].allocation);
+            if (m_TransientPools[i]) vkDestroyDescriptorPool(m_Device, m_TransientPools[i], nullptr);
+        }
+        if (m_GlobalSet0Layout) vkDestroyDescriptorSetLayout(m_Device, m_GlobalSet0Layout, nullptr);
+        if (m_AppDescriptorPool) vkDestroyDescriptorPool(m_Device, m_AppDescriptorPool, nullptr);
+        if (m_DummySampler) vkDestroySampler(m_Device, m_DummySampler, nullptr);
+        if (m_DummyImageView) vkDestroyImageView(m_Device, m_DummyImageView, nullptr);
+        if (m_DummyImage) vmaDestroyImage(m_VmaAllocator, m_DummyImage, m_DummyAllocation);
+
+        if (m_ImGuiActive) {
+            ImGui_ImplVulkan_Shutdown();
+            vkDestroyDescriptorPool(m_Device, m_ImGuiDescriptorPool, nullptr);
+        }
 
         for (auto imageView : m_SwapChainImageViews) {
             vkDestroyImageView(m_Device, imageView, nullptr);
         }
         vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+        vmaDestroyAllocator(m_VmaAllocator);
         vkDestroyDevice(m_Device, nullptr);
         if (m_EnableValidationLayers) {
             DestroyDebugUtilsMessengerEXT(m_VkInstance, m_DebugMessenger, nullptr);
@@ -46,6 +77,8 @@ namespace Dodo::Platform {
         vkDestroySurfaceKHR(m_VkInstance, m_Surface, nullptr);
         vkDestroyInstance(m_VkInstance, nullptr);
     }
+
+    void VulkanRenderAPI::WaitIdle() const { vkDeviceWaitIdle(m_Device); }
 
     /**
      * Initializes the Vulkan instance, picks a physical device, creates a logical device and initializes ImGui if
@@ -59,7 +92,7 @@ namespace Dodo::Platform {
 
         // Preload Vulkan using volk
         if (volkInitialize() != VK_SUCCESS) {
-            return RenderInitError(RenderInitStatus::Failed, "Glad: Unable to load Vulkan symbols!");
+            return RenderInitError(RenderInitStatus::Failed, "Volk: Unable to load Vulkan symbols!");
         }
 
         // Lambda to simplify error checking
@@ -76,11 +109,14 @@ namespace Dodo::Platform {
         }
         if (Try(PickPhysicalDevice())) return result;
         if (Try(InitDevice())) return result;
+        if (Try(InitVMA())) return result;
         if (Try(CreateSwapChain())) return result;
         if (Try(CreateImageViews())) return result;
         if (Try(CreateCommandPool())) return result;
         if (Try(CreateCommandBuffer())) return result;
         if (Try(CreateSyncObjects())) return result;
+        if (Try(InitDescriptors())) return result;
+
         if (winprop.m_Settings.imgui)
             if (Try(InitImGui())) return result;
 
@@ -100,7 +136,7 @@ namespace Dodo::Platform {
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.pEngineName = "Dodo Engine";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion = VK_API_VERSION_1_3;
+        appInfo.apiVersion = DODO_VULKAN_VERSION;
 
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -275,7 +311,36 @@ namespace Dodo::Platform {
 
         volkLoadDevice(m_Device);
 
+        vkGetDeviceQueue(m_Device, indices.graphicsFamily.value(), 0, &m_GraphicsQueue);
         vkGetDeviceQueue(m_Device, indices.presentFamily.value(), 0, &m_PresentQueue);
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    /**
+     * Initialize Vulkan Memory Allocator library
+     */
+    RenderInitError VulkanRenderAPI::InitVMA()
+    {
+        VmaAllocatorCreateInfo allocatorCreateInfo = {};
+        allocatorCreateInfo.physicalDevice = m_PhysicalDevice;
+        allocatorCreateInfo.device = m_Device;
+        allocatorCreateInfo.instance = m_VkInstance;
+        allocatorCreateInfo.vulkanApiVersion = DODO_VULKAN_VERSION;
+        allocatorCreateInfo.flags = 0;
+
+        VmaVulkanFunctions vulkanFunctions;
+        VkResult res = vmaImportVulkanFunctionsFromVolk(&allocatorCreateInfo, &vulkanFunctions);
+        if (res != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "VMA: Failed to import Vulkan functions from Volk!");
+        }
+
+        allocatorCreateInfo.pVulkanFunctions = &vulkanFunctions;
+
+        res = vmaCreateAllocator(&allocatorCreateInfo, &m_VmaAllocator);
+        if (res != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "VMA: Failed to create VMA allocator!");
+        }
 
         return RenderInitError(RenderInitStatus::Success);
     }
@@ -344,6 +409,8 @@ namespace Dodo::Platform {
 
         m_SwapChainImageFormat = surfaceFormat.format;
         m_SwapChainExtent = extent;
+        m_ViewportWidth = extent.width;
+        m_ViewportHeight = extent.height;
 
         return RenderInitError(RenderInitStatus::Success);
     }
@@ -440,6 +507,207 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success);
     }
 
+    RenderInitError VulkanRenderAPI::InitDescriptors()
+    {
+        // Compute slot size for the dynamic ModelData UBO (must be aligned to device limit)
+        VkPhysicalDeviceProperties devProps{};
+        vkGetPhysicalDeviceProperties(m_PhysicalDevice, &devProps);
+        uint32_t alignment = (uint32_t)devProps.limits.minUniformBufferOffsetAlignment;
+        uint32_t rawSize = (uint32_t)sizeof(GPUModelData);
+        m_ModelUBOSlotSize = (rawSize + alignment - 1) & ~(alignment - 1);
+
+        // --- Application descriptor pool ---
+        VkDescriptorPoolSize poolSizes[] = {
+            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 64},          {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 64},
+            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 256},          {VK_DESCRIPTOR_TYPE_SAMPLER, 256},
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 256},
+        };
+        VkDescriptorPoolCreateInfo poolCI{};
+        poolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolCI.maxSets = 256;
+        poolCI.poolSizeCount = (uint32_t)std::size(poolSizes);
+        poolCI.pPoolSizes = poolSizes;
+        if (vkCreateDescriptorPool(m_Device, &poolCI, nullptr, &m_AppDescriptorPool) != VK_SUCCESS)
+            return RenderInitError(RenderInitStatus::Failed, "Failed to create application descriptor pool!");
+
+        // --- Global set-0 layout: binding 0 = FrameData UBO, binding 1 = ModelData dynamic UBO ---
+        VkDescriptorSetLayoutBinding set0Bindings[2]{};
+        set0Bindings[0].binding = 0;
+        set0Bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        set0Bindings[0].descriptorCount = 1;
+        set0Bindings[0].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+        set0Bindings[1].binding = 1;
+        set0Bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        set0Bindings[1].descriptorCount = 1;
+        set0Bindings[1].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+
+        VkDescriptorSetLayoutCreateInfo layoutCI{};
+        layoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutCI.bindingCount = 2;
+        layoutCI.pBindings = set0Bindings;
+        if (vkCreateDescriptorSetLayout(m_Device, &layoutCI, nullptr, &m_GlobalSet0Layout) != VK_SUCCESS)
+            return RenderInitError(RenderInitStatus::Failed, "Failed to create global set-0 descriptor set layout!");
+
+        // Allocate one descriptor set per frame
+        VkDescriptorSetLayout layouts[maxFramesInFlight];
+        for (int i = 0; i < maxFramesInFlight; i++)
+            layouts[i] = m_GlobalSet0Layout;
+
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = m_AppDescriptorPool;
+        allocInfo.descriptorSetCount = maxFramesInFlight;
+        allocInfo.pSetLayouts = layouts;
+        if (vkAllocateDescriptorSets(m_Device, &allocInfo, m_GlobalSet0.data()) != VK_SUCCESS)
+            return RenderInitError(RenderInitStatus::Failed, "Failed to allocate global set-0 descriptor sets!");
+
+        // --- Create per-frame UBOs via VMA ---
+        VkBufferCreateInfo bufCI{};
+        bufCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        bufCI.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+        VmaAllocationCreateInfo allocCI{};
+        allocCI.usage = VMA_MEMORY_USAGE_AUTO;
+        allocCI.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT | VMA_ALLOCATION_CREATE_MAPPED_BIT;
+
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            VmaAllocationInfo vmaInfo{};
+
+            // FrameData UBO
+            bufCI.size = sizeof(Dodo::FrameData);
+            if (vmaCreateBuffer(m_VmaAllocator, &bufCI, &allocCI, &m_FrameDataUBOs[i].buffer,
+                                &m_FrameDataUBOs[i].allocation, &vmaInfo) != VK_SUCCESS)
+                return RenderInitError(RenderInitStatus::Failed, "Failed to create FrameData UBO!");
+            m_FrameDataUBOs[i].mapped = vmaInfo.pMappedData;
+
+            // ModelData dynamic UBO (ring buffer for up to maxDrawsPerFrame draws)
+            bufCI.size = (VkDeviceSize)m_ModelUBOSlotSize * maxDrawsPerFrame;
+            if (vmaCreateBuffer(m_VmaAllocator, &bufCI, &allocCI, &m_ModelDataUBOs[i].buffer,
+                                &m_ModelDataUBOs[i].allocation, &vmaInfo) != VK_SUCCESS)
+                return RenderInitError(RenderInitStatus::Failed, "Failed to create ModelData UBO!");
+            m_ModelDataUBOs[i].mapped = vmaInfo.pMappedData;
+        }
+
+        // --- Point each descriptor set at the corresponding UBOs ---
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            VkDescriptorBufferInfo frameBI{};
+            frameBI.buffer = m_FrameDataUBOs[i].buffer;
+            frameBI.offset = 0;
+            frameBI.range = sizeof(Dodo::FrameData);
+
+            VkDescriptorBufferInfo modelBI{};
+            modelBI.buffer = m_ModelDataUBOs[i].buffer;
+            modelBI.offset = 0;
+            modelBI.range = sizeof(GPUModelData);
+
+            VkWriteDescriptorSet writes[2]{};
+            writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[0].dstSet = m_GlobalSet0[i];
+            writes[0].dstBinding = 0;
+            writes[0].descriptorCount = 1;
+            writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            writes[0].pBufferInfo = &frameBI;
+
+            writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writes[1].dstSet = m_GlobalSet0[i];
+            writes[1].dstBinding = 1;
+            writes[1].descriptorCount = 1;
+            writes[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+            writes[1].pBufferInfo = &modelBI;
+
+            vkUpdateDescriptorSets(m_Device, 2, writes, 0, nullptr);
+        }
+
+        // --- Per-frame transient pools for set-1 (material textures) ---
+        VkDescriptorPoolSize transientSizes[] = {
+            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 64},
+            {VK_DESCRIPTOR_TYPE_SAMPLER, 64},
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 64},
+        };
+        VkDescriptorPoolCreateInfo transientCI{};
+        transientCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        transientCI.maxSets = 64;
+        transientCI.poolSizeCount = (uint32_t)std::size(transientSizes);
+        transientCI.pPoolSizes = transientSizes;
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            if (vkCreateDescriptorPool(m_Device, &transientCI, nullptr, &m_TransientPools[i]) != VK_SUCCESS)
+                return RenderInitError(RenderInitStatus::Failed, "Failed to create transient descriptor pool!");
+        }
+
+        // Create a 1x1 black RGBA fallback image for unbound set-1 descriptor slots
+        {
+            VkImageCreateInfo imageCI{};
+            imageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageCI.imageType = VK_IMAGE_TYPE_2D;
+            imageCI.format = VK_FORMAT_R8G8B8A8_UNORM;
+            imageCI.extent = {1, 1, 1};
+            imageCI.mipLevels = 1;
+            imageCI.arrayLayers = 1;
+            imageCI.samples = VK_SAMPLE_COUNT_1_BIT;
+            imageCI.tiling = VK_IMAGE_TILING_OPTIMAL;
+            imageCI.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+            imageCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            imageCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            VmaAllocationCreateInfo allocCI{};
+            allocCI.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+            vmaCreateImage(m_VmaAllocator, &imageCI, &allocCI, &m_DummyImage, &m_DummyAllocation, nullptr);
+
+            // Transition to SHADER_READ_ONLY_OPTIMAL via a one-time command
+            VkCommandBufferAllocateInfo cbAllocInfo{};
+            cbAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            cbAllocInfo.commandPool = m_CommandPool;
+            cbAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            cbAllocInfo.commandBufferCount = 1;
+            VkCommandBuffer cb = VK_NULL_HANDLE;
+            vkAllocateCommandBuffers(m_Device, &cbAllocInfo, &cb);
+            VkCommandBufferBeginInfo cbBegin{};
+            cbBegin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            cbBegin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+            vkBeginCommandBuffer(cb, &cbBegin);
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.image = m_DummyImage;
+            barrier.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+            barrier.srcAccessMask = 0;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
+                                 nullptr, 0, nullptr, 1, &barrier);
+            vkEndCommandBuffer(cb);
+            VkSubmitInfo submitInfo{};
+            submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submitInfo.commandBufferCount = 1;
+            submitInfo.pCommandBuffers = &cb;
+            vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(m_GraphicsQueue);
+            vkFreeCommandBuffers(m_Device, m_CommandPool, 1, &cb);
+
+            VkImageViewCreateInfo viewCI{};
+            viewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            viewCI.image = m_DummyImage;
+            viewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            viewCI.format = VK_FORMAT_R8G8B8A8_UNORM;
+            viewCI.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+            vkCreateImageView(m_Device, &viewCI, nullptr, &m_DummyImageView);
+
+            VkSamplerCreateInfo samplerCI{};
+            samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+            samplerCI.magFilter = VK_FILTER_NEAREST;
+            samplerCI.minFilter = VK_FILTER_NEAREST;
+            samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+            samplerCI.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            vkCreateSampler(m_Device, &samplerCI, nullptr, &m_DummySampler);
+        }
+
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
     RenderInitError VulkanRenderAPI::InitImGui()
     {
         m_Context.InitializeImGui();
@@ -478,7 +746,7 @@ namespace Dodo::Platform {
         vulkanInfo.PhysicalDevice = m_PhysicalDevice;
         vulkanInfo.Device = m_Device;
         vulkanInfo.QueueFamily = indices.graphicsFamily.value();
-        vulkanInfo.Queue = m_PresentQueue;
+        vulkanInfo.Queue = m_GraphicsQueue;
         vulkanInfo.DescriptorPool = m_ImGuiDescriptorPool;
         vulkanInfo.MinImageCount = 2;
         vulkanInfo.ImageCount = static_cast<uint32_t>(m_SwapChainImages.size());
@@ -497,6 +765,7 @@ namespace Dodo::Platform {
 
         ImGui_ImplVulkan_Init(&vulkanInfo);
 
+        m_ImGuiActive = true;
         return RenderInitError(RenderInitStatus::Success);
     }
 
@@ -515,61 +784,25 @@ namespace Dodo::Platform {
             RecreateSwapChain();
             m_SwapChainNeedsRecreation = false;
         }
-    }
-    void VulkanRenderAPI::End() {}
 
-    void VulkanRenderAPI::ClearColor(float r, float g, float b) const {}
-    void VulkanRenderAPI::Viewport(uint width, uint height) const {}
-    void VulkanRenderAPI::BindCubeMap(uint slot, Ref<CubeMap> cubemap) {}
-    void VulkanRenderAPI::BindTexture(uint slot, Ref<Texture> texture) {}
-    void VulkanRenderAPI::BindTextureSampler(uint slot, Ref<TextureSampler> sampler) {}
-
-    void VulkanRenderAPI::BindPipeline(Ref<Pipeline> pipeline)
-    {
-        if (pipeline->m_Pipeline == m_BoundPipeline) return;
-        vkCmdBindPipeline(m_Frames[m_CurrentFrame].commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
-                          pipeline->m_Pipeline);
-        m_BoundPipeline = pipeline->m_Pipeline;
-    }
-
-    void VulkanRenderAPI::DrawIndices(uint count) const {}
-    void VulkanRenderAPI::DrawArray(uint count) const {}
-
-    void VulkanRenderAPI::DefaultFrameBuffer() const {}
-    void VulkanRenderAPI::SetViewport(uint width, uint height)
-    {
-        m_SwapChainNeedsRecreation = true;
-    }
-    void VulkanRenderAPI::SetViewport(uint width, uint height, uint posX, uint posY)
-    {
-        m_SwapChainNeedsRecreation = true;
-    }
-
-    void VulkanRenderAPI::DepthComparisonMethod(Dodo::DepthComparisonMethod method) const {}
-    void VulkanRenderAPI::DepthTest(bool depthtest) const {}
-    void VulkanRenderAPI::StencilTest(bool stenciltest) const {}
-    void VulkanRenderAPI::Blending(bool blending) const {}
-    void VulkanRenderAPI::Culling(bool cull, bool backface) {}
-
-    void VulkanRenderAPI::ImGuiNewFrame() const
-    {
-        ImGui_ImplVulkan_NewFrame();
-    }
-
-    void VulkanRenderAPI::ImGuiEndFrame()
-    {
-        VkSemaphore renderFinished = m_Frames[m_CurrentFrame].renderFinishedSemaphore;
         VkFence inFlightFence = m_Frames[m_CurrentFrame].inFlightFence;
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
 
-        // Wait until previous frame is finished
         vkWaitForFences(m_Device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
         vkResetFences(m_Device, 1, &inFlightFence);
 
-        // Get the current image index in the swap chain
-        uint32_t imageIndex;
+        // Reset per-frame state now that the GPU has finished with this frame slot
+        m_BoundPipeline = VK_NULL_HANDLE;
+        m_BoundPipelinePtr = nullptr;
+        m_ModelUBOCursor = 0;
+        m_LastModelOffset = 0;
+        m_TexturesDirty = false;
+        m_BoundTextureSet = VK_NULL_HANDLE;
+        if (m_TransientPools[m_CurrentFrame] != VK_NULL_HANDLE)
+            vkResetDescriptorPool(m_Device, m_TransientPools[m_CurrentFrame], 0);
+
         vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_Frames[m_CurrentFrame].imageAvailableSemaphore,
-                              VK_NULL_HANDLE, &imageIndex);
+                              VK_NULL_HANDLE, &m_CurrentImageIndex);
 
         vkResetCommandBuffer(cmd, 0);
 
@@ -581,14 +814,14 @@ namespace Dodo::Platform {
             return;
         }
 
-        // TODO: Deprecated stuff, use VkImageMemoryBarrier2KHR instead
+        // Transition swapchain image to color attachment layout
         VkImageMemoryBarrier barrier = {};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = m_SwapChainImages[imageIndex];
+        barrier.image = m_SwapChainImages[m_CurrentImageIndex];
         barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         barrier.subresourceRange.baseMipLevel = 0;
         barrier.subresourceRange.levelCount = 1;
@@ -600,14 +833,13 @@ namespace Dodo::Platform {
         vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
                              0, nullptr, 0, nullptr, 1, &barrier);
 
-        // Setup dynamic rendering target
         VkRenderingAttachmentInfo colorAttachment = {};
         colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-        colorAttachment.imageView = m_SwapChainImageViews[imageIndex];
+        colorAttachment.imageView = m_SwapChainImageViews[m_CurrentImageIndex];
         colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorAttachment.clearValue.color = {{0.1f, 0.1f, 1.0f, 1.0f}}; // Dark gray background
+        colorAttachment.clearValue.color = {{0.1f, 0.1f, 0.1f, 1.0f}};
 
         VkRenderingInfo renderingInfo = {};
         renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
@@ -618,8 +850,25 @@ namespace Dodo::Platform {
 
         vkCmdBeginRendering(cmd, &renderingInfo);
 
-        ImGui::Render();
-        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
+        VkViewport viewport = {};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(m_SwapChainExtent.width);
+        viewport.height = static_cast<float>(m_SwapChainExtent.height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+        VkRect2D scissor = {};
+        scissor.offset = {0, 0};
+        scissor.extent = m_SwapChainExtent;
+        vkCmdSetScissor(cmd, 0, 1, &scissor);
+    }
+
+    void VulkanRenderAPI::End()
+    {
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+        uint32_t imageIndex = m_CurrentImageIndex;
 
         vkCmdEndRendering(cmd);
 
@@ -640,13 +889,11 @@ namespace Dodo::Platform {
         presentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
         presentBarrier.dstAccessMask = 0;
 
-        vkCmdPipelineBarrier(cmd,
-                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, // wait for rendering to finish
-                             VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                             0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
 
         vkEndCommandBuffer(cmd);
 
-        // Setup semaphore and submit command buffer
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -662,7 +909,7 @@ namespace Dodo::Platform {
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        if (vkQueueSubmit(m_PresentQueue, 1, &submitInfo, m_Frames[m_CurrentFrame].inFlightFence) != VK_SUCCESS) {
+        if (vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, m_Frames[m_CurrentFrame].inFlightFence) != VK_SUCCESS) {
             DD_ERR("failed to submit draw command buffer!");
             return;
         }
@@ -680,6 +927,408 @@ namespace Dodo::Platform {
         vkQueuePresentKHR(m_PresentQueue, &presentInfo);
 
         m_CurrentFrame = (m_CurrentFrame + 1) % maxFramesInFlight;
+    }
+
+    void VulkanRenderAPI::ClearColor(float r, float g, float b) const {}
+    void VulkanRenderAPI::Viewport(uint width, uint height) const {}
+    void VulkanRenderAPI::BindCubeMap(uint slot, Ref<CubeMap> cubemap)
+    {
+        if (slot >= maxTextureSlots || !cubemap) return;
+        m_PendingImageViews[slot] = cubemap->GetImageView();
+        m_PendingIsCubeMap[slot] = true;
+        m_PendingIsDepth[slot] = false;
+        m_TexturesDirty = true;
+    }
+
+    void VulkanRenderAPI::BindTexture(uint slot, Ref<Texture> texture)
+    {
+        if (slot >= maxTextureSlots || !texture) return;
+        m_PendingImageViews[slot] = texture->GetImageView();
+        m_PendingIsCubeMap[slot] = false;
+        m_PendingIsDepth[slot] = false;
+        m_TexturesDirty = true;
+    }
+
+    void VulkanRenderAPI::BindTextureSampler(uint slot, Ref<TextureSampler> sampler)
+    {
+        if (slot >= maxTextureSlots || !sampler) return;
+        m_PendingSamplers[slot] = sampler->GetSampler();
+        m_TexturesDirty = true;
+    }
+
+    void VulkanRenderAPI::BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer)
+    {
+        if (slot >= maxTextureSlots || !framebuffer) return;
+        auto* vkFB = static_cast<VulkanFrameBuffer*>(framebuffer.get());
+        const bool depthOnly = !vkFB->HasColor();
+        m_PendingImageViews[slot] = depthOnly ? vkFB->GetDepthImageView() : vkFB->GetColorImageView();
+        m_PendingSamplers[slot] = vkFB->GetSampler();
+        m_PendingIsCubeMap[slot] = false;
+        m_PendingIsDepth[slot] = depthOnly;
+        m_TexturesDirty = true;
+    }
+
+    void VulkanRenderAPI::BindPipeline(Ref<Pipeline> pipeline)
+    {
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+        if (pipeline->m_Pipeline != m_BoundPipeline) {
+            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->m_Pipeline);
+            m_BoundPipeline = pipeline->m_Pipeline;
+            m_BoundPipelineLayout = pipeline->m_Layout;
+            m_BoundPipelinePtr = pipeline.get();
+        }
+        m_TexturesDirty = true;
+
+        // Bind set-0 (FrameData + ModelData) with current model offset as dynamic offset
+        if (m_GlobalSet0Layout != VK_NULL_HANDLE) {
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BoundPipelineLayout, 0, 1,
+                                    &m_GlobalSet0[m_CurrentFrame], 1, &m_LastModelOffset);
+        }
+    }
+
+    void VulkanRenderAPI::PushConstants(const void* data, size_t size)
+    {
+        if (m_BoundPipelineLayout == VK_NULL_HANDLE) return;
+        vkCmdPushConstants(m_Frames[m_CurrentFrame].commandBuffer, m_BoundPipelineLayout,
+                           VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, (uint32_t)size, data);
+    }
+
+    void VulkanRenderAPI::SetFrameData(const Dodo::FrameData& data)
+    {
+        if (m_FrameDataUBOs[m_CurrentFrame].mapped)
+            memcpy(m_FrameDataUBOs[m_CurrentFrame].mapped, &data, sizeof(Dodo::FrameData));
+    }
+
+    void VulkanRenderAPI::SetDrawData(const DrawData& data)
+    {
+        if (!m_ModelDataUBOs[m_CurrentFrame].mapped) return;
+
+        // Expand Mat4 model and Mat3 normal into GPU-aligned GPUModelData (128 bytes)
+        GPUModelData gpu{};
+        memcpy(gpu.model, data.model.m_Elements, sizeof(gpu.model));
+        // Mat3 is column-major (m_Columns[3] of Vec3); pad each column into vec4
+        for (int c = 0; c < 3; c++) {
+            gpu.normal[c * 4 + 0] = data.normalMatrix.m_Columns[c].x;
+            gpu.normal[c * 4 + 1] = data.normalMatrix.m_Columns[c].y;
+            gpu.normal[c * 4 + 2] = data.normalMatrix.m_Columns[c].z;
+            // gpu.normal[c * 4 + 3] stays 0
+        }
+
+        uint32_t slot = m_ModelUBOCursor < maxDrawsPerFrame ? m_ModelUBOCursor++ : maxDrawsPerFrame - 1;
+        m_LastModelOffset = slot * m_ModelUBOSlotSize;
+
+        auto* dst = static_cast<uint8_t*>(m_ModelDataUBOs[m_CurrentFrame].mapped) + m_LastModelOffset;
+        memcpy(dst, &gpu, sizeof(gpu));
+    }
+
+    void VulkanRenderAPI::BindVertexBuffer(const Ref<VertexBuffer>& vb)
+    {
+        VkDeviceSize offset = 0;
+        VkBuffer buf = vb->GetBuffer();
+        vkCmdBindVertexBuffers(m_Frames[m_CurrentFrame].commandBuffer, 0, 1, &buf, &offset);
+    }
+
+    void VulkanRenderAPI::BindIndexBuffer(const Ref<IndexBuffer>& ib)
+    {
+        vkCmdBindIndexBuffer(m_Frames[m_CurrentFrame].commandBuffer, ib->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+    }
+
+    void VulkanRenderAPI::DrawIndexed(const Ref<VertexBuffer>& va) {}
+    void VulkanRenderAPI::DrawIndices(uint count)
+    {
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+
+        // Re-bind set-0 with the per-draw dynamic offset for ModelData
+        if (m_GlobalSet0Layout != VK_NULL_HANDLE) {
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BoundPipelineLayout, 0, 1,
+                                    &m_GlobalSet0[m_CurrentFrame], 1, &m_LastModelOffset);
+        }
+
+        BindPendingSet1(cmd);
+
+        vkCmdDrawIndexed(cmd, count, 1, 0, 0, 0);
+    }
+
+    void VulkanRenderAPI::BindPendingSet1(VkCommandBuffer cmd)
+    {
+        if (!m_TexturesDirty || !m_BoundPipelinePtr || m_BoundPipelinePtr->m_SetLayouts.size() <= 1 ||
+            m_BoundPipelinePtr->m_SetLayouts[1] == VK_NULL_HANDLE)
+            return;
+
+        VkDescriptorSet set1 = VK_NULL_HANDLE;
+        VkDescriptorSetAllocateInfo ai{};
+        ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        ai.descriptorPool = m_TransientPools[m_CurrentFrame];
+        ai.descriptorSetCount = 1;
+        ai.pSetLayouts = &m_BoundPipelinePtr->m_SetLayouts[1];
+
+        if (vkAllocateDescriptorSets(m_Device, &ai, &set1) != VK_SUCCESS) return;
+
+        std::vector<VkWriteDescriptorSet> writes;
+        std::vector<VkDescriptorImageInfo> imageInfos;
+        imageInfos.reserve(maxTextureSlots);
+
+        VkSampler firstSampler = VK_NULL_HANDLE;
+        for (int s = 0; s < maxTextureSlots && firstSampler == VK_NULL_HANDLE; s++)
+            firstSampler = m_PendingSamplers[s];
+
+        for (const auto& b : m_BoundPipelinePtr->m_ShaderBindings) {
+            if (b.set != 1) continue;
+
+            VkWriteDescriptorSet w{};
+            w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            w.dstSet = set1;
+            w.dstBinding = b.binding;
+            w.descriptorCount = 1;
+
+            if (b.type == DescriptorType::SampledTexture) {
+                // Only use the pending view if it is a 2D view. Never bind a cube view to a Texture2D binding
+                bool hasPending = b.binding < maxTextureSlots && m_PendingImageViews[b.binding] &&
+                                  !m_PendingIsCubeMap[b.binding];
+                VkImageView view = hasPending ? m_PendingImageViews[b.binding] : m_DummyImageView;
+                if (!view) continue;
+                VkDescriptorImageInfo info{};
+                info.imageView = view;
+                info.imageLayout = (hasPending && m_PendingIsDepth[b.binding])
+                                       ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                                       : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfos.push_back(info);
+                w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                w.pImageInfo = &imageInfos.back();
+                writes.push_back(w);
+            } else if (b.type == DescriptorType::SampledCubeMap) {
+                // Only use the pending view if it is a cube view
+                bool hasPending =
+                    b.binding < maxTextureSlots && m_PendingImageViews[b.binding] && m_PendingIsCubeMap[b.binding];
+                VkImageView view = hasPending ? m_PendingImageViews[b.binding] : m_DummyImageView;
+                if (!view) continue;
+                VkDescriptorImageInfo info{};
+                info.imageView = view;
+                info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfos.push_back(info);
+                w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                w.pImageInfo = &imageInfos.back();
+                writes.push_back(w);
+            } else if (b.type == DescriptorType::Sampler) {
+                VkSampler sampler = (b.binding < maxTextureSlots && m_PendingSamplers[b.binding])
+                                        ? m_PendingSamplers[b.binding]
+                                        : (firstSampler ? firstSampler : m_DummySampler);
+                if (!sampler) continue;
+                VkDescriptorImageInfo info{};
+                info.sampler = sampler;
+                imageInfos.push_back(info);
+                w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+                w.pImageInfo = &imageInfos.back();
+                writes.push_back(w);
+            } else if (b.type == DescriptorType::CombinedImageSampler) {
+                bool hasPendingView = b.binding < maxTextureSlots && m_PendingImageViews[b.binding];
+                VkImageView view = hasPendingView ? m_PendingImageViews[b.binding] : m_DummyImageView;
+                VkSampler sampler = (b.binding < maxTextureSlots && m_PendingSamplers[b.binding])
+                                        ? m_PendingSamplers[b.binding]
+                                        : (firstSampler ? firstSampler : m_DummySampler);
+                if (!view || !sampler) continue;
+                VkDescriptorImageInfo info{};
+                info.imageView = view;
+                info.imageLayout = (hasPendingView && m_PendingIsDepth[b.binding])
+                                       ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                                       : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                info.sampler = sampler;
+                imageInfos.push_back(info);
+                w.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                w.pImageInfo = &imageInfos.back();
+                writes.push_back(w);
+            }
+        }
+
+        if (!writes.empty()) vkUpdateDescriptorSets(m_Device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
+
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_BoundPipelineLayout, 1, 1, &set1, 0, nullptr);
+        m_BoundTextureSet = set1;
+        m_TexturesDirty = false;
+    }
+
+    void VulkanRenderAPI::DrawArray(uint count)
+    {
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+        BindPendingSet1(cmd);
+        vkCmdDraw(cmd, count, 1, 0, 0);
+    }
+
+    void VulkanRenderAPI::DefaultFrameBuffer()
+    {
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+        vkCmdEndRendering(cmd);
+
+        if (m_BoundFrameBuffer) {
+            m_BoundFrameBuffer->TransitionToReadable(cmd);
+            m_BoundFrameBuffer = nullptr;
+        }
+
+        // Resume rendering to the swapchain image (already in COLOR_ATTACHMENT_OPTIMAL from Begin())
+        VkRenderingAttachmentInfo colorAttachment{};
+        colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+        colorAttachment.imageView = m_SwapChainImageViews[m_CurrentImageIndex];
+        colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        colorAttachment.clearValue.color = {{0.1f, 0.1f, 0.1f, 1.0f}};
+
+        VkRenderingInfo renderingInfo{};
+        renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+        renderingInfo.renderArea = {{0, 0}, m_SwapChainExtent};
+        renderingInfo.layerCount = 1;
+        renderingInfo.colorAttachmentCount = 1;
+        renderingInfo.pColorAttachments = &colorAttachment;
+
+        vkCmdBeginRendering(cmd, &renderingInfo);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(m_SwapChainExtent.width);
+        viewport.height = static_cast<float>(m_SwapChainExtent.height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = m_SwapChainExtent;
+        vkCmdSetScissor(cmd, 0, 1, &scissor);
+    }
+
+    void VulkanRenderAPI::BindFrameBuffer(Ref<FrameBuffer> framebuffer)
+    {
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+        vkCmdEndRendering(cmd);
+
+        auto* vkFB = static_cast<VulkanFrameBuffer*>(framebuffer.get());
+
+        if (m_BoundFrameBuffer && m_BoundFrameBuffer != vkFB)
+            m_BoundFrameBuffer->TransitionToReadable(cmd);
+
+        vkFB->TransitionToRenderTarget(cmd);
+        m_BoundFrameBuffer = vkFB;
+
+        VkExtent2D extent = vkFB->GetExtent();
+
+        VkRenderingAttachmentInfo colorAttachment{};
+        VkRenderingAttachmentInfo depthAttachment{};
+
+        VkRenderingInfo renderingInfo{};
+        renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+        renderingInfo.renderArea = {{0, 0}, extent};
+        renderingInfo.layerCount = 1;
+
+        if (vkFB->HasColor()) {
+            colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+            colorAttachment.imageView = vkFB->GetColorImageView();
+            colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            colorAttachment.clearValue.color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            renderingInfo.colorAttachmentCount = 1;
+            renderingInfo.pColorAttachments = &colorAttachment;
+        }
+
+        depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+        depthAttachment.imageView = vkFB->GetDepthImageView();
+        depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        depthAttachment.clearValue.depthStencil = {1.0f, 0};
+        renderingInfo.pDepthAttachment = &depthAttachment;
+
+        vkCmdBeginRendering(cmd, &renderingInfo);
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = 0.0f;
+        viewport.width = static_cast<float>(extent.width);
+        viewport.height = static_cast<float>(extent.height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = extent;
+        vkCmdSetScissor(cmd, 0, 1, &scissor);
+    }
+
+    void VulkanRenderAPI::SetViewport(uint width, uint height)
+    {
+        m_ViewportWidth = width;
+        m_ViewportHeight = height;
+        m_SwapChainNeedsRecreation = true;
+    }
+    void VulkanRenderAPI::SetViewport(uint width, uint height, uint posX, uint posY)
+    {
+        m_ViewportWidth = width;
+        m_ViewportHeight = height;
+        m_ViewportPosX = posX;
+        m_ViewportPosY = posY;
+        m_SwapChainNeedsRecreation = true;
+    }
+
+    Ref<Pipeline> VulkanRenderAPI::CreatePipeline(const PipelineDesc& desc, AssetManager& assets)
+    {
+        const ShaderAsset& shader = assets.GetShaderAsset(desc.shaderID);
+        // Depth-only pipelines have no color attachment; other pipelines default to the HDR offscreen
+        // buffer format (R16G16B16A16_SFLOAT) unless they explicitly target the swapchain.
+        VkFormat colorFormat = VK_FORMAT_UNDEFINED;
+        if (!desc.depthOnly)
+            colorFormat = desc.renderToSwapchain ? m_SwapChainImageFormat : VK_FORMAT_R16G16B16A16_SFLOAT;
+        return std::make_shared<VulkanPipeline>(m_Device, colorFormat, VK_FORMAT_D32_SFLOAT, shader, desc,
+                                                m_GlobalSet0Layout);
+    }
+
+    Ref<VertexBuffer> VulkanRenderAPI::CreateVertexBuffer(const float* vertices, uint size,
+                                                          const BufferProperties& prop)
+    {
+        return std::make_shared<VulkanVertexBuffer>(vertices, size, prop, m_Device, m_VmaAllocator, m_CommandPool,
+                                                    m_GraphicsQueue);
+    }
+
+    Ref<IndexBuffer> VulkanRenderAPI::CreateIndexBuffer(const uint* indices, uint count)
+    {
+        return std::make_shared<VulkanIndexBuffer>(indices, count, m_Device, m_VmaAllocator, m_CommandPool,
+                                                   m_GraphicsQueue);
+    }
+
+    Ref<Texture> VulkanRenderAPI::CreateTexture(uchar* data, const TextureProperties& prop)
+    {
+        return std::make_shared<VulkanTexture>(data, prop, m_Device, m_VmaAllocator, m_CommandPool, m_GraphicsQueue);
+    }
+
+    Ref<TextureSampler> VulkanRenderAPI::CreateSampler(const SamplerProperties& prop)
+    {
+        return std::make_shared<VulkanSampler>(prop, m_Device);
+    }
+
+    Ref<CubeMap> VulkanRenderAPI::CreateCubeMap(const std::vector<std::string>& paths)
+    {
+        return std::make_shared<VulkanCubeMap>(paths, m_Device, m_VmaAllocator, m_CommandPool, m_GraphicsQueue);
+    }
+
+    Ref<FrameBuffer> VulkanRenderAPI::CreateFrameBuffer(const FrameBufferProperties& props)
+    {
+        return std::make_shared<VulkanFrameBuffer>(props, m_Device, m_VmaAllocator);
+    }
+
+    void VulkanRenderAPI::ImGuiNewFrame() const
+    {
+        ImGui_ImplVulkan_NewFrame();
+    }
+
+    void VulkanRenderAPI::ImGuiEndFrame()
+    {
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+
+        // Render ImGui into the currently active swapchain pass (started by DefaultFrameBuffer or Begin)
+        ImGui::Render();
+        ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
+        // Pass is ended by End()
     }
 
     /**

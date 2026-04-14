@@ -1,16 +1,18 @@
 #pragma once
 
 #include "Core/Graphics/Material/SamplerProperties.h"
+#include <volk.h>
 
 namespace Dodo::Platform {
     class VulkanSampler {
       public:
-        VulkanSampler(const SamplerProperties& settings = SamplerProperties());
+        VulkanSampler(const SamplerProperties& settings, VkDevice device);
         ~VulkanSampler();
 
-        uint GetSamplerID() const { return m_SamplerID; }
+        VkSampler GetSampler() const { return m_Sampler; }
 
       private:
-        uint m_SamplerID;
+        VkDevice m_Device;
+        VkSampler m_Sampler = VK_NULL_HANDLE;
     };
 } // namespace Dodo::Platform

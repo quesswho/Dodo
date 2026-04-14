@@ -218,7 +218,7 @@ namespace Dodo {
         }
 
         for (auto& pending : textures) {
-            Ref<Texture> tex = std::make_shared<Texture>(pending.data.pixels.data(), pending.data.props);
+            Ref<Texture> tex = renderAPI.CreateTexture(pending.data.pixels.data(), pending.data.props);
             m_Textures.emplace(pending.id, std::move(tex));
             m_TextureStates[pending.id] = AssetState::Loaded;
         }
@@ -277,12 +277,12 @@ namespace Dodo {
                     PipelineDesc desc;
                     desc.shaderID = shaderID;
                     material->SetShader(GetPipeline(CreatePipeline(desc, renderAPI)));
-                    material->SetSampler(std::make_shared<TextureSampler>(SamplerProperties()));
+                    material->SetSampler(renderAPI.CreateSampler(SamplerProperties()));
                 }
                 materials.push_back(std::move(material));
             }
 
-            m_Models.emplace(it->id, m_ModelLoader.BuildModel(modelData, materials));
+            m_Models.emplace(it->id, m_ModelLoader.BuildModel(modelData, materials, renderAPI));
             m_ModelStates[it->id] = AssetState::Loaded;
             it = m_PendingModelAssemblies.erase(it);
         }
@@ -298,14 +298,14 @@ namespace Dodo {
         switch (type) {
         case BuiltinModel::Cube: {
             std::vector<Ref<Mesh>> meshes;
-            meshes.push_back(m_MeshFactory.CreateCube(std::make_shared<Material>(Material())));
+            meshes.push_back(m_MeshFactory.CreateCube(std::make_shared<Material>(Material()), m_RenderAPI));
             model = std::make_shared<Model>(meshes);
             break;
         }
         case BuiltinModel::Terrain: {
             std::vector<Ref<Mesh>> terrainMeshes;
             terrainMeshes.push_back(
-                m_MeshFactory.CreateTerrain(TerrainConfig(), std::make_shared<Material>(Material())));
+                m_MeshFactory.CreateTerrain(TerrainConfig(), std::make_shared<Material>(Material()), m_RenderAPI));
             model = std::make_shared<Model>(terrainMeshes);
             break;
         }

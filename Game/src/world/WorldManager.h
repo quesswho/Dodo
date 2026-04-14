@@ -7,7 +7,7 @@
 
 class WorldManager {
   public:
-    WorldManager(Ref<ResourceManager> resourceManager);
+    WorldManager(Ref<ResourceManager> resourceManager, Dodo::RenderAPI& renderAPI);
 
     Ref<ResourceManager> m_ResourceManager;
     Ref<World> m_World;

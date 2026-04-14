@@ -3,6 +3,29 @@
 #include "Core/System/FileUtils.h"
 
 namespace Dodo {
+
+    static DescriptorType ReflectDescriptorType(slang::VariableLayoutReflection* param)
+    {
+        slang::BindingType bindingType = param->getTypeLayout()->getBindingRangeType(0);
+        switch (bindingType) {
+        case slang::BindingType::ConstantBuffer:
+            return DescriptorType::UniformBuffer;
+        case slang::BindingType::Texture: {
+            // TODO: Perhaps we should do this differently if we decide to support more texture types
+            SlangResourceShape shape = static_cast<SlangResourceShape>(
+                param->getTypeLayout()->getType()->getResourceShape() & SLANG_RESOURCE_BASE_SHAPE_MASK);
+            return (shape == SLANG_TEXTURE_CUBE) ? DescriptorType::SampledCubeMap : DescriptorType::SampledTexture;
+        }
+        case slang::BindingType::Sampler:
+            return DescriptorType::Sampler;
+        case slang::BindingType::CombinedTextureSampler:
+            DD_WARN("Slang: combined texture sampler detected — use separate Texture2D + SamplerState instead");
+            return DescriptorType::CombinedImageSampler;
+        default:
+            return DescriptorType::UniformBuffer;
+        }
+    }
+
     SlangCompiler::SlangCompiler()
     {
         SlangGlobalSessionDesc globalDesc = {};
@@ -11,6 +34,8 @@ namespace Dodo {
         slang::TargetDesc targetDesc = {};
         targetDesc.format = SLANG_SPIRV;
         targetDesc.profile = m_GlobalSession->findProfile("spirv_1_5");
+        // TODO: Something is making spirv generation replace all main function names with "main"
+        // targetDesc.flags = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
 
         slang::SessionDesc sessionDesc = {};
         sessionDesc.targets = &targetDesc;
@@ -75,14 +100,141 @@ namespace Dodo {
         result.slangSource = std::move(slangSource);
 
         const int entryPointCount = module->getDefinedEntryPointCount();
-        for (int i = 0; i < entryPointCount; ++i) {
-            Slang::ComPtr<slang::IEntryPoint> entryPoint;
-            module->getDefinedEntryPoint(i, entryPoint.writeRef());
 
-            ShaderStageBinary stage = CompileEntryPoint(module, entryPoint);
+        // Collect entry points for SPIR-V compilation
+        std::vector<Slang::ComPtr<slang::IEntryPoint>> entryPoints(entryPointCount);
+        for (int i = 0; i < entryPointCount; ++i) {
+            module->getDefinedEntryPoint(i, entryPoints[i].writeRef());
+
+            ShaderStageBinary stage = CompileEntryPoint(module, entryPoints[i]);
             if (stage.stage == ShaderStage::Unknown) continue;
 
             result.stages.push_back(std::move(stage));
+        }
+
+        // Build a full composite program (module + all entry points) for reflection
+        std::vector<slang::IComponentType*> components;
+        components.push_back(module);
+        for (auto& ep : entryPoints)
+            components.push_back(ep);
+
+        Slang::ComPtr<slang::IComponentType> fullProgram;
+        SlangResult cr = m_Session->createCompositeComponentType(components.data(), (SlangInt)components.size(),
+                                                                 fullProgram.writeRef());
+        if (SLANG_FAILED(cr) || !fullProgram) {
+            DD_WARN("Slang: failed to create composite for reflection: {}", path);
+            return result;
+        }
+
+        Slang::ComPtr<slang::IComponentType> linked;
+        Slang::ComPtr<slang::IBlob> diag;
+        fullProgram->link(linked.writeRef(), diag.writeRef());
+        if (!linked) {
+            DD_WARN("Slang: failed to link for reflection: {}", path);
+            return result;
+        }
+
+        slang::ProgramLayout* layout = linked->getLayout();
+        for (unsigned i = 0; i < layout->getParameterCount(); ++i) {
+            slang::VariableLayoutReflection* param = layout->getParameterByIndex(i);
+
+            DescriptorBindingReflection b{};
+            b.set = (uint32_t)param->getBindingSpace();
+            b.binding = (uint32_t)param->getBindingIndex();
+            b.count = 1;
+            b.type = ReflectDescriptorType(param);
+            result.descriptorBindings.push_back(b);
+        }
+
+        // Reflect push constants from entrypoint uniform parameters (native Slang style).
+        // All entrypoint `uniform T name` params are automatically translated to push constants
+        // by Slang and merged across entry points.
+        {
+            for (SlangUInt ep = 0; ep < (SlangUInt)layout->getEntryPointCount(); ++ep) {
+                slang::EntryPointReflection* epRefl = layout->getEntryPointByIndex(ep);
+                if (!epRefl) continue;
+
+                for (unsigned p = 0; p < epRefl->getParameterCount(); ++p) {
+                    slang::VariableLayoutReflection* param = epRefl->getParameterByIndex(p);
+                    slang::ParameterCategory cat = param->getTypeLayout()->getParameterCategory();
+                    // Uniform entry-point params become push constants on Vulkan; skip
+                    // varyings, resources, etc.
+                    if (cat != slang::ParameterCategory::PushConstantBuffer &&
+                        cat != slang::ParameterCategory::Uniform)
+                        continue;
+
+                    result.pushConstant.hasPushConstant = true;
+
+                    slang::TypeLayoutReflection* typeLayout = param->getTypeLayout();
+                    if (typeLayout->getKind() == slang::TypeReflection::Kind::Struct) {
+                        slang::TypeLayoutReflection* elemLayout =
+                            typeLayout->getElementTypeLayout() ? typeLayout->getElementTypeLayout() : typeLayout;
+                        for (unsigned f = 0; f < elemLayout->getFieldCount(); ++f) {
+                            slang::VariableLayoutReflection* field = elemLayout->getFieldByIndex(f);
+                            // Deduplicate — the same struct may appear in multiple entry points
+                            bool seen = false;
+                            for (auto& m : result.pushConstant.members)
+                                if (m.name == field->getName()) { seen = true; break; }
+                            if (seen) continue;
+
+                            PushConstantMember m;
+                            m.name = field->getName();
+                            m.offset = (uint32_t)field->getOffset(SLANG_PARAMETER_CATEGORY_UNIFORM);
+                            slang::TypeReflection* type = field->getTypeLayout()->getType();
+                            switch (type->getScalarType()) {
+                            case SLANG_SCALAR_TYPE_INT32:  m.scalarType = PushConstantMemberType::Int;   break;
+                            case SLANG_SCALAR_TYPE_UINT32: m.scalarType = PushConstantMemberType::UInt;  break;
+                            default:                       m.scalarType = PushConstantMemberType::Float; break;
+                            }
+                            uint32_t rows = (uint32_t)type->getRowCount();
+                            m.elementCount = (rows > 0) ? rows : 1;
+                            result.pushConstant.members.push_back(m);
+                        }
+                    } else {
+                        // Scalar or vector uniform param (e.g. `uniform float gamma`)
+                        bool seen = false;
+                        for (auto& m : result.pushConstant.members)
+                            if (m.name == param->getName()) { seen = true; break; }
+                        if (seen) continue;
+
+                        PushConstantMember m;
+                        m.name = param->getName();
+                        m.offset = (uint32_t)param->getOffset(SLANG_PARAMETER_CATEGORY_UNIFORM);
+                        slang::TypeReflection* type = typeLayout->getType();
+                        switch (type->getScalarType()) {
+                        case SLANG_SCALAR_TYPE_INT32:  m.scalarType = PushConstantMemberType::Int;   break;
+                        case SLANG_SCALAR_TYPE_UINT32: m.scalarType = PushConstantMemberType::UInt;  break;
+                        default:                       m.scalarType = PushConstantMemberType::Float; break;
+                        }
+                        uint32_t rows = (uint32_t)type->getRowCount();
+                        m.elementCount = (rows > 0) ? rows : 1;
+                        result.pushConstant.members.push_back(m);
+                    }
+                }
+            }
+        }
+
+        // Reflect vertex input locations via Slang entry point reflection.
+        for (SlangUInt ep = 0; ep < (SlangUInt)layout->getEntryPointCount(); ++ep) {
+            slang::EntryPointReflection* epRefl = layout->getEntryPointByIndex(ep);
+            if (!epRefl || epRefl->getStage() != SLANG_STAGE_VERTEX) continue;
+
+            for (unsigned p = 0; p < epRefl->getParameterCount(); ++p) {
+                slang::VariableLayoutReflection* param = epRefl->getParameterByIndex(p);
+                slang::TypeLayoutReflection* typeLayout = param->getTypeLayout();
+
+                if (typeLayout->getKind() == slang::TypeReflection::Kind::Struct) {
+                    for (unsigned f = 0; f < typeLayout->getFieldCount(); ++f) {
+                        slang::VariableLayoutReflection* field = typeLayout->getFieldByIndex(f);
+                        result.vertexInputLocations.push_back(
+                            (uint32_t)field->getOffset(SLANG_PARAMETER_CATEGORY_VARYING_INPUT));
+                    }
+                } else {
+                    result.vertexInputLocations.push_back(
+                        (uint32_t)param->getOffset(SLANG_PARAMETER_CATEGORY_VARYING_INPUT));
+                }
+            }
+            break; // only one vertex entry point expected
         }
 
         return result;

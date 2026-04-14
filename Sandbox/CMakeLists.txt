@@ -1,11 +1,13 @@
 add_executable(Sandbox)
 
-add_custom_command(
-    TARGET Sandbox POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/res
-            $<TARGET_FILE_DIR:Sandbox>/res
+add_custom_command(TARGET Sandbox POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:Sandbox>/res"
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+        "${CMAKE_SOURCE_DIR}/res"
+        "$<TARGET_FILE_DIR:Sandbox>/res"
+    COMMENT "Linking res/ into output directory"
 )
+
 
 file(GLOB_RECURSE DODO_CPP_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp

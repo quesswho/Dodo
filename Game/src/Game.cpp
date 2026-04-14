@@ -24,7 +24,7 @@ GameLayer::GameLayer(Application& app)
     frameprop.m_Width = app.GetWindowProperties().m_Width;
     frameprop.m_Height = app.GetWindowProperties().m_Height;
 
-    m_PostEffect = new PostEffect(frameprop, "res/shader/gamma.slang", renderAPI, assets);
+    m_PostEffect = new PostEffect(frameprop, "res/shader/game/gamma.slang", renderAPI, assets);
     m_PostEffectData.gamma = 1.0f;
     m_PostEffect->SetEffectData(m_PostEffectData);
 
@@ -48,7 +48,7 @@ GameLayer::GameLayer(Application& app)
     app.m_Window->SetCursorVisible(false);
     m_Camera->ResetMouse();
     m_ResourceManager = std::make_shared<ResourceManager>(assets, renderAPI);
-    m_WorldManager = std::make_shared<WorldManager>(m_ResourceManager);
+    m_WorldManager = std::make_shared<WorldManager>(m_ResourceManager, renderAPI);
 }
 GameLayer::~GameLayer()
 {
@@ -112,7 +112,7 @@ void GameLayer::Update(float elapsed)
 
 void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
 {
-    m_PostEffect->Bind();
+    m_PostEffect->Bind(renderAPI);
     m_WorldManager->Draw(m_Camera->GetCamera(), renderAPI);
     m_Scene->m_SkyBox->Draw(m_Camera->GetCamera(), renderAPI);
     m_PostEffect->Draw(renderAPI);

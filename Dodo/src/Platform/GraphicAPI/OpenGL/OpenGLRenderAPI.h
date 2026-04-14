@@ -36,6 +36,8 @@ namespace Dodo::Platform {
         inline void Begin() const { glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); }
         inline void End() { m_Context.SwapBuffer(); }
 
+        void WaitIdle() const { glFinish(); }
+
         void ImGuiNewFrame() const;
         void ImGuiEndFrame() const;
 
@@ -65,7 +67,38 @@ namespace Dodo::Platform {
         void SetViewport(uint width, uint height);
         void SetViewport(uint width, uint height, uint posX, uint posY);
 
+        inline void BindVertexBuffer(const Ref<VertexBuffer>& vb) { glBindVertexArray(vb->GetVAOID()); }
+        inline void BindIndexBuffer(const Ref<IndexBuffer>& ib)
+        {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib->GetEBOID());
+        }
+
         Ref<Pipeline> CreatePipeline(const PipelineDesc& desc, AssetManager& assets);
+        inline Ref<VertexBuffer> CreateVertexBuffer(const float* v, uint size, const BufferProperties& prop)
+        {
+            return std::make_shared<VertexBuffer>(v, size, prop);
+        }
+        inline Ref<IndexBuffer> CreateIndexBuffer(const uint* i, uint count)
+        {
+            return std::make_shared<IndexBuffer>(i, count);
+        }
+        inline Ref<Texture> CreateTexture(uchar* data, const TextureProperties& prop)
+        {
+            return std::make_shared<Texture>(data, prop);
+        }
+        inline Ref<TextureSampler> CreateSampler(const SamplerProperties& prop)
+        {
+            return std::make_shared<TextureSampler>(prop);
+        }
+        inline Ref<CubeMap> CreateCubeMap(const std::vector<std::string>& paths)
+        {
+            return std::make_shared<CubeMap>(paths);
+        }
+        inline Ref<FrameBuffer> CreateFrameBuffer(const FrameBufferProperties& props)
+        {
+            return std::make_shared<FrameBuffer>(props);
+        }
+        inline void BindFrameBuffer(Ref<FrameBuffer> framebuffer) { framebuffer->Bind(); }
 
         inline const char* GetAPIName() const { return "OpenGL"; }
         int CurrentVRamUsage() const
@@ -92,6 +125,7 @@ namespace Dodo::Platform {
         };
 
         uint m_CurrentPipelineID;
+        Ref<Pipeline> m_CurrentPipeline;
         uint m_FrameUBO = 0;
         uint m_ModelUBO = 0;
         uint m_PushConstantUBO = 0;

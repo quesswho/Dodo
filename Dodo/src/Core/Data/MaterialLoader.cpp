@@ -26,29 +26,49 @@ namespace Dodo {
         Ref<Material> material = std::make_shared<Material>();
         uint numTextures = 0;
 
-        // Diffuse map
-        Ref<Texture> tex = LoadTextureFromMaterial(aiMat, aiTextureType_DIFFUSE, flags, modelDir, assets);
-        if (tex) {
-            material->AddTexture(0, tex);
-            numTextures++;
-        }
+        // Albedo / base colour
+        // Prefer aiTextureType_BASE_COLOR (glTF PBR), fall back to aiTextureType_DIFFUSE (OBJ/FBX)
+        Ref<Texture> tex = LoadTextureFromMaterial(aiMat, aiTextureType_BASE_COLOR, flags, modelDir, assets);
+        if (!tex) tex = LoadTextureFromMaterial(aiMat, aiTextureType_DIFFUSE, flags, modelDir, assets);
+        if (tex) { material->AddTexture(0, tex); numTextures++; }
 
-        // Specular map
-        tex = LoadTextureFromMaterial(aiMat, aiTextureType_SPECULAR, flags, modelDir, assets);
-        if (tex) {
-            material->AddTexture(1, tex);
-            numTextures++;
-        }
+        // Roughness: slot 1, sample .g channel
+        // Prefer separate roughness map; packed ORM (aiTextureType_GLTF_METALLIC_ROUGHNESS) is handled below
+        tex = LoadTextureFromMaterial(aiMat, aiTextureType_DIFFUSE_ROUGHNESS, flags, modelDir, assets);
+        if (tex) { material->AddTexture(1, tex); numTextures++; }
 
-        // Normal map: NORMALS and DISPLACEMENT are the same thing
+        // Normal map: slot 2
         aiTextureType normalType = aiTextureType_NORMALS;
-        aiString str;
-        if (aiMat->GetTexture(normalType, 0, &str) != AI_SUCCESS) normalType = aiTextureType_DISPLACEMENT;
-        tex = LoadTextureFromMaterial(aiMat, normalType, flags, modelDir, assets);
-        if (tex) {
-            material->AddTexture(2, tex);
-            numTextures++;
+        {
+            aiString str;
+            if (aiMat->GetTexture(normalType, 0, &str) != AI_SUCCESS) normalType = aiTextureType_DISPLACEMENT;
         }
+        tex = LoadTextureFromMaterial(aiMat, normalType, flags, modelDir, assets);
+        if (tex) { material->AddTexture(2, tex); numTextures++; }
+
+        // Slot 3: shadow map (bound externally by Renderer3D, not the material)
+
+        // Metallic: slot 5, sample .b channel
+        tex = LoadTextureFromMaterial(aiMat, aiTextureType_METALNESS, flags, modelDir, assets);
+        if (tex) { material->AddTexture(5, tex); numTextures++; }
+
+        // Packed ORM / glTF metallic-roughness: G = roughness, B = metallic
+        // Only load if we don't already have separate maps
+        if (!HasFeature(flags, MaterialFeatures::RoughnessMap) &&
+            !HasFeature(flags, MaterialFeatures::MetallicMap))
+        {
+            tex = LoadTextureFromMaterial(aiMat, aiTextureType_GLTF_METALLIC_ROUGHNESS, flags, modelDir, assets);
+            if (tex) {
+                material->AddTexture(1, tex); // roughness — sample .g in shader
+                material->AddTexture(5, tex); // metallic  — sample .b in shader
+                numTextures++;
+            }
+        }
+
+        // Ambient occlusion: slot 6
+        tex = LoadTextureFromMaterial(aiMat, aiTextureType_AMBIENT_OCCLUSION, flags, modelDir, assets);
+        if (!tex) tex = LoadTextureFromMaterial(aiMat, aiTextureType_LIGHTMAP, flags, modelDir, assets);
+        if (tex) { material->AddTexture(6, tex); numTextures++; }
 
         if (numTextures == 0) {
             aiString name;
@@ -82,14 +102,25 @@ namespace Dodo {
         }
         switch (type) {
         case aiTextureType_DIFFUSE:
+        case aiTextureType_BASE_COLOR:
             features |= MaterialFeatures::AlbedoMap;
-            break;
-        case aiTextureType_SPECULAR:
-            features |= MaterialFeatures::SpecularMap;
             break;
         case aiTextureType_NORMALS:
         case aiTextureType_DISPLACEMENT:
             features |= MaterialFeatures::NormalMap;
+            break;
+        case aiTextureType_DIFFUSE_ROUGHNESS:
+            features |= MaterialFeatures::RoughnessMap;
+            break;
+        case aiTextureType_METALNESS:
+            features |= MaterialFeatures::MetallicMap;
+            break;
+        case aiTextureType_GLTF_METALLIC_ROUGHNESS:
+            features |= MaterialFeatures::MetallicMap | MaterialFeatures::RoughnessMap;
+            break;
+        case aiTextureType_AMBIENT_OCCLUSION:
+        case aiTextureType_LIGHTMAP:
+            features |= MaterialFeatures::AoMap;
             break;
         default:
             break;

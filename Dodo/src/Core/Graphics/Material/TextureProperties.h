@@ -7,7 +7,9 @@ namespace Dodo {
     enum class TextureFormat : uint8_t {
         FORMAT_RED,
         FORMAT_RGB,
-        FORMAT_RGBA
+        FORMAT_RGBA,
+        FORMAT_RGB16F, // 16-bit float RGB, half-precision HDR
+        FORMAT_RGB32F  // 32-bit float RGB, full-precision HDR
     };
 
     struct TextureProperties {

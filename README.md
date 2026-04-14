@@ -4,7 +4,7 @@
 **Dodo** is a multi-platform game engine written in **C++**, built from scratch.
 It features a graphics API abstraction layer with an **OpenGL** backend and a **Vulkan** backend in progress.
 
-The engine features an Entity Component System (ECS), model loading, materials, shadow maps, and a level editor.
+The engine features an Entity Component System (ECS), model loading, PBR materials, shadow maps and a level editor.
 
 ---
 

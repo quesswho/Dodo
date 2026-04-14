@@ -39,12 +39,12 @@ void InspectorPanel::Draw(EditorState& editorState, InspectorState& state)
         if (ImGui::BeginPopupContextWindow("Right-Click Inspector", ImGuiPopupFlags_MouseButtonRight)) {
             if (ImGui::BeginMenu("Add..")) {
                 if (ImGui::BeginMenu("Geometry")) {
-                    if (ImGui::MenuItem("Browse")) {
+                    if (ImGui::MenuItem("Browse..")) {
                         std::filesystem::path path = FileDialog::OpenFile("Open file", "Model\0*.fbx;*.obj\0");
                         if (!path.empty()) {
                             // Replace the component with new model
                             ModelID id = Application::s_Application->m_AssetManager->LoadModel(path.string());
-                            world.GetComponent<ModelComponent>(entityId) = ModelComponent(id, Math::Transformation());
+                            world.AddComponent<ModelComponent>(entityId, ModelComponent(id, Math::Transformation()));
                         }
                     }
                     // TODO: Take list of strings and BuiltinModel enum values from AssetManager for better scalability

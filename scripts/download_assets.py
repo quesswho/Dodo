@@ -50,7 +50,7 @@ def download(name):
     dest = asset["dest"]
 
     if url is None:
-        print(f"[{name}] No URL configured — skipping.")
+        print(f"[{name}] No URL configured, skipping.")
         return
 
     print(f"[{name}] {asset['description']}")

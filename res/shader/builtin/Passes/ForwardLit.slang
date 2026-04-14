@@ -7,14 +7,14 @@
 
 // Metallic/roughness PBR texture set (set 1)
 [[vk::binding(0, 1)]] Texture2D<float4> u_AlbedoMap;
-[[vk::binding(1, 1)]] Texture2D<float4> u_RoughnessMap; // sample .g — works for both ORM-packed and greyscale
+[[vk::binding(1, 1)]] Texture2D<float4> u_RoughnessMap; // sample .g (works for both ORM-packed and greyscale)
 [[vk::binding(2, 1)]] Texture2D<float4> u_NormalMap;
 [[vk::binding(3, 1)]] Texture2D<float>  u_ShadowMap;
 
 // Shared sampler for all material textures and shadow map
 [[vk::binding(4, 1)]] SamplerState u_LinearSampler;
 
-[[vk::binding(5, 1)]] Texture2D<float4> u_MetallicMap; // sample .b — works for both ORM-packed and greyscale
+[[vk::binding(5, 1)]] Texture2D<float4> u_MetallicMap; // sample .b (works for both ORM-packed and greyscale)
 [[vk::binding(6, 1)]] Texture2D<float4> u_AoMap;
 
 [shader("vertex")]
@@ -35,7 +35,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 {
     float4 albedoSample = u_AlbedoMap.Sample(u_LinearSampler, input.texCoord);
 
-    // Early alpha discard — keep threshold near zero so semi-transparent regions reach the blender
+    // Keep threshold near zero so semi-transparent regions reach the blender
     if (albedoSample.a < 0.001f) discard;
 
     // Reconstruct world-space TBN for normal mapping

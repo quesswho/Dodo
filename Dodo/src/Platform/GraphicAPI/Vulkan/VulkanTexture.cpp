@@ -2,6 +2,8 @@
 #include "pch.h"
 #include <vk_mem_alloc.h>
 
+#include "Core/Math/MathFunc.h"
+
 namespace Dodo::Platform {
 
     VulkanTexture::VulkanTexture(uchar* data, const TextureProperties& prop, VkDevice device, VmaAllocator allocator,
@@ -22,6 +24,12 @@ namespace Dodo::Platform {
             return VK_FORMAT_R8G8B8A8_UNORM;
         case TextureFormat::FORMAT_RGBA:
             return VK_FORMAT_R8G8B8A8_UNORM;
+        // FORMAT_RGB16F/32F are expanded to RGBA: the 3-channel float formats have
+        // poor GPU coverage, same rationale as the RGB8 case above
+        case TextureFormat::FORMAT_RGB16F:
+            return VK_FORMAT_R16G16B16A16_SFLOAT;
+        case TextureFormat::FORMAT_RGB32F:
+            return VK_FORMAT_R32G32B32A32_SFLOAT;
         default:
             return VK_FORMAT_R8G8B8A8_UNORM;
         }
@@ -129,6 +137,31 @@ namespace Dodo::Platform {
             }
             uploadData = expanded.data();
             imageSize = (VkDeviceSize)pixelCount * 4;
+        } else if (m_TextureProperties.m_Format == TextureFormat::FORMAT_RGB16F) {
+            // Expand RGB float (32-bit) to RGBA half-float (16-bit): VK_FORMAT_R16G16B16_SFLOAT
+            // has poor GPU coverage so we pad to RGBA, same rationale as the RGB8 case above
+            std::vector<uint16_t> expanded(pixelCount * 4);
+            const float* src = reinterpret_cast<const float*>(data);
+            for (uint32_t i = 0; i < pixelCount; i++) {
+                expanded[i * 4 + 0] = Math::FloatToHalf(src[i * 3 + 0]);
+                expanded[i * 4 + 1] = Math::FloatToHalf(src[i * 3 + 1]);
+                expanded[i * 4 + 2] = Math::FloatToHalf(src[i * 3 + 2]);
+                expanded[i * 4 + 3] = Math::FloatToHalf(1.0f);
+            }
+            uploadData = reinterpret_cast<uchar*>(expanded.data());
+            imageSize = (VkDeviceSize)pixelCount * 4 * sizeof(uint16_t);
+        } else if (m_TextureProperties.m_Format == TextureFormat::FORMAT_RGB32F) {
+            // Expand RGB float to RGBA float: VK_FORMAT_R32G32B32_SFLOAT has poor GPU coverage
+            std::vector<float> expanded(pixelCount * 4);
+            const float* src = reinterpret_cast<const float*>(data);
+            for (uint32_t i = 0; i < pixelCount; i++) {
+                expanded[i * 4 + 0] = src[i * 3 + 0];
+                expanded[i * 4 + 1] = src[i * 3 + 1];
+                expanded[i * 4 + 2] = src[i * 3 + 2];
+                expanded[i * 4 + 3] = 1.0f;
+            }
+            uploadData = reinterpret_cast<uchar*>(expanded.data());
+            imageSize = (VkDeviceSize)pixelCount * 4 * sizeof(float);
         } else if (m_TextureProperties.m_Format == TextureFormat::FORMAT_RED) {
             imageSize = (VkDeviceSize)pixelCount;
         } else {

@@ -65,7 +65,7 @@ namespace Dodo::Platform {
     VulkanPipeline::VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat,
                                    const ShaderAsset& shader, const PipelineDesc& desc,
                                    VkDescriptorSetLayout globalSet0Layout)
-        : m_Device(device)
+        : m_Device(device), m_Desc(desc)
     {
         // Build descriptor set layouts from shader reflection data
         std::map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> setBindings;
@@ -226,7 +226,7 @@ namespace Dodo::Platform {
         VkPipelineDepthStencilStateCreateInfo depthStencil{};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthStencil.depthTestEnable = (desc.depthMode != DepthMode::None) ? VK_TRUE : VK_FALSE;
-        depthStencil.depthWriteEnable = (desc.depthMode != DepthMode::None) ? VK_TRUE : VK_FALSE;
+        depthStencil.depthWriteEnable = (desc.depthMode != DepthMode::None && desc.depthWrite) ? VK_TRUE : VK_FALSE;
         depthStencil.depthCompareOp = ToVkDepthOp(desc.depthMode);
         depthStencil.depthBoundsTestEnable = VK_FALSE;
         depthStencil.stencilTestEnable = desc.stencilTest ? VK_TRUE : VK_FALSE;

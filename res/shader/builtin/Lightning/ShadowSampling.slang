@@ -27,6 +27,10 @@ float shadowCalculationPCF(
     shadowMap.GetDimensions(depthWidth, depthHeight);
     float2 texelSize = 1.0f / float2(depthWidth, depthHeight);
 
+    // No shadow map bound (e.g. no shadow pass), treat as fully lit
+    if (depthWidth == 0 || depthHeight == 0)
+        return 0.0f;
+
     float shadow = 0.0f;
     const int kernelRadius = 1;
 

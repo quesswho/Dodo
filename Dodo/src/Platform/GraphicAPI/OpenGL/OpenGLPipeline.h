@@ -2,8 +2,8 @@
 
 #include <Core/Common.h>
 
-#include "Core/Graphics/Pipeline/PipelineDesc.h"
 #include "Core/Data/ShaderAsset.h"
+#include "Core/Graphics/Pipeline/PipelineDesc.h"
 
 #include <glad/gl.h>
 #include <vector>
@@ -28,5 +28,7 @@ namespace Dodo::Platform {
       public:
         OpenGLPipeline(const PipelineDesc& desc, uint shaderID) : m_ShaderID(shaderID), m_Desc(desc) {}
         ~OpenGLPipeline();
+
+        const PipelineDesc& GetDesc() const { return m_Desc; }
     };
 } // namespace Dodo::Platform

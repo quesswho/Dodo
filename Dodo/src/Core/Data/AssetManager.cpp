@@ -276,6 +276,8 @@ namespace Dodo {
                     ShaderID shaderID = LoadShaderFromPath("res/shader/builtin/Passes/ForwardLit.slang");
                     PipelineDesc desc;
                     desc.shaderID = shaderID;
+                    desc.blendMode = matEntry.blendMode;
+                    desc.depthWrite = (matEntry.blendMode != BlendMode::AlphaBlend);
                     material->SetShader(GetPipeline(CreatePipeline(desc, renderAPI)));
                     material->SetSampler(renderAPI.CreateSampler(SamplerProperties()));
                 }

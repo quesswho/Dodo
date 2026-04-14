@@ -48,7 +48,11 @@ namespace Dodo {
         DescriptorType type;
     };
 
-    enum class PushConstantMemberType { Float, Int, UInt };
+    enum class PushConstantMemberType {
+        Float,
+        Int,
+        UInt
+    };
 
     struct PushConstantMember {
         std::string name;

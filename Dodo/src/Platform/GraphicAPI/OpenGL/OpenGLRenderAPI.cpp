@@ -128,6 +128,8 @@ namespace Dodo::Platform {
             break;
         }
 
+        glDepthMask(pipeline->m_Desc.depthWrite ? GL_TRUE : GL_FALSE);
+
         switch (pipeline->m_Desc.blendMode) {
         case BlendMode::None:
             glDisable(GL_BLEND);
@@ -178,24 +180,40 @@ namespace Dodo::Platform {
             if (loc.offset + loc.elementCount * sizeof(float) > size) continue;
 
             const float* fptr = reinterpret_cast<const float*>(static_cast<const uint8_t*>(data) + loc.offset);
-            const int*   iptr = reinterpret_cast<const int*>  (static_cast<const uint8_t*>(data) + loc.offset);
+            const int* iptr = reinterpret_cast<const int*>(static_cast<const uint8_t*>(data) + loc.offset);
 
             switch (loc.scalarType) {
             case PushConstantMemberType::Float:
                 switch (loc.elementCount) {
-                case 1: glUniform1fv(loc.location, 1, fptr); break;
-                case 2: glUniform2fv(loc.location, 1, fptr); break;
-                case 3: glUniform3fv(loc.location, 1, fptr); break;
-                case 4: glUniform4fv(loc.location, 1, fptr); break;
+                case 1:
+                    glUniform1fv(loc.location, 1, fptr);
+                    break;
+                case 2:
+                    glUniform2fv(loc.location, 1, fptr);
+                    break;
+                case 3:
+                    glUniform3fv(loc.location, 1, fptr);
+                    break;
+                case 4:
+                    glUniform4fv(loc.location, 1, fptr);
+                    break;
                 }
                 break;
             case PushConstantMemberType::Int:
             case PushConstantMemberType::UInt:
                 switch (loc.elementCount) {
-                case 1: glUniform1iv(loc.location, 1, iptr); break;
-                case 2: glUniform2iv(loc.location, 1, iptr); break;
-                case 3: glUniform3iv(loc.location, 1, iptr); break;
-                case 4: glUniform4iv(loc.location, 1, iptr); break;
+                case 1:
+                    glUniform1iv(loc.location, 1, iptr);
+                    break;
+                case 2:
+                    glUniform2iv(loc.location, 1, iptr);
+                    break;
+                case 3:
+                    glUniform3iv(loc.location, 1, iptr);
+                    break;
+                case 4:
+                    glUniform4iv(loc.location, 1, iptr);
+                    break;
                 }
                 break;
             }
@@ -259,10 +277,10 @@ namespace Dodo::Platform {
             for (const auto& member : asset.pushConstant.members) {
                 std::string uniformName = asset.pushConstant.instanceName + "." + member.name;
                 Platform::PushConstantUniformLoc loc{};
-                loc.location     = glGetUniformLocation(program, uniformName.c_str());
-                loc.offset       = member.offset;
+                loc.location = glGetUniformLocation(program, uniformName.c_str());
+                loc.offset = member.offset;
                 loc.elementCount = member.elementCount;
-                loc.scalarType   = member.scalarType;
+                loc.scalarType = member.scalarType;
                 pipeline->m_PushConstantLocs.push_back(loc);
             }
         }

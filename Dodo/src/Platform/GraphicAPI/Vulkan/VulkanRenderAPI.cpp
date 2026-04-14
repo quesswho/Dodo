@@ -78,7 +78,10 @@ namespace Dodo::Platform {
         vkDestroyInstance(m_VkInstance, nullptr);
     }
 
-    void VulkanRenderAPI::WaitIdle() const { vkDeviceWaitIdle(m_Device); }
+    void VulkanRenderAPI::WaitIdle() const
+    {
+        vkDeviceWaitIdle(m_Device);
+    }
 
     /**
      * Initializes the Vulkan instance, picks a physical device, creates a logical device and initializes ImGui if
@@ -1083,8 +1086,8 @@ namespace Dodo::Platform {
 
             if (b.type == DescriptorType::SampledTexture) {
                 // Only use the pending view if it is a 2D view. Never bind a cube view to a Texture2D binding
-                bool hasPending = b.binding < maxTextureSlots && m_PendingImageViews[b.binding] &&
-                                  !m_PendingIsCubeMap[b.binding];
+                bool hasPending =
+                    b.binding < maxTextureSlots && m_PendingImageViews[b.binding] && !m_PendingIsCubeMap[b.binding];
                 VkImageView view = hasPending ? m_PendingImageViews[b.binding] : m_DummyImageView;
                 if (!view) continue;
                 VkDescriptorImageInfo info{};
@@ -1204,8 +1207,7 @@ namespace Dodo::Platform {
 
         auto* vkFB = static_cast<VulkanFrameBuffer*>(framebuffer.get());
 
-        if (m_BoundFrameBuffer && m_BoundFrameBuffer != vkFB)
-            m_BoundFrameBuffer->TransitionToReadable(cmd);
+        if (m_BoundFrameBuffer && m_BoundFrameBuffer != vkFB) m_BoundFrameBuffer->TransitionToReadable(cmd);
 
         vkFB->TransitionToRenderTarget(cmd);
         m_BoundFrameBuffer = vkFB;

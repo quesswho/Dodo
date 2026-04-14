@@ -1,12 +1,22 @@
 add_executable(Game)
 
-add_custom_command(TARGET Game POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:Game>/res"
-    COMMAND ${CMAKE_COMMAND} -E create_symlink
-        "${CMAKE_SOURCE_DIR}/res"
-        "$<TARGET_FILE_DIR:Game>/res"
-    COMMENT "Linking res/ into output directory"
-)
+if(WIN32)
+    add_custom_command(TARGET Game POST_BUILD
+        COMMAND ${CMAKE_COMMAND}
+            "-DLINK_DIR=$<TARGET_FILE_DIR:Game>/res"
+            "-DTARGET_DIR=${CMAKE_SOURCE_DIR}/res"
+            -P "${CMAKE_SOURCE_DIR}/cmake/CreateJunction.cmake"
+        COMMENT "Linking res/ into output directory"
+    )
+else()
+    add_custom_command(TARGET Game POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:Game>/res"
+        COMMAND ${CMAKE_COMMAND} -E create_symlink
+            "${CMAKE_SOURCE_DIR}/res"
+            "$<TARGET_FILE_DIR:Game>/res"
+        COMMENT "Linking res/ into output directory"
+    )
+endif()
 
 
 file(GLOB_RECURSE DODO_CPP_SOURCES

@@ -50,7 +50,9 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 
     float roughness = u_RoughnessMap.Sample(u_LinearSampler, input.texCoord).g;
     float metallic  = u_MetallicMap.Sample(u_LinearSampler, input.texCoord).b;
-    float ao        = u_AoMap.Sample(u_LinearSampler, input.texCoord).r;
+    // Default ao to 1.0 so ambient isn't zeroed out when no AO map is bound
+    float aoSample  = u_AoMap.Sample(u_LinearSampler, input.texCoord).r;
+    float ao        = (aoSample > 0.0f) ? aoSample : 1.0f;
 
     float3 V = normalize(u_CameraPos - input.positionWS);
     float3 L = normalize(-u_LightDir);

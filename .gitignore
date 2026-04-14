@@ -1,4 +1,6 @@
-# Assets
+# Assets (download via scripts/download_assets.py)
+res/sponza/*
+res/san_miguel/*
 DodoEditor/res/san_miguel/*
 !DodoEditor/res/san_miguel/README.txt
 

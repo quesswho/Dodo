@@ -84,7 +84,7 @@ void InspectorPanel::Draw(EditorState& editorState, InspectorState& state)
                 ModelComponent& model = world.GetComponent<ModelComponent>(entityId);
 
                 ImGui::Indent();
-                if (ImGui::Button("Browse")) {
+                if (ImGui::Button("Browse..")) {
                     std::filesystem::path path = FileDialog::OpenFile("Open file", "Model\0*.fbx;*.obj\0");
                     if (!path.empty()) {
                         // Replace the component with new model

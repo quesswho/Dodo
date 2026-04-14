@@ -34,8 +34,8 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 {
     float4 albedoSample = u_AlbedoMap.Sample(u_LinearSampler, input.texCoord);
 
-    // Early alpha discard
-    if (albedoSample.a < 0.1f) discard;
+    // Early alpha discard — keep threshold near zero so semi-transparent regions reach the blender
+    if (albedoSample.a < 0.001f) discard;
 
     // Reconstruct world-space TBN for normal mapping
     float3 N_ws = normalize(input.normalWS);

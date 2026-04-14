@@ -12,12 +12,6 @@ cmake --preset default
 cmake --build --preset debug
 cmake --build --preset release
 
-# Switch backends (default is OpenGL)
-cmake --preset default -DDD_API_OPENGL=OFF -DDD_API_VULKAN=ON
-
-# Enable optional targets
-cmake --preset default -DCOMPILE_EDITOR=ON -DCOMPILE_GAME=ON
-
 # Binaries land in build/bin/{Debug|Release}/
 ```
 
@@ -67,11 +61,11 @@ Shader modules are composed via Slang `#include`. Key shared modules live in `re
 The Vulkan backend is under active development on `feature/vulkan`. OpenGL is the stable baseline.
 
 ## Key Patterns
-- **Comments**: Do not use em dashes in the comments. For documentation, use the /** pattern with aligned * and place it in the header. 
+- **Comments**: NEVER use em dashes (--) in comments or documentation. Use commas, colons, or parentheses instead. For documentation, use the /** pattern with aligned * and place it in the header.
 - **Namespaces**: All engine related code lives in Dodo:: namespace. Prefer putting helper function as private member functions rather than in anonymous namespaces.
 - **Factory via RenderAPI**: All GPU resources (buffers, textures, samplers, pipelines, framebuffers) are created through `RenderAPI` factory methods, never constructed directly.
 - **Material = Pipeline + Textures + Sampler**: A `Material` binds a compiled `Pipeline` to texture slots; `TextureSampler` is separate to match Vulkan's descriptor model.
 - **Async asset loading**: `AssetManager` uses a thread pool; loading Sponza-scale scenes is expected to be async. Don't assume assets are ready synchronously.
-- **Math conventions**: Column-major layout (`DD_MATH_COLUMN_MAJOR`), right-handed coordinate system (`DD_COORDINATE_RIGHT_HANDED`) — set at compile time.
+- **Math conventions**: Column-major layout (`DD_MATH_COLUMN_MAJOR`), right-handed coordinate system (`DD_COORDINATE_RIGHT_HANDED`), set at compile time.
 - **Precompiled header**: `src/pch.h` is included project-wide; add heavy or frequently used headers there.
 - **ImGui**: Frame setup/teardown is managed by `RenderAPI`, not the application layer.

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Graphics/Material/MaterialFeatures.h"
+#include "Core/Graphics/Pipeline/PipelineDesc.h"
 #include "Core/Graphics/RenderAPI.h"
 #include "Core/Graphics/Scene/Model.h"
 
@@ -28,6 +29,7 @@ namespace Dodo {
             struct MaterialEntry {
                 std::vector<TextureEntry> textures;
                 MaterialFeatures features = MaterialFeatures::None;
+                BlendMode blendMode = BlendMode::Opaque;
             };
             struct MeshEntry {
                 std::vector<Vertex> vertices;

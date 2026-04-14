@@ -30,12 +30,18 @@ namespace Dodo {
         // Prefer aiTextureType_BASE_COLOR (glTF PBR), fall back to aiTextureType_DIFFUSE (OBJ/FBX)
         Ref<Texture> tex = LoadTextureFromMaterial(aiMat, aiTextureType_BASE_COLOR, flags, modelDir, assets);
         if (!tex) tex = LoadTextureFromMaterial(aiMat, aiTextureType_DIFFUSE, flags, modelDir, assets);
-        if (tex) { material->AddTexture(0, tex); numTextures++; }
+        if (tex) {
+            material->AddTexture(0, tex);
+            numTextures++;
+        }
 
         // Roughness: slot 1, sample .g channel
         // Prefer separate roughness map; packed ORM (aiTextureType_GLTF_METALLIC_ROUGHNESS) is handled below
         tex = LoadTextureFromMaterial(aiMat, aiTextureType_DIFFUSE_ROUGHNESS, flags, modelDir, assets);
-        if (tex) { material->AddTexture(1, tex); numTextures++; }
+        if (tex) {
+            material->AddTexture(1, tex);
+            numTextures++;
+        }
 
         // Normal map: slot 2
         aiTextureType normalType = aiTextureType_NORMALS;
@@ -44,19 +50,23 @@ namespace Dodo {
             if (aiMat->GetTexture(normalType, 0, &str) != AI_SUCCESS) normalType = aiTextureType_DISPLACEMENT;
         }
         tex = LoadTextureFromMaterial(aiMat, normalType, flags, modelDir, assets);
-        if (tex) { material->AddTexture(2, tex); numTextures++; }
+        if (tex) {
+            material->AddTexture(2, tex);
+            numTextures++;
+        }
 
         // Slot 3: shadow map (bound externally by Renderer3D, not the material)
 
         // Metallic: slot 5, sample .b channel
         tex = LoadTextureFromMaterial(aiMat, aiTextureType_METALNESS, flags, modelDir, assets);
-        if (tex) { material->AddTexture(5, tex); numTextures++; }
+        if (tex) {
+            material->AddTexture(5, tex);
+            numTextures++;
+        }
 
         // Packed ORM / glTF metallic-roughness: G = roughness, B = metallic
         // Only load if we don't already have separate maps
-        if (!HasFeature(flags, MaterialFeatures::RoughnessMap) &&
-            !HasFeature(flags, MaterialFeatures::MetallicMap))
-        {
+        if (!HasFeature(flags, MaterialFeatures::RoughnessMap) && !HasFeature(flags, MaterialFeatures::MetallicMap)) {
             tex = LoadTextureFromMaterial(aiMat, aiTextureType_GLTF_METALLIC_ROUGHNESS, flags, modelDir, assets);
             if (tex) {
                 material->AddTexture(1, tex); // roughness — sample .g in shader
@@ -68,7 +78,10 @@ namespace Dodo {
         // Ambient occlusion: slot 6
         tex = LoadTextureFromMaterial(aiMat, aiTextureType_AMBIENT_OCCLUSION, flags, modelDir, assets);
         if (!tex) tex = LoadTextureFromMaterial(aiMat, aiTextureType_LIGHTMAP, flags, modelDir, assets);
-        if (tex) { material->AddTexture(6, tex); numTextures++; }
+        if (tex) {
+            material->AddTexture(6, tex);
+            numTextures++;
+        }
 
         if (numTextures == 0) {
             aiString name;

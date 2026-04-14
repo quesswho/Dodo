@@ -3,6 +3,7 @@
 
 #include "AssetManager.h"
 
+#include <assimp/GltfMaterial.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -43,9 +44,10 @@ namespace Dodo {
 
             // Roughness: prefer dedicated PBR slot, fall back to specular
             aiString roughnessTmp;
-            aiTextureType roughnessType = (aiMat->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessTmp) == AI_SUCCESS)
-                                              ? aiTextureType_DIFFUSE_ROUGHNESS
-                                              : aiTextureType_SPECULAR;
+            aiTextureType roughnessType =
+                (aiMat->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessTmp) == AI_SUCCESS)
+                    ? aiTextureType_DIFFUSE_ROUGHNESS
+                    : aiTextureType_SPECULAR;
             tryAddSlot(1, roughnessType, MaterialFeatures::RoughnessMap);
 
             // Normal map: NORMALS and DISPLACEMENT are the same thing
@@ -57,6 +59,13 @@ namespace Dodo {
 
             tryAddSlot(5, aiTextureType_METALNESS, MaterialFeatures::MetallicMap);
             tryAddSlot(6, aiTextureType_AMBIENT_OCCLUSION, MaterialFeatures::AoMap);
+
+            aiString alphaMode;
+            if (aiMat->Get(AI_MATKEY_GLTF_ALPHAMODE, alphaMode) == AI_SUCCESS) {
+                if (strcmp(alphaMode.C_Str(), "BLEND") == 0) matEntry.blendMode = BlendMode::AlphaBlend;
+                // "MASK": stays Opaque (shader discards alpha < 0.001, sufficient for binary alpha masks)
+                // "OPAQUE": default, no action needed
+            }
 
             result.materials.push_back(std::move(matEntry));
         }

@@ -1,6 +1,7 @@
 #include "../Common/Uniforms.slang"
 #include "../Common/Material.slang"
 #include "../Common/VertexInterface.slang"
+#include "../Common/TangentSpace.slang"
 #include "../Lightning/ShadowSampling.slang"
 #include "../Lightning/CookTorrance.slang"
 
@@ -38,10 +39,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target
     if (albedoSample.a < 0.001f) discard;
 
     // Reconstruct world-space TBN for normal mapping
-    float3 N_ws = normalize(input.normalWS);
-    float3 T_ws = normalize(input.tangentWS - dot(input.tangentWS, N_ws) * N_ws); // Gram-Schmidt re-ortho
-    float3 B_ws = cross(N_ws, T_ws);
-    float3x3 TBN = float3x3(T_ws, B_ws, N_ws); // rows = T, B, N
+    float3x3 TBN = buildTBN(input.normalWS, input.tangentWS);
 
     // Transform normal from tangent space to world space:
     //   mul(v, M) = v * M  =>  [v.x*T + v.y*B + v.z*N]  (correct tangent-to-world)

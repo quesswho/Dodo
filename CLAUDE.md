@@ -68,6 +68,7 @@ The Vulkan backend is under active development on `feature/vulkan`. OpenGL is th
 
 ## Key Patterns
 
+- **Namespaces**: All engine related code lives in Dodo:: namespace. Prefer putting helper function as private member functions rather than in anonymous namespaces.
 - **Factory via RenderAPI**: All GPU resources (buffers, textures, samplers, pipelines, framebuffers) are created through `RenderAPI` factory methods, never constructed directly.
 - **Material = Pipeline + Textures + Sampler**: A `Material` binds a compiled `Pipeline` to texture slots; `TextureSampler` is separate to match Vulkan's descriptor model.
 - **Async asset loading**: `AssetManager` uses a thread pool; loading Sponza-scale scenes is expected to be async. Don't assume assets are ready synchronously.

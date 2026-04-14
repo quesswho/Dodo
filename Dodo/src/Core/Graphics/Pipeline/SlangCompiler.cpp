@@ -19,7 +19,7 @@ namespace Dodo {
         case slang::BindingType::Sampler:
             return DescriptorType::Sampler;
         case slang::BindingType::CombinedTextureSampler:
-            DD_WARN("Slang: combined texture sampler detected — use separate Texture2D + SamplerState instead");
+            DD_WARN("Slang: combined texture sampler detected, use separate Texture2D + SamplerState instead");
             return DescriptorType::CombinedImageSampler;
         default:
             return DescriptorType::UniformBuffer;
@@ -170,7 +170,7 @@ namespace Dodo {
                             typeLayout->getElementTypeLayout() ? typeLayout->getElementTypeLayout() : typeLayout;
                         for (unsigned f = 0; f < elemLayout->getFieldCount(); ++f) {
                             slang::VariableLayoutReflection* field = elemLayout->getFieldByIndex(f);
-                            // Deduplicate — the same struct may appear in multiple entry points
+                            // Deduplicate: the same struct may appear in multiple entry points
                             bool seen = false;
                             for (auto& m : result.pushConstant.members)
                                 if (m.name == field->getName()) {

@@ -69,8 +69,8 @@ namespace Dodo {
         if (!HasFeature(flags, MaterialFeatures::RoughnessMap) && !HasFeature(flags, MaterialFeatures::MetallicMap)) {
             tex = LoadTextureFromMaterial(aiMat, aiTextureType_GLTF_METALLIC_ROUGHNESS, flags, modelDir, assets);
             if (tex) {
-                material->AddTexture(1, tex); // roughness — sample .g in shader
-                material->AddTexture(5, tex); // metallic  — sample .b in shader
+                material->AddTexture(1, tex); // roughness: sample .g in shader
+                material->AddTexture(5, tex); // metallic: sample .b in shader
                 numTextures++;
             }
         }

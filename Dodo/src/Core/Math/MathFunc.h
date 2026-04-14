@@ -17,14 +17,13 @@ namespace Dodo::Math {
     {
         uint32_t bits;
         memcpy(&bits, &value, sizeof(bits));
-        uint16_t sign     = (bits >> 16) & 0x8000;
-        int32_t  exp      = ((bits >> 23) & 0xFF) - 127 + 15;
+        uint16_t sign = (bits >> 16) & 0x8000;
+        int32_t exp = ((bits >> 23) & 0xFF) - 127 + 15;
         uint32_t mantissa = bits & 0x7FFFFF;
         if (exp <= 0) return sign;
         if (exp >= 31) return sign | 0x7C00;
         return sign | (uint16_t)(exp << 10) | (uint16_t)(mantissa >> 13);
     }
-
 
     static inline constexpr float ToRadians(int degrees)
     {

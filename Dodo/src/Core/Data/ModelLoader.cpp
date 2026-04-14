@@ -17,7 +17,7 @@ namespace Dodo {
             imp.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_PreTransformVertices);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-            DD_WARN("ModelLoader: unable to load '{}'", path);
+            DD_ERR("ModelLoader: unable to load '{}'", path);
             result.failed = true;
             return result;
         }
@@ -40,14 +40,23 @@ namespace Dodo {
             };
 
             tryAddSlot(0, aiTextureType_DIFFUSE, MaterialFeatures::AlbedoMap);
-            tryAddSlot(1, aiTextureType_SPECULAR, MaterialFeatures::SpecularMap);
+
+            // Roughness: prefer dedicated PBR slot, fall back to specular
+            aiString roughnessTmp;
+            aiTextureType roughnessType = (aiMat->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessTmp) == AI_SUCCESS)
+                                              ? aiTextureType_DIFFUSE_ROUGHNESS
+                                              : aiTextureType_SPECULAR;
+            tryAddSlot(1, roughnessType, MaterialFeatures::RoughnessMap);
 
             // Normal map: NORMALS and DISPLACEMENT are the same thing
-            aiString tmp;
-            aiTextureType normalType = (aiMat->GetTexture(aiTextureType_NORMALS, 0, &tmp) == AI_SUCCESS)
+            aiString normalTmp;
+            aiTextureType normalType = (aiMat->GetTexture(aiTextureType_NORMALS, 0, &normalTmp) == AI_SUCCESS)
                                            ? aiTextureType_NORMALS
                                            : aiTextureType_DISPLACEMENT;
             tryAddSlot(2, normalType, MaterialFeatures::NormalMap);
+
+            tryAddSlot(5, aiTextureType_METALNESS, MaterialFeatures::MetallicMap);
+            tryAddSlot(6, aiTextureType_AMBIENT_OCCLUSION, MaterialFeatures::AoMap);
 
             result.materials.push_back(std::move(matEntry));
         }

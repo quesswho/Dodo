@@ -1,35 +1,24 @@
-[[vk::binding(0, 0)]] cbuffer FrameData : register(b0)
-{
-    float4x4 u_Camera;
-    float4x4 u_LightCamera;
-    float3 u_LightDir;
-    float u_FramePadding0;
-    float3 u_CameraPos;
-    float u_FramePadding1;
-};
-[[vk::binding(1, 0)]] cbuffer ModelData : register(b1)
-{
-    float4x4 u_Model;
-    float4x4 u_NormalMatrix;
-};
+// Fallback.slang
+// This shader is used for drawing an error texture when there was no material found for a given mesh.
+#include "Uniforms.slang"
 
 struct VertexInput
 {
     float3 position : POSITION;
-    float2 texcoord : TEXCOORD0;
+    float2 texCoord : TEXCOORD0;
 };
 
 struct VertexOutput
 {
     float4 position : SV_Position;
-    float2 texcoord : TEXCOORD0;
+    float2 texCoord : TEXCOORD0;
 };
 
 [shader("vertex")]
 VertexOutput vertexMain(VertexInput input)
 {
     VertexOutput output;
-    output.texcoord = input.texcoord;
+    output.texCoord = input.texCoord;
     output.position = mul(u_Camera, mul(u_Model, float4(input.position, 1.0f)));
     return output;
 }
@@ -44,6 +33,6 @@ float checker(float2 uv)
 [shader("fragment")]
 float4 fragmentMain(VertexOutput input) : SV_Target
 {
-    float res = lerp(1.0f, 0.0f, checker(input.texcoord));
+    float res = lerp(1.0f, 0.0f, checker(input.texCoord));
     return float4(res, res * 0.1f, res * 0.1f, 1.0f);
 }

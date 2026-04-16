@@ -1,3 +1,4 @@
+// Lights.slang
 interface ILight
 {
     float3 Irradiance(float3 pos);

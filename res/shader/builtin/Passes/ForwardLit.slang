@@ -1,3 +1,4 @@
+// ForwardLit.slang
 #include "../Common/Uniforms.slang"
 #include "../Common/Material.slang"
 #include "../Common/VertexInterface.slang"

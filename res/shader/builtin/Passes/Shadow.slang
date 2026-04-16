@@ -1,3 +1,4 @@
+// Shadow.slang
 #include "../Common/Uniforms.slang"
 
 struct VertexInput

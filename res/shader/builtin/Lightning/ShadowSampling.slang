@@ -1,3 +1,4 @@
+// ShadowSampling.slang
 // PCF shadow sampling with 3x3 kernel
 float shadowCalculationPCF(
     float4 lightFragPos,

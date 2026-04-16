@@ -1,3 +1,4 @@
+// CookTorrance.slang
 // Cook-Torrance BRDF for direct lighting (GGX NDF, Smith geometry, Schlick Fresnel)
 
 static const float PI = 3.14159265359f;

@@ -1,3 +1,4 @@
+// Gamma.slang
 [[vk::binding(0, 1)]] Texture2D<float4> textureMap : register(t0);
 [[vk::binding(1, 1)]] SamplerState textureSampler : register(s0);
 

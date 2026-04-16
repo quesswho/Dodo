@@ -114,7 +114,7 @@ bool Interface::BeginDraw()
             if (ImGui::BeginMenu("New")) {
                 if (ImGui::MenuItem("Scene")) {
                     EditorScene* scene = new EditorScene();
-                    
+
                     // TODO: We are storing skybox is two different places. Needs some architectural changes
                     scene->m_SkyBox = m_EditorState.scene->m_SkyBox;
                     m_EditorState.scene->m_SkyBox = nullptr;

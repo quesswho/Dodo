@@ -7,27 +7,40 @@ namespace Dodo {
 
     TextureData TextureLoader::Load(const std::string& path)
     {
+        stbi_set_flip_vertically_on_load(true);
+        return stbi_is_hdr(path.c_str()) ? LoadHDR(path) : LoadLDR(path);
+    }
+
+    TextureData TextureLoader::LoadHDR(const std::string& path)
+    {
         TextureData result;
         int width, height, channels;
-        stbi_set_flip_vertically_on_load(true);
-
-        if (stbi_is_hdr(path.c_str())) {
-            float* hdrData = stbi_loadf(path.c_str(), &width, &height, &channels, 3);
-            if (!hdrData) {
-                DD_ERR("TextureLoader: could not load HDR '{}'", path);
-                return result;
-            }
-            result.props.m_Width = (uint)width;
-            result.props.m_Height = (uint)height;
-            result.props.m_Format = TextureFormat::FORMAT_RGB16F;
-            size_t byteCount = (size_t)width * height * 3 * sizeof(float);
-            result.pixels.resize(byteCount);
-            memcpy(result.pixels.data(), hdrData, byteCount);
-            stbi_image_free(hdrData);
-            DD_INFO("TextureLoader: finished loading HDR texture to CPU '{}'", path);
+        float* data = stbi_loadf(path.c_str(), &width, &height, &channels, 3);
+        if (!data) {
+            DD_ERR("TextureLoader: could not load HDR '{}'", path);
             return result;
         }
 
+        result.props.m_Width = (uint)width;
+        result.props.m_Height = (uint)height;
+        // The typical industry standard is half float precision.
+        // We might consider adding support for RGBA
+        result.props.m_Format = TextureFormat::FORMAT_RGB16F; 
+
+        
+        const size_t byteCount = (size_t)width * height * 3 * sizeof(float);
+        result.pixels.resize(byteCount);
+        memcpy(result.pixels.data(), data, byteCount);
+        stbi_image_free(data);
+
+        DD_INFO("TextureLoader: finished loading HDR texture to CPU '{}'", path);
+        return result;
+    }
+
+    TextureData TextureLoader::LoadLDR(const std::string& path)
+    {
+        TextureData result;
+        int width, height, channels;
         uchar* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
         if (!data) {
             DD_ERR("TextureLoader: could not load '{}'", path);
@@ -55,6 +68,7 @@ namespace Dodo {
 
         result.pixels.assign(data, data + (size_t)width * height * channels);
         stbi_image_free(data);
+
         DD_INFO("TextureLoader: finished loading texture to CPU '{}'", path);
         return result;
     }

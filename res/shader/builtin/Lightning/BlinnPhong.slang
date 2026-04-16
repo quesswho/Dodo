@@ -1,3 +1,6 @@
+// BlinnPhong.slang
+// Note: This legacy code is not used anymore
+
 float3 evaluateBlinnPhong(float3 albedo, float3 normal, float specular, float shadow, float3 lightDir, float3 viewDir)
 {
     float3 ambient = albedo * 0.1f;

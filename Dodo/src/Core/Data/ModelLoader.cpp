@@ -84,7 +84,11 @@ namespace Dodo {
                 v.m_Position = {aiM->mVertices[j].x, aiM->mVertices[j].y, aiM->mVertices[j].z};
                 v.m_Texcoord = {aiM->mTextureCoords[0][j].x, aiM->mTextureCoords[0][j].y};
                 v.m_Normal = {aiM->mNormals[j].x, aiM->mNormals[j].y, aiM->mNormals[j].z};
-                v.m_Tangent = {aiM->mTangents[j].x, aiM->mTangents[j].y, aiM->mTangents[j].z};
+                // Compute bitangent sign and store in tangent.w since we don't have a separate bitangent attribute. Assimp guarantees tangents and bitangents are orthogonal to normals, so we can use the cross product to determine handedness.
+                aiVector3D crossNT = aiM->mTangents[j] ^ aiM->mNormals[j];
+                float bitangentSign = (crossNT * aiM->mBitangents[j] < 0.0f) ? -1.0f : 1.0f;
+                v.m_Tangent = {aiM->mTangents[j].x, aiM->mTangents[j].y, aiM->mTangents[j].z, bitangentSign};
+                
                 meshEntry.vertices.push_back(v);
             }
 
@@ -111,7 +115,7 @@ namespace Dodo {
             meshes.push_back(std::make_shared<Mesh>(
                 renderAPI.CreateVertexBuffer(
                     (const float*)meshEntry.vertices.data(), (uint)(meshEntry.vertices.size() * sizeof(Vertex)),
-                    BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 3}})),
+                    BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 4}})),
                 renderAPI.CreateIndexBuffer(meshEntry.indices.data(), (uint)meshEntry.indices.size()), mat));
         }
 

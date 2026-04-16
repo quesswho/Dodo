@@ -18,7 +18,7 @@ namespace Dodo {
             Math::Vec3 m_Position;
             Math::Vec2 m_Texcoord;
             Math::Vec3 m_Normal;
-            Math::Vec3 m_Tangent;
+            Math::Vec4 m_Tangent; // xyz = tangent direction, w = bitangent sign (+1 or -1)
         };
 
         struct ModelData {

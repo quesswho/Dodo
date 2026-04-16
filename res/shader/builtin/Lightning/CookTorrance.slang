@@ -4,6 +4,7 @@
 static const float PI = 3.14159265359f;
 
 // Trowbridge-Reitz GGX normal distribution function
+// Models the distribution of microfacet orientations on the surface.
 float DistributionGGX(float3 N, float3 H, float roughness)
 {
     float a  = roughness * roughness;
@@ -35,19 +36,20 @@ float3 FresnelSchlick(float cosTheta, float3 F0)
     return F0 + (1.0f - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f);
 }
 
-// Full Cook-Torrance BRDF evaluation for a single directional light.
-// All vectors must be in the same space (world space recommended).
+// Direct Cook-Torrance contribution from a single light.
+// All vectors must be in world space.
+//   radiance  - light radiance (color, from ILight.Irradiance)
 //   albedo    - linear-space surface color
 //   N         - surface normal (normalized)
 //   V         - view direction (normalized, pointing toward camera)
 //   L         - light direction (normalized, pointing toward light source)
 //   roughness - perceptual roughness [0, 1]
 //   metallic  - metallic factor [0, 1]
-//   ao        - ambient occlusion [0, 1]
-//   shadow    - shadow factor [0 = fully lit, 1 = fully shadowed]
-float3 evaluateCookTorrance(
+//   shadow    - shadow factor (0 = fully lit, 1 = fully shadowed)
+float3 evaluateBRDFDirect(
+    float3 radiance,
     float3 albedo, float3 N, float3 V, float3 L,
-    float roughness, float metallic, float ao, float shadow)
+    float roughness, float metallic, float shadow)
 {
     float3 H = normalize(V + L);
 
@@ -67,11 +69,14 @@ float3 evaluateCookTorrance(
 
     float3 specular = (D * G * F) / max(4.0f * NdotV * NdotL, 0.001f);
 
-    // White unit-intensity directional light; multiply by light colour/intensity here when added
-    float3 Lo = (kD * albedo / PI + specular) * NdotL * (1.0f - shadow);
+    return (kD * albedo / PI + specular) * radiance * NdotL * (1.0f - shadow);
+}
 
-    // Constant ambient term, replace with IBL irradiance map when available
-    float3 ambient = float3(0.1f) * albedo * ao;
-
-    return ambient + Lo;
+// Constant ambient term, placeholder until IBL irradiance map is available.
+// Called once per fragment, outside any per-light loop.
+//   albedo - linear-space surface color
+//   ao     - ambient occlusion [0, 1]
+float3 evaluateAmbient(float3 albedo, float ao)
+{
+    return float3(0.1f) * albedo * ao;
 }

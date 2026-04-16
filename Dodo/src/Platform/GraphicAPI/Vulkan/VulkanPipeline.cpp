@@ -155,18 +155,18 @@ namespace Dodo::Platform {
         //   vec3 position  (offset  0, 12 bytes)
         //   vec2 texcoord  (offset 12,  8 bytes)
         //   vec3 normal    (offset 20, 12 bytes)
-        //   vec3 tangent   (offset 32, 12 bytes)
-        //   stride = 44 bytes
+        //   vec4 tangent   (offset 32, 16 bytes, w = bitangent sign)
+        //   stride = 48 bytes
         VkVertexInputBindingDescription bindingDesc{};
         bindingDesc.binding = 0;
-        bindingDesc.stride = 11 * sizeof(float);
+        bindingDesc.stride = 12 * sizeof(float);
         bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
         VkVertexInputAttributeDescription allAttribs[4] = {};
-        allAttribs[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0};  // position
-        allAttribs[1] = {1, 0, VK_FORMAT_R32G32_SFLOAT, 12};    // texcoord
-        allAttribs[2] = {2, 0, VK_FORMAT_R32G32B32_SFLOAT, 20}; // normal
-        allAttribs[3] = {3, 0, VK_FORMAT_R32G32B32_SFLOAT, 32}; // tangent
+        allAttribs[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT,    0};  // position
+        allAttribs[1] = {1, 0, VK_FORMAT_R32G32_SFLOAT,       12}; // texcoord
+        allAttribs[2] = {2, 0, VK_FORMAT_R32G32B32_SFLOAT,    20}; // normal
+        allAttribs[3] = {3, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 32}; // tangent (w = bitangent sign)
 
         std::vector<VkVertexInputAttributeDescription> attribDescs;
         for (const auto& a : allAttribs) {

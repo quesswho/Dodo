@@ -5,6 +5,7 @@
 #include "../Common/TangentSpace.slang"
 #include "../Lightning/ShadowSampling.slang"
 #include "../Lightning/CookTorrance.slang"
+#include "../Lightning/Lights.slang"
 
 // Metallic/roughness PBR texture set (set 1)
 [[vk::binding(0, 1)]] Texture2D<float4> u_AlbedoMap;
@@ -26,7 +27,7 @@ VertexOutput vertexMain(VertexInput input)
     output.positionSS = mul(u_Camera, float4(output.positionWS, 1.0f));
     output.texCoord   = input.texCoord;
     output.normalWS   = normalize(mul(u_NormalMatrix, float4(input.normal,  0.0f)).xyz);
-    output.tangentWS  = normalize(mul(u_NormalMatrix, float4(input.tangent, 0.0f)).xyz);
+    output.tangentWS  = float4(normalize(mul(u_NormalMatrix, float4(input.tangent.xyz, 0.0f)).xyz), input.tangent.w);
     output.positionLL = mul(u_LightCamera, float4(output.positionWS, 1.0f));
     return output;
 }
@@ -54,11 +55,19 @@ float4 fragmentMain(VertexOutput input) : SV_Target
     float ao        = (aoSample > 0.0f) ? aoSample : 1.0f;
 
     float3 V = normalize(u_CameraPos - input.positionWS);
-    float3 L = normalize(-u_LightDir);
+
+    // Light color hardcoded white until per-light color data is available
+    DirectionalLight dl;
+    dl.m_Color     = float3(1.0f, 1.0f, 0.87f) * 10.0f; // Warm sun color with extra intensity
+    dl.m_Direction = u_LightDir;
+
+    float3 radiance = dl.Irradiance(input.positionWS);
+    float3 L        = normalize(-dl.m_Direction);
 
     float shadow = shadowCalculationPCF(input.positionLL, N, L, u_ShadowMap, u_LinearSampler);
 
-    float3 litColor = evaluateCookTorrance(albedoSample.rgb, N, V, L, roughness, metallic, ao, shadow);
+    float3 Lo      = evaluateBRDFDirect(radiance, albedoSample.rgb, N, V, L, roughness, metallic, shadow);
+    float3 ambient = evaluateAmbient(albedoSample.rgb, ao);
 
-    return float4(litColor, albedoSample.a);
+    return float4(Lo + ambient, albedoSample.a);
 }

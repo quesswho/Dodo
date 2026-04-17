@@ -231,7 +231,16 @@ namespace Dodo {
             }
         }
 
-        // Reflect vertex input locations via Slang entry point reflection.
+        // Reflect vertex inputs (location + component count) via Slang entry point reflection.
+        auto extractVertexInput = [&](slang::VariableLayoutReflection* var) {
+            uint32_t loc = (uint32_t)var->getOffset(SLANG_PARAMETER_CATEGORY_VARYING_INPUT);
+            slang::TypeReflection* type = var->getTypeLayout()->getType();
+            uint32_t count = 1;
+            if (type->getKind() == slang::TypeReflection::Kind::Vector)
+                count = (uint32_t)type->getElementCount();
+            result.vertexInputs.push_back({loc, count});
+        };
+
         for (SlangUInt ep = 0; ep < (SlangUInt)layout->getEntryPointCount(); ++ep) {
             slang::EntryPointReflection* epRefl = layout->getEntryPointByIndex(ep);
             if (!epRefl || epRefl->getStage() != SLANG_STAGE_VERTEX) continue;
@@ -241,14 +250,10 @@ namespace Dodo {
                 slang::TypeLayoutReflection* typeLayout = param->getTypeLayout();
 
                 if (typeLayout->getKind() == slang::TypeReflection::Kind::Struct) {
-                    for (unsigned f = 0; f < typeLayout->getFieldCount(); ++f) {
-                        slang::VariableLayoutReflection* field = typeLayout->getFieldByIndex(f);
-                        result.vertexInputLocations.push_back(
-                            (uint32_t)field->getOffset(SLANG_PARAMETER_CATEGORY_VARYING_INPUT));
-                    }
+                    for (unsigned f = 0; f < typeLayout->getFieldCount(); ++f)
+                        extractVertexInput(typeLayout->getFieldByIndex(f));
                 } else {
-                    result.vertexInputLocations.push_back(
-                        (uint32_t)param->getOffset(SLANG_PARAMETER_CATEGORY_VARYING_INPUT));
+                    extractVertexInput(param);
                 }
             }
             break; // only one vertex entry point expected

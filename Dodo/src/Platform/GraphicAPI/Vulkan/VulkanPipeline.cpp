@@ -151,31 +151,34 @@ namespace Dodo::Platform {
             stages.push_back(stageInfo);
         }
 
-        // Mesh layout
-        //   vec3 position  (offset  0, 12 bytes)
-        //   vec2 texcoord  (offset 12,  8 bytes)
-        //   vec3 normal    (offset 20, 12 bytes)
-        //   vec4 tangent   (offset 32, 16 bytes, w = bitangent sign)
-        //   stride = 48 bytes
-        VkVertexInputBindingDescription bindingDesc{};
-        bindingDesc.binding = 0;
-        bindingDesc.stride = 12 * sizeof(float);
-        bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        // Build vertex input descriptions from shader reflection, sorted by location so offsets
+        // accumulate in declaration order.
+        auto inputs = shader.vertexInputs;
+        std::sort(inputs.begin(), inputs.end(), [](const auto& a, const auto& b) {
+            return a.location < b.location;
+        });
 
-        VkVertexInputAttributeDescription allAttribs[4] = {};
-        allAttribs[0] = {0, 0, VK_FORMAT_R32G32B32_SFLOAT,    0};  // position
-        allAttribs[1] = {1, 0, VK_FORMAT_R32G32_SFLOAT,       12}; // texcoord
-        allAttribs[2] = {2, 0, VK_FORMAT_R32G32B32_SFLOAT,    20}; // normal
-        allAttribs[3] = {3, 0, VK_FORMAT_R32G32B32A32_SFLOAT, 32}; // tangent (w = bitangent sign)
+        static constexpr VkFormat kFloatFormats[] = {
+            VK_FORMAT_UNDEFINED,
+            VK_FORMAT_R32_SFLOAT,
+            VK_FORMAT_R32G32_SFLOAT,
+            VK_FORMAT_R32G32B32_SFLOAT,
+            VK_FORMAT_R32G32B32A32_SFLOAT,
+        };
 
         std::vector<VkVertexInputAttributeDescription> attribDescs;
-        for (const auto& a : allAttribs) {
-            if (shader.vertexInputLocations.empty() ||
-                std::find(shader.vertexInputLocations.begin(), shader.vertexInputLocations.end(), a.location) !=
-                    shader.vertexInputLocations.end()) {
-                attribDescs.push_back(a);
-            }
+        uint32_t offset = 0;
+        for (const auto& vi : inputs) {
+            uint32_t c = vi.componentCount;
+            VkFormat fmt = (c >= 1 && c <= 4) ? kFloatFormats[c] : VK_FORMAT_UNDEFINED;
+            attribDescs.push_back({vi.location, 0, fmt, offset});
+            offset += c * (uint32_t)sizeof(float);
         }
+
+        VkVertexInputBindingDescription bindingDesc{};
+        bindingDesc.binding   = 0;
+        bindingDesc.stride    = offset;
+        bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
         VkPipelineVertexInputStateCreateInfo vertexInput{};
         vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

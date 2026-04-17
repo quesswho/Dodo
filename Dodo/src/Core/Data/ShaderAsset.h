@@ -67,6 +67,11 @@ namespace Dodo {
         bool hasPushConstant = false;
     };
 
+    struct VertexInputAttributeReflection {
+        uint32_t location;
+        uint32_t componentCount; // 1-4, scalar type assumed to be float
+    };
+
     /**
      * Slang shader owning compiled backend specific binaries and reflection data
      */
@@ -76,7 +81,7 @@ namespace Dodo {
 
         std::vector<ShaderStageBinary> stages;
         std::vector<DescriptorBindingReflection> descriptorBindings;
-        std::vector<uint32_t> vertexInputLocations; // Locations consumed by the vertex shader
+        std::vector<VertexInputAttributeReflection> vertexInputs;
         PushConstantReflection pushConstant;
     };
 } // namespace Dodo

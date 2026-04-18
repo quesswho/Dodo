@@ -95,6 +95,7 @@ namespace Dodo::Platform {
         Ref<Texture> CreateTexture(uchar* data, const TextureProperties& prop);
         Ref<TextureSampler> CreateSampler(const SamplerProperties& prop);
         Ref<CubeMap> CreateCubeMap(const std::vector<std::string>& paths);
+        Ref<CubeMap> CreateCubeMapFromEquirectangular(Ref<Texture> equirect, uint faceSize, AssetManager& assets);
         Ref<FrameBuffer> CreateFrameBuffer(const FrameBufferProperties& props);
 
         inline const char* GetAPIName() const { return "Vulkan"; }

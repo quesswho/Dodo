@@ -288,6 +288,102 @@ namespace Dodo::Platform {
         return pipeline;
     }
 
+    Ref<CubeMap> OpenGLRenderAPI::CreateCubeMapFromEquirectangular(Ref<Texture> equirect, uint faceSize,
+                                                                    AssetManager& assets)
+    {
+        // Destination cube texture (RGB16F for HDR)
+        uint cubeTexID;
+        glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &cubeTexID);
+        const int mipLevels = 1 + (int)std::floor(std::log2((double)faceSize));
+        glTextureStorage2D(cubeTexID, mipLevels, GL_RGB16F, (GLsizei)faceSize, (GLsizei)faceSize);
+
+        // Temporary depth renderbuffer and FBO for the capture pass
+        uint rbo, fbo;
+        glGenRenderbuffers(1, &rbo);
+        glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, (GLsizei)faceSize, (GLsizei)faceSize);
+        glGenFramebuffers(1, &fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+        // Pipeline for the equirectangular transform pass
+        ShaderID shaderID =
+            assets.LoadShaderFromPath("res/shader/builtin/Passes/EquirectangularTransform.slang");
+        PipelineDesc desc;
+        desc.shaderID = shaderID;
+        desc.culling = CullMode::None;
+        Ref<Pipeline> pipeline = assets.GetPipeline(assets.CreatePipeline(desc, *this));
+
+        // Unit cube geometry: same layout as the Skybox (positions only, 36 vertices)
+        static const float s_CubeVertices[] = {
+            -1.0f,  1.0f, -1.0f,   -1.0f, -1.0f, -1.0f,    1.0f, -1.0f, -1.0f,
+             1.0f, -1.0f, -1.0f,    1.0f,  1.0f, -1.0f,   -1.0f,  1.0f, -1.0f,
+
+            -1.0f, -1.0f,  1.0f,   -1.0f, -1.0f, -1.0f,   -1.0f,  1.0f, -1.0f,
+            -1.0f,  1.0f, -1.0f,   -1.0f,  1.0f,  1.0f,   -1.0f, -1.0f,  1.0f,
+
+             1.0f, -1.0f, -1.0f,    1.0f, -1.0f,  1.0f,    1.0f,  1.0f,  1.0f,
+             1.0f,  1.0f,  1.0f,    1.0f,  1.0f, -1.0f,    1.0f, -1.0f, -1.0f,
+
+            -1.0f, -1.0f,  1.0f,   -1.0f,  1.0f,  1.0f,    1.0f,  1.0f,  1.0f,
+             1.0f,  1.0f,  1.0f,    1.0f, -1.0f,  1.0f,   -1.0f, -1.0f,  1.0f,
+
+            -1.0f,  1.0f, -1.0f,    1.0f,  1.0f, -1.0f,    1.0f,  1.0f,  1.0f,
+             1.0f,  1.0f,  1.0f,   -1.0f,  1.0f,  1.0f,   -1.0f,  1.0f, -1.0f,
+
+            -1.0f, -1.0f, -1.0f,   -1.0f, -1.0f,  1.0f,    1.0f, -1.0f, -1.0f,
+             1.0f, -1.0f, -1.0f,   -1.0f, -1.0f,  1.0f,    1.0f, -1.0f,  1.0f,
+        };
+        Ref<VertexBuffer> vbo = CreateVertexBuffer(s_CubeVertices, sizeof(s_CubeVertices),
+                                                   BufferProperties({{"POSITION", 3}}));
+
+        Ref<TextureSampler> sampler = CreateSampler(
+            SamplerProperties(SamplerFilter::MIN_MAG_LINEAR, SamplerWrapMode::WRAP_CLAMP_TO_EDGE,
+                              SamplerWrapMode::WRAP_CLAMP_TO_EDGE));
+
+        // 90 degree FOV, square aspect ratio to capture exactly one face
+        Math::Mat4 proj = Math::Mat4::Perspective(90.0f, 1.0f, 0.1f, 10.0f);
+        const Math::Vec3 origin(0.0f, 0.0f, 0.0f);
+        Math::Mat4 captureViews[6] = {
+            Math::Mat4::LookAt(origin, Math::Vec3( 1.0f,  0.0f,  0.0f), Math::Vec3(0.0f, -1.0f,  0.0f)),
+            Math::Mat4::LookAt(origin, Math::Vec3(-1.0f,  0.0f,  0.0f), Math::Vec3(0.0f, -1.0f,  0.0f)),
+            Math::Mat4::LookAt(origin, Math::Vec3( 0.0f,  1.0f,  0.0f), Math::Vec3(0.0f,  0.0f,  1.0f)),
+            Math::Mat4::LookAt(origin, Math::Vec3( 0.0f, -1.0f,  0.0f), Math::Vec3(0.0f,  0.0f, -1.0f)),
+            Math::Mat4::LookAt(origin, Math::Vec3( 0.0f,  0.0f,  1.0f), Math::Vec3(0.0f, -1.0f,  0.0f)),
+            Math::Mat4::LookAt(origin, Math::Vec3( 0.0f,  0.0f, -1.0f), Math::Vec3(0.0f, -1.0f,  0.0f)),
+        };
+
+        // Render each face of the cube into the destination cube texture
+        BindPipeline(pipeline);
+        BindTexture(0, equirect);
+        BindTextureSampler(0, sampler);
+        BindVertexBuffer(vbo);
+        SetDrawData({.model = Math::Mat4(1.0f), .normalMatrix = Math::Mat3(1.0f)});
+
+        for (int i = 0; i < 6; i++) {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                   GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, cubeTexID, 0);
+            glViewport(0, 0, (GLsizei)faceSize, (GLsizei)faceSize);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            Dodo::FrameData fd{};
+            fd.camera = proj * captureViews[i];
+            SetFrameData(fd);
+
+            DrawArray(36);
+        }
+
+        glGenerateTextureMipmap(cubeTexID);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glDeleteFramebuffers(1, &fbo);
+        glDeleteRenderbuffers(1, &rbo);
+
+        SetViewport(m_ViewportWidth, m_ViewportHeight, m_ViewportPosX, m_ViewportPosY);
+
+        return std::make_shared<CubeMap>(cubeTexID);
+    }
+
     void OpenGLRenderAPI::ImGuiNewFrame() const
     {
         ImGui_ImplOpenGL3_NewFrame();

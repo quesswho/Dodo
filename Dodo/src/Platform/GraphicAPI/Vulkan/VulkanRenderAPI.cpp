@@ -1313,6 +1313,13 @@ namespace Dodo::Platform {
         return std::make_shared<VulkanCubeMap>(paths, m_Device, m_VmaAllocator, m_CommandPool, m_GraphicsQueue);
     }
 
+    Ref<CubeMap> VulkanRenderAPI::CreateCubeMapFromEquirectangular(Ref<Texture> equirect, uint faceSize,
+                                                                     AssetManager& assets)
+    {
+        DD_ERR("CreateCubeMapFromEquirectangular is not yet implemented for the Vulkan backend.");
+        return nullptr;
+    }
+
     Ref<FrameBuffer> VulkanRenderAPI::CreateFrameBuffer(const FrameBufferProperties& props)
     {
         return std::make_shared<VulkanFrameBuffer>(props, m_Device, m_VmaAllocator);

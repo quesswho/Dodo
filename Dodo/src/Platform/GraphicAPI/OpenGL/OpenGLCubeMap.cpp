@@ -54,6 +54,8 @@ namespace Dodo::Platform {
         glGenerateTextureMipmap(m_TextureID);
     }
 
+    OpenGLCubeMap::OpenGLCubeMap(uint existingTextureID) : m_TextureID(existingTextureID) {}
+
     OpenGLCubeMap::~OpenGLCubeMap()
     {
         glDeleteTextures(1, &m_TextureID);

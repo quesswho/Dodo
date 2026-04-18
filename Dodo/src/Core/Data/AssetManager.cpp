@@ -266,6 +266,7 @@ namespace Dodo {
 
             // Track which texture in waitingFor corresponds to which material/slot
             size_t texIdx = 0;
+            size_t matIdx = 0;
             for (const auto& matEntry : modelData.materials) {
                 Ref<Material> material = std::make_shared<Material>();
                 for (const auto& texEntry : matEntry.textures) {
@@ -280,8 +281,11 @@ namespace Dodo {
                     desc.depthWrite = (matEntry.blendMode != BlendMode::AlphaBlend);
                     material->SetShader(GetPipeline(CreatePipeline(desc, renderAPI)));
                     material->SetSampler(renderAPI.CreateSampler(SamplerProperties()));
+                } else {
+                    DD_WARN("ModelLoader: Material {} (model ID {}) has no textures, using fallback pipeline", matIdx, it->id);
                 }
                 materials.push_back(std::move(material));
+                matIdx++;
             }
 
             m_Models.emplace(it->id, m_ModelLoader.BuildModel(modelData, materials, renderAPI));

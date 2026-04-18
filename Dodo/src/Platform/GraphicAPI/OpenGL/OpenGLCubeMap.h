@@ -10,6 +10,7 @@ namespace Dodo::Platform {
     class OpenGLCubeMap {
       public:
         OpenGLCubeMap(const std::vector<std::string>& paths);
+        explicit OpenGLCubeMap(uint existingTextureID);
         ~OpenGLCubeMap();
 
         uint GetTextureID() const { return m_TextureID; }

@@ -29,7 +29,7 @@ namespace Dodo {
         for (uint i = 0; i < scene->mNumMaterials; i++) {
             aiMaterial* aiMat = scene->mMaterials[i];
             ModelData::MaterialEntry matEntry;
-
+            
             auto tryAddSlot = [&](int slot, aiTextureType type, MaterialFeatures feature) {
                 aiString str;
                 if (aiMat->GetTexture(type, 0, &str) != AI_SUCCESS || str.length == 0) return;
@@ -109,9 +109,14 @@ namespace Dodo {
         meshes.reserve(data.meshes.size());
 
         for (const auto& meshEntry : data.meshes) {
-            Ref<Material> mat = meshEntry.materialIndex < materials.size() ? materials[meshEntry.materialIndex]
-                                                                           : std::make_shared<Material>();
-
+            // Assimp should cover the out of bounds, but we cover it just in case
+            Ref<Material> mat;
+            if(meshEntry.materialIndex < materials.size()) {
+                mat = materials[meshEntry.materialIndex];
+            } else {
+                mat = std::make_shared<Material>();
+            }
+            
             meshes.push_back(std::make_shared<Mesh>(
                 renderAPI.CreateVertexBuffer(
                     (const float*)meshEntry.vertices.data(), (uint)(meshEntry.vertices.size() * sizeof(Vertex)),

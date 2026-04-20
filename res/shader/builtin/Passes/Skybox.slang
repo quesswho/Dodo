@@ -6,8 +6,7 @@
 
 struct VertexInput
 {
-    float3 position;
-    float3 texCoord;
+    float3 position : POSITION;
 };
 
 // Output from vertex shader

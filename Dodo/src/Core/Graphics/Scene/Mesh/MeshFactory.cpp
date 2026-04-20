@@ -180,7 +180,7 @@ namespace Dodo {
     {
         if (m_ScreenQuadBuffer) return m_ScreenQuadBuffer;
 
-#ifdef DD_OPENGL
+#ifdef DD_API_OPENGL
         // OpenGL framebuffer textures have V=0 at the bottom, so flip V to display correctly
         float vertices[] = {
             -1.0f,  1.0f, 0.0f, 1.0f,

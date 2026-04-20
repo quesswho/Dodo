@@ -273,7 +273,21 @@ namespace Dodo {
                     TextureID texID = it->waitingFor[texIdx++];
                     material->AddTexture(texEntry.slot, m_Textures.at(texID));
                 }
-                if (!matEntry.textures.empty()) {
+                bool hasTextures = !matEntry.textures.empty();
+                bool hasColorFallback = !hasTextures && matEntry.albedoColor.has_value();
+
+                if (hasColorFallback) {
+                    const Math::Vec4& c = *matEntry.albedoColor;
+                    uchar pixels[4] = {
+                        static_cast<uchar>(std::clamp(c.x, 0.0f, 1.0f) * 255.0f),
+                        static_cast<uchar>(std::clamp(c.y, 0.0f, 1.0f) * 255.0f),
+                        static_cast<uchar>(std::clamp(c.z, 0.0f, 1.0f) * 255.0f),
+                        static_cast<uchar>(std::clamp(c.w, 0.0f, 1.0f) * 255.0f),
+                    };
+                    material->AddTexture(0, renderAPI.CreateTexture(pixels, TextureProperties(1, 1, TextureFormat::FORMAT_RGBA)));
+                }
+
+                if (hasTextures || hasColorFallback) {
                     ShaderID shaderID = LoadShaderFromPath("res/shader/builtin/Passes/ForwardLit.slang");
                     PipelineDesc desc;
                     desc.shaderID = shaderID;
@@ -282,7 +296,7 @@ namespace Dodo {
                     material->SetShader(GetPipeline(CreatePipeline(desc, renderAPI)));
                     material->SetSampler(renderAPI.CreateSampler(SamplerProperties()));
                 } else {
-                    DD_WARN("ModelLoader: Material {} (model ID {}) has no textures, using fallback pipeline", matIdx, it->id);
+                    DD_WARN("ModelLoader: Material {} (model ID {}) has no textures or color, using fallback pipeline", matIdx, it->id);
                 }
                 materials.push_back(std::move(material));
                 matIdx++;

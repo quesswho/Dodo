@@ -40,7 +40,23 @@ namespace Dodo {
                 matEntry.textures.push_back({slot, std::move(fullPath)});
             };
 
-            tryAddSlot(0, aiTextureType_DIFFUSE, MaterialFeatures::AlbedoMap);
+            // Albedo: BASE_COLOR (glTF PBR) with fallback to DIFFUSE (OBJ/FBX)
+            {
+                aiString str;
+                aiTextureType albedoType =
+                    (aiMat->GetTexture(aiTextureType_BASE_COLOR, 0, &str) == AI_SUCCESS && str.length > 0)
+                        ? aiTextureType_BASE_COLOR
+                        : aiTextureType_DIFFUSE;
+                tryAddSlot(0, albedoType, MaterialFeatures::AlbedoMap);
+            }
+
+            // If no albedo texture was found, fall back to a solid color from the material
+            if (!HasFeature(matEntry.features, MaterialFeatures::AlbedoMap)) {
+                aiColor4D color(1.0f, 1.0f, 1.0f, 1.0f);
+                if (aiMat->Get(AI_MATKEY_BASE_COLOR, color) != AI_SUCCESS)
+                    aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+                matEntry.albedoColor = {color.r, color.g, color.b, color.a};
+            }
 
             // Roughness: prefer dedicated PBR slot, fall back to specular
             aiString roughnessTmp;
@@ -58,7 +74,58 @@ namespace Dodo {
             tryAddSlot(2, normalType, MaterialFeatures::NormalMap);
 
             tryAddSlot(5, aiTextureType_METALNESS, MaterialFeatures::MetallicMap);
-            tryAddSlot(6, aiTextureType_AMBIENT_OCCLUSION, MaterialFeatures::AoMap);
+
+            // Packed ORM (glTF metallic-roughness): G = roughness, B = metallic. Only use if
+            // separate maps were not found, to avoid double-loading.
+            if (!HasFeature(matEntry.features, MaterialFeatures::RoughnessMap) &&
+                !HasFeature(matEntry.features, MaterialFeatures::MetallicMap)) {
+                aiString ormTmp;
+                if (aiMat->GetTexture(aiTextureType_GLTF_METALLIC_ROUGHNESS, 0, &ormTmp) == AI_SUCCESS &&
+                    ormTmp.length > 0) {
+                    std::string rawPath = ormTmp.C_Str();
+                    std::replace(rawPath.begin(), rawPath.end(), '\\', '/');
+                    std::string fullPath = (modelDir / rawPath).string();
+                    matEntry.features |= MaterialFeatures::RoughnessMap | MaterialFeatures::MetallicMap;
+                    matEntry.textures.push_back({1, fullPath});
+                    matEntry.textures.push_back({5, std::move(fullPath)});
+                }
+            }
+
+            // AO: AMBIENT_OCCLUSION with fallback to LIGHTMAP (some exporters use LIGHTMAP for AO)
+            {
+                aiString aoTmp;
+                aiTextureType aoType =
+                    (aiMat->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoTmp) == AI_SUCCESS && aoTmp.length > 0)
+                        ? aiTextureType_AMBIENT_OCCLUSION
+                        : aiTextureType_LIGHTMAP;
+                tryAddSlot(6, aoType, MaterialFeatures::AoMap);
+            }
+
+            // Warn about any texture types present in the material that we do not handle
+            {
+                static const std::unordered_set<int> s_HandledTypes = {
+                    aiTextureType_NONE,
+                    aiTextureType_DIFFUSE,
+                    aiTextureType_SPECULAR,
+                    aiTextureType_NORMALS,
+                    aiTextureType_DISPLACEMENT,
+                    aiTextureType_LIGHTMAP,
+                    aiTextureType_BASE_COLOR,
+                    aiTextureType_DIFFUSE_ROUGHNESS,
+                    aiTextureType_METALNESS,
+                    aiTextureType_AMBIENT_OCCLUSION,
+                    aiTextureType_GLTF_METALLIC_ROUGHNESS,
+                };
+                const char* matName = aiMat->GetName().C_Str();
+                for (int t = aiTextureType_NONE; t <= AI_TEXTURE_TYPE_MAX; ++t) {
+                    if (s_HandledTypes.count(t)) continue;
+                    uint count = aiMat->GetTextureCount(static_cast<aiTextureType>(t));
+                    if (count > 0) {
+                        DD_WARN("ModelLoader: material '{}' has {} texture(s) of unhandled type '{}' ({}), ignoring",
+                                matName, count, aiTextureTypeToString(static_cast<aiTextureType>(t)), t);
+                    }
+                }
+            }
 
             aiString alphaMode;
             if (aiMat->Get(AI_MATKEY_GLTF_ALPHAMODE, alphaMode) == AI_SUCCESS) {

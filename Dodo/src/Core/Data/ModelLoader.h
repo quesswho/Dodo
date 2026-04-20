@@ -30,6 +30,7 @@ namespace Dodo {
                 std::vector<TextureEntry> textures;
                 MaterialFeatures features = MaterialFeatures::None;
                 BlendMode blendMode = BlendMode::Opaque;
+                std::optional<Math::Vec4> albedoColor; // set when no albedo texture exists
             };
             struct MeshEntry {
                 std::vector<Vertex> vertices;

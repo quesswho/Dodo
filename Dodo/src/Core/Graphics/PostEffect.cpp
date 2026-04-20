@@ -19,17 +19,7 @@ namespace Dodo {
         m_Sampler = renderAPI.CreateSampler(SamplerProperties(
             SamplerFilter::MIN_MAG_LINEAR, SamplerWrapMode::WRAP_CLAMP_TO_EDGE, SamplerWrapMode::WRAP_CLAMP_TO_EDGE));
 
-        float screenQuad[] = {
-            -1.0f, 1.0f,  0.0f, 1.0f, // top left
-            -1.0f, -1.0f, 0.0f, 0.0f, // bottom left
-            1.0f,  -1.0f, 1.0f, 0.0f, // bottom right
-
-            -1.0f, 1.0f,  0.0f, 1.0f, // top left
-            1.0f,  -1.0f, 1.0f, 0.0f, // bottom right
-            1.0f,  1.0f,  1.0f, 1.0f  // top right
-        };
-        m_Vertexbuffer = renderAPI.CreateVertexBuffer(screenQuad, 6 * 4 * sizeof(float),
-                                                      BufferProperties({{"POSITION", 2}, {"TEXCOORD", 2}}));
+        m_Vertexbuffer = assets.GetScreenQuadBuffer(renderAPI);
     }
 
     void PostEffect::Draw(RenderAPI& renderAPI) const

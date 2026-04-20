@@ -142,6 +142,30 @@ namespace Dodo {
         return nullptr;
     }
 
+    CubeMapID AssetManager::LoadCubeMap(const std::vector<std::string>& paths)
+    {
+        CubeMapID id = m_NextCubeMapID++;
+        m_CubeMapStates.emplace(id, AssetState::Loading);
+
+        m_ThreadManager.Task([this, id, paths]() {
+            CubeMapData data = m_CubeMapLoader.Load(paths);
+            std::lock_guard<std::mutex> lock(m_StagingMutex);
+            if (data.faces[0].pixels.empty())
+                m_FailedCubeMapIDs.push_back(id);
+            else
+                m_StagingCubeMaps.push_back({id, std::move(data)});
+        });
+
+        return id;
+    }
+
+    Ref<CubeMap> AssetManager::GetCubeMap(CubeMapID id)
+    {
+        auto it = m_CubeMaps.find(id);
+        if (it != m_CubeMaps.end()) return it->second;
+        return nullptr;
+    }
+
     MaterialID AssetManager::LoadMaterial(const std::string& path)
     {
         auto it = m_MaterialID.find(path);
@@ -202,12 +226,16 @@ namespace Dodo {
     {
         std::vector<PendingTextureUpload> textures;
         std::vector<TextureID> failedTextureIDs;
+        std::vector<PendingCubeMapUpload> cubeMaps;
+        std::vector<CubeMapID> failedCubeMapIDs;
         std::vector<PendingModelUpload> models;
         std::vector<ModelID> failedModels;
         {
             std::lock_guard<std::mutex> lock(m_StagingMutex);
             std::swap(textures, m_StagingTextures);
             std::swap(failedTextureIDs, m_FailedTextureIDs);
+            std::swap(cubeMaps, m_StagingCubeMaps);
+            std::swap(failedCubeMapIDs, m_FailedCubeMapIDs);
             std::swap(models, m_StagingModels);
             std::swap(failedModels, m_FailedModels);
         }
@@ -221,6 +249,17 @@ namespace Dodo {
             Ref<Texture> tex = renderAPI.CreateTexture(pending.data.pixels.data(), pending.data.props);
             m_Textures.emplace(pending.id, std::move(tex));
             m_TextureStates[pending.id] = AssetState::Loaded;
+        }
+
+        for (CubeMapID id : failedCubeMapIDs) {
+            DD_ERR("Async cubemap load failed, ID: {}", id);
+            m_CubeMapStates[id] = AssetState::Failed;
+        }
+
+        for (auto& pending : cubeMaps) {
+            Ref<CubeMap> cubeMap = renderAPI.CreateCubeMap(pending.data);
+            m_CubeMaps.emplace(pending.id, std::move(cubeMap));
+            m_CubeMapStates[pending.id] = AssetState::Loaded;
         }
 
         for (ModelID id : failedModels) {
@@ -358,6 +397,11 @@ namespace Dodo {
             return "";
         }
         return it->second;
+    }
+
+    Ref<VertexBuffer> AssetManager::GetScreenQuadBuffer(RenderAPI& renderAPI)
+    {
+        return m_MeshFactory.GetScreenQuadBuffer(renderAPI);
     }
 
     ShaderAsset AssetManager::SlangSourceToAsset(const SlangSource& source)

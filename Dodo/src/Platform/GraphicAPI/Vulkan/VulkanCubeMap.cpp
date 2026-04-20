@@ -1,50 +1,22 @@
 #include "VulkanCubeMap.h"
 #include "pch.h"
-#include <stb_image.h>
 #include <vk_mem_alloc.h>
 
 namespace Dodo::Platform {
 
-    VulkanCubeMap::VulkanCubeMap(const std::vector<std::string>& paths, VkDevice device, VmaAllocator allocator,
+    VulkanCubeMap::VulkanCubeMap(const CubeMapData& data, VkDevice device, VmaAllocator allocator,
                                  VkCommandPool commandPool, VkQueue queue)
         : m_Device(device), m_Allocator(allocator)
     {
-        // TODO: Let AssetManager handle texture loading
-        if (paths.size() != 6) {
-            DD_ERR("VulkanCubeMap: requires exactly 6 face paths, got {}", paths.size());
+        if (data.faces[0].pixels.empty()) {
+            DD_ERR("VulkanCubeMap: CubeMapData is empty (load failed)");
             return;
         }
 
-        // Load all 6 faces and verify they share the same dimensions
-        int width = 0, height = 0;
-        std::vector<stbi_uc*> faceData(6, nullptr);
-        bool valid = true;
+        const int width = (int)data.faces[0].props.m_Width;
+        const int height = (int)data.faces[0].props.m_Height;
 
-        for (int i = 0; i < 6; i++) {
-            int w, h, channels;
-            faceData[i] = stbi_load(paths[i].c_str(), &w, &h, &channels, STBI_rgb_alpha);
-            if (!faceData[i]) {
-                DD_ERR("VulkanCubeMap: failed to load face {}: {}", i, paths[i]);
-                valid = false;
-                break;
-            }
-            if (i == 0) {
-                width = w;
-                height = h;
-            } else if (w != width || h != height) {
-                DD_ERR("VulkanCubeMap: face {} has different dimensions ({} x {}), expected {} x {}", i, w, h, width,
-                       height);
-                valid = false;
-                break;
-            }
-        }
-
-        if (!valid) {
-            for (auto* p : faceData)
-                stbi_image_free(p);
-            return;
-        }
-
+        // Each face is RGBA (4 bytes per pixel), guaranteed by CubeMapLoader
         VkDeviceSize faceSize = (VkDeviceSize)width * height * 4;
         VkDeviceSize totalSize = faceSize * 6;
 
@@ -65,8 +37,7 @@ namespace Dodo::Platform {
         void* mapped;
         vmaMapMemory(m_Allocator, stagingAlloc, &mapped);
         for (int i = 0; i < 6; i++) {
-            memcpy(static_cast<uint8_t*>(mapped) + i * faceSize, faceData[i], (size_t)faceSize);
-            stbi_image_free(faceData[i]);
+            memcpy(static_cast<uint8_t*>(mapped) + i * faceSize, data.faces[i].pixels.data(), (size_t)faceSize);
         }
         vmaUnmapMemory(m_Allocator, stagingAlloc);
 

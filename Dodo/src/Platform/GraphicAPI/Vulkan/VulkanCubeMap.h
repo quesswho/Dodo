@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include "Core/Data/CubeMapLoader.h"
+
 #include <volk.h>
 
 // Forward-declare VMA types to avoid including vk_mem_alloc.h before VMA_IMPLEMENTATION
@@ -13,7 +13,7 @@ namespace Dodo::Platform {
 
     class VulkanCubeMap {
       public:
-        VulkanCubeMap(const std::vector<std::string>& paths, VkDevice device, VmaAllocator allocator,
+        VulkanCubeMap(const CubeMapData& data, VkDevice device, VmaAllocator allocator,
                       VkCommandPool commandPool, VkQueue queue);
         ~VulkanCubeMap();
 

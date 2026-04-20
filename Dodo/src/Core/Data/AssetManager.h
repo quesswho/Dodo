@@ -4,6 +4,7 @@
 #include <mutex>
 
 #include "AssetTypes.h"
+#include "CubeMapLoader.h"
 #include "Core/Graphics/CubeMap.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
@@ -44,6 +45,9 @@ namespace Dodo {
         TextureID LoadTexture(const std::string& path);
         Ref<Texture> GetTexture(TextureID id);
 
+        CubeMapID LoadCubeMap(const std::vector<std::string>& paths);
+        Ref<CubeMap> GetCubeMap(CubeMapID id); // Returns nullptr if still loading
+
         MaterialID LoadMaterial(const std::string& path);
         Ref<Material> GetMaterial(MaterialID id);
 
@@ -51,6 +55,8 @@ namespace Dodo {
         ModelID GetBuiltinModel(BuiltinModel type);
         Ref<Model> GetModel(ModelID id);
         AssetState GetModelState(ModelID id) const;
+
+        Ref<VertexBuffer> GetScreenQuadBuffer(RenderAPI& renderAPI);
 
         // Uploads all staged CPU data to the GPU. Must be called from the render thread.
         void FlushStagingQueue(RenderAPI& renderAPI);
@@ -69,6 +75,7 @@ namespace Dodo {
         MeshFactory m_MeshFactory;
         SlangCompiler m_SlangCompiler;
         TextureLoader m_TextureLoader;
+        CubeMapLoader m_CubeMapLoader;
 
         std::unordered_map<ShaderID, ShaderAsset> m_Shaders;
         std::unordered_map<std::string, ShaderID> m_ShaderPathLookup;
@@ -80,6 +87,9 @@ namespace Dodo {
         std::unordered_map<TextureID, Ref<Texture>> m_Textures;
         std::unordered_map<std::string, TextureID> m_TexturePathLookup;
         std::unordered_map<TextureID, AssetState> m_TextureStates;
+
+        std::unordered_map<CubeMapID, Ref<CubeMap>> m_CubeMaps;
+        std::unordered_map<CubeMapID, AssetState> m_CubeMapStates;
 
         std::unordered_map<MaterialID, Ref<Material>> m_Materials;
         std::unordered_map<std::string, MaterialID> m_MaterialID;
@@ -95,6 +105,10 @@ namespace Dodo {
             TextureID id;
             TextureData data;
         };
+        struct PendingCubeMapUpload {
+            CubeMapID id;
+            CubeMapData data;
+        };
         // Written by Assimp worker; processed by FlushStagingQueue which dispatches per-texture LoadTexture tasks
         struct PendingModelUpload {
             ModelID id;
@@ -109,6 +123,8 @@ namespace Dodo {
         std::mutex m_StagingMutex;
         std::vector<PendingTextureUpload> m_StagingTextures;
         std::vector<TextureID> m_FailedTextureIDs;
+        std::vector<PendingCubeMapUpload> m_StagingCubeMaps;
+        std::vector<CubeMapID> m_FailedCubeMapIDs;
         std::vector<PendingModelUpload> m_StagingModels;
         std::vector<ModelID> m_FailedModels;
         std::vector<PendingModelAssembly> m_PendingModelAssemblies;
@@ -118,5 +134,6 @@ namespace Dodo {
         MaterialID m_NextMaterialID = 1;
         ModelID m_NextModelID = 1;
         TextureID m_NextTextureID = 1;
+        CubeMapID m_NextCubeMapID = 1;
     };
 } // namespace Dodo

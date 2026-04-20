@@ -27,8 +27,10 @@ namespace Dodo {
           m_Sampler(renderAPI.CreateSampler(SamplerProperties(SamplerFilter::MIN_MAG_MIP_LINEAR,
                                                               SamplerWrapMode::WRAP_CLAMP_TO_EDGE,
                                                               SamplerWrapMode::WRAP_CLAMP_TO_EDGE))),
-          m_CubeMap(renderAPI.CreateCubeMap(paths))
+          m_Assets(assets)
     {
+        m_CubeMapID = assets.LoadCubeMap(paths);
+
         ShaderID id = assets.LoadShaderFromPath("res/shader/builtin/Passes/Skybox.slang");
         PipelineDesc pipelineDesc;
         pipelineDesc.shaderID = id;
@@ -42,6 +44,9 @@ namespace Dodo {
 
     void Skybox::Draw(const Math::FreeCamera& camera, RenderAPI& renderAPI) const
     {
+        Ref<CubeMap> cubeMap = m_Assets.GetCubeMap(m_CubeMapID);
+        if (!cubeMap) return; // Still loading
+
         renderAPI.BindPipeline(m_Shader);
         FrameData skyboxFrame{};
         skyboxFrame.camera = camera.GetProjectionMatrix() * Math::Mat4::RelinquishToMat3(camera.GetViewMatrix());
@@ -49,7 +54,7 @@ namespace Dodo {
             skyboxFrame); // Overrides UBO for skybox. Note a better way would be to have a separate UBO for skybox data
         renderAPI.SetDrawData({.model = Math::Mat4(1.0f), .normalMatrix = Math::Mat3(1.0f)});
         renderAPI.BindTextureSampler(0, m_Sampler);
-        renderAPI.BindCubeMap(0, m_CubeMap);
+        renderAPI.BindCubeMap(0, cubeMap);
         renderAPI.BindVertexBuffer(m_VertexBuffer);
         renderAPI.DrawArray(36);
     }

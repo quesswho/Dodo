@@ -22,9 +22,12 @@ namespace Dodo {
 
         Ref<Mesh> CreateTerrain(const TerrainConfig& config, Ref<Material> material, RenderAPI& renderAPI);
 
+        Ref<VertexBuffer> GetScreenQuadBuffer(RenderAPI& renderAPI);
+
       private:
         const BufferProperties m_BasicProperties;
         Ref<Mesh> m_RectangleMesh = nullptr;
         Ref<Mesh> m_CubeMesh = nullptr;
+        Ref<VertexBuffer> m_ScreenQuadBuffer = nullptr;
     };
 } // namespace Dodo

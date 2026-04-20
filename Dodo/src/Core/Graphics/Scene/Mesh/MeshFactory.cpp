@@ -175,4 +175,35 @@ namespace Dodo {
             renderAPI.CreateVertexBuffer(vertices.data(), vertices.size() * sizeof(float), terrainProps),
             renderAPI.CreateIndexBuffer(indices.data(), indices.size()), material);
     }
+
+    Ref<VertexBuffer> MeshFactory::GetScreenQuadBuffer(RenderAPI& renderAPI)
+    {
+        if (m_ScreenQuadBuffer) return m_ScreenQuadBuffer;
+
+#ifdef DD_OPENGL
+        // OpenGL framebuffer textures have V=0 at the bottom, so flip V to display correctly
+        float vertices[] = {
+            -1.0f,  1.0f, 0.0f, 1.0f,
+            -1.0f, -1.0f, 0.0f, 0.0f,
+             1.0f, -1.0f, 1.0f, 0.0f,
+            -1.0f,  1.0f, 0.0f, 1.0f,
+             1.0f, -1.0f, 1.0f, 0.0f,
+             1.0f,  1.0f, 1.0f, 1.0f
+        };
+#else
+        // Canonical convention (Vulkan): V=0 at the top
+        float vertices[] = {
+            -1.0f,  1.0f, 0.0f, 0.0f,
+            -1.0f, -1.0f, 0.0f, 1.0f,
+             1.0f, -1.0f, 1.0f, 1.0f,
+            -1.0f,  1.0f, 0.0f, 0.0f,
+             1.0f, -1.0f, 1.0f, 1.0f,
+             1.0f,  1.0f, 1.0f, 0.0f
+        };
+#endif
+        m_ScreenQuadBuffer = renderAPI.CreateVertexBuffer(
+            vertices, sizeof(vertices),
+            BufferProperties({{"POSITION", 2}, {"TEXCOORD", 2}}));
+        return m_ScreenQuadBuffer;
+    }
 } // namespace Dodo

@@ -1308,9 +1308,9 @@ namespace Dodo::Platform {
         return std::make_shared<VulkanSampler>(prop, m_Device);
     }
 
-    Ref<CubeMap> VulkanRenderAPI::CreateCubeMap(const std::vector<std::string>& paths)
+    Ref<CubeMap> VulkanRenderAPI::CreateCubeMap(const CubeMapData& data)
     {
-        return std::make_shared<VulkanCubeMap>(paths, m_Device, m_VmaAllocator, m_CommandPool, m_GraphicsQueue);
+        return std::make_shared<VulkanCubeMap>(data, m_Device, m_VmaAllocator, m_CommandPool, m_GraphicsQueue);
     }
 
     Ref<CubeMap> VulkanRenderAPI::CreateCubeMapFromEquirectangular(Ref<Texture> equirect, uint faceSize,

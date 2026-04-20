@@ -7,6 +7,7 @@ namespace Dodo {
     using ShaderID = uint64_t; // Spir-v or GLSL
     using PipelineID = uint64_t;
     using TextureID = uint64_t;
+    using CubeMapID = uint64_t;
     using ModelID = uint64_t;
 
     enum class AssetState {

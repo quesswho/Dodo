@@ -4,51 +4,29 @@
 #include <cmath>
 
 #include <glad/gl.h>
-#include <stb_image.h>
 
 namespace Dodo::Platform {
 
-    OpenGLCubeMap::OpenGLCubeMap(const std::vector<std::string>& paths) : m_TextureID(0)
+    OpenGLCubeMap::OpenGLCubeMap(const CubeMapData& data) : m_TextureID(0)
     {
-        if (paths.size() != 6) {
-            DD_ERR("CubeMap requires exactly 6 faces, got {}", paths.size());
+        if (data.faces[0].pixels.empty()) {
+            DD_ERR("OpenGLCubeMap: CubeMapData is empty (load failed)");
             return;
         }
 
         glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_TextureID);
 
-        for (int i = 0; i < paths.size(); i++) {
-            int channels, width, height;
-            stbi_set_flip_vertically_on_load(false);
-            uchar* data = stbi_load(paths[i].c_str(), &width, &height, &channels, 0);
-            if (!data) {
-                DD_ERR("Could not load cubemap face: {}", paths[i]);
-                return;
-            }
-            GLenum format, internalFormat;
-            switch (channels) {
-            case 3:
-                format = GL_RGB;
-                internalFormat = GL_RGB8;
-                break;
-            case 4:
-                format = GL_RGBA;
-                internalFormat = GL_RGBA8;
-                break;
-            default:
-                DD_ERR("Unsupported channel on face {}: {}", i, paths[i]);
-                stbi_image_free(data);
-                return;
-            }
-            // Allocate storage based on first face
-            if (i == 0) {
-                const int mipLevels = 1 + (int)std::floor(std::log2((double)std::max(width, height)));
-                glTextureStorage2D(m_TextureID, mipLevels, internalFormat, width, height);
-            }
+        const TextureProperties& props = data.faces[0].props;
+        const int width = (int)props.m_Width;
+        const int height = (int)props.m_Height;
+        const int mipLevels = 1 + (int)std::floor(std::log2((double)std::max(width, height)));
 
-            glTextureSubImage3D(m_TextureID, 0, 0, 0, i, width, height, 1, format, GL_UNSIGNED_BYTE, data);
+        // All faces share the same format (RGBA forced by CubeMapLoader)
+        glTextureStorage2D(m_TextureID, mipLevels, GL_RGBA8, width, height);
 
-            stbi_image_free(data);
+        for (int i = 0; i < 6; i++) {
+            glTextureSubImage3D(m_TextureID, 0, 0, 0, i, width, height, 1,
+                                GL_RGBA, GL_UNSIGNED_BYTE, data.faces[i].pixels.data());
         }
 
         glGenerateTextureMipmap(m_TextureID);

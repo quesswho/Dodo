@@ -1,15 +1,13 @@
 #pragma once
 
+#include "Core/Data/CubeMapLoader.h"
 #include "Core/Graphics/Material/TextureProperties.h"
-
-#include <string>
-#include <vector>
 
 namespace Dodo::Platform {
 
     class OpenGLCubeMap {
       public:
-        OpenGLCubeMap(const std::vector<std::string>& paths);
+        OpenGLCubeMap(const CubeMapData& data);
         explicit OpenGLCubeMap(uint existingTextureID);
         ~OpenGLCubeMap();
 

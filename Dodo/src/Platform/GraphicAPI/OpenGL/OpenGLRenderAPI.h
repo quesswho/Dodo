@@ -90,9 +90,9 @@ namespace Dodo::Platform {
         {
             return std::make_shared<TextureSampler>(prop);
         }
-        inline Ref<CubeMap> CreateCubeMap(const std::vector<std::string>& paths)
+        inline Ref<CubeMap> CreateCubeMap(const CubeMapData& data)
         {
-            return std::make_shared<CubeMap>(paths);
+            return std::make_shared<CubeMap>(data);
         }
         Ref<CubeMap> CreateCubeMapFromEquirectangular(Ref<Texture> equirect, uint faceSize, AssetManager& assets);
         inline Ref<FrameBuffer> CreateFrameBuffer(const FrameBufferProperties& props)

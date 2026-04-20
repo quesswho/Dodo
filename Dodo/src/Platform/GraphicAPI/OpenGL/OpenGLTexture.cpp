@@ -50,11 +50,32 @@ namespace Dodo::Platform {
         int mipLevels =
             1 + (int)floor(log2((double)std::max(m_TextureProperties.m_Width, m_TextureProperties.m_Height)));
 
+        size_t bpp = 0;
+        switch (m_TextureProperties.m_Format) {
+        case TextureFormat::FORMAT_RED:    bpp = 1;  break;
+        case TextureFormat::FORMAT_RGB:    bpp = 3;  break;
+        case TextureFormat::FORMAT_RGBA:   bpp = 4;  break;
+        case TextureFormat::FORMAT_RGB16F: bpp = 12; break;
+        case TextureFormat::FORMAT_RGB32F: bpp = 12; break;
+        default: break;
+        }
+        std::vector<uchar> flipped;
+        const uchar* uploadData = data;
+        if (bpp > 0 && data) {
+            const size_t rowSize = (size_t)m_TextureProperties.m_Width * bpp;
+            const uint h = m_TextureProperties.m_Height;
+            flipped.resize(rowSize * h);
+            for (uint row = 0; row < h; row++)
+                memcpy(flipped.data() + row * rowSize,
+                       data + (size_t)(h - 1 - row) * rowSize, rowSize);
+            uploadData = flipped.data();
+        }
+
         glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
         glTextureStorage2D(m_TextureID, mipLevels, internalFormat, m_TextureProperties.m_Width,
                            m_TextureProperties.m_Height);
         glTextureSubImage2D(m_TextureID, 0, 0, 0, m_TextureProperties.m_Width, m_TextureProperties.m_Height, format,
-                            type, data);
+                            type, uploadData);
         glGenerateTextureMipmap(m_TextureID);
     }
 

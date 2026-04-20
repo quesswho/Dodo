@@ -15,9 +15,10 @@ namespace Dodo {
     class Skybox {
       private:
         Ref<VertexBuffer> m_VertexBuffer;
-        Ref<CubeMap> m_CubeMap;
+        CubeMapID m_CubeMapID = 0;
         Ref<TextureSampler> m_Sampler;
         Ref<Pipeline> m_Shader;
+        AssetManager& m_Assets;
 
       public:
         Skybox(std::vector<std::string> paths, AssetManager& assets, RenderAPI& renderAPI);

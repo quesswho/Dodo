@@ -7,7 +7,6 @@ namespace Dodo {
 
     TextureData TextureLoader::Load(const std::string& path)
     {
-        stbi_set_flip_vertically_on_load(true);
         return stbi_is_hdr(path.c_str()) ? LoadHDR(path) : LoadLDR(path);
     }
 

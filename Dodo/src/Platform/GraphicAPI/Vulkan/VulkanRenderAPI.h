@@ -127,7 +127,6 @@ namespace Dodo::Platform {
         RenderInitError InitDescriptors();
         RenderInitError InitImGui();
 
-        void BindPendingSet1(VkCommandBuffer cmd);
 
         bool IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device);
         bool IsDeviceSuitable(PhyisicalDeviceInfo device);
@@ -194,8 +193,6 @@ namespace Dodo::Platform {
         // Application descriptor infrastructure (separate from ImGui pool)
         static constexpr int maxFramesInFlight = 2;
         VkDescriptorPool m_AppDescriptorPool = VK_NULL_HANDLE;
-        VkDescriptorSetLayout m_GlobalSet0Layout = VK_NULL_HANDLE;
-        std::array<VkDescriptorSet, maxFramesInFlight> m_GlobalSet0{};
 
         // GPU-side layout for ModelData cbuffer (float4x4 model + float4x4 normal = 128 bytes)
         struct GPUModelData {
@@ -225,7 +222,6 @@ namespace Dodo::Platform {
         class VulkanPipeline* m_BoundPipelinePtr = nullptr;
         class VulkanFrameBuffer* m_BoundFrameBuffer = nullptr;
         bool m_TexturesDirty = false;
-        VkDescriptorSet m_BoundTextureSet = VK_NULL_HANDLE;
 
         // Frame stuff
         std::array<FrameData, maxFramesInFlight> m_Frames;

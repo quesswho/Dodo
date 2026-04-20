@@ -6,16 +6,26 @@
 
 #include "Core/Graphics/Pipeline/PipelineDesc.h"
 
+#include <array>
 #include <vector>
 
 namespace Dodo::Platform {
+
+    // Handles to the per-frame UBO buffers owned by VulkanRenderAPI.
+    // Passed to each pipeline at creation so it can write its own set-0 descriptors.
+    struct PipelineUBOHandles {
+        static constexpr int maxFrames = 2;
+        VkBuffer frameDataBuffers[maxFrames];
+        VkBuffer modelDataBuffers[maxFrames];
+        uint32_t modelSlotSize; // aligned slot size for dynamic offset
+    };
 
     class VulkanPipeline {
         friend class VulkanRenderAPI;
 
       public:
         VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, const ShaderAsset& shader,
-                       const PipelineDesc& desc, VkDescriptorSetLayout globalSet0Layout = VK_NULL_HANDLE);
+                       const PipelineDesc& desc, const PipelineUBOHandles& ubos);
         ~VulkanPipeline();
 
         VkPipeline GetPipeline() const { return m_Pipeline; }
@@ -25,13 +35,31 @@ namespace Dodo::Platform {
       private:
         static VkDescriptorType ToVkDescriptorType(DescriptorType type);
 
+        // Bind set-0 (FrameData + ModelData) with the per-draw dynamic offset.
+        // No-op if the shader does not declare set-0 bindings.
+        void BindGlobalSet(VkCommandBuffer cmd, uint32_t frameIdx, uint32_t modelDynamicOffset);
+
+        // Allocate, update, and bind set-1 (material textures) from the transient pool.
+        // No-op if the shader does not declare set-1 bindings.
+        void BindMaterialSet(VkCommandBuffer cmd, VkDescriptorPool transientPool, uint32_t frameIdx,
+                             const VkImageView* views, const VkSampler* samplers,
+                             const bool* isCubeMap, const bool* isDepth, int maxSlots,
+                             VkImageView dummyView, VkSampler dummySampler);
+
         VkDevice m_Device;
         PipelineDesc m_Desc;
         VkPipeline m_Pipeline = VK_NULL_HANDLE;
         VkPipelineLayout m_Layout = VK_NULL_HANDLE;
         std::vector<VkDescriptorSetLayout> m_SetLayouts;
         std::vector<DescriptorBindingReflection> m_ShaderBindings;
-        bool m_OwnedSet0 = true; // false when set-0 layout is borrowed from VulkanRenderAPI
+
+        bool m_HasSet0 = false; // shader declares set-0 (FrameData + ModelData UBOs)
+        bool m_HasSet1 = false; // shader declares set-1 (material textures)
+
+        // Per-pipeline, per-frame descriptor sets for set-0.
+        // Valid only when m_HasSet0 is true.
+        VkDescriptorPool m_Set0Pool = VK_NULL_HANDLE;
+        std::array<VkDescriptorSet, PipelineUBOHandles::maxFrames> m_Set0{};
     };
 
 } // namespace Dodo::Platform

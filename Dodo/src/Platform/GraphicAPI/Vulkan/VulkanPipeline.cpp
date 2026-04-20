@@ -64,10 +64,10 @@ namespace Dodo::Platform {
 
     VulkanPipeline::VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat,
                                    const ShaderAsset& shader, const PipelineDesc& desc,
-                                   VkDescriptorSetLayout globalSet0Layout)
+                                   const PipelineUBOHandles& ubos)
         : m_Device(device), m_Desc(desc)
     {
-        // Build descriptor set layouts from shader reflection data
+        // Determine which sets the shader declares via reflection
         std::map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> setBindings;
         for (const auto& b : shader.descriptorBindings) {
             VkDescriptorSetLayoutBinding vkb{};
@@ -79,17 +79,87 @@ namespace Dodo::Platform {
         }
 
         m_ShaderBindings = shader.descriptorBindings;
+        m_HasSet0 = setBindings.count(0) > 0;
+        m_HasSet1 = setBindings.count(1) > 0;
 
         if (!setBindings.empty()) {
             m_SetLayouts.resize(setBindings.rbegin()->first + 1, VK_NULL_HANDLE);
+
             for (auto& [set, bindings] : setBindings) {
-                // Set-0 is owned by VulkanRenderAPI (global UBOs with dynamic binding).
-                // Use the pre-built layout so both sides agree on UNIFORM_BUFFER_DYNAMIC.
-                if (set == 0 && globalSet0Layout != VK_NULL_HANDLE) {
-                    m_SetLayouts[set] = globalSet0Layout;
-                    m_OwnedSet0 = false;
+                if (set == 0) {
+                    // Set-0 layout is always the canonical FrameData (binding 0, UNIFORM_BUFFER)
+                    // + ModelData (binding 1, UNIFORM_BUFFER_DYNAMIC), regardless of what reflection
+                    // emits for the descriptor types. The pipeline owns its own per-frame sets.
+                    VkDescriptorSetLayoutBinding set0Bindings[2]{};
+                    set0Bindings[0].binding = 0;
+                    set0Bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    set0Bindings[0].descriptorCount = 1;
+                    set0Bindings[0].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+                    set0Bindings[1].binding = 1;
+                    set0Bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+                    set0Bindings[1].descriptorCount = 1;
+                    set0Bindings[1].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+
+                    VkDescriptorSetLayoutCreateInfo info{};
+                    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                    info.bindingCount = 2;
+                    info.pBindings = set0Bindings;
+                    vkCreateDescriptorSetLayout(m_Device, &info, nullptr, &m_SetLayouts[0]);
+
+                    // Create a private pool and allocate one descriptor set per frame
+                    VkDescriptorPoolSize poolSizes[2]{};
+                    poolSizes[0] = {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, PipelineUBOHandles::maxFrames};
+                    poolSizes[1] = {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, PipelineUBOHandles::maxFrames};
+                    VkDescriptorPoolCreateInfo poolCI{};
+                    poolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                    poolCI.maxSets = PipelineUBOHandles::maxFrames;
+                    poolCI.poolSizeCount = 2;
+                    poolCI.pPoolSizes = poolSizes;
+                    vkCreateDescriptorPool(m_Device, &poolCI, nullptr, &m_Set0Pool);
+
+                    VkDescriptorSetLayout layouts[PipelineUBOHandles::maxFrames];
+                    for (int i = 0; i < PipelineUBOHandles::maxFrames; i++)
+                        layouts[i] = m_SetLayouts[0];
+
+                    VkDescriptorSetAllocateInfo allocInfo{};
+                    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    allocInfo.descriptorPool = m_Set0Pool;
+                    allocInfo.descriptorSetCount = PipelineUBOHandles::maxFrames;
+                    allocInfo.pSetLayouts = layouts;
+                    vkAllocateDescriptorSets(m_Device, &allocInfo, m_Set0.data());
+
+                    // Point each per-frame set at the corresponding UBO buffers
+                    for (int i = 0; i < PipelineUBOHandles::maxFrames; i++) {
+                        VkDescriptorBufferInfo frameBI{};
+                        frameBI.buffer = ubos.frameDataBuffers[i];
+                        frameBI.offset = 0;
+                        frameBI.range = VK_WHOLE_SIZE;
+
+                        VkDescriptorBufferInfo modelBI{};
+                        modelBI.buffer = ubos.modelDataBuffers[i];
+                        modelBI.offset = 0;
+                        modelBI.range = ubos.modelSlotSize;
+
+                        VkWriteDescriptorSet writes[2]{};
+                        writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        writes[0].dstSet = m_Set0[i];
+                        writes[0].dstBinding = 0;
+                        writes[0].descriptorCount = 1;
+                        writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                        writes[0].pBufferInfo = &frameBI;
+
+                        writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        writes[1].dstSet = m_Set0[i];
+                        writes[1].dstBinding = 1;
+                        writes[1].descriptorCount = 1;
+                        writes[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+                        writes[1].pBufferInfo = &modelBI;
+
+                        vkUpdateDescriptorSets(m_Device, 2, writes, 0, nullptr);
+                    }
                     continue;
                 }
+
                 VkDescriptorSetLayoutCreateInfo info{};
                 info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
                 info.bindingCount = (uint32_t)bindings.size();
@@ -315,10 +385,113 @@ namespace Dodo::Platform {
     {
         vkDestroyPipeline(m_Device, m_Pipeline, nullptr);
         vkDestroyPipelineLayout(m_Device, m_Layout, nullptr);
-        for (size_t i = 0; i < m_SetLayouts.size(); ++i) {
-            // Set-0 may be borrowed from VulkanRenderAPI; only destroy layouts we own.
-            if (i == 0 && !m_OwnedSet0) continue;
-            vkDestroyDescriptorSetLayout(m_Device, m_SetLayouts[i], nullptr);
+        // Destroying the pool frees all sets allocated from it
+        if (m_Set0Pool != VK_NULL_HANDLE)
+            vkDestroyDescriptorPool(m_Device, m_Set0Pool, nullptr);
+        for (VkDescriptorSetLayout layout : m_SetLayouts) {
+            vkDestroyDescriptorSetLayout(m_Device, layout, nullptr);
         }
     }
+
+    void VulkanPipeline::BindGlobalSet(VkCommandBuffer cmd, uint32_t frameIdx, uint32_t modelDynamicOffset)
+    {
+        if (!m_HasSet0) return;
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Layout,
+                                0, 1, &m_Set0[frameIdx], 1, &modelDynamicOffset);
+    }
+
+    void VulkanPipeline::BindMaterialSet(VkCommandBuffer cmd, VkDescriptorPool transientPool, uint32_t frameIdx,
+                                         const VkImageView* views, const VkSampler* samplers,
+                                         const bool* isCubeMap, const bool* isDepth, int maxSlots,
+                                         VkImageView dummyView, VkSampler dummySampler)
+    {
+        if (!m_HasSet1) return;
+        if (m_SetLayouts.size() <= 1 || m_SetLayouts[1] == VK_NULL_HANDLE) return;
+
+        VkDescriptorSet set1 = VK_NULL_HANDLE;
+        VkDescriptorSetAllocateInfo ai{};
+        ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        ai.descriptorPool = transientPool;
+        ai.descriptorSetCount = 1;
+        ai.pSetLayouts = &m_SetLayouts[1];
+        if (vkAllocateDescriptorSets(m_Device, &ai, &set1) != VK_SUCCESS) return;
+
+        std::vector<VkWriteDescriptorSet> writes;
+        std::vector<VkDescriptorImageInfo> imageInfos;
+        imageInfos.reserve(maxSlots);
+
+        VkSampler firstSampler = VK_NULL_HANDLE;
+        for (int s = 0; s < maxSlots && firstSampler == VK_NULL_HANDLE; s++)
+            firstSampler = samplers[s];
+
+        for (const auto& b : m_ShaderBindings) {
+            if (b.set != 1) continue;
+
+            VkWriteDescriptorSet w{};
+            w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            w.dstSet = set1;
+            w.dstBinding = b.binding;
+            w.descriptorCount = 1;
+
+            if (b.type == DescriptorType::SampledTexture) {
+                // Only use the pending view if it is a 2D view (never bind a cube view to a Texture2D binding)
+                bool hasPending = b.binding < (uint32_t)maxSlots && views[b.binding] && !isCubeMap[b.binding];
+                VkImageView view = hasPending ? views[b.binding] : dummyView;
+                if (!view) continue;
+                VkDescriptorImageInfo info{};
+                info.imageView = view;
+                info.imageLayout = (hasPending && isDepth[b.binding])
+                                       ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                                       : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfos.push_back(info);
+                w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                w.pImageInfo = &imageInfos.back();
+                writes.push_back(w);
+            } else if (b.type == DescriptorType::SampledCubeMap) {
+                // Only use the pending view if it is a cube view
+                bool hasPending = b.binding < (uint32_t)maxSlots && views[b.binding] && isCubeMap[b.binding];
+                VkImageView view = hasPending ? views[b.binding] : dummyView;
+                if (!view) continue;
+                VkDescriptorImageInfo info{};
+                info.imageView = view;
+                info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfos.push_back(info);
+                w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                w.pImageInfo = &imageInfos.back();
+                writes.push_back(w);
+            } else if (b.type == DescriptorType::Sampler) {
+                VkSampler sampler = (b.binding < (uint32_t)maxSlots && samplers[b.binding])
+                                        ? samplers[b.binding]
+                                        : (firstSampler ? firstSampler : dummySampler);
+                if (!sampler) continue;
+                VkDescriptorImageInfo info{};
+                info.sampler = sampler;
+                imageInfos.push_back(info);
+                w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+                w.pImageInfo = &imageInfos.back();
+                writes.push_back(w);
+            } else if (b.type == DescriptorType::CombinedImageSampler) {
+                bool hasPendingView = b.binding < (uint32_t)maxSlots && views[b.binding];
+                VkImageView view = hasPendingView ? views[b.binding] : dummyView;
+                VkSampler sampler = (b.binding < (uint32_t)maxSlots && samplers[b.binding])
+                                        ? samplers[b.binding]
+                                        : (firstSampler ? firstSampler : dummySampler);
+                if (!view || !sampler) continue;
+                VkDescriptorImageInfo info{};
+                info.imageView = view;
+                info.imageLayout = (hasPendingView && isDepth[b.binding])
+                                       ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                                       : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                info.sampler = sampler;
+                imageInfos.push_back(info);
+                w.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                w.pImageInfo = &imageInfos.back();
+                writes.push_back(w);
+            }
+        }
+
+        if (!writes.empty()) vkUpdateDescriptorSets(m_Device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Layout, 1, 1, &set1, 0, nullptr);
+    }
+
 } // namespace Dodo::Platform

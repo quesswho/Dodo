@@ -124,43 +124,45 @@ namespace Dodo::Platform {
 
         uchar* uploadData = data;
         VkDeviceSize imageSize;
+        std::vector<uchar> stagingStorage;
 
         if (m_TextureProperties.m_Format == TextureFormat::FORMAT_RGB) {
             // RGB is not a guaranteed optimal-tiling format in Vulkan so we pad to RGBA
-            std::vector<uchar> expanded;
-            expanded.resize(pixelCount * 4);
+            stagingStorage.resize(pixelCount * 4);
             for (uint32_t i = 0; i < pixelCount; i++) {
-                expanded[i * 4 + 0] = data[i * 3 + 0];
-                expanded[i * 4 + 1] = data[i * 3 + 1];
-                expanded[i * 4 + 2] = data[i * 3 + 2];
-                expanded[i * 4 + 3] = 255; // Set alpha to opaque
+                stagingStorage[i * 4 + 0] = data[i * 3 + 0];
+                stagingStorage[i * 4 + 1] = data[i * 3 + 1];
+                stagingStorage[i * 4 + 2] = data[i * 3 + 2];
+                stagingStorage[i * 4 + 3] = 255;
             }
-            uploadData = expanded.data();
+            uploadData = stagingStorage.data();
             imageSize = (VkDeviceSize)pixelCount * 4;
         } else if (m_TextureProperties.m_Format == TextureFormat::FORMAT_RGB16F) {
             // Expand RGB float (32-bit) to RGBA half-float (16-bit): VK_FORMAT_R16G16B16_SFLOAT
             // has poor GPU coverage so we pad to RGBA, same rationale as the RGB8 case above
-            std::vector<uint16_t> expanded(pixelCount * 4);
+            stagingStorage.resize(pixelCount * 4 * sizeof(uint16_t));
+            uint16_t* dst = reinterpret_cast<uint16_t*>(stagingStorage.data());
             const float* src = reinterpret_cast<const float*>(data);
             for (uint32_t i = 0; i < pixelCount; i++) {
-                expanded[i * 4 + 0] = Math::FloatToHalf(src[i * 3 + 0]);
-                expanded[i * 4 + 1] = Math::FloatToHalf(src[i * 3 + 1]);
-                expanded[i * 4 + 2] = Math::FloatToHalf(src[i * 3 + 2]);
-                expanded[i * 4 + 3] = Math::FloatToHalf(1.0f);
+                dst[i * 4 + 0] = Math::FloatToHalf(src[i * 3 + 0]);
+                dst[i * 4 + 1] = Math::FloatToHalf(src[i * 3 + 1]);
+                dst[i * 4 + 2] = Math::FloatToHalf(src[i * 3 + 2]);
+                dst[i * 4 + 3] = Math::FloatToHalf(1.0f);
             }
-            uploadData = reinterpret_cast<uchar*>(expanded.data());
+            uploadData = stagingStorage.data();
             imageSize = (VkDeviceSize)pixelCount * 4 * sizeof(uint16_t);
         } else if (m_TextureProperties.m_Format == TextureFormat::FORMAT_RGB32F) {
             // Expand RGB float to RGBA float: VK_FORMAT_R32G32B32_SFLOAT has poor GPU coverage
-            std::vector<float> expanded(pixelCount * 4);
+            stagingStorage.resize(pixelCount * 4 * sizeof(float));
+            float* dst = reinterpret_cast<float*>(stagingStorage.data());
             const float* src = reinterpret_cast<const float*>(data);
             for (uint32_t i = 0; i < pixelCount; i++) {
-                expanded[i * 4 + 0] = src[i * 3 + 0];
-                expanded[i * 4 + 1] = src[i * 3 + 1];
-                expanded[i * 4 + 2] = src[i * 3 + 2];
-                expanded[i * 4 + 3] = 1.0f;
+                dst[i * 4 + 0] = src[i * 3 + 0];
+                dst[i * 4 + 1] = src[i * 3 + 1];
+                dst[i * 4 + 2] = src[i * 3 + 2];
+                dst[i * 4 + 3] = 1.0f;
             }
-            uploadData = reinterpret_cast<uchar*>(expanded.data());
+            uploadData = stagingStorage.data();
             imageSize = (VkDeviceSize)pixelCount * 4 * sizeof(float);
         } else if (m_TextureProperties.m_Format == TextureFormat::FORMAT_RED) {
             imageSize = (VkDeviceSize)pixelCount;

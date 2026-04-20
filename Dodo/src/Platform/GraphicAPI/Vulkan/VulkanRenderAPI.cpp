@@ -562,13 +562,13 @@ namespace Dodo::Platform {
 
         // --- Per-frame transient pools for set-1 (material textures) ---
         VkDescriptorPoolSize transientSizes[] = {
-            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 64},
-            {VK_DESCRIPTOR_TYPE_SAMPLER, 64},
-            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 64},
+            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, maxDrawsPerFrame * maxTextureSlots},
+            {VK_DESCRIPTOR_TYPE_SAMPLER, maxDrawsPerFrame * maxTextureSlots},
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxDrawsPerFrame * maxTextureSlots},
         };
         VkDescriptorPoolCreateInfo transientCI{};
         transientCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        transientCI.maxSets = 64;
+        transientCI.maxSets = maxDrawsPerFrame;
         transientCI.poolSizeCount = (uint32_t)std::size(transientSizes);
         transientCI.pPoolSizes = transientSizes;
         for (int i = 0; i < maxFramesInFlight; i++) {

@@ -145,7 +145,9 @@ namespace Dodo::Platform {
         createInfo.pApplicationInfo = &appInfo;
 
         // Add portability enumeration flag for platforms that require it (e.g. macOS with MoltenVK)
+        #ifdef DD_MACOS
         createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+        #endif
         // Get required context extensions
         std::vector<const char*> requiredExtensions = GetRequiredExtensions();
 
@@ -1279,7 +1281,10 @@ namespace Dodo::Platform {
 
         extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 
+        // MoltenVK on MacOS requires this extension. The extension is not expected for renderdoc since it does not support MacOS, therefore it most be disabled in that case
+        #ifdef DD_MACOS
         extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+        #endif
 
         return extensions;
     }

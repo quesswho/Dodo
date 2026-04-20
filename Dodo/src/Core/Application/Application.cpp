@@ -81,7 +81,7 @@ namespace Dodo {
         RenderInitError res = m_RenderAPI->Init(m_Window->GetWindowProperties());
 
         if (res.status == RenderInitStatus::Failed) {
-            DD_FATAL("{0}", res.message);
+            DD_FATAL("RenderAPI: {0}", res.message);
         }
 
         m_AssetManager = ddnew AssetManager(*m_RenderAPI, *m_ThreadManager);

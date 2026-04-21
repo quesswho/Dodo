@@ -17,6 +17,7 @@ namespace Dodo {
 
     struct FrameData {
         Math::Mat4 camera;
+        Math::Mat4 skyboxCamera; // P * View with translation stripped, for skybox rendering
         Math::Mat4 lightCamera;
         Math::Vec3 lightDir;
         float pad0; // std140 alignment

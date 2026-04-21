@@ -42,16 +42,12 @@ namespace Dodo {
 
     Skybox::~Skybox() {}
 
-    void Skybox::Draw(const Math::FreeCamera& camera, RenderAPI& renderAPI) const
+    void Skybox::Draw(RenderAPI& renderAPI) const
     {
         Ref<CubeMap> cubeMap = m_Assets.GetCubeMap(m_CubeMapID);
         if (!cubeMap) return; // Still loading
 
         renderAPI.BindPipeline(m_Shader);
-        FrameData skyboxFrame{};
-        skyboxFrame.camera = camera.GetProjectionMatrix() * Math::Mat4::RelinquishToMat3(camera.GetViewMatrix());
-        renderAPI.SetFrameData(
-            skyboxFrame); // Overrides UBO for skybox. Note a better way would be to have a separate UBO for skybox data
         renderAPI.SetDrawData({.model = Math::Mat4(1.0f), .normalMatrix = Math::Mat3(1.0f)});
         renderAPI.BindTextureSampler(0, m_Sampler);
         renderAPI.BindCubeMap(0, cubeMap);

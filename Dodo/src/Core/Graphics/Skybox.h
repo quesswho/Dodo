@@ -24,6 +24,6 @@ namespace Dodo {
         Skybox(std::vector<std::string> paths, AssetManager& assets, RenderAPI& renderAPI);
         ~Skybox();
 
-        void Draw(const Math::FreeCamera& camera, RenderAPI& renderAPI) const;
+        void Draw(RenderAPI& renderAPI) const;
     };
 } // namespace Dodo

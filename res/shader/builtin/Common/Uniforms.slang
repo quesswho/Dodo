@@ -4,6 +4,7 @@
 [[vk::binding(0, 0)]] cbuffer FrameData : register(b0)
 {
     float4x4 u_Camera;
+    float4x4 u_SkyboxCamera;
     float4x4 u_LightCamera;
     float3 u_LightDir;
     float u_FramePadding0;

@@ -23,7 +23,7 @@ VertexOutput vertexMain(VertexInput input)
     VertexOutput output;
     output.positionWS = mul(u_Model, float4(input.position, 1.0f)).xyz;
     output.texCoord = input.position;
-    float4 clipPos = mul(u_Camera, float4(output.positionWS, 1.0f));
+    float4 clipPos = mul(u_SkyboxCamera, float4(output.positionWS, 1.0f));
     output.positionSS = float4(clipPos.xy, clipPos.w, clipPos.w);
     return output;
 }

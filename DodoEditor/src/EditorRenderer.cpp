@@ -5,6 +5,7 @@ void EditorRenderer::RenderEntities(EditorWorld& world, const Math::FreeCamera& 
 {
     FrameData frameData;
     frameData.camera = camera.GetCameraMatrix();
+    frameData.skyboxCamera = camera.GetProjectionMatrix() * Math::Mat4::RelinquishToMat3(camera.GetViewMatrix());
     frameData.cameraPos = camera.GetPosition();
     frameData.lightCamera = lightSystem.m_Directional.m_LightCamera;
     frameData.lightDir = lightSystem.m_Directional.m_Direction;
@@ -36,5 +37,5 @@ void EditorRenderer::DrawScene(EditorScene* scene, const Math::FreeCamera& camer
     // m_Renderer3D.DrawShadowedScene(runtimeScene, camera, renderAPI, assets);
     auto& world = scene->GetWorld();
     RenderEntities(world, camera, scene->m_LightSystem, renderAPI, assets);
-    if (scene->m_SkyBox) scene->m_SkyBox->Draw(camera, renderAPI);
+    if (scene->m_SkyBox) scene->m_SkyBox->Draw(renderAPI);
 }

@@ -26,13 +26,6 @@ namespace Dodo {
     void Renderer3D::RenderEntities(World& world, const Math::FreeCamera& camera, LightSystem& lightSystem,
                                     RenderAPI& renderAPI, AssetManager& assets)
     {
-        FrameData frameData;
-        frameData.camera = camera.GetCameraMatrix();
-        frameData.cameraPos = camera.GetPosition();
-        frameData.lightCamera = lightSystem.m_Directional.m_LightCamera;
-        frameData.lightDir = lightSystem.m_Directional.m_Direction;
-        renderAPI.SetFrameData(frameData); // Uploads frame data to the GPU
-
         auto drawMesh = [&](const ModelComponent& mc, Ref<Mesh> mesh) {
             Ref<Material> mat = mesh->GetMaterial();
             mat->Bind(renderAPI);
@@ -73,20 +66,27 @@ namespace Dodo {
 
     void Renderer3D::DrawScene(Scene* scene, const Math::FreeCamera& camera, RenderAPI& renderAPI, AssetManager& assets)
     {
+        FrameData frameData;
+        frameData.camera = camera.GetCameraMatrix();
+        frameData.skyboxCamera = camera.GetProjectionMatrix() * Math::Mat4::RelinquishToMat3(camera.GetViewMatrix());
+        frameData.cameraPos = camera.GetPosition();
+        frameData.lightCamera = scene->m_LightSystem.m_Directional.m_LightCamera;
+        frameData.lightDir = scene->m_LightSystem.m_Directional.m_Direction;
+        renderAPI.SetFrameData(frameData);
+
         RenderEntities(scene->GetWorld(), camera, scene->m_LightSystem, renderAPI, assets);
-        if (scene->m_SkyBox) scene->m_SkyBox->Draw(camera, renderAPI);
+        if (scene->m_SkyBox) scene->m_SkyBox->Draw(renderAPI);
     }
 
     void Renderer3D::DrawShadowedScene(Scene* scene, const Math::FreeCamera& camera, RenderAPI& renderAPI,
                                        AssetManager& assets)
     {
-        // Draw to shadowmap
-        FrameData frameData;
-        frameData.camera = camera.GetCameraMatrix();
-        frameData.cameraPos = camera.GetPosition();
-        frameData.lightCamera = scene->m_LightSystem.m_Directional.m_LightCamera;
-        frameData.lightDir = scene->m_LightSystem.m_Directional.m_Direction;
-        renderAPI.SetFrameData(frameData);
+        // Upload frame data for shadow pass (OpenGL executes draws immediately, so lightCamera
+        // must be in the UBO before shadow draws are recorded).
+        FrameData shadowFrameData;
+        shadowFrameData.lightCamera = scene->m_LightSystem.m_Directional.m_LightCamera;
+        shadowFrameData.lightDir = scene->m_LightSystem.m_Directional.m_Direction;
+        renderAPI.SetFrameData(shadowFrameData);
 
         // Bind target, shadow pipeline and draw geometry to shadowmap
         m_ShadowMap->Bind(renderAPI);

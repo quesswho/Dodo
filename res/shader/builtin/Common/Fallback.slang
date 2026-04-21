@@ -4,14 +4,14 @@
 
 struct VertexInput
 {
-    float3 position : POSITION;
-    float2 texCoord : TEXCOORD0;
+    float3 position;
+    float2 texCoord;
 };
 
 struct VertexOutput
 {
-    float4 position : SV_Position;
-    float2 texCoord : TEXCOORD0;
+    float4 positionSS : SV_Position;
+    float2 texCoord;
 };
 
 [shader("vertex")]
@@ -19,7 +19,7 @@ VertexOutput vertexMain(VertexInput input)
 {
     VertexOutput output;
     output.texCoord = input.texCoord;
-    output.position = mul(u_Camera, mul(u_Model, float4(input.position, 1.0f)));
+    output.positionSS = mul(u_Camera, mul(u_Model, float4(input.position, 1.0f)));
     return output;
 }
 

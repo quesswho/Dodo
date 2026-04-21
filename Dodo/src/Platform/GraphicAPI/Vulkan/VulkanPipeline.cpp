@@ -237,17 +237,32 @@ namespace Dodo::Platform {
         };
 
         std::vector<VkVertexInputAttributeDescription> attribDescs;
-        uint32_t offset = 0;
-        for (const auto& vi : inputs) {
-            uint32_t c = vi.componentCount;
-            VkFormat fmt = (c >= 1 && c <= 4) ? kFloatFormats[c] : VK_FORMAT_UNDEFINED;
-            attribDescs.push_back({vi.location, 0, fmt, offset});
-            offset += c * (uint32_t)sizeof(float);
+        uint32_t bindingStride = 0;
+
+        if (desc.vertexLayout.m_Stride > 0) {
+            bindingStride = (uint32_t)desc.vertexLayout.m_Stride * (uint32_t)sizeof(float);
+            for (const auto& vi : inputs) {
+                uint32_t c = vi.componentCount;
+                VkFormat fmt = (c >= 1 && c <= 4) ? kFloatFormats[c] : VK_FORMAT_UNDEFINED;
+                uint32_t attrOffset = 0;
+                if (vi.location < (uint32_t)desc.vertexLayout.m_Elements.size())
+                    attrOffset = (uint32_t)desc.vertexLayout.m_Elements[vi.location].m_Offset * (uint32_t)sizeof(float);
+                attribDescs.push_back({vi.location, 0, fmt, attrOffset});
+            }
+        } else {
+            uint32_t offset = 0;
+            for (const auto& vi : inputs) {
+                uint32_t c = vi.componentCount;
+                VkFormat fmt = (c >= 1 && c <= 4) ? kFloatFormats[c] : VK_FORMAT_UNDEFINED;
+                attribDescs.push_back({vi.location, 0, fmt, offset});
+                offset += c * (uint32_t)sizeof(float);
+            }
+            bindingStride = offset;
         }
 
         VkVertexInputBindingDescription bindingDesc{};
         bindingDesc.binding   = 0;
-        bindingDesc.stride    = offset;
+        bindingDesc.stride    = bindingStride;
         bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
         VkPipelineVertexInputStateCreateInfo vertexInput{};

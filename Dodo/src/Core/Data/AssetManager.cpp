@@ -10,7 +10,9 @@ namespace Dodo {
     {
         ShaderAsset fallbackAsset = m_SlangCompiler.CompileFile("res/shader/builtin/Common/Fallback.slang");
         m_Shaders.emplace(0, fallbackAsset);
-        m_Pipelines.emplace(0, m_RenderAPI.CreatePipeline(PipelineDesc{0}, *this));
+        PipelineDesc fallbackDesc;
+        fallbackDesc.vertexLayout = BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 4}});
+        m_Pipelines.emplace(0, m_RenderAPI.CreatePipeline(fallbackDesc, *this));
     }
 
     AssetManager::~AssetManager() {}

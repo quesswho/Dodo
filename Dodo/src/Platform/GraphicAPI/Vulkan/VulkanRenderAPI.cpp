@@ -972,7 +972,6 @@ namespace Dodo::Platform {
         vkCmdBindIndexBuffer(m_Frames[m_CurrentFrame].commandBuffer, ib->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
     }
 
-    void VulkanRenderAPI::DrawIndexed(const Ref<VertexBuffer>& va) {}
     void VulkanRenderAPI::DrawIndices(uint count)
     {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;

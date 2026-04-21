@@ -118,8 +118,9 @@ namespace Dodo::Platform {
                     vkCreateDescriptorPool(m_Device, &poolCI, nullptr, &m_Set0Pool);
 
                     VkDescriptorSetLayout layouts[PipelineUBOHandles::maxFrames];
-                    for (int i = 0; i < PipelineUBOHandles::maxFrames; i++)
+                    for (int i = 0; i < PipelineUBOHandles::maxFrames; i++) {
                         layouts[i] = m_SetLayouts[0];
+                    }
 
                     VkDescriptorSetAllocateInfo allocInfo{};
                     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;

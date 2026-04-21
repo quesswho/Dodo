@@ -80,7 +80,6 @@ namespace Dodo::Platform {
         void PushConstants(const void* data, size_t size);
         void SetFrameData(const Dodo::FrameData& data);
         void SetDrawData(const DrawData& data);
-        void DrawIndexed(const Ref<VertexBuffer>& va);
         void DrawIndices(uint count);
         void DrawArray(uint count);
         void DefaultFrameBuffer();

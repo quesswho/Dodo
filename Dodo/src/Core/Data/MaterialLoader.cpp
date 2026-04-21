@@ -100,7 +100,7 @@ namespace Dodo {
         if (!shader) DD_WARN("Could not create shader");
 
         material->SetShader(shader);
-        material->SetSampler(renderAPI.CreateSampler(SamplerProperties()));
+        material->SetSampler(renderAPI.CreateSampler(SamplerProperties(SamplerFilter::MIN_MAG_MIP_LINEAR)));
 
         return material;
     }

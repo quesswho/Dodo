@@ -289,7 +289,7 @@ namespace Dodo::Platform {
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL; // Polygon rasterization
         rasterizer.lineWidth = 1.0f;
         rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
-        rasterizer.depthClampEnable = VK_FALSE;
+        rasterizer.depthClampEnable = desc.depthOnly ? VK_TRUE : VK_FALSE; // For depth-only pipelines, we might render shadow maps with reversed depth, so clamp instead of discard
         rasterizer.rasterizerDiscardEnable = VK_FALSE;
         rasterizer.depthBiasEnable = VK_FALSE;
 

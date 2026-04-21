@@ -24,6 +24,7 @@ namespace Dodo {
     };
 
     struct SamplerProperties {
+        // TODO: Replace these constructors with a builder pattern
         SamplerProperties()
             : m_Filter(SamplerFilter::MIN_MAG_MIP_LINEAR), m_WrapU(SamplerWrapMode::WRAP_REPEAT),
               m_WrapV(SamplerWrapMode::WRAP_REPEAT), m_BorderColor{1.0f, 0.4f, 0.8f, 0.09f}

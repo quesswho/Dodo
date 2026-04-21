@@ -976,8 +976,6 @@ namespace Dodo::Platform {
     {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
 
-        // Re-bind set-0 with the per-draw dynamic offset for ModelData
-        m_BoundPipelinePtr->BindGlobalSet(cmd, m_CurrentFrame, m_LastModelOffset);
         m_BoundPipelinePtr->BindMaterialSet(cmd, m_TransientPools[m_CurrentFrame], m_CurrentFrame,
                                             m_PendingImageViews, m_PendingSamplers,
                                             m_PendingIsCubeMap, m_PendingIsDepth, maxTextureSlots,

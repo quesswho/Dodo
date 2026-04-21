@@ -4,6 +4,8 @@ res/san_miguel/*
 DodoEditor/res/san_miguel/*
 !DodoEditor/res/san_miguel/README.txt
 
+# Render doc
+*.rdc
 
 # Build results
 [Dd]ebug/

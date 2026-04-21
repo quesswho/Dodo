@@ -225,6 +225,7 @@ namespace Dodo::Platform {
         FrameData uboData;
         uboData.lightCamera = data.lightCamera;
         uboData.camera = data.camera;
+        uboData.skyboxCamera = data.skyboxCamera;
         uboData.lightDir = data.lightDir;
         uboData.pad0 = 0.0f;
         uboData.cameraPos = data.cameraPos;

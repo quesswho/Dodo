@@ -117,12 +117,18 @@ namespace Dodo::Platform {
 
         vkEndCommandBuffer(cmd);
 
+        VkFenceCreateInfo fenceCI{};
+        fenceCI.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        VkFence fence;
+        vkCreateFence(m_Device, &fenceCI, nullptr, &fence);
+
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &cmd;
-        vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(queue);
+        vkQueueSubmit(queue, 1, &submitInfo, fence);
+        vkWaitForFences(m_Device, 1, &fence, VK_TRUE, UINT64_MAX);
+        vkDestroyFence(m_Device, fence, nullptr);
         vkFreeCommandBuffers(m_Device, commandPool, 1, &cmd);
 
         vmaDestroyBuffer(m_Allocator, stagingBuffer, stagingAlloc);

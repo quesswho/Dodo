@@ -70,6 +70,7 @@ namespace Dodo {
         frameData.camera = camera.GetCameraMatrix();
         frameData.skyboxCamera = camera.GetProjectionMatrix() * Math::Mat4::RelinquishToMat3(camera.GetViewMatrix());
         frameData.cameraPos = camera.GetPosition();
+
         frameData.lightCamera = scene->m_LightSystem.m_Directional.m_LightCamera;
         frameData.lightDir = scene->m_LightSystem.m_Directional.m_Direction;
         renderAPI.SetFrameData(frameData);

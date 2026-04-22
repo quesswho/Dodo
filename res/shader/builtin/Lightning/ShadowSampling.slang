@@ -16,7 +16,7 @@ float shadowCalculationPCF(
         return 0.0f;
 
     // Transform to [0,1] range
-    projCoords = projCoords * 0.5f + 0.5f;
+    projCoords.xy = projCoords.xy * 0.5f + 0.5f;
 
     float currentDepth = projCoords.z;
 

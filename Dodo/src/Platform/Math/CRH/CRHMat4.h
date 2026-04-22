@@ -334,35 +334,36 @@ namespace Dodo::Platform {
         static inline const CRHMat4x4<T> Orthographic(float left, float right, float bottom, float top, float zNear,
                                                       float zFar)
         {
-            /*	__												__
-                | 2 / (r-l), 0,			0,			-(r+l)/(r-l) |
-                | 0,		 2 / (t-b), 0,			-(t+b)/(t-b) |
-                | 0,		 0,			-2 / (f-n), -(f+n)/(f-n) |
-                | 0,		 0,			0,			1			 |
-                 --                                              --
-            */
-
-            return CRHMat4x4(2 / (right - left), 0, 0, 0, 0, 2 / (top - bottom), 0, 0, 0, 0, -2 / (zFar - zNear), 0,
+#if defined(DD_DEPTH_ZERO_TO_ONE)
+            return CRHMat4x4(2 / (right - left), 0, 0, 0,
+                             0, 2 / (top - bottom), 0, 0,
+                             0, 0, -1 / (zFar - zNear), 0,
+                             -(right + left) / (right - left), -(top + bottom) / (top - bottom),
+                             -zNear / (zFar - zNear), 1);
+#else
+            return CRHMat4x4(2 / (right - left), 0, 0, 0,
+                             0, 2 / (top - bottom), 0, 0,
+                             0, 0, -2 / (zFar - zNear), 0,
                              -(right + left) / (right - left), -(top + bottom) / (top - bottom),
                              -(zFar + zNear) / (zFar - zNear), 1);
+#endif
         }
 
         // Use degrees
         static inline const CRHMat4x4<T> Perspective(float fov, float aspectratio, float zNear, float zFar)
         {
-
             const float tanHalfFov = tan(Math::ToRadians(fov) / 2);
-
-            /*	__														   __
-                | s,		 0,			0,					        0		|
-                | 0,		 s,			0,					        0		|
-                | 0,		 0,			-f / (f - n),		-1		|
-                | 0,		 0,			-f * n / (f - n), 0		|
-                ��														   ��
-            */
-
-            return CRHMat4x4(1 / (aspectratio * tanHalfFov), 0, 0, 0, 0, 1 / tanHalfFov, 0, 0, 0, 0,
-                             -(zFar + zNear) / (zFar - zNear), -1, 0, 0, -(2 * zFar * zNear) / (zFar - zNear), 0);
+#if defined(DD_DEPTH_ZERO_TO_ONE)
+            return CRHMat4x4(1 / (aspectratio * tanHalfFov), 0, 0, 0,
+                             0, 1 / tanHalfFov, 0, 0,
+                             0, 0, -zFar / (zFar - zNear), -1,
+                             0, 0, -(zFar * zNear) / (zFar - zNear), 0);
+#else
+            return CRHMat4x4(1 / (aspectratio * tanHalfFov), 0, 0, 0,
+                             0, 1 / tanHalfFov, 0, 0,
+                             0, 0, -(zFar + zNear) / (zFar - zNear), -1,
+                             0, 0, -(2 * zFar * zNear) / (zFar - zNear), 0);
+#endif
         }
 
         static inline const CRHMat4x4 LookAt(const Math::Vec3& eye, const Math::Vec3& to, const Math::Vec3& up)

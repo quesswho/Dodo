@@ -34,6 +34,7 @@ namespace Dodo::Platform {
         }
 
         glFrontFace(GL_CCW);
+        glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); // Vulkan style depth range [0, 1]
         glEnable(GL_MULTISAMPLE);
 
         SetViewport(winprop.m_FrameBufferWidth, winprop.m_FrameBufferHeight);

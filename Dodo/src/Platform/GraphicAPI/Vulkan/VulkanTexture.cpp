@@ -170,7 +170,7 @@ namespace Dodo::Platform {
         vmaUnmapMemory(m_Allocator, m_StagingAlloc);
 
         m_MipLevels = 1 + static_cast<uint32_t>(std::floor(std::log2(static_cast<double>(
-            std::max(m_TextureProperties.m_Width, m_TextureProperties.m_Height)))));
+            (std::max)(m_TextureProperties.m_Width, m_TextureProperties.m_Height)))));
 
         // Create device-local VkImage via VMA
         VkImageCreateInfo imageInfo{};
@@ -233,8 +233,8 @@ namespace Dodo::Platform {
             TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                   VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, i - 1, 1);
 
-            int32_t dstW = std::max(1, mipW / 2);
-            int32_t dstH = std::max(1, mipH / 2);
+            int32_t dstW = (std::max)(1, mipW / 2);
+            int32_t dstH = (std::max)(1, mipH / 2);
 
             VkImageBlit blit{};
             blit.srcSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;

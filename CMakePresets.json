@@ -21,6 +21,14 @@
                 "CMAKE_C_COMPILER": "x86_64-w64-mingw32-gcc",
                 "CMAKE_CXX_COMPILER": "x86_64-w64-mingw32-g++"
             }
+        },
+        {
+            "name": "msvc",
+            "generator": "Visual Studio 18 2026",
+            "binaryDir": "${sourceDir}/build-msvc",
+            "cacheVariables": {
+                "CMAKE_COLOR_DIAGNOSTICS": "ON"
+            }
         }
     ],
     "buildPresets": [
@@ -42,6 +50,16 @@
         {
             "name": "release-mingw",
             "configurePreset": "mingw",
+            "configuration": "Release"
+        },
+        {
+            "name": "debug-msvc",
+            "configurePreset": "msvc",
+            "configuration": "Debug"
+        },
+        {
+            "name": "release-msvc",
+            "configurePreset": "msvc",
             "configuration": "Release"
         }
     ]

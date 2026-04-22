@@ -85,7 +85,14 @@ target_compile_definitions(Dodo
     PUBLIC
         DD_MATH_COLUMN_MAJOR
         DD_COORDINATE_RIGHT_HANDED
+        NOMINMAX
     PRIVATE
         $<$<CONFIG:Debug>:DD_DEBUG>
         $<$<CONFIG:Release>:DD_RELEASE>
+)
+
+target_compile_options(Dodo PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/MP>
+    $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
+    $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
 )

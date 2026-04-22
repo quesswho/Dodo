@@ -1,5 +1,9 @@
 add_executable(Sandbox)
 
+set_target_properties(Sandbox PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:Sandbox>"
+)
+
 if(WIN32)
     add_custom_command(TARGET Sandbox POST_BUILD
         COMMAND ${CMAKE_COMMAND}
@@ -46,6 +50,12 @@ target_compile_definitions(Sandbox PRIVATE
         _CRT_SECURE_NO_WARNINGS
         $<$<CONFIG:Debug>:DD_DEBUG>
         $<$<CONFIG:Release>:DD_RELEASE>
+)
+
+target_compile_options(Sandbox PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/MP>
+    $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
+    $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
 )
 
 if (DD_API_WIN32)

@@ -362,9 +362,9 @@ namespace Dodo::Platform {
         uint32_t minCount = swapChainSupport.capabilities.minImageCount;
         uint32_t maxCount = swapChainSupport.capabilities.maxImageCount > 0
                                 ? swapChainSupport.capabilities.maxImageCount
-                                : std::numeric_limits<uint32_t>::max();
+                                : (std::numeric_limits<uint32_t>::max)();
         // We prefer triple buffer, then double buffer
-        uint32_t imageCount = (3 <= maxCount) ? std::max(3u, minCount) : maxCount;
+        uint32_t imageCount = (3 <= maxCount) ? (std::max)(3u, minCount) : maxCount;
 
         VkSwapchainCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -1536,7 +1536,7 @@ namespace Dodo::Platform {
 
     VkExtent2D VulkanRenderAPI::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
     {
-        if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+        if (capabilities.currentExtent.width != (std::numeric_limits<uint32_t>::max)()) {
             return capabilities.currentExtent;
         }
 

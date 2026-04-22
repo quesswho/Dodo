@@ -104,7 +104,7 @@ void GameLayer::Update(float elapsed)
 
     if (gammaChangeSpeed != 0.0f) {
         m_PostEffectData.gamma += gammaChangeSpeed;
-        m_PostEffectData.gamma = std::max(0.1f, std::min(m_PostEffectData.gamma, 5.0f));
+        m_PostEffectData.gamma = (std::max)(0.1f, (std::min)(m_PostEffectData.gamma, 5.0f));
         m_PostEffect->SetEffectData(m_PostEffectData);
     }
 

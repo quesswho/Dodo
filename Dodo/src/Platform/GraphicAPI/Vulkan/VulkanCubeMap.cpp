@@ -5,7 +5,7 @@
 namespace Dodo::Platform {
 
     VulkanCubeMap::VulkanCubeMap(const CubeMapData& data, VkDevice device, VmaAllocator allocator,
-                                 VkCommandPool commandPool, VkQueue queue)
+                                 VkCommandBuffer uploadCmdBuf)
         : m_Device(device), m_Allocator(allocator)
     {
         if (data.faces[0].pixels.empty()) {
@@ -20,7 +20,7 @@ namespace Dodo::Platform {
         VkDeviceSize faceSize = (VkDeviceSize)width * height * 4;
         VkDeviceSize totalSize = faceSize * 6;
 
-        // Create host-visible staging buffer for all 6 faces
+        // Create host-visible staging buffer for all 6 faces (kept alive until FinalizeUpload)
         VkBufferCreateInfo stagingCI{};
         stagingCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         stagingCI.size = totalSize;
@@ -30,16 +30,14 @@ namespace Dodo::Platform {
         VmaAllocationCreateInfo stagingAllocCI{};
         stagingAllocCI.usage = VMA_MEMORY_USAGE_CPU_ONLY;
 
-        VkBuffer stagingBuffer;
-        VmaAllocation stagingAlloc;
-        vmaCreateBuffer(m_Allocator, &stagingCI, &stagingAllocCI, &stagingBuffer, &stagingAlloc, nullptr);
+        vmaCreateBuffer(m_Allocator, &stagingCI, &stagingAllocCI, &m_StagingBuffer, &m_StagingAlloc, nullptr);
 
         void* mapped;
-        vmaMapMemory(m_Allocator, stagingAlloc, &mapped);
+        vmaMapMemory(m_Allocator, m_StagingAlloc, &mapped);
         for (int i = 0; i < 6; i++) {
             memcpy(static_cast<uint8_t*>(mapped) + i * faceSize, data.faces[i].pixels.data(), (size_t)faceSize);
         }
-        vmaUnmapMemory(m_Allocator, stagingAlloc);
+        vmaUnmapMemory(m_Allocator, m_StagingAlloc);
 
         // Create device-local VkImage (cube-compatible, 6 array layers)
         VkImageCreateInfo imageCI{};
@@ -61,22 +59,8 @@ namespace Dodo::Platform {
 
         vmaCreateImage(m_Allocator, &imageCI, &imageAllocCI, &m_Image, &m_Allocation, nullptr);
 
-        // One-time command buffer: transition → copy 6 faces → transition to shader read
-        VkCommandBufferAllocateInfo cbAllocInfo{};
-        cbAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        cbAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        cbAllocInfo.commandPool = commandPool;
-        cbAllocInfo.commandBufferCount = 1;
-
-        VkCommandBuffer cmd;
-        vkAllocateCommandBuffers(m_Device, &cbAllocInfo, &cmd);
-
-        VkCommandBufferBeginInfo beginInfo{};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        vkBeginCommandBuffer(cmd, &beginInfo);
-
-        // Transition all 6 layers: UNDEFINED → TRANSFER_DST
+        // Record upload commands into the shared upload command buffer.
+        // Transition all 6 layers: UNDEFINED -> TRANSFER_DST
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -91,8 +75,8 @@ namespace Dodo::Platform {
         barrier.subresourceRange.layerCount = 6;
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0,
-                             nullptr, 1, &barrier);
+        vkCmdPipelineBarrier(uploadCmdBuf, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0,
+                             nullptr, 0, nullptr, 1, &barrier);
 
         // Copy each face (each is a separate array layer)
         std::array<VkBufferImageCopy, 6> regions;
@@ -105,35 +89,19 @@ namespace Dodo::Platform {
             regions[i].imageSubresource.layerCount = 1;
             regions[i].imageExtent = {(uint32_t)width, (uint32_t)height, 1};
         }
-        vkCmdCopyBufferToImage(cmd, stagingBuffer, m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 6, regions.data());
+        vkCmdCopyBufferToImage(uploadCmdBuf, m_StagingBuffer, m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 6,
+                               regions.data());
 
-        // Transition all 6 layers: TRANSFER_DST → SHADER_READ_ONLY
+        // Transition all 6 layers: TRANSFER_DST -> SHADER_READ_ONLY
         barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
         barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr,
-                             0, nullptr, 1, &barrier);
+        vkCmdPipelineBarrier(uploadCmdBuf, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
+                             nullptr, 0, nullptr, 1, &barrier);
 
-        vkEndCommandBuffer(cmd);
-
-        VkFenceCreateInfo fenceCI{};
-        fenceCI.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        VkFence fence;
-        vkCreateFence(m_Device, &fenceCI, nullptr, &fence);
-
-        VkSubmitInfo submitInfo{};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &cmd;
-        vkQueueSubmit(queue, 1, &submitInfo, fence);
-        vkWaitForFences(m_Device, 1, &fence, VK_TRUE, UINT64_MAX);
-        vkDestroyFence(m_Device, fence, nullptr);
-        vkFreeCommandBuffers(m_Device, commandPool, 1, &cmd);
-
-        vmaDestroyBuffer(m_Allocator, stagingBuffer, stagingAlloc);
-
-        // Create cube image view
+        // Create cube image view now: VkImageView creation is purely metadata and does not
+        // require the GPU upload to have completed yet.
         VkImageViewCreateInfo viewCI{};
         viewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         viewCI.image = m_Image;
@@ -147,8 +115,18 @@ namespace Dodo::Platform {
         vkCreateImageView(m_Device, &viewCI, nullptr, &m_ImageView);
     }
 
+    void VulkanCubeMap::FinalizeUpload()
+    {
+        if (m_StagingBuffer != VK_NULL_HANDLE) {
+            vmaDestroyBuffer(m_Allocator, m_StagingBuffer, m_StagingAlloc);
+            m_StagingBuffer = VK_NULL_HANDLE;
+            m_StagingAlloc = nullptr;
+        }
+    }
+
     VulkanCubeMap::~VulkanCubeMap()
     {
+        FinalizeUpload(); // no-op if already finalized; safety net for early destruction
         if (m_ImageView) vkDestroyImageView(m_Device, m_ImageView, nullptr);
         if (m_Image) vmaDestroyImage(m_Allocator, m_Image, m_Allocation);
     }

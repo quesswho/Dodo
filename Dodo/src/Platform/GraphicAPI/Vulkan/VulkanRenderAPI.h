@@ -97,6 +97,12 @@ namespace Dodo::Platform {
         Ref<CubeMap> CreateCubeMapFromEquirectangular(Ref<Texture> equirect, uint faceSize, AssetManager& assets);
         Ref<FrameBuffer> CreateFrameBuffer(const FrameBufferProperties& props);
 
+        // Batched async texture upload. CreateTexture/CreateCubeMap record into a shared command
+        // buffer that is submitted once via SubmitTextureBatch. PollTextureBatch returns true when
+        // the fence has signaled (or no batch is pending), at which point staging buffers are freed.
+        void SubmitTextureBatch();
+        bool PollTextureBatch();
+
         inline const char* GetAPIName() const { return "Vulkan"; }
         int CurrentVRamUsage() const;
 
@@ -221,6 +227,15 @@ namespace Dodo::Platform {
         class VulkanPipeline* m_BoundPipelinePtr = nullptr;
         class VulkanFrameBuffer* m_BoundFrameBuffer = nullptr;
         bool m_TexturesDirty = false;
+
+        // Upload batch: one command buffer shared across all CreateTexture/CreateCubeMap calls per frame.
+        // Submitted once at the end of FlushStagingQueue; fence polled next frame to free staging memory.
+        VkCommandBuffer m_UploadCmdBuf = VK_NULL_HANDLE;
+        VkFence m_UploadFence = VK_NULL_HANDLE;
+        bool m_UploadBatchActive = false;
+        bool m_UploadFencePending = false;
+        std::vector<Ref<Texture>> m_UploadBatchTextures;
+        std::vector<Ref<CubeMap>> m_UploadBatchCubeMaps;
 
         // Frame stuff
         std::array<FrameData, maxFramesInFlight> m_Frames;

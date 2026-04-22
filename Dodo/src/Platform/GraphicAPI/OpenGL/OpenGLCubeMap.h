@@ -12,6 +12,7 @@ namespace Dodo::Platform {
         ~OpenGLCubeMap();
 
         uint GetTextureID() const { return m_TextureID; }
+        void FinalizeUpload() {} // no-op: OpenGL uploads are synchronous
 
       private:
         uint m_TextureID;

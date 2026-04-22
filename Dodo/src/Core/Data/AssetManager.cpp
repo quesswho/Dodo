@@ -224,8 +224,27 @@ namespace Dodo {
         return AssetState::NotLoaded;
     }
 
+    void AssetManager::FinalizeReadyUploads(RenderAPI& renderAPI)
+    {
+        if (m_PendingGPUTextures.empty() && m_PendingGPUCubeMaps.empty()) return;
+        if (!renderAPI.PollTextureBatch()) return;
+
+        for (auto& pending : m_PendingGPUTextures) {
+            m_Textures.emplace(pending.id, std::move(pending.texture));
+            m_TextureStates[pending.id] = AssetState::Loaded;
+        }
+        m_PendingGPUTextures.clear();
+
+        for (auto& pending : m_PendingGPUCubeMaps) {
+            m_CubeMaps.emplace(pending.id, std::move(pending.cubeMap));
+            m_CubeMapStates[pending.id] = AssetState::Loaded;
+        }
+        m_PendingGPUCubeMaps.clear();
+    }
+
     void AssetManager::FlushStagingQueue(RenderAPI& renderAPI)
     {
+        FinalizeReadyUploads(renderAPI);
         std::vector<PendingTextureUpload> textures;
         std::vector<TextureID> failedTextureIDs;
         std::vector<PendingCubeMapUpload> cubeMaps;
@@ -249,8 +268,8 @@ namespace Dodo {
 
         for (auto& pending : textures) {
             Ref<Texture> tex = renderAPI.CreateTexture(pending.data.pixels.data(), pending.data.props);
-            m_Textures.emplace(pending.id, std::move(tex));
-            m_TextureStates[pending.id] = AssetState::Loaded;
+            m_PendingGPUTextures.push_back({pending.id, std::move(tex)});
+            m_TextureStates[pending.id] = AssetState::Staging;
         }
 
         for (CubeMapID id : failedCubeMapIDs) {
@@ -260,8 +279,8 @@ namespace Dodo {
 
         for (auto& pending : cubeMaps) {
             Ref<CubeMap> cubeMap = renderAPI.CreateCubeMap(pending.data);
-            m_CubeMaps.emplace(pending.id, std::move(cubeMap));
-            m_CubeMapStates[pending.id] = AssetState::Loaded;
+            m_PendingGPUCubeMaps.push_back({pending.id, std::move(cubeMap)});
+            m_CubeMapStates[pending.id] = AssetState::Staging;
         }
 
         for (ModelID id : failedModels) {
@@ -347,6 +366,8 @@ namespace Dodo {
             m_ModelStates[it->id] = AssetState::Loaded;
             it = m_PendingModelAssemblies.erase(it);
         }
+
+        renderAPI.SubmitTextureBatch();
     }
 
     ModelID AssetManager::GetBuiltinModel(BuiltinModel type)

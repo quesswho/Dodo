@@ -44,6 +44,8 @@ namespace Dodo::Platform {
             vkDestroyFence(m_Device, m_Frames[i].inFlightFence, nullptr);
         }
 
+        if (m_UploadFence) vkDestroyFence(m_Device, m_UploadFence, nullptr);
+
         vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
 
         // Descriptor infrastructure
@@ -480,6 +482,16 @@ namespace Dodo::Platform {
             m_Frames[i].commandBuffer = commandBuffers[i];
         }
 
+        // Allocate the shared upload command buffer used for batched texture uploads
+        VkCommandBufferAllocateInfo uploadAllocInfo{};
+        uploadAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        uploadAllocInfo.commandPool = m_CommandPool;
+        uploadAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        uploadAllocInfo.commandBufferCount = 1;
+        if (vkAllocateCommandBuffers(m_Device, &uploadAllocInfo, &m_UploadCmdBuf) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "failed to allocate upload command buffer!");
+        }
+
         return RenderInitError(RenderInitStatus::Success);
     }
 
@@ -508,6 +520,14 @@ namespace Dodo::Platform {
                 return RenderInitError(RenderInitStatus::Failed, "failed to create semaphores!");
             }
         }
+
+        // Upload fence starts unsignaled: no batch is pending at init time
+        VkFenceCreateInfo uploadFenceInfo{};
+        uploadFenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        if (vkCreateFence(m_Device, &uploadFenceInfo, nullptr, &m_UploadFence) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "failed to create upload fence!");
+        }
+
         return RenderInitError(RenderInitStatus::Success);
     }
 
@@ -1145,9 +1165,69 @@ namespace Dodo::Platform {
                                                    m_GraphicsQueue);
     }
 
+    void VulkanRenderAPI::SubmitTextureBatch()
+    {
+        if (!m_UploadBatchActive) return;
+
+        vkEndCommandBuffer(m_UploadCmdBuf);
+
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &m_UploadCmdBuf;
+        vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, m_UploadFence);
+
+        m_UploadBatchActive = false;
+        m_UploadFencePending = true;
+    }
+
+    bool VulkanRenderAPI::PollTextureBatch()
+    {
+        if (!m_UploadFencePending) return true;
+
+        VkResult result = vkGetFenceStatus(m_Device, m_UploadFence);
+        if (result == VK_SUCCESS) {
+            vkResetFences(m_Device, 1, &m_UploadFence);
+            m_UploadFencePending = false;
+
+            for (auto& tex : m_UploadBatchTextures)
+                tex->FinalizeUpload();
+            m_UploadBatchTextures.clear();
+
+            for (auto& cm : m_UploadBatchCubeMaps)
+                cm->FinalizeUpload();
+            m_UploadBatchCubeMaps.clear();
+
+            return true;
+        }
+        return false;
+    }
+
     Ref<Texture> VulkanRenderAPI::CreateTexture(uchar* data, const TextureProperties& prop)
     {
-        return std::make_shared<VulkanTexture>(data, prop, m_Device, m_VmaAllocator, m_CommandPool, m_GraphicsQueue);
+        if (!m_UploadBatchActive) {
+            // Start a new batch lazily (handles fallback textures created outside the main texture loop)
+            if (m_UploadFencePending) {
+                // Previous batch not yet finalized: wait synchronously so we can reset the fence
+                vkWaitForFences(m_Device, 1, &m_UploadFence, VK_TRUE, UINT64_MAX);
+                vkResetFences(m_Device, 1, &m_UploadFence);
+                m_UploadFencePending = false;
+                for (auto& tex : m_UploadBatchTextures) tex->FinalizeUpload();
+                m_UploadBatchTextures.clear();
+                for (auto& cm : m_UploadBatchCubeMaps) cm->FinalizeUpload();
+                m_UploadBatchCubeMaps.clear();
+            }
+            vkResetCommandBuffer(m_UploadCmdBuf, 0);
+            VkCommandBufferBeginInfo beginInfo{};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+            vkBeginCommandBuffer(m_UploadCmdBuf, &beginInfo);
+            m_UploadBatchActive = true;
+        }
+
+        auto tex = std::make_shared<VulkanTexture>(data, prop, m_Device, m_VmaAllocator, m_UploadCmdBuf);
+        m_UploadBatchTextures.push_back(tex);
+        return tex;
     }
 
     Ref<TextureSampler> VulkanRenderAPI::CreateSampler(const SamplerProperties& prop)
@@ -1157,7 +1237,27 @@ namespace Dodo::Platform {
 
     Ref<CubeMap> VulkanRenderAPI::CreateCubeMap(const CubeMapData& data)
     {
-        return std::make_shared<VulkanCubeMap>(data, m_Device, m_VmaAllocator, m_CommandPool, m_GraphicsQueue);
+        if (!m_UploadBatchActive) {
+            if (m_UploadFencePending) {
+                vkWaitForFences(m_Device, 1, &m_UploadFence, VK_TRUE, UINT64_MAX);
+                vkResetFences(m_Device, 1, &m_UploadFence);
+                m_UploadFencePending = false;
+                for (auto& tex : m_UploadBatchTextures) tex->FinalizeUpload();
+                m_UploadBatchTextures.clear();
+                for (auto& cm : m_UploadBatchCubeMaps) cm->FinalizeUpload();
+                m_UploadBatchCubeMaps.clear();
+            }
+            vkResetCommandBuffer(m_UploadCmdBuf, 0);
+            VkCommandBufferBeginInfo beginInfo{};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+            vkBeginCommandBuffer(m_UploadCmdBuf, &beginInfo);
+            m_UploadBatchActive = true;
+        }
+
+        auto cm = std::make_shared<VulkanCubeMap>(data, m_Device, m_VmaAllocator, m_UploadCmdBuf);
+        m_UploadBatchCubeMaps.push_back(cm);
+        return cm;
     }
 
     Ref<CubeMap> VulkanRenderAPI::CreateCubeMapFromEquirectangular(Ref<Texture> equirect, uint faceSize,

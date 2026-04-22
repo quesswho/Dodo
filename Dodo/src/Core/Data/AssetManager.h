@@ -61,6 +61,10 @@ namespace Dodo {
         // Uploads all staged CPU data to the GPU. Must be called from the render thread.
         void FlushStagingQueue(RenderAPI& renderAPI);
 
+        // Finalizes any GPU uploads whose fence has signaled and registers the textures/cubemaps.
+        // Called at the start of FlushStagingQueue; also safe to call at other frame boundaries.
+        void FinalizeReadyUploads(RenderAPI& renderAPI);
+
         std::string GetModelPath(ModelID id);
         bool HasPath(ModelID id) const { return m_ModelPath.find(id) != m_ModelPath.end(); }
 
@@ -99,6 +103,19 @@ namespace Dodo {
         std::unordered_map<ModelID, std::string> m_ModelPath; // Stores id as key and path as value
         std::unordered_map<BuiltinModel, ModelID> builtinIDs;
         std::unordered_map<ModelID, AssetState> m_ModelStates;
+
+        // GPU-submitted but not yet fence-signaled: textures/cubemaps whose staging buffers are
+        // still in use by the GPU. Moved to m_Textures/m_CubeMaps once PollTextureBatch returns true.
+        struct PendingGPUTexture {
+            TextureID id;
+            Ref<Texture> texture;
+        };
+        struct PendingGPUCubeMap {
+            CubeMapID id;
+            Ref<CubeMap> cubeMap;
+        };
+        std::vector<PendingGPUTexture> m_PendingGPUTextures;
+        std::vector<PendingGPUCubeMap> m_PendingGPUCubeMaps;
 
         // Staging queues written by worker threads, drained by main thread in FlushStagingQueue
         struct PendingTextureUpload {

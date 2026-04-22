@@ -94,6 +94,10 @@ namespace Dodo::Platform {
         {
             return std::make_shared<CubeMap>(data);
         }
+
+        // OpenGL uploads are synchronous so these are no-ops / always-ready stubs.
+        inline void SubmitTextureBatch() {}
+        inline bool PollTextureBatch() { return true; }
         Ref<CubeMap> CreateCubeMapFromEquirectangular(Ref<Texture> equirect, uint faceSize, AssetManager& assets);
         inline Ref<FrameBuffer> CreateFrameBuffer(const FrameBufferProperties& props)
         {

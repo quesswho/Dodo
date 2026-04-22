@@ -66,7 +66,9 @@ namespace Dodo::Platform {
         vkFreeCommandBuffers(m_Device, commandPool, 1, &cmd);
     }
 
-    void VulkanTexture::TransitionImageLayout(VkCommandBuffer cmd, VkImageLayout oldLayout, VkImageLayout newLayout)
+    void VulkanTexture::TransitionImageLayout(VkCommandBuffer cmd, VkImageLayout oldLayout,
+                                              VkImageLayout newLayout,
+                                              uint32_t baseMipLevel, uint32_t levelCount)
     {
         VkImageMemoryBarrier barrier{};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -76,8 +78,8 @@ namespace Dodo::Platform {
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.image = m_Image;
         barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseMipLevel = baseMipLevel;
+        barrier.subresourceRange.levelCount = levelCount;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
 
@@ -93,6 +95,18 @@ namespace Dodo::Platform {
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
             srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
             dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        } else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
+                   newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        } else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+                   newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         } else {
             DD_ERR("VulkanTexture: unsupported layout transition!");
             return;
@@ -188,6 +202,9 @@ namespace Dodo::Platform {
         memcpy(mapped, uploadData, (size_t)imageSize);
         vmaUnmapMemory(m_Allocator, stagingAlloc);
 
+        m_MipLevels = 1 + static_cast<uint32_t>(std::floor(std::log2(static_cast<double>(
+            std::max(m_TextureProperties.m_Width, m_TextureProperties.m_Height)))));
+
         // Create device-local VkImage via VMA
         VkImageCreateInfo imageInfo{};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -195,12 +212,12 @@ namespace Dodo::Platform {
         imageInfo.extent.width = m_TextureProperties.m_Width;
         imageInfo.extent.height = m_TextureProperties.m_Height;
         imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
+        imageInfo.mipLevels = m_MipLevels;
         imageInfo.arrayLayers = 1;
         imageInfo.format = format;
         imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 
@@ -209,11 +226,11 @@ namespace Dodo::Platform {
 
         vmaCreateImage(m_Allocator, &imageInfo, &imageAllocCI, &m_Image, &m_Allocation, nullptr);
 
-        // Transfer: UNDEFINED to TRANSFER_DST, copy, TRANSFER_DST to SHADER_READ_ONLY
+        // Transfer: UNDEFINED to TRANSFER_DST (all levels), copy base level, blit remaining mips
         VkCommandBuffer cmd = BeginOneTimeCommands(commandPool);
-        TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, m_MipLevels);
         CopyBufferToImage(cmd, stagingBuffer);
-        TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        GenerateMipmaps(cmd);
         EndOneTimeCommands(cmd, commandPool, queue);
 
         vmaDestroyBuffer(m_Allocator, stagingBuffer, stagingAlloc);
@@ -226,10 +243,52 @@ namespace Dodo::Platform {
         viewInfo.format = format;
         viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         viewInfo.subresourceRange.baseMipLevel = 0;
-        viewInfo.subresourceRange.levelCount = 1;
+        viewInfo.subresourceRange.levelCount = m_MipLevels;
         viewInfo.subresourceRange.baseArrayLayer = 0;
         viewInfo.subresourceRange.layerCount = 1;
         vkCreateImageView(m_Device, &viewInfo, nullptr, &m_ImageView);
+    }
+
+    void VulkanTexture::GenerateMipmaps(VkCommandBuffer cmd)
+    {
+        int32_t mipW = static_cast<int32_t>(m_TextureProperties.m_Width);
+        int32_t mipH = static_cast<int32_t>(m_TextureProperties.m_Height);
+
+        for (uint32_t i = 1; i < m_MipLevels; i++) {
+            TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                  VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, i - 1, 1);
+
+            int32_t dstW = std::max(1, mipW / 2);
+            int32_t dstH = std::max(1, mipH / 2);
+
+            VkImageBlit blit{};
+            blit.srcSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.srcSubresource.mipLevel       = i - 1;
+            blit.srcSubresource.baseArrayLayer = 0;
+            blit.srcSubresource.layerCount     = 1;
+            blit.srcOffsets[0]                 = {0, 0, 0};
+            blit.srcOffsets[1]                 = {mipW, mipH, 1};
+            blit.dstSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.dstSubresource.mipLevel       = i;
+            blit.dstSubresource.baseArrayLayer = 0;
+            blit.dstSubresource.layerCount     = 1;
+            blit.dstOffsets[0]                 = {0, 0, 0};
+            blit.dstOffsets[1]                 = {dstW, dstH, 1};
+
+            vkCmdBlitImage(cmd,
+                           m_Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                           m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                           1, &blit, VK_FILTER_LINEAR);
+
+            TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, i - 1, 1);
+
+            mipW = dstW;
+            mipH = dstH;
+        }
+
+        TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_MipLevels - 1, 1);
     }
 
     VulkanTexture::~VulkanTexture()

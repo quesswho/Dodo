@@ -20,7 +20,7 @@ namespace Dodo {
          */
         TextureData Load(const std::string& path);
 
-    private:
+      private:
         TextureData LoadHDR(const std::string& path);
         TextureData LoadLDR(const std::string& path);
 

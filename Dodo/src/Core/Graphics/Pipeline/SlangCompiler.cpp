@@ -236,8 +236,7 @@ namespace Dodo {
             uint32_t loc = (uint32_t)var->getOffset(SLANG_PARAMETER_CATEGORY_VARYING_INPUT);
             slang::TypeReflection* type = var->getTypeLayout()->getType();
             uint32_t count = 1;
-            if (type->getKind() == slang::TypeReflection::Kind::Vector)
-                count = (uint32_t)type->getElementCount();
+            if (type->getKind() == slang::TypeReflection::Kind::Vector) count = (uint32_t)type->getElementCount();
             result.vertexInputs.push_back({loc, count});
         };
 

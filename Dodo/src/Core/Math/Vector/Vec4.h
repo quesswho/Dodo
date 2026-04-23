@@ -152,10 +152,7 @@ namespace Dodo::Math {
         }
 
         // Sum of Vec4
-        static inline float Sum(const TVec4<float>& vec)
-        {
-            return vec.x + vec.y + vec.z + vec.w;
-        }
+        static inline float Sum(const TVec4<float>& vec) { return vec.x + vec.y + vec.z + vec.w; }
 
         // Get distance between two Vec4
         static inline float Distance(const TVec4<float>& first, const TVec4<float>& second)
@@ -171,16 +168,10 @@ namespace Dodo::Math {
         }
 
         // Turn vec4 using degrees into vec4 using radians
-        static inline const TVec4<float> ToRadians(const TVec4<float>& degrees)
-        {
-            return degrees * (MATH_PI / 180.0f);
-        }
+        static inline const TVec4<float> ToRadians(const TVec4<float>& degrees) { return degrees * (MATH_PI / 180.0f); }
 
         // Turn vec4 using radians into vec4 using degrees
-        static inline const TVec4<float> ToDegrees(const TVec4<float>& radians)
-        {
-            return radians * (180.0f / MATH_PI);
-        }
+        static inline const TVec4<float> ToDegrees(const TVec4<float>& radians) { return radians * (180.0f / MATH_PI); }
 
         // Return a vector with a magnitude of limit
         inline constexpr TVec4 Limit(const int limit) const { return this->Normalize() * limit; }
@@ -192,7 +183,7 @@ namespace Dodo::Math {
         inline float Distance(const TVec4& other) const
         {
             return std::sqrt((this->x - other.x) * (this->x - other.x) + (this->y - other.y) * (this->y - other.y) +
-                        (this->z - other.z) * (this->z - other.z) + (this->w - other.w) * (this->w - other.w));
+                             (this->z - other.z) * (this->z - other.z) + (this->w - other.w) * (this->w - other.w));
         }
 
         // Dot product

@@ -29,8 +29,8 @@ namespace Dodo {
                 expectedWidth = width;
                 expectedHeight = height;
             } else if (width != expectedWidth || height != expectedHeight) {
-                DD_ERR("CubeMapLoader: face {} has dimensions {}x{}, expected {}x{} (face 0: {})",
-                       i, width, height, expectedWidth, expectedHeight, paths[0]);
+                DD_ERR("CubeMapLoader: face {} has dimensions {}x{}, expected {}x{} (face 0: {})", i, width, height,
+                       expectedWidth, expectedHeight, paths[0]);
                 stbi_image_free(data);
                 return CubeMapData{};
             }

@@ -51,12 +51,23 @@ namespace Dodo::Platform {
 
         size_t bpp = 0;
         switch (m_TextureProperties.m_Format) {
-        case TextureFormat::FORMAT_RED:    bpp = 1;  break;
-        case TextureFormat::FORMAT_RGB:    bpp = 3;  break;
-        case TextureFormat::FORMAT_RGBA:   bpp = 4;  break;
-        case TextureFormat::FORMAT_RGB16F: bpp = 12; break;
-        case TextureFormat::FORMAT_RGB32F: bpp = 12; break;
-        default: break;
+        case TextureFormat::FORMAT_RED:
+            bpp = 1;
+            break;
+        case TextureFormat::FORMAT_RGB:
+            bpp = 3;
+            break;
+        case TextureFormat::FORMAT_RGBA:
+            bpp = 4;
+            break;
+        case TextureFormat::FORMAT_RGB16F:
+            bpp = 12;
+            break;
+        case TextureFormat::FORMAT_RGB32F:
+            bpp = 12;
+            break;
+        default:
+            break;
         }
         std::vector<uchar> flipped;
         const uchar* uploadData = data;
@@ -65,8 +76,7 @@ namespace Dodo::Platform {
             const uint h = m_TextureProperties.m_Height;
             flipped.resize(rowSize * h);
             for (uint row = 0; row < h; row++)
-                memcpy(flipped.data() + row * rowSize,
-                       data + (size_t)(h - 1 - row) * rowSize, rowSize);
+                memcpy(flipped.data() + row * rowSize, data + (size_t)(h - 1 - row) * rowSize, rowSize);
             uploadData = flipped.data();
         }
 

@@ -244,7 +244,7 @@ namespace Dodo::Math {
 
             const T invDet = T(1) / determinant;
             return Mat3x3(c00 * invDet, c10 * invDet, c20 * invDet, c01 * invDet, c11 * invDet, c21 * invDet,
-                             c02 * invDet, c12 * invDet, c22 * invDet);
+                          c02 * invDet, c12 * invDet, c22 * invDet);
         }
 
         static const Mat3x3 Translate(const Math::TVec2<T>& translation)
@@ -288,8 +288,7 @@ namespace Dodo::Math {
         static constexpr inline int GetIndex(int column, int row) { return (column * 3) + row; }
     };
     using Mat3 = Mat3x3<float>;
-    #else
-    #error "Unsupported matrix configuration! Define DD_MATH_COLUMN_MAJOR and DD_COORDINATE_RIGHT_HANDED for a CRH matrix"
-    #endif
+#else
+#error "Unsupported matrix configuration! Define DD_MATH_COLUMN_MAJOR and DD_COORDINATE_RIGHT_HANDED for a CRH matrix"
+#endif
 } // namespace Dodo::Math
-    

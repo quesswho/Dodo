@@ -343,7 +343,8 @@ namespace Dodo {
                         static_cast<uchar>(std::clamp(c.z, 0.0f, 1.0f) * 255.0f),
                         static_cast<uchar>(std::clamp(c.w, 0.0f, 1.0f) * 255.0f),
                     };
-                    material->AddTexture(0, renderAPI.CreateTexture(pixels, TextureProperties(1, 1, TextureFormat::FORMAT_RGBA)));
+                    material->AddTexture(
+                        0, renderAPI.CreateTexture(pixels, TextureProperties(1, 1, TextureFormat::FORMAT_RGBA)));
                 }
 
                 if (hasTextures || hasColorFallback) {
@@ -355,7 +356,8 @@ namespace Dodo {
                     material->SetShader(GetPipeline(CreatePipeline(desc, renderAPI)));
                     material->SetSampler(renderAPI.CreateSampler(SamplerProperties()));
                 } else {
-                    DD_WARN("ModelLoader: Material {} (model ID {}) has no textures or color, using fallback pipeline", matIdx, it->id);
+                    DD_WARN("ModelLoader: Material {} (model ID {}) has no textures or color, using fallback pipeline",
+                            matIdx, it->id);
                 }
                 materials.push_back(std::move(material));
                 matIdx++;

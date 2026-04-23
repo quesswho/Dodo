@@ -7,7 +7,7 @@
 #include "Core/Math/Vector/Vec4.h"
 
 namespace Dodo::Math {
-    
+
 #if defined(DD_MATH_COLUMN_MAJOR) && defined(DD_COORDINATE_RIGHT_HANDED)
 
     // Column Major Right hand 4x4 matrix
@@ -23,7 +23,7 @@ namespace Dodo::Math {
         Mat4x4(float diagonal) { Identity(diagonal); }
 
         Mat4x4(const Math::TVec4<T>& first, const Math::TVec4<T>& second, const Math::TVec4<T>& third,
-                  const Math::TVec4<T>& forth)
+               const Math::TVec4<T>& forth)
         {
             m_Elements[GetIndex(0, 0)] = first.x;
             m_Elements[GetIndex(0, 1)] = first.y;
@@ -46,8 +46,8 @@ namespace Dodo::Math {
             m_Elements[GetIndex(3, 3)] = forth.w;
         }
 
-        Mat4x4(T first, T second, T third, T forth, T fifth, T sixth, T seventh, T eighth, T ninth, T tenth,
-                  T eleventh, T twelveth, T thirteenth, T fourteenth, T fifteenth, T sixteenth)
+        Mat4x4(T first, T second, T third, T forth, T fifth, T sixth, T seventh, T eighth, T ninth, T tenth, T eleventh,
+               T twelveth, T thirteenth, T fourteenth, T fifteenth, T sixteenth)
         {
             m_Elements[GetIndex(0, 0)] = first;
             m_Elements[GetIndex(0, 1)] = second;
@@ -332,24 +332,20 @@ namespace Dodo::Math {
         static inline const Mat4x4<T> Orthographic(float left, float right, float bottom, float top)
         {
             return Mat4x4(2 / (right - left), 0, 0, 0, 0, 2 / (top - bottom), 0, 0, 0, 0, -1, 0,
-                             -(right + left) / (right - left), -(top + bottom) / (top - bottom), 0, 1);
+                          -(right + left) / (right - left), -(top + bottom) / (top - bottom), 0, 1);
         }
 
         static inline const Mat4x4<T> Orthographic(float left, float right, float bottom, float top, float zNear,
-                                                      float zFar)
+                                                   float zFar)
         {
 #if defined(DD_DEPTH_ZERO_TO_ONE)
-            return Mat4x4(2 / (right - left), 0, 0, 0,
-                             0, 2 / (top - bottom), 0, 0,
-                             0, 0, -1 / (zFar - zNear), 0,
-                             -(right + left) / (right - left), -(top + bottom) / (top - bottom),
-                             -zNear / (zFar - zNear), 1);
+            return Mat4x4(2 / (right - left), 0, 0, 0, 0, 2 / (top - bottom), 0, 0, 0, 0, -1 / (zFar - zNear), 0,
+                          -(right + left) / (right - left), -(top + bottom) / (top - bottom), -zNear / (zFar - zNear),
+                          1);
 #else
-            return Mat4x4(2 / (right - left), 0, 0, 0,
-                             0, 2 / (top - bottom), 0, 0,
-                             0, 0, -2 / (zFar - zNear), 0,
-                             -(right + left) / (right - left), -(top + bottom) / (top - bottom),
-                             -(zFar + zNear) / (zFar - zNear), 1);
+            return Mat4x4(2 / (right - left), 0, 0, 0, 0, 2 / (top - bottom), 0, 0, 0, 0, -2 / (zFar - zNear), 0,
+                          -(right + left) / (right - left), -(top + bottom) / (top - bottom),
+                          -(zFar + zNear) / (zFar - zNear), 1);
 #endif
         }
 
@@ -358,15 +354,11 @@ namespace Dodo::Math {
         {
             const float tanHalfFov = tan(Math::ToRadians(fov) / 2);
 #if defined(DD_DEPTH_ZERO_TO_ONE)
-            return Mat4x4(1 / (aspectratio * tanHalfFov), 0, 0, 0,
-                             0, 1 / tanHalfFov, 0, 0,
-                             0, 0, -zFar / (zFar - zNear), -1,
-                             0, 0, -(zFar * zNear) / (zFar - zNear), 0);
+            return Mat4x4(1 / (aspectratio * tanHalfFov), 0, 0, 0, 0, 1 / tanHalfFov, 0, 0, 0, 0,
+                          -zFar / (zFar - zNear), -1, 0, 0, -(zFar * zNear) / (zFar - zNear), 0);
 #else
-            return Mat4x4(1 / (aspectratio * tanHalfFov), 0, 0, 0,
-                             0, 1 / tanHalfFov, 0, 0,
-                             0, 0, -(zFar + zNear) / (zFar - zNear), -1,
-                             0, 0, -(2 * zFar * zNear) / (zFar - zNear), 0);
+            return Mat4x4(1 / (aspectratio * tanHalfFov), 0, 0, 0, 0, 1 / tanHalfFov, 0, 0, 0, 0,
+                          -(zFar + zNear) / (zFar - zNear), -1, 0, 0, -(2 * zFar * zNear) / (zFar - zNear), 0);
 #endif
         }
 
@@ -446,7 +438,7 @@ namespace Dodo::Math {
         static constexpr inline int GetIndex(int column, int row) { return (column * 4) + row; }
     };
     using Mat4 = Mat4x4<float>;
-    #else
-    #error "Unsupported matrix configuration! Define DD_MATH_COLUMN_MAJOR and DD_COORDINATE_RIGHT_HANDED for a CRH matrix"
-    #endif
+#else
+#error "Unsupported matrix configuration! Define DD_MATH_COLUMN_MAJOR and DD_COORDINATE_RIGHT_HANDED for a CRH matrix"
+#endif
 } // namespace Dodo::Math

@@ -1,11 +1,11 @@
 #pragma once
 
 #include <atomic>
+#include <condition_variable>
 #include <deque>
+#include <functional>
 #include <thread>
 #include <vector>
-#include <functional>
-#include <condition_variable>
 
 namespace Dodo {
     class ThreadManager {

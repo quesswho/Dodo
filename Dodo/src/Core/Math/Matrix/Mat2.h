@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Core/Common.h>
 #include "Core/Math/Vector/Vec2.h"
+#include <Core/Common.h>
 
 namespace Dodo::Math {
 
@@ -160,7 +160,7 @@ namespace Dodo::Math {
         static const Mat2x2 Transpose(const Mat2x2 mat)
         {
             return Mat2x2(mat.m_Elements[GetIndex(0, 0)], mat.m_Elements[GetIndex(1, 0)],
-                             mat.m_Elements[GetIndex(0, 1)], mat.m_Elements[GetIndex(1, 1)]);
+                          mat.m_Elements[GetIndex(0, 1)], mat.m_Elements[GetIndex(1, 1)]);
         }
 
       private:

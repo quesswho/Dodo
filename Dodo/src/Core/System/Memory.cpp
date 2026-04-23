@@ -1,7 +1,7 @@
 #include "Memory.h"
 
-#include <sstream>
 #include <cmath>
+#include <sstream>
 
 namespace Dodo {
     size_t MemoryMetrics::s_AllocatedBytes;

@@ -1,8 +1,7 @@
 #include "VulkanTexture.h"
 
-
-#include "Core/Utilities/Logger.h"
 #include "Core/Math/MathFunc.h"
+#include "Core/Utilities/Logger.h"
 
 #include <vector>
 #include <vk_mem_alloc.h>
@@ -42,8 +41,7 @@ namespace Dodo::Platform {
         }
     }
 
-    void VulkanTexture::TransitionImageLayout(VkCommandBuffer cmd, VkImageLayout oldLayout,
-                                              VkImageLayout newLayout,
+    void VulkanTexture::TransitionImageLayout(VkCommandBuffer cmd, VkImageLayout oldLayout, VkImageLayout newLayout,
                                               uint32_t baseMipLevel, uint32_t levelCount)
     {
         VkImageMemoryBarrier barrier{};
@@ -116,7 +114,7 @@ namespace Dodo::Platform {
         VkDeviceSize imageSize;
         std::vector<uchar> stagingStorage;
 
-        switch(m_TextureProperties.m_Format) {
+        switch (m_TextureProperties.m_Format) {
         case TextureFormat::FORMAT_RGBA16F:
             imageSize = (VkDeviceSize)pixelCount * 4 * sizeof(uint16_t);
             break;
@@ -148,7 +146,7 @@ namespace Dodo::Platform {
         vmaUnmapMemory(m_Allocator, m_StagingAlloc);
 
         m_MipLevels = 1 + static_cast<uint32_t>(std::floor(std::log2(static_cast<double>(
-            (std::max)(m_TextureProperties.m_Width, m_TextureProperties.m_Height)))));
+                              (std::max)(m_TextureProperties.m_Width, m_TextureProperties.m_Height)))));
 
         // Create device-local VkImage via VMA
         VkImageCreateInfo imageInfo{};
@@ -162,7 +160,8 @@ namespace Dodo::Platform {
         imageInfo.format = format;
         imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        imageInfo.usage =
+            VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 
@@ -174,7 +173,8 @@ namespace Dodo::Platform {
         // Record transfer commands into the shared upload command buffer.
         // The pipeline barriers ensure ordering within the graphics queue so the shaders
         // see the completed upload even without an explicit semaphore between submissions.
-        TransitionImageLayout(uploadCmdBuf, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, m_MipLevels);
+        TransitionImageLayout(uploadCmdBuf, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0,
+                              m_MipLevels);
         CopyBufferToImage(uploadCmdBuf, m_StagingBuffer);
         GenerateMipmaps(uploadCmdBuf);
 
@@ -208,40 +208,38 @@ namespace Dodo::Platform {
         int32_t mipH = static_cast<int32_t>(m_TextureProperties.m_Height);
 
         for (uint32_t i = 1; i < m_MipLevels; i++) {
-            TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                  VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, i - 1, 1);
+            TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+                                  i - 1, 1);
 
             int32_t dstW = (std::max)(1, mipW / 2);
             int32_t dstH = (std::max)(1, mipH / 2);
 
             VkImageBlit blit{};
-            blit.srcSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-            blit.srcSubresource.mipLevel       = i - 1;
+            blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.srcSubresource.mipLevel = i - 1;
             blit.srcSubresource.baseArrayLayer = 0;
-            blit.srcSubresource.layerCount     = 1;
-            blit.srcOffsets[0]                 = {0, 0, 0};
-            blit.srcOffsets[1]                 = {mipW, mipH, 1};
-            blit.dstSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
-            blit.dstSubresource.mipLevel       = i;
+            blit.srcSubresource.layerCount = 1;
+            blit.srcOffsets[0] = {0, 0, 0};
+            blit.srcOffsets[1] = {mipW, mipH, 1};
+            blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            blit.dstSubresource.mipLevel = i;
             blit.dstSubresource.baseArrayLayer = 0;
-            blit.dstSubresource.layerCount     = 1;
-            blit.dstOffsets[0]                 = {0, 0, 0};
-            blit.dstOffsets[1]                 = {dstW, dstH, 1};
+            blit.dstSubresource.layerCount = 1;
+            blit.dstOffsets[0] = {0, 0, 0};
+            blit.dstOffsets[1] = {dstW, dstH, 1};
 
-            vkCmdBlitImage(cmd,
-                           m_Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                           m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                           1, &blit, VK_FILTER_LINEAR);
+            vkCmdBlitImage(cmd, m_Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_Image,
+                           VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
 
-            TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                                  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, i - 1, 1);
+            TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                  i - 1, 1);
 
             mipW = dstW;
             mipH = dstH;
         }
 
-        TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                              VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, m_MipLevels - 1, 1);
+        TransitionImageLayout(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                              m_MipLevels - 1, 1);
     }
 
     VulkanTexture::~VulkanTexture()

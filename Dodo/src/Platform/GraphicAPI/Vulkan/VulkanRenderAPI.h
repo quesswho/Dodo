@@ -132,7 +132,6 @@ namespace Dodo::Platform {
         RenderInitError InitDescriptors();
         RenderInitError InitImGui();
 
-
         bool IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device);
         bool IsDeviceSuitable(PhyisicalDeviceInfo device);
 

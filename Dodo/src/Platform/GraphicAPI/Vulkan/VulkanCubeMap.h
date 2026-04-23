@@ -13,8 +13,7 @@ namespace Dodo::Platform {
 
     class VulkanCubeMap {
       public:
-        VulkanCubeMap(const CubeMapData& data, VkDevice device, VmaAllocator allocator,
-                      VkCommandBuffer uploadCmdBuf);
+        VulkanCubeMap(const CubeMapData& data, VkDevice device, VmaAllocator allocator, VkCommandBuffer uploadCmdBuf);
         ~VulkanCubeMap();
 
         VkImageView GetImageView() const { return m_ImageView; }

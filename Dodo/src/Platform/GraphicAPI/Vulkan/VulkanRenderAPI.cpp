@@ -145,10 +145,10 @@ namespace Dodo::Platform {
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
 
-        // Add portability enumeration flag for platforms that require it (e.g. macOS with MoltenVK)
-        #ifdef DD_MACOS
+// Add portability enumeration flag for platforms that require it (e.g. macOS with MoltenVK)
+#ifdef DD_MACOS
         createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-        #endif
+#endif
         // Get required context extensions
         std::vector<const char*> requiredExtensions = GetRequiredExtensions();
 
@@ -995,9 +995,8 @@ namespace Dodo::Platform {
     {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
 
-        m_BoundPipelinePtr->BindMaterialSet(cmd, m_TransientPools[m_CurrentFrame], m_CurrentFrame,
-                                            m_PendingImageViews, m_PendingSamplers,
-                                            m_PendingIsCubeMap, m_PendingIsDepth, maxTextureSlots,
+        m_BoundPipelinePtr->BindMaterialSet(cmd, m_TransientPools[m_CurrentFrame], m_CurrentFrame, m_PendingImageViews,
+                                            m_PendingSamplers, m_PendingIsCubeMap, m_PendingIsDepth, maxTextureSlots,
                                             m_DummyImageView, m_DummySampler);
         m_TexturesDirty = false;
 
@@ -1010,9 +1009,8 @@ namespace Dodo::Platform {
         if (m_BoundPipelinePtr) {
             m_BoundPipelinePtr->BindGlobalSet(cmd, m_CurrentFrame, m_LastModelOffset);
             m_BoundPipelinePtr->BindMaterialSet(cmd, m_TransientPools[m_CurrentFrame], m_CurrentFrame,
-                                                m_PendingImageViews, m_PendingSamplers,
-                                                m_PendingIsCubeMap, m_PendingIsDepth, maxTextureSlots,
-                                                m_DummyImageView, m_DummySampler);
+                                                m_PendingImageViews, m_PendingSamplers, m_PendingIsCubeMap,
+                                                m_PendingIsDepth, maxTextureSlots, m_DummyImageView, m_DummySampler);
             m_TexturesDirty = false;
         }
         vkCmdDraw(cmd, count, 1, 0, 0);
@@ -1211,9 +1209,11 @@ namespace Dodo::Platform {
                 vkWaitForFences(m_Device, 1, &m_UploadFence, VK_TRUE, UINT64_MAX);
                 vkResetFences(m_Device, 1, &m_UploadFence);
                 m_UploadFencePending = false;
-                for (auto& tex : m_UploadBatchTextures) tex->FinalizeUpload();
+                for (auto& tex : m_UploadBatchTextures)
+                    tex->FinalizeUpload();
                 m_UploadBatchTextures.clear();
-                for (auto& cm : m_UploadBatchCubeMaps) cm->FinalizeUpload();
+                for (auto& cm : m_UploadBatchCubeMaps)
+                    cm->FinalizeUpload();
                 m_UploadBatchCubeMaps.clear();
             }
             vkResetCommandBuffer(m_UploadCmdBuf, 0);
@@ -1241,9 +1241,11 @@ namespace Dodo::Platform {
                 vkWaitForFences(m_Device, 1, &m_UploadFence, VK_TRUE, UINT64_MAX);
                 vkResetFences(m_Device, 1, &m_UploadFence);
                 m_UploadFencePending = false;
-                for (auto& tex : m_UploadBatchTextures) tex->FinalizeUpload();
+                for (auto& tex : m_UploadBatchTextures)
+                    tex->FinalizeUpload();
                 m_UploadBatchTextures.clear();
-                for (auto& cm : m_UploadBatchCubeMaps) cm->FinalizeUpload();
+                for (auto& cm : m_UploadBatchCubeMaps)
+                    cm->FinalizeUpload();
                 m_UploadBatchCubeMaps.clear();
             }
             vkResetCommandBuffer(m_UploadCmdBuf, 0);
@@ -1260,7 +1262,7 @@ namespace Dodo::Platform {
     }
 
     Ref<CubeMap> VulkanRenderAPI::CreateCubeMapFromEquirectangular(Ref<Texture> equirect, uint faceSize,
-                                                                     AssetManager& assets)
+                                                                   AssetManager& assets)
     {
         DD_ERR("CreateCubeMapFromEquirectangular is not yet implemented for the Vulkan backend.");
         return nullptr;
@@ -1377,10 +1379,11 @@ namespace Dodo::Platform {
 
         extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 
-        // MoltenVK on MacOS requires this extension. The extension is not expected for renderdoc since it does not support MacOS, therefore it most be disabled in that case
-        #ifdef DD_MACOS
+// MoltenVK on MacOS requires this extension. The extension is not expected for renderdoc since it does not support
+// MacOS, therefore it most be disabled in that case
+#ifdef DD_MACOS
         extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-        #endif
+#endif
 
         return extensions;
     }

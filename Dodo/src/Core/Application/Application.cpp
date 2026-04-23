@@ -1,7 +1,7 @@
 #include "Application.h"
 
-#include "Core/System/Timer.h"
 #include "Core/System/Memory.h"
+#include "Core/System/Timer.h"
 
 namespace Dodo {
 

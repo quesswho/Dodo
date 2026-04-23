@@ -90,10 +90,7 @@ namespace Dodo::Platform {
         {
             return std::make_shared<TextureSampler>(prop);
         }
-        inline Ref<CubeMap> CreateCubeMap(const CubeMapData& data)
-        {
-            return std::make_shared<CubeMap>(data);
-        }
+        inline Ref<CubeMap> CreateCubeMap(const CubeMapData& data) { return std::make_shared<CubeMap>(data); }
 
         // OpenGL uploads are synchronous so these are no-ops / always-ready stubs.
         inline void SubmitTextureBatch() {}

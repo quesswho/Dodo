@@ -137,7 +137,7 @@ namespace Dodo::Math {
         inline float Distance(const TVec3& other) const
         {
             return std::sqrt((this->x - other.x) * (this->x - other.x) + (this->y - other.y) * (this->y - other.y) +
-                        (this->z - other.z) * (this->z - other.z));
+                             (this->z - other.z) * (this->z - other.z));
         }
 
         // Dot product
@@ -462,7 +462,10 @@ namespace Dodo::Math {
     }
 
     template <typename T>
-    inline TVec3<T> Lerp(const TVec3<T>& a, const TVec3<T>& b, float t) { return (1.0f - t) * a + t * b; }
+    inline TVec3<T> Lerp(const TVec3<T>& a, const TVec3<T>& b, float t)
+    {
+        return (1.0f - t) * a + t * b;
+    }
 
     template <typename T>
     inline TVec3<T> ExpDecay(const TVec3<T>& a, const TVec3<T>& b, float decay, float dt)
@@ -471,7 +474,10 @@ namespace Dodo::Math {
     }
 
     template <typename T>
-    inline float Sum(const TVec3<T>& vec) { return vec.x + vec.y + vec.z; }
+    inline float Sum(const TVec3<T>& vec)
+    {
+        return vec.x + vec.y + vec.z;
+    }
 
     template <typename T>
     inline float Dot(const TVec3<T>& a, const TVec3<T>& b)
@@ -485,8 +491,14 @@ namespace Dodo::Math {
         return std::sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
     }
 
-    inline Vec3 ToRadians(const Vec3& degrees) { return degrees * MATH_PI / 180.0f; }
+    inline Vec3 ToRadians(const Vec3& degrees)
+    {
+        return degrees * MATH_PI / 180.0f;
+    }
 
-    inline Vec3 ToDegrees(const Vec3& radians) { return radians * 180.0f / MATH_PI; }
+    inline Vec3 ToDegrees(const Vec3& radians)
+    {
+        return radians * 180.0f / MATH_PI;
+    }
 
 } // namespace Dodo::Math

@@ -4,7 +4,6 @@
 #include <mutex>
 
 #include "AssetTypes.h"
-#include "CubeMapLoader.h"
 #include "Core/Graphics/CubeMap.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
@@ -13,6 +12,7 @@
 #include "Core/Graphics/Pipeline/SlangCompiler.h"
 #include "Core/Graphics/Scene/Mesh/MeshFactory.h"
 #include "Core/Graphics/Scene/Model.h"
+#include "CubeMapLoader.h"
 #include "MaterialLoader.h"
 #include "ModelLoader.h"
 #include "ShaderAsset.h"

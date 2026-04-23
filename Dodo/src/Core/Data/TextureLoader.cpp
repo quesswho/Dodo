@@ -1,7 +1,7 @@
 #include "TextureLoader.h"
 
-#include "Core/Utilities/Logger.h"
 #include "Core/Math/MathFunc.h"
+#include "Core/Utilities/Logger.h"
 
 #include <stb_image.h>
 
@@ -45,16 +45,16 @@ namespace Dodo {
             stbi_image_free(data);
             return result;
         }
-        
+
         const size_t byteCount = (size_t)width * height * desiredChannels * 2;
         result.pixels.resize(byteCount);
-        
+
         const size_t pixels = width * height;
         // TODO:
         // Should be possible to optimize this with SIMD
         // Can also precompute the Alpha channel if it was padded which is usually the case
-        for(int i = 0; i < pixels; ++i) {
-            for(int j = 0; j < desiredChannels; ++j) {
+        for (int i = 0; i < pixels; ++i) {
+            for (int j = 0; j < desiredChannels; ++j) {
                 uint16_t half = Math::FloatToHalf(data[i * desiredChannels + j]);
                 result.pixels[(i * desiredChannels + j) * 2] = half & 0xFF;
                 result.pixels[(i * desiredChannels + j) * 2 + 1] = (half >> 8) & 0xFF;
@@ -72,16 +72,16 @@ namespace Dodo {
         TextureData result;
         int width, height, channels;
         int desiredChannels = GetDesiredChannels(path);
-        
+
         uchar* data = stbi_load(path.c_str(), &width, &height, &channels, desiredChannels);
         if (!data) {
             DD_ERR("TextureLoader: could not load '{}'", path);
             return result;
         }
-        
+
         result.props.m_Width = (uint)width;
         result.props.m_Height = (uint)height;
-        
+
         switch (desiredChannels) {
         case 1:
             result.props.m_Format = TextureFormat::FORMAT_RED;

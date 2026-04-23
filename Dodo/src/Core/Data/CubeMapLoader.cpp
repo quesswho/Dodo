@@ -1,5 +1,5 @@
 #include "CubeMapLoader.h"
-#include "pch.h"
+#include "Core/Utilities/Logger.h"
 
 #include <stb_image.h>
 

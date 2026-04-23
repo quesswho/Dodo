@@ -1,5 +1,4 @@
 #include "MeshFactory.h"
-#include "pch.h"
 
 #include "Core/Math/Random/Noise.h"
 
@@ -170,7 +169,7 @@ namespace Dodo {
                 if (x > 0 && x < res - 1 && z > 0 && z < res - 1) {
                     Math::Vec3 dx = positions[idx + 1] - positions[idx - 1];
                     Math::Vec3 dz = positions[idx + res] - positions[idx - res];
-                    normal = Math::Vec3::Normalize(Math::Vec3::Cross(dz, dx));
+                    normal = Math::Normalize(Math::Cross(dz, dx));
                 }
 
                 // Tangent: finite difference in X (UV.u direction), projected onto the surface
@@ -183,7 +182,7 @@ namespace Dodo {
                     dx = positions[idx + 1] - positions[idx - 1];
 
                 float dot = dx.Dot(normal);
-                Math::Vec3 tangent = Math::Vec3::Normalize({dx.x - dot * normal.x, dx.y - dot * normal.y, dx.z - dot * normal.z});
+                Math::Vec3 tangent = Math::Normalize(Math::Vec3{dx.x - dot * normal.x, dx.y - dot * normal.y, dx.z - dot * normal.z});
 
                 // Position
                 vertices.push_back(pos.x);

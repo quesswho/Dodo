@@ -4,6 +4,8 @@
 #include <deque>
 #include <thread>
 #include <vector>
+#include <functional>
+#include <condition_variable>
 
 namespace Dodo {
     class ThreadManager {

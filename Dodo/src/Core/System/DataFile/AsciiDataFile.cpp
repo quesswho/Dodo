@@ -1,5 +1,7 @@
 #include "AsciiDataFile.h"
-#include "pch.h"
+
+#include <fstream>
+#include <stdexcept>
 
 namespace Dodo {
 

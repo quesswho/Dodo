@@ -1,7 +1,5 @@
 #pragma once
 
-#include "pch.h"
-
 #include "Input/InputManager.h"
 #include "Layer.h"
 #include "Window.h"

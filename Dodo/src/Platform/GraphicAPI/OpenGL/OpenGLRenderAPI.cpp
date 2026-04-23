@@ -1,5 +1,4 @@
 #include "OpenGLRenderAPI.h"
-#include "pch.h"
 
 #include "Core/Application/Application.h"
 #include "OpenGLShaderCompiler.h"

@@ -1,5 +1,4 @@
 #include "Renderer3D.h"
-#include "pch.h"
 
 #include "Core/Application/Application.h"
 

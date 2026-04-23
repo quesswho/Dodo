@@ -1,5 +1,6 @@
 #include "VulkanCubeMap.h"
-#include "pch.h"
+
+#include "Core/Utilities/Logger.h"
 #include <vk_mem_alloc.h>
 
 namespace Dodo::Platform {

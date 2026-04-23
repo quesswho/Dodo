@@ -1,5 +1,4 @@
 #include "Scene.h"
-#include "pch.h"
 
 #include "Core/Application/Application.h"
 

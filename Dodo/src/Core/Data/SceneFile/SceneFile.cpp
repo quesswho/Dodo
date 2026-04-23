@@ -1,5 +1,5 @@
+
 #include "SceneFile.h"
-#include "pch.h"
 
 #include "Core/Application/Application.h"
 #include "Core/Data/AssetTypes.h"

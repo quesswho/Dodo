@@ -3,7 +3,6 @@ add_library(Dodo STATIC)
 include(ExternalProject)
 
 file(GLOB_RECURSE DODO_CPP_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/pch.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/*.cpp
 )
 
@@ -31,7 +30,6 @@ file(GLOB_RECURSE DODO_H_SOURCES
 )
 
 target_sources(Dodo PRIVATE
-        src/pch.cpp
         ${DODO_CPP_SOURCES}
         ${DODO_H_SOURCES}
         lib/stb_image/stb_image.cpp
@@ -59,9 +57,6 @@ target_compile_definitions(Dodo
     PRIVATE
         _CRT_SECURE_NO_WARNINGS
 )
-
-# Precompiled headers
-target_precompile_headers(Dodo PRIVATE src/pch.h)
 
 # Platform-specific
 if (DD_API_WIN32)

@@ -1,5 +1,4 @@
 #include "VulkanRenderAPI.h"
-#include "pch.h"
 
 #include "Core/Data/AssetManager.h"
 #include "VulkanBuffer.h"

@@ -1,5 +1,4 @@
 #include "AssetManager.h"
-#include "pch.h"
 
 #include "Core/System/ThreadManager.h"
 

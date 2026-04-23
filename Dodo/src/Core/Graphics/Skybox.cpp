@@ -1,5 +1,4 @@
 #include "Skybox.h"
-#include "pch.h"
 
 namespace Dodo {
 

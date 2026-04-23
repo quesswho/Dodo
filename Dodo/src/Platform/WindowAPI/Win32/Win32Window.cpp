@@ -1,6 +1,5 @@
 #include "Win32Window.h"
 #include "Win32ImGuiBackend.h"
-#include "pch.h"
 
 #include "Core/System/FileUtils.h"
 

@@ -1,5 +1,4 @@
 #include "Noise.h"
-#include "pch.h"
 
 #include <cstdint>
 

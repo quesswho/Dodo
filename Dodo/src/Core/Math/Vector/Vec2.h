@@ -1,6 +1,8 @@
 #pragma once
 
-namespace Dodo { namespace Math {
+#include "Core/Math/MathFunc.h"
+
+namespace Dodo::Math {
 
     template <typename T = float>
     struct TVec2 {
@@ -63,7 +65,7 @@ namespace Dodo { namespace Math {
         inline constexpr float SquareSum() const { return (float)(this->x * this->x + this->y * this->y); }
 
         // Return the magnitude of the vector
-        inline constexpr float Magnitude() const { return sqrt(SquareSum()); }
+        inline constexpr float Magnitude() const { return std::sqrt(SquareSum()); }
 
         // Return normalized vector
         inline TVec2 Normalize() const
@@ -93,7 +95,7 @@ namespace Dodo { namespace Math {
         // Get distance between this vector and other vector
         inline float Distance(const TVec2& other) const
         {
-            return sqrt((this->x - other->x) * (this->x - other->x) + (this->y - other->y) * (this->y - other->y));
+            return std::sqrt((this->x - other.x) * (this->x - other.x) + (this->y - other.y) * (this->y - other.y));
         }
 
         // Dot product
@@ -113,6 +115,44 @@ namespace Dodo { namespace Math {
 
         // Get the angle of the vector in radians
         inline float Radians() const { return atan2((float)this->y, (float)this->x); }
+
+        // Sum of Vec2
+        static inline float Sum(const TVec2<float>& vec)
+        {
+            return vec.x + vec.y;
+        }
+
+        // Dot product of two Vec2
+        static inline float Dot(const TVec2<float>& first, const TVec2<float>& second)
+        {
+            return first.x * first.x + first.y * first.y;
+        }
+
+        // Get distance between two Vec2
+        static inline float Distance(const TVec2<float>& first, const TVec2<float>& second)
+        {
+            return sqrt((first.x - second.x) * (first.x - second.x) + (first.y - second.y) * (first.y - second.y));
+        }
+
+        // Normalize a Vec2
+        static inline const TVec2<float> Normalize(const TVec2<float>& vec)
+        {
+            float mag = vec.Magnitude();
+            if (mag > 0) return vec * (1.0f / mag);
+            return vec;
+        }
+
+        // Turn vec2 using degrees into vec2 using radians
+        static inline const TVec2<float> ToRadians(const TVec2<float>& degrees)
+        {
+            return degrees * MATH_PI / 180.0f;
+        }
+
+        // Turn vec2 using radians into vec2 using degrees
+        static inline const TVec2<float> ToDegrees(const TVec2<float>& radians)
+        {
+            return radians * 180.0f / MATH_PI;
+        }
 
         // Unary operations
 
@@ -354,4 +394,4 @@ namespace Dodo { namespace Math {
         const bool operator>=(const TVec2& other) const { return (this->x >= other.x && this.y >= other.y); }
     };
     using Vec2 = TVec2<float>;
-}} // namespace Dodo::Math
+} // namespace Dodo::Math

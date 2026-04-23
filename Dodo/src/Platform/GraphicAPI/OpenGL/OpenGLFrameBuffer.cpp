@@ -1,5 +1,4 @@
 #include "OpenGLFrameBuffer.h"
-#include "pch.h"
 
 namespace Dodo::Platform {
     OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferProperties& framebufferProp)

@@ -1,7 +1,9 @@
 #include "ModelLoader.h"
-#include "pch.h"
 
 #include "AssetManager.h"
+
+#include <algorithm>
+#include <filesystem>
 
 #include <assimp/GltfMaterial.h>
 #include <assimp/Importer.hpp>

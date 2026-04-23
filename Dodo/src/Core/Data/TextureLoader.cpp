@@ -1,5 +1,7 @@
 #include "TextureLoader.h"
-#include "pch.h"
+
+#include "Core/Utilities/Logger.h"
+#include "Core/Math/MathFunc.h"
 
 #include <stb_image.h>
 

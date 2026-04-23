@@ -1,4 +1,3 @@
-#include "pch.h"
 
 #include "GLFWImGuiBackend.h"
 #include "GLFWWindow.h"

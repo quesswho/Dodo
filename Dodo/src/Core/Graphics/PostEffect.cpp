@@ -1,6 +1,5 @@
 #include "PostEffect.h"
 #include "Core/Application/Application.h"
-#include "pch.h"
 
 namespace Dodo {
     PostEffect::PostEffect(const FrameBufferProperties& framebufferprop, const char* path, RenderAPI& renderAPI,

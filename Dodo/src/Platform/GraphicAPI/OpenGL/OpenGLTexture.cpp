@@ -1,5 +1,4 @@
 #include "OpenGLTexture.h"
-#include "pch.h"
 
 #include "Core/Math/MathFunc.h"
 

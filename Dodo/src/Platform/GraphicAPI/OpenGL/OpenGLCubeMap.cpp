@@ -1,5 +1,4 @@
 #include "OpenGLCubeMap.h"
-#include "pch.h"
 
 #include <cmath>
 

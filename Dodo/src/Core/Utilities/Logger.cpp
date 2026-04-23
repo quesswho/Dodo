@@ -1,4 +1,3 @@
-#include "pch.h"
 
 #if !defined(DODO_NO_LOGGER)
 #include "Logger.h"

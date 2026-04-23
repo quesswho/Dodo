@@ -6,8 +6,9 @@
 #include "Core/Math/Matrix/Mat3.h"
 #include "Core/Math/Vector/Vec4.h"
 
-#if defined(DD_MATH_COLUMN_MAJOR) && defined(DD_COORDINATE_RIGHT_HANDED)
 namespace Dodo::Math {
+    
+#if defined(DD_MATH_COLUMN_MAJOR) && defined(DD_COORDINATE_RIGHT_HANDED)
 
     // Column Major Right hand 4x4 matrix
     template <typename T = float>
@@ -445,7 +446,7 @@ namespace Dodo::Math {
         static constexpr inline int GetIndex(int column, int row) { return (column * 4) + row; }
     };
     using Mat4 = Mat4x4<float>;
+    #else
+    #error "Unsupported matrix configuration! Define DD_MATH_COLUMN_MAJOR and DD_COORDINATE_RIGHT_HANDED for a CRH matrix"
+    #endif
 } // namespace Dodo::Math
-#else
-#error "Unsupported matrix configuration! Define DD_MATH_COLUMN_MAJOR and DD_COORDINATE_RIGHT_HANDED for a CRH matrix"
-#endif

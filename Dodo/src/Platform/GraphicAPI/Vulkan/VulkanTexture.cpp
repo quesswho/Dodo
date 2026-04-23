@@ -18,19 +18,23 @@ namespace Dodo::Platform {
         switch (format) {
         case TextureFormat::FORMAT_RED:
             return VK_FORMAT_R8_UNORM;
-        // FORMAT_RGB is expanded to RGBA on upload since VK_FORMAT_R8G8B8_UNORM
-        // is an optional format and most GPUs don't support it with optimal tiling
+        // FORMAT_RGB is not produced by TextureLoader (loader always pads to RGBA via STBI_rgb_alpha).
+        // Kept as a fallback: if somehow FORMAT_RGB data arrives, map to R8G8B8A8 since
+        // VK_FORMAT_R8G8B8_UNORM optimal tiling is not guaranteed by the Vulkan spec.
         case TextureFormat::FORMAT_RGB:
-            return VK_FORMAT_R8G8B8A8_UNORM;
         case TextureFormat::FORMAT_RGBA:
+            return VK_FORMAT_R8G8B8A8_UNORM;
             return VK_FORMAT_R8G8B8A8_UNORM;
         // FORMAT_RGB16F/32F are expanded to RGBA: the 3-channel float formats have
         // poor GPU coverage, same rationale as the RGB8 case above
         case TextureFormat::FORMAT_RGB16F:
+        case TextureFormat::FORMAT_RGBA16F:
             return VK_FORMAT_R16G16B16A16_SFLOAT;
         case TextureFormat::FORMAT_RGB32F:
+        case TextureFormat::FORMAT_RGBA32F:
             return VK_FORMAT_R32G32B32A32_SFLOAT;
         default:
+            DD_ERR("VulkanTexture: unsupported texture format!");
             return VK_FORMAT_R8G8B8A8_UNORM;
         }
     }
@@ -109,48 +113,19 @@ namespace Dodo::Platform {
         VkDeviceSize imageSize;
         std::vector<uchar> stagingStorage;
 
-        if (m_TextureProperties.m_Format == TextureFormat::FORMAT_RGB) {
-            // RGB is not a guaranteed optimal-tiling format in Vulkan so we pad to RGBA
-            stagingStorage.resize(pixelCount * 4);
-            for (uint32_t i = 0; i < pixelCount; i++) {
-                stagingStorage[i * 4 + 0] = data[i * 3 + 0];
-                stagingStorage[i * 4 + 1] = data[i * 3 + 1];
-                stagingStorage[i * 4 + 2] = data[i * 3 + 2];
-                stagingStorage[i * 4 + 3] = 255;
-            }
-            uploadData = stagingStorage.data();
-            imageSize = (VkDeviceSize)pixelCount * 4;
-        } else if (m_TextureProperties.m_Format == TextureFormat::FORMAT_RGB16F) {
-            // Expand RGB float (32-bit) to RGBA half-float (16-bit): VK_FORMAT_R16G16B16_SFLOAT
-            // has poor GPU coverage so we pad to RGBA, same rationale as the RGB8 case above
-            stagingStorage.resize(pixelCount * 4 * sizeof(uint16_t));
-            uint16_t* dst = reinterpret_cast<uint16_t*>(stagingStorage.data());
-            const float* src = reinterpret_cast<const float*>(data);
-            for (uint32_t i = 0; i < pixelCount; i++) {
-                dst[i * 4 + 0] = Math::FloatToHalf(src[i * 3 + 0]);
-                dst[i * 4 + 1] = Math::FloatToHalf(src[i * 3 + 1]);
-                dst[i * 4 + 2] = Math::FloatToHalf(src[i * 3 + 2]);
-                dst[i * 4 + 3] = Math::FloatToHalf(1.0f);
-            }
-            uploadData = stagingStorage.data();
+        switch(m_TextureProperties.m_Format) {
+        case TextureFormat::FORMAT_RGBA16F:
             imageSize = (VkDeviceSize)pixelCount * 4 * sizeof(uint16_t);
-        } else if (m_TextureProperties.m_Format == TextureFormat::FORMAT_RGB32F) {
-            // Expand RGB float to RGBA float: VK_FORMAT_R32G32B32_SFLOAT has poor GPU coverage
-            stagingStorage.resize(pixelCount * 4 * sizeof(float));
-            float* dst = reinterpret_cast<float*>(stagingStorage.data());
-            const float* src = reinterpret_cast<const float*>(data);
-            for (uint32_t i = 0; i < pixelCount; i++) {
-                dst[i * 4 + 0] = src[i * 3 + 0];
-                dst[i * 4 + 1] = src[i * 3 + 1];
-                dst[i * 4 + 2] = src[i * 3 + 2];
-                dst[i * 4 + 3] = 1.0f;
-            }
-            uploadData = stagingStorage.data();
-            imageSize = (VkDeviceSize)pixelCount * 4 * sizeof(float);
-        } else if (m_TextureProperties.m_Format == TextureFormat::FORMAT_RED) {
-            imageSize = (VkDeviceSize)pixelCount;
-        } else {
+            break;
+        case TextureFormat::FORMAT_RGBA:
             imageSize = (VkDeviceSize)pixelCount * 4;
+            break;
+        case TextureFormat::FORMAT_RED:
+            imageSize = (VkDeviceSize)pixelCount;
+            break;
+        default:
+            DD_ERR("VulkanTexture: unsupported texture format!");
+            return;
         }
 
         // Upload pixel data via a host-visible staging buffer (kept alive until FinalizeUpload)

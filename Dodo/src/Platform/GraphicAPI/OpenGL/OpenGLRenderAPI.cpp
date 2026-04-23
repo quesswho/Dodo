@@ -1,7 +1,9 @@
 #include "OpenGLRenderAPI.h"
 
 #include "Core/Application/Application.h"
+#include "Core/System/Memory.h"
 #include "OpenGLShaderCompiler.h"
+
 #include <backends/imgui_impl_opengl3.h>
 
 namespace Dodo::Platform {
@@ -47,7 +49,7 @@ namespace Dodo::Platform {
         glGetIntegerv(0x9048, &m_VramKbs);
         m_GPUInfo = "Vendor: " + vendor + " Renderer: " + renderer;
         m_GPUInfo.append(" VRAM: ")
-            .append(StringUtils::KiloByte((size_t)m_VramKbs))
+            .append(MemoryFormatter::KiloByte((size_t)m_VramKbs))
             .append(" : Opengl Version: ")
             .append(versionStr);
 

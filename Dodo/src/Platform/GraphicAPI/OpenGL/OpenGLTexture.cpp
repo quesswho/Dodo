@@ -3,6 +3,7 @@
 #include "Core/Math/MathFunc.h"
 
 #include <glad/gl.h>
+#include <vector>
 
 namespace Dodo::Platform {
 
@@ -69,22 +70,12 @@ namespace Dodo::Platform {
         default:
             break;
         }
-        std::vector<uchar> flipped;
-        const uchar* uploadData = data;
-        if (bpp > 0 && data) {
-            const size_t rowSize = (size_t)m_TextureProperties.m_Width * bpp;
-            const uint h = m_TextureProperties.m_Height;
-            flipped.resize(rowSize * h);
-            for (uint row = 0; row < h; row++)
-                memcpy(flipped.data() + row * rowSize, data + (size_t)(h - 1 - row) * rowSize, rowSize);
-            uploadData = flipped.data();
-        }
 
         glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
         glTextureStorage2D(m_TextureID, mipLevels, internalFormat, m_TextureProperties.m_Width,
                            m_TextureProperties.m_Height);
         glTextureSubImage2D(m_TextureID, 0, 0, 0, m_TextureProperties.m_Width, m_TextureProperties.m_Height, format,
-                            type, uploadData);
+                            type, data);
         glGenerateTextureMipmap(m_TextureID);
     }
 

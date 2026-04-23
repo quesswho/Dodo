@@ -17,7 +17,7 @@ namespace Dodo {
         static inline void Dealloc(void* block, size_t size);
     };
 
-    class StringUtils {
+    class MemoryFormatter {
       private:
         static const float p;
         static const float n;

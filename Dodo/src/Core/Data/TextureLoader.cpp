@@ -72,7 +72,7 @@ namespace Dodo {
         TextureData result;
         int width, height, channels;
         int desiredChannels = GetDesiredChannels(path);
-
+        stbi_set_flip_vertically_on_load(true);
         uchar* data = stbi_load(path.c_str(), &width, &height, &channels, desiredChannels);
         if (!data) {
             DD_ERR("TextureLoader: could not load '{}'", path);

@@ -1,5 +1,7 @@
 #include "OpenGLFrameBuffer.h"
 
+#include "Core/Utilities/Logger.h"
+
 namespace Dodo::Platform {
     OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferProperties& framebufferProp)
         : m_FrameBufferProperties(framebufferProp)

@@ -1,7 +1,8 @@
 #include "OpenGLCubeMap.h"
 
-#include <cmath>
+#include "Core/Utilities/Logger.h"
 
+#include <cmath>
 #include <glad/gl.h>
 
 namespace Dodo::Platform {

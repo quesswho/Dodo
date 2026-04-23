@@ -135,7 +135,7 @@ namespace Dodo::Platform {
 
             std::vector<GLchar> errorLog(maxLength);
             glGetShaderInfoLog(shader, maxLength, &maxLength, &errorLog[0]);
-            DD_ERR("Shader compile error, Code:\n{}\nError: {}", source, errorLog.data());
+            DD_ERR("GLSL shader compiler: Code:\n{}\nError: {}", source, errorLog.data());
             glDeleteShader(shader);
             return 0;
         }

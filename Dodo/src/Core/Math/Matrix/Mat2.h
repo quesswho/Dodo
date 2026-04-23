@@ -163,6 +163,22 @@ namespace Dodo::Math {
                           mat.m_Elements[GetIndex(0, 1)], mat.m_Elements[GetIndex(1, 1)]);
         }
 
+        static const Mat2x2 Inverse(const Mat2x2& mat)
+        {
+            const T a00 = mat.m_Elements[GetIndex(0, 0)];
+            const T a01 = mat.m_Elements[GetIndex(1, 0)];
+            const T a10 = mat.m_Elements[GetIndex(0, 1)];
+            const T a11 = mat.m_Elements[GetIndex(1, 1)];
+
+            const T determinant = a00 * a11 - a01 * a10;
+            if (determinant == T(0)) {
+                return Mat2x2(T(1));
+            }
+
+            const T invDet = T(1) / determinant;
+            return Mat2x2(a11 * invDet, -a10 * invDet, -a01 * invDet, a00 * invDet);
+        }
+
       private:
         static constexpr inline int GetIndex(int column, int row) { return (column * 2) + row; }
     };

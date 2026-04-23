@@ -282,6 +282,58 @@ namespace Dodo::Math {
                 mat.m_Elements[GetIndex(3, 3)]);
         }
 
+        static const Mat4x4 Inverse(const Mat4x4& mat)
+        {
+            const T a00 = mat.m_Elements[GetIndex(0, 0)]; const T a01 = mat.m_Elements[GetIndex(1, 0)];
+            const T a02 = mat.m_Elements[GetIndex(2, 0)]; const T a03 = mat.m_Elements[GetIndex(3, 0)];
+            const T a10 = mat.m_Elements[GetIndex(0, 1)]; const T a11 = mat.m_Elements[GetIndex(1, 1)];
+            const T a12 = mat.m_Elements[GetIndex(2, 1)]; const T a13 = mat.m_Elements[GetIndex(3, 1)];
+            const T a20 = mat.m_Elements[GetIndex(0, 2)]; const T a21 = mat.m_Elements[GetIndex(1, 2)];
+            const T a22 = mat.m_Elements[GetIndex(2, 2)]; const T a23 = mat.m_Elements[GetIndex(3, 2)];
+            const T a30 = mat.m_Elements[GetIndex(0, 3)]; const T a31 = mat.m_Elements[GetIndex(1, 3)];
+            const T a32 = mat.m_Elements[GetIndex(2, 3)]; const T a33 = mat.m_Elements[GetIndex(3, 3)];
+
+            const T f00 = a22*a33 - a23*a32; const T f01 = a21*a33 - a23*a31;
+            const T f02 = a21*a32 - a22*a31; const T f03 = a20*a33 - a23*a30;
+            const T f04 = a20*a32 - a22*a30; const T f05 = a20*a31 - a21*a30;
+            const T f06 = a12*a33 - a13*a32; const T f07 = a11*a33 - a13*a31;
+            const T f08 = a11*a32 - a12*a31; const T f09 = a10*a33 - a13*a30;
+            const T f10 = a10*a32 - a12*a30; const T f11 = a10*a31 - a11*a30;
+            const T f12 = a12*a23 - a13*a22; const T f13 = a11*a23 - a13*a21;
+            const T f14 = a11*a22 - a12*a21; const T f15 = a10*a23 - a13*a20;
+            const T f16 = a10*a22 - a12*a20; const T f17 = a10*a21 - a11*a20;
+
+            const T c00 =  (a11*f00 - a12*f01 + a13*f02);
+            const T c01 = -(a10*f00 - a12*f03 + a13*f04);
+            const T c02 =  (a10*f01 - a11*f03 + a13*f05);
+            const T c03 = -(a10*f02 - a11*f04 + a12*f05);
+
+            const T determinant = a00*c00 + a01*c01 + a02*c02 + a03*c03;
+            if (determinant == T(0)) {
+                return Mat4x4(T(1));
+            }
+
+            const T invDet = T(1) / determinant;
+            const T c10 = -(a01*f00 - a02*f01 + a03*f02);
+            const T c11 =  (a00*f00 - a02*f03 + a03*f04);
+            const T c12 = -(a00*f01 - a01*f03 + a03*f05);
+            const T c13 =  (a00*f02 - a01*f04 + a02*f05);
+            const T c20 =  (a01*f06 - a02*f07 + a03*f08);
+            const T c21 = -(a00*f06 - a02*f09 + a03*f10);
+            const T c22 =  (a00*f07 - a01*f09 + a03*f11);
+            const T c23 = -(a00*f08 - a01*f10 + a02*f11);
+            const T c30 = -(a01*f12 - a02*f13 + a03*f14);
+            const T c31 =  (a00*f12 - a02*f15 + a03*f16);
+            const T c32 = -(a00*f13 - a01*f15 + a03*f17);
+            const T c33 =  (a00*f14 - a01*f16 + a02*f17);
+
+            return Mat4x4(
+                c00*invDet, c01*invDet, c02*invDet, c03*invDet,
+                c10*invDet, c11*invDet, c12*invDet, c13*invDet,
+                c20*invDet, c21*invDet, c22*invDet, c23*invDet,
+                c30*invDet, c31*invDet, c32*invDet, c33*invDet);
+        }
+
         static inline const Mat4x4<T> Translate(const Math::TVec3<T>& translation)
         {
             Mat4x4 result(1.0f);

@@ -1,5 +1,7 @@
 #include "VulkanBuffer.h"
+
 #include <vk_mem_alloc.h>
+#include <cstring> // memcpy
 
 namespace Dodo::Platform {
 

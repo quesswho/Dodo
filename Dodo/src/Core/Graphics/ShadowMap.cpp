@@ -1,5 +1,4 @@
 #include "ShadowMap.h"
-#include "pch.h"
 
 namespace Dodo {
 

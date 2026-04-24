@@ -7,12 +7,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Export compile commands, useful for IntelliSense
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# Set default build type to Debug
-set(CMAKE_DEFAULT_BUILD_TYPE Debug)
+# Set default build type to Debug (Ninja Multi-Config only)
+if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
+    set(CMAKE_DEFAULT_BUILD_TYPE Debug)
+endif()
 
 # Load Opengl or Vulkan
-option(DD_API_OPENGL "Enable OpenGL loader" OFF)
-option(DD_API_VULKAN "Enable Vulkan loader" ON)
+option(DD_API_OPENGL "Enable OpenGL loader" ON)
+option(DD_API_VULKAN "Enable Vulkan loader" OFF)
 
 option(DD_API_WIN32 "Enable Win32" OFF)
 option(DD_API_GLFW "Enable GLFW" ON)
@@ -53,7 +55,12 @@ endif()
 
 message(STATUS "=== Configuring ImGui ===")
 add_subdirectory(Dodo/lib/imgui)
-target_compile_options(imgui PRIVATE -O2 -g0)
+target_compile_options(imgui PRIVATE
+    $<$<AND:$<NOT:$<CONFIG:Debug>>,$<CXX_COMPILER_ID:MSVC>>:/O2>
+    $<$<AND:$<NOT:$<CONFIG:Debug>>,$<CXX_COMPILER_ID:MSVC>>:/Ob2>
+    $<$<AND:$<NOT:$<CONFIG:Debug>>,$<NOT:$<CXX_COMPILER_ID:MSVC>>>:-O2>
+    $<$<AND:$<NOT:$<CONFIG:Debug>>,$<NOT:$<CXX_COMPILER_ID:MSVC>>>:-g0>
+)
 
 message(STATUS "=== Configuring Assimp ===")
 set(ASSIMP_BUILD_TESTS            OFF CACHE BOOL "" FORCE)
@@ -78,7 +85,12 @@ add_subdirectory(Dodo/lib/assimp)
 set(CMAKE_MESSAGE_LOG_LEVEL ${CMAKE_MESSAGE_LOG_LEVEL_BACKUP})
 
 # Strip debug info from Assimp to reduce binary size
-target_compile_options(assimp PRIVATE -O2 -g0)
+target_compile_options(assimp PRIVATE
+    $<$<AND:$<NOT:$<CONFIG:Debug>>,$<CXX_COMPILER_ID:MSVC>>:/O2>
+    $<$<AND:$<NOT:$<CONFIG:Debug>>,$<CXX_COMPILER_ID:MSVC>>:/Ob2>
+    $<$<AND:$<NOT:$<CONFIG:Debug>>,$<NOT:$<CXX_COMPILER_ID:MSVC>>>:-O2>
+    $<$<AND:$<NOT:$<CONFIG:Debug>>,$<NOT:$<CXX_COMPILER_ID:MSVC>>>:-g0>
+)
 
 # Restore static linking for all subsequent dependencies
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
@@ -89,7 +101,12 @@ if(DD_API_GLFW)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
     add_subdirectory(Dodo/lib/glfw)
-    target_compile_options(glfw PRIVATE -O2 -g0)
+    target_compile_options(glfw PRIVATE
+        $<$<AND:$<NOT:$<CONFIG:Debug>>,$<CXX_COMPILER_ID:MSVC>>:/O2>
+        $<$<AND:$<NOT:$<CONFIG:Debug>>,$<CXX_COMPILER_ID:MSVC>>:/Ob2>
+        $<$<AND:$<NOT:$<CONFIG:Debug>>,$<NOT:$<CXX_COMPILER_ID:MSVC>>>:-O2>
+        $<$<AND:$<NOT:$<CONFIG:Debug>>,$<NOT:$<CXX_COMPILER_ID:MSVC>>>:-g0>
+    )
 endif()
 
 # Projects

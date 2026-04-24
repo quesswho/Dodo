@@ -2,7 +2,7 @@
 [![CMake on multiple platforms](https://github.com/quesswho/Dodo/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/quesswho/Dodo/actions/workflows/cmake-multi-platform.yml)
 
 **Dodo** is a multi-platform game engine written in **C++**, built from scratch.
-It features a graphics API abstraction layer with an **OpenGL** backend and a **Vulkan** backend in progress.
+It features a graphics API abstraction layer for **Vulkan** and **OpenGL**.
 
 The engine features an Entity Component System (ECS), model loading, PBR materials, shadow maps and a level editor.
 
@@ -49,8 +49,8 @@ The engine features an Entity Component System (ECS), model loading, PBR materia
 - CMake >= 3.26
 - Ninja
 - A C++20-compatible compiler
-- OpenGL 4.5-capable GPU
-- Vulkan 1.3-capable GPU (for Vulkan backend, optional)
+- Vulkan 1.3-capable GPU (for Vulkan backend)
+- OpenGL 4.6-capable GPU (for OpenGL backend)
 
 ### Cloning
 
@@ -78,8 +78,8 @@ make run
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `DD_API_OPENGL` | `ON` | Enable OpenGL backend |
-| `DD_API_VULKAN` | `OFF` | Enable Vulkan backend |
+| `DD_API_VULKAN` | `ON` | Enable Vulkan backend |
+| `DD_API_OPENGL` | `OFF` | Enable OpenGL backend |
 | `DD_API_WIN32` | `OFF` | Enable Win32 window backend |
 | `DD_API_GLFW` | `ON` | Enable GLFW window backend |
 | `COMPILE_EDITOR` | `ON` | Compile the level editor |

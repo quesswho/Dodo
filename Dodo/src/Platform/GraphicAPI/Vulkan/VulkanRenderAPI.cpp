@@ -1,5 +1,4 @@
 #include "VulkanRenderAPI.h"
-#include "pch.h"
 
 #include "Core/Data/AssetManager.h"
 #include "VulkanBuffer.h"
@@ -43,6 +42,8 @@ namespace Dodo::Platform {
             vkDestroySemaphore(m_Device, m_Frames[i].imageAvailableSemaphore, nullptr);
             vkDestroyFence(m_Device, m_Frames[i].inFlightFence, nullptr);
         }
+
+        if (m_UploadFence) vkDestroyFence(m_Device, m_UploadFence, nullptr);
 
         vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
 
@@ -144,10 +145,10 @@ namespace Dodo::Platform {
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         createInfo.pApplicationInfo = &appInfo;
 
-        // Add portability enumeration flag for platforms that require it (e.g. macOS with MoltenVK)
-        #ifdef DD_MACOS
+// Add portability enumeration flag for platforms that require it (e.g. macOS with MoltenVK)
+#ifdef DD_MACOS
         createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-        #endif
+#endif
         // Get required context extensions
         std::vector<const char*> requiredExtensions = GetRequiredExtensions();
 
@@ -360,9 +361,9 @@ namespace Dodo::Platform {
         uint32_t minCount = swapChainSupport.capabilities.minImageCount;
         uint32_t maxCount = swapChainSupport.capabilities.maxImageCount > 0
                                 ? swapChainSupport.capabilities.maxImageCount
-                                : std::numeric_limits<uint32_t>::max();
+                                : (std::numeric_limits<uint32_t>::max)();
         // We prefer triple buffer, then double buffer
-        uint32_t imageCount = (3 <= maxCount) ? std::max(3u, minCount) : maxCount;
+        uint32_t imageCount = (3 <= maxCount) ? (std::max)(3u, minCount) : maxCount;
 
         VkSwapchainCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -480,6 +481,16 @@ namespace Dodo::Platform {
             m_Frames[i].commandBuffer = commandBuffers[i];
         }
 
+        // Allocate the shared upload command buffer used for batched texture uploads
+        VkCommandBufferAllocateInfo uploadAllocInfo{};
+        uploadAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        uploadAllocInfo.commandPool = m_CommandPool;
+        uploadAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        uploadAllocInfo.commandBufferCount = 1;
+        if (vkAllocateCommandBuffers(m_Device, &uploadAllocInfo, &m_UploadCmdBuf) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "failed to allocate upload command buffer!");
+        }
+
         return RenderInitError(RenderInitStatus::Success);
     }
 
@@ -508,6 +519,14 @@ namespace Dodo::Platform {
                 return RenderInitError(RenderInitStatus::Failed, "failed to create semaphores!");
             }
         }
+
+        // Upload fence starts unsignaled: no batch is pending at init time
+        VkFenceCreateInfo uploadFenceInfo{};
+        uploadFenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        if (vkCreateFence(m_Device, &uploadFenceInfo, nullptr, &m_UploadFence) != VK_SUCCESS) {
+            return RenderInitError(RenderInitStatus::Failed, "failed to create upload fence!");
+        }
+
         return RenderInitError(RenderInitStatus::Success);
     }
 
@@ -976,9 +995,8 @@ namespace Dodo::Platform {
     {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
 
-        m_BoundPipelinePtr->BindMaterialSet(cmd, m_TransientPools[m_CurrentFrame], m_CurrentFrame,
-                                            m_PendingImageViews, m_PendingSamplers,
-                                            m_PendingIsCubeMap, m_PendingIsDepth, maxTextureSlots,
+        m_BoundPipelinePtr->BindMaterialSet(cmd, m_TransientPools[m_CurrentFrame], m_CurrentFrame, m_PendingImageViews,
+                                            m_PendingSamplers, m_PendingIsCubeMap, m_PendingIsDepth, maxTextureSlots,
                                             m_DummyImageView, m_DummySampler);
         m_TexturesDirty = false;
 
@@ -991,9 +1009,8 @@ namespace Dodo::Platform {
         if (m_BoundPipelinePtr) {
             m_BoundPipelinePtr->BindGlobalSet(cmd, m_CurrentFrame, m_LastModelOffset);
             m_BoundPipelinePtr->BindMaterialSet(cmd, m_TransientPools[m_CurrentFrame], m_CurrentFrame,
-                                                m_PendingImageViews, m_PendingSamplers,
-                                                m_PendingIsCubeMap, m_PendingIsDepth, maxTextureSlots,
-                                                m_DummyImageView, m_DummySampler);
+                                                m_PendingImageViews, m_PendingSamplers, m_PendingIsCubeMap,
+                                                m_PendingIsDepth, maxTextureSlots, m_DummyImageView, m_DummySampler);
             m_TexturesDirty = false;
         }
         vkCmdDraw(cmd, count, 1, 0, 0);
@@ -1145,9 +1162,71 @@ namespace Dodo::Platform {
                                                    m_GraphicsQueue);
     }
 
+    void VulkanRenderAPI::SubmitTextureBatch()
+    {
+        if (!m_UploadBatchActive) return;
+
+        vkEndCommandBuffer(m_UploadCmdBuf);
+
+        VkSubmitInfo submitInfo{};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &m_UploadCmdBuf;
+        vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, m_UploadFence);
+
+        m_UploadBatchActive = false;
+        m_UploadFencePending = true;
+    }
+
+    bool VulkanRenderAPI::PollTextureBatch()
+    {
+        if (!m_UploadFencePending) return true;
+
+        VkResult result = vkGetFenceStatus(m_Device, m_UploadFence);
+        if (result == VK_SUCCESS) {
+            vkResetFences(m_Device, 1, &m_UploadFence);
+            m_UploadFencePending = false;
+
+            for (auto& tex : m_UploadBatchTextures)
+                tex->FinalizeUpload();
+            m_UploadBatchTextures.clear();
+
+            for (auto& cm : m_UploadBatchCubeMaps)
+                cm->FinalizeUpload();
+            m_UploadBatchCubeMaps.clear();
+
+            return true;
+        }
+        return false;
+    }
+
     Ref<Texture> VulkanRenderAPI::CreateTexture(uchar* data, const TextureProperties& prop)
     {
-        return std::make_shared<VulkanTexture>(data, prop, m_Device, m_VmaAllocator, m_CommandPool, m_GraphicsQueue);
+        if (!m_UploadBatchActive) {
+            // Start a new batch lazily (handles fallback textures created outside the main texture loop)
+            if (m_UploadFencePending) {
+                // Previous batch not yet finalized: wait synchronously so we can reset the fence
+                vkWaitForFences(m_Device, 1, &m_UploadFence, VK_TRUE, UINT64_MAX);
+                vkResetFences(m_Device, 1, &m_UploadFence);
+                m_UploadFencePending = false;
+                for (auto& tex : m_UploadBatchTextures)
+                    tex->FinalizeUpload();
+                m_UploadBatchTextures.clear();
+                for (auto& cm : m_UploadBatchCubeMaps)
+                    cm->FinalizeUpload();
+                m_UploadBatchCubeMaps.clear();
+            }
+            vkResetCommandBuffer(m_UploadCmdBuf, 0);
+            VkCommandBufferBeginInfo beginInfo{};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+            vkBeginCommandBuffer(m_UploadCmdBuf, &beginInfo);
+            m_UploadBatchActive = true;
+        }
+
+        auto tex = std::make_shared<VulkanTexture>(data, prop, m_Device, m_VmaAllocator, m_UploadCmdBuf);
+        m_UploadBatchTextures.push_back(tex);
+        return tex;
     }
 
     Ref<TextureSampler> VulkanRenderAPI::CreateSampler(const SamplerProperties& prop)
@@ -1157,11 +1236,33 @@ namespace Dodo::Platform {
 
     Ref<CubeMap> VulkanRenderAPI::CreateCubeMap(const CubeMapData& data)
     {
-        return std::make_shared<VulkanCubeMap>(data, m_Device, m_VmaAllocator, m_CommandPool, m_GraphicsQueue);
+        if (!m_UploadBatchActive) {
+            if (m_UploadFencePending) {
+                vkWaitForFences(m_Device, 1, &m_UploadFence, VK_TRUE, UINT64_MAX);
+                vkResetFences(m_Device, 1, &m_UploadFence);
+                m_UploadFencePending = false;
+                for (auto& tex : m_UploadBatchTextures)
+                    tex->FinalizeUpload();
+                m_UploadBatchTextures.clear();
+                for (auto& cm : m_UploadBatchCubeMaps)
+                    cm->FinalizeUpload();
+                m_UploadBatchCubeMaps.clear();
+            }
+            vkResetCommandBuffer(m_UploadCmdBuf, 0);
+            VkCommandBufferBeginInfo beginInfo{};
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+            vkBeginCommandBuffer(m_UploadCmdBuf, &beginInfo);
+            m_UploadBatchActive = true;
+        }
+
+        auto cm = std::make_shared<VulkanCubeMap>(data, m_Device, m_VmaAllocator, m_UploadCmdBuf);
+        m_UploadBatchCubeMaps.push_back(cm);
+        return cm;
     }
 
     Ref<CubeMap> VulkanRenderAPI::CreateCubeMapFromEquirectangular(Ref<Texture> equirect, uint faceSize,
-                                                                     AssetManager& assets)
+                                                                   AssetManager& assets)
     {
         DD_ERR("CreateCubeMapFromEquirectangular is not yet implemented for the Vulkan backend.");
         return nullptr;
@@ -1278,10 +1379,11 @@ namespace Dodo::Platform {
 
         extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 
-        // MoltenVK on MacOS requires this extension. The extension is not expected for renderdoc since it does not support MacOS, therefore it most be disabled in that case
-        #ifdef DD_MACOS
+// MoltenVK on MacOS requires this extension. The extension is not expected for renderdoc since it does not support
+// MacOS, therefore it most be disabled in that case
+#ifdef DD_MACOS
         extensions.emplace_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
-        #endif
+#endif
 
         return extensions;
     }
@@ -1436,7 +1538,7 @@ namespace Dodo::Platform {
 
     VkExtent2D VulkanRenderAPI::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities)
     {
-        if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+        if (capabilities.currentExtent.width != (std::numeric_limits<uint32_t>::max)()) {
             return capabilities.currentExtent;
         }
 

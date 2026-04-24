@@ -1,5 +1,9 @@
 add_executable(DodoEditor)
 
+set_target_properties(DodoEditor PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:DodoEditor>"
+)
+
 if(WIN32)
     add_custom_command(TARGET DodoEditor POST_BUILD
         COMMAND ${CMAKE_COMMAND}
@@ -58,6 +62,12 @@ target_compile_definitions(DodoEditor
         _CRT_SECURE_NO_WARNINGS
         $<$<CONFIG:Debug>:DD_DEBUG>
         $<$<CONFIG:Release>:DD_RELEASE>
+)
+
+target_compile_options(DodoEditor PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/MP>
+    $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
+    $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
 )
 
 if (DD_API_WIN32)

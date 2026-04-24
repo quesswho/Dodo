@@ -2,7 +2,7 @@
 
 #include "Vec2.h"
 
-namespace Dodo { namespace Math {
+namespace Dodo::Math {
 
     template <typename T = float>
     struct TVec3 {
@@ -102,7 +102,7 @@ namespace Dodo { namespace Math {
         }
 
         // Return the magnitude of the vector
-        inline constexpr float Magnitude() const { return sqrt(SquareSum()); }
+        inline constexpr float Magnitude() const { return std::sqrt(SquareSum()); }
 
         // Return normalized vector
         inline TVec3 Normalize() const
@@ -123,29 +123,9 @@ namespace Dodo { namespace Math {
             }
         }
 
-        // Return normalized vector
-        static inline TVec3 Normalize(const TVec3& vec)
-        {
-            float mag = vec.Magnitude();
-            if (mag > 0) {
-                return vec / mag;
-            }
-            return vec;
-        }
-
-        // Given a targeet vector, return a vector that is the linear interpolation between this vector and the target
+        // Given a target vector, return a vector that is the linear interpolation between this vector and the target
         // vector by t
         inline TVec3 Lerp(const TVec3& target, float t) const { return (1.0f - t) * *this + t * target; }
-
-        // Return linear interpolation between a and b by t
-        static inline TVec3 Lerp(const TVec3& a, const TVec3& b, float t) { return (1.0f - t) * a + t * b; }
-
-        // Return a the exponential decay between this vector and the target vector by decay rate and delta time
-        // See: https://youtu.be/LSNQuFEDOyQ?si=HVeC5ZccwbZLN-d_&t=2298
-        static inline TVec3 ExpDecay(const TVec3& a, const TVec3& b, float decay, float dt)
-        {
-            return b + (a - b) * exp(-decay * dt);
-        }
 
         // Return a vector with a magnitude of limit
         inline constexpr TVec3 Limit(const T limit) const { return this->Normalize() * limit; }
@@ -156,8 +136,8 @@ namespace Dodo { namespace Math {
         // Get distance between this vector and other vector
         inline float Distance(const TVec3& other) const
         {
-            return sqrt((this->x - other->x) * (this->x - other->x) + (this->y - other->y) * (this->y - other->y) +
-                        (this->z - other->z) * (this->z - other->z));
+            return std::sqrt((this->x - other.x) * (this->x - other.x) + (this->y - other.y) * (this->y - other.y) +
+                             (this->z - other.z) * (this->z - other.z));
         }
 
         // Dot product
@@ -174,11 +154,6 @@ namespace Dodo { namespace Math {
         {
             return TVec3(this->y * other.z - this->z * other.y, this->z * other.x - this->x * other.z,
                          this->x * other.y - this->y * other.x);
-        }
-
-        static inline TVec3 Cross(const TVec3& a, const TVec3& b)
-        {
-            return TVec3(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
         }
 
         // Unary operations
@@ -463,4 +438,67 @@ namespace Dodo { namespace Math {
         }
     };
     using Vec3 = TVec3<float>;
-}} // namespace Dodo::Math
+
+    template <typename T>
+    inline TVec3<T> Normalize(const TVec3<T>& vec)
+    {
+        float mag = vec.Magnitude();
+        if (mag > 0) return vec / mag;
+        return vec;
+    }
+
+    template <typename T>
+    inline TVec3<T> NegativeNormalize(const TVec3<T>& vec)
+    {
+        float mag = vec.Magnitude();
+        if (mag > 0) return vec * -(1.0f / mag);
+        return vec;
+    }
+
+    template <typename T>
+    inline TVec3<T> Cross(const TVec3<T>& a, const TVec3<T>& b)
+    {
+        return TVec3<T>(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x);
+    }
+
+    template <typename T>
+    inline TVec3<T> Lerp(const TVec3<T>& a, const TVec3<T>& b, float t)
+    {
+        return (1.0f - t) * a + t * b;
+    }
+
+    template <typename T>
+    inline TVec3<T> ExpDecay(const TVec3<T>& a, const TVec3<T>& b, float decay, float dt)
+    {
+        return b + (a - b) * exp(-decay * dt);
+    }
+
+    template <typename T>
+    inline float Sum(const TVec3<T>& vec)
+    {
+        return vec.x + vec.y + vec.z;
+    }
+
+    template <typename T>
+    inline float Dot(const TVec3<T>& a, const TVec3<T>& b)
+    {
+        return a.x * b.x + a.y * b.y + a.z * b.z;
+    }
+
+    template <typename T>
+    inline float Distance(const TVec3<T>& a, const TVec3<T>& b)
+    {
+        return std::sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
+    }
+
+    inline Vec3 ToRadians(const Vec3& degrees)
+    {
+        return degrees * MATH_PI / 180.0f;
+    }
+
+    inline Vec3 ToDegrees(const Vec3& radians)
+    {
+        return radians * 180.0f / MATH_PI;
+    }
+
+} // namespace Dodo::Math

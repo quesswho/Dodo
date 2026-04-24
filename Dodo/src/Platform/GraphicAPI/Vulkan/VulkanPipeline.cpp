@@ -1,5 +1,6 @@
 #include "VulkanPipeline.h"
-#include "pch.h"
+
+#include "Core/Utilities/Logger.h"
 
 #include <map>
 
@@ -63,8 +64,7 @@ namespace Dodo::Platform {
     }
 
     VulkanPipeline::VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat,
-                                   const ShaderAsset& shader, const PipelineDesc& desc,
-                                   const PipelineUBOHandles& ubos)
+                                   const ShaderAsset& shader, const PipelineDesc& desc, const PipelineUBOHandles& ubos)
         : m_Device(device), m_Desc(desc)
     {
         // Determine which sets the shader declares via reflection
@@ -225,16 +225,11 @@ namespace Dodo::Platform {
         // Build vertex input descriptions from shader reflection, sorted by location so offsets
         // accumulate in declaration order.
         auto inputs = shader.vertexInputs;
-        std::sort(inputs.begin(), inputs.end(), [](const auto& a, const auto& b) {
-            return a.location < b.location;
-        });
+        std::sort(inputs.begin(), inputs.end(), [](const auto& a, const auto& b) { return a.location < b.location; });
 
         static constexpr VkFormat kFloatFormats[] = {
-            VK_FORMAT_UNDEFINED,
-            VK_FORMAT_R32_SFLOAT,
-            VK_FORMAT_R32G32_SFLOAT,
-            VK_FORMAT_R32G32B32_SFLOAT,
-            VK_FORMAT_R32G32B32A32_SFLOAT,
+            VK_FORMAT_UNDEFINED,        VK_FORMAT_R32_SFLOAT,          VK_FORMAT_R32G32_SFLOAT,
+            VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32A32_SFLOAT,
         };
 
         std::vector<VkVertexInputAttributeDescription> attribDescs;
@@ -262,8 +257,8 @@ namespace Dodo::Platform {
         }
 
         VkVertexInputBindingDescription bindingDesc{};
-        bindingDesc.binding   = 0;
-        bindingDesc.stride    = bindingStride;
+        bindingDesc.binding = 0;
+        bindingDesc.stride = bindingStride;
         bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
         VkPipelineVertexInputStateCreateInfo vertexInput{};
@@ -289,7 +284,7 @@ namespace Dodo::Platform {
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL; // Polygon rasterization
         rasterizer.lineWidth = 1.0f;
         rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
-        rasterizer.depthClampEnable = desc.depthOnly ? VK_TRUE : VK_FALSE; // For depth-only pipelines, we might render shadow maps with reversed depth, so clamp instead of discard
+        rasterizer.depthClampEnable = VK_FALSE;
         rasterizer.rasterizerDiscardEnable = VK_FALSE;
         rasterizer.depthBiasEnable = VK_FALSE;
 
@@ -402,8 +397,7 @@ namespace Dodo::Platform {
         vkDestroyPipeline(m_Device, m_Pipeline, nullptr);
         vkDestroyPipelineLayout(m_Device, m_Layout, nullptr);
         // Destroying the pool frees all sets allocated from it
-        if (m_Set0Pool != VK_NULL_HANDLE)
-            vkDestroyDescriptorPool(m_Device, m_Set0Pool, nullptr);
+        if (m_Set0Pool != VK_NULL_HANDLE) vkDestroyDescriptorPool(m_Device, m_Set0Pool, nullptr);
         for (VkDescriptorSetLayout layout : m_SetLayouts) {
             vkDestroyDescriptorSetLayout(m_Device, layout, nullptr);
         }
@@ -412,14 +406,14 @@ namespace Dodo::Platform {
     void VulkanPipeline::BindGlobalSet(VkCommandBuffer cmd, uint32_t frameIdx, uint32_t modelDynamicOffset)
     {
         if (!m_HasSet0) return;
-        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Layout,
-                                0, 1, &m_Set0[frameIdx], 1, &modelDynamicOffset);
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Layout, 0, 1, &m_Set0[frameIdx], 1,
+                                &modelDynamicOffset);
     }
 
     void VulkanPipeline::BindMaterialSet(VkCommandBuffer cmd, VkDescriptorPool transientPool, uint32_t frameIdx,
-                                         const VkImageView* views, const VkSampler* samplers,
-                                         const bool* isCubeMap, const bool* isDepth, int maxSlots,
-                                         VkImageView dummyView, VkSampler dummySampler)
+                                         const VkImageView* views, const VkSampler* samplers, const bool* isCubeMap,
+                                         const bool* isDepth, int maxSlots, VkImageView dummyView,
+                                         VkSampler dummySampler)
     {
         if (!m_HasSet1) return;
         if (m_SetLayouts.size() <= 1 || m_SetLayouts[1] == VK_NULL_HANDLE) return;
@@ -456,9 +450,8 @@ namespace Dodo::Platform {
                 if (!view) continue;
                 VkDescriptorImageInfo info{};
                 info.imageView = view;
-                info.imageLayout = (hasPending && isDepth[b.binding])
-                                       ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
-                                       : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                info.imageLayout = (hasPending && isDepth[b.binding]) ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                                                                      : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 imageInfos.push_back(info);
                 w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
                 w.pImageInfo = &imageInfos.back();

@@ -1,7 +1,9 @@
 #include "ModelLoader.h"
-#include "pch.h"
 
 #include "AssetManager.h"
+
+#include <algorithm>
+#include <filesystem>
 
 #include <assimp/GltfMaterial.h>
 #include <assimp/Importer.hpp>
@@ -29,7 +31,7 @@ namespace Dodo {
         for (uint i = 0; i < scene->mNumMaterials; i++) {
             aiMaterial* aiMat = scene->mMaterials[i];
             ModelData::MaterialEntry matEntry;
-            
+
             auto tryAddSlot = [&](int slot, aiTextureType type, MaterialFeatures feature) {
                 aiString str;
                 if (aiMat->GetTexture(type, 0, &str) != AI_SUCCESS || str.length == 0) return;
@@ -53,8 +55,7 @@ namespace Dodo {
             // If no albedo texture was found, fall back to a solid color from the material
             if (!HasFeature(matEntry.features, MaterialFeatures::AlbedoMap)) {
                 aiColor4D color(1.0f, 1.0f, 1.0f, 1.0f);
-                if (aiMat->Get(AI_MATKEY_BASE_COLOR, color) != AI_SUCCESS)
-                    aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+                if (aiMat->Get(AI_MATKEY_BASE_COLOR, color) != AI_SUCCESS) aiMat->Get(AI_MATKEY_COLOR_DIFFUSE, color);
                 matEntry.albedoColor = {color.r, color.g, color.b, color.a};
             }
 
@@ -151,11 +152,13 @@ namespace Dodo {
                 v.m_Position = {aiM->mVertices[j].x, aiM->mVertices[j].y, aiM->mVertices[j].z};
                 v.m_Texcoord = {aiM->mTextureCoords[0][j].x, aiM->mTextureCoords[0][j].y};
                 v.m_Normal = {aiM->mNormals[j].x, aiM->mNormals[j].y, aiM->mNormals[j].z};
-                // Compute bitangent sign and store in tangent.w since we don't have a separate bitangent attribute. Assimp guarantees tangents and bitangents are orthogonal to normals, so we can use the cross product to determine handedness.
+                // Compute bitangent sign and store in tangent.w since we don't have a separate bitangent attribute.
+                // Assimp guarantees tangents and bitangents are orthogonal to normals, so we can use the cross product
+                // to determine handedness.
                 aiVector3D crossNT = aiM->mTangents[j] ^ aiM->mNormals[j];
                 float bitangentSign = (crossNT * aiM->mBitangents[j] < 0.0f) ? -1.0f : 1.0f;
                 v.m_Tangent = {aiM->mTangents[j].x, aiM->mTangents[j].y, aiM->mTangents[j].z, bitangentSign};
-                
+
                 meshEntry.vertices.push_back(v);
             }
 
@@ -178,12 +181,12 @@ namespace Dodo {
         for (const auto& meshEntry : data.meshes) {
             // Assimp should cover the out of bounds, but we cover it just in case
             Ref<Material> mat;
-            if(meshEntry.materialIndex < materials.size()) {
+            if (meshEntry.materialIndex < materials.size()) {
                 mat = materials[meshEntry.materialIndex];
             } else {
                 mat = std::make_shared<Material>();
             }
-            
+
             meshes.push_back(std::make_shared<Mesh>(
                 renderAPI.CreateVertexBuffer(
                     (const float*)meshEntry.vertices.data(), (uint)(meshEntry.vertices.size() * sizeof(Vertex)),

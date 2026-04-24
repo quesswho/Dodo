@@ -42,9 +42,8 @@ namespace Dodo::Platform {
         // Allocate, update, and bind set-1 (material textures) from the transient pool.
         // No-op if the shader does not declare set-1 bindings.
         void BindMaterialSet(VkCommandBuffer cmd, VkDescriptorPool transientPool, uint32_t frameIdx,
-                             const VkImageView* views, const VkSampler* samplers,
-                             const bool* isCubeMap, const bool* isDepth, int maxSlots,
-                             VkImageView dummyView, VkSampler dummySampler);
+                             const VkImageView* views, const VkSampler* samplers, const bool* isCubeMap,
+                             const bool* isDepth, int maxSlots, VkImageView dummyView, VkSampler dummySampler);
 
         VkDevice m_Device;
         PipelineDesc m_Desc;

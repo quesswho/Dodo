@@ -15,8 +15,10 @@ using Ref = std::shared_ptr<T>;
 // Default to OpenGL if no graphics API is specified
 #if defined(DD_API_OPENGL)
 #define DD_MATH_CRH
+#define DD_DEPTH_ZERO_TO_ONE
 #elif defined(DD_API_VULKAN)
 #define DD_MATH_CRH
+#define DD_DEPTH_ZERO_TO_ONE
 #else
 #error "No graphics API defined! Define either DD_API_OPENGL or DD_API_VULKAN!"
 #endif

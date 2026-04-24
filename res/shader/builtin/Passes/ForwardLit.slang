@@ -11,7 +11,7 @@
 [[vk::binding(0, 1)]] Texture2D<float4> u_AlbedoMap;
 [[vk::binding(1, 1)]] Texture2D<float4> u_RoughnessMap; // sample .g (works for both ORM-packed and greyscale)
 [[vk::binding(2, 1)]] Texture2D<float4> u_NormalMap;
-[[vk::binding(3, 1)]] Texture2D<float>  u_ShadowMap;
+[[vk::binding(3, 1)]] Texture2D<float> u_ShadowMap;
 
 // Shared sampler for all material textures and shadow map
 [[vk::binding(4, 1)]] SamplerState u_LinearSampler;

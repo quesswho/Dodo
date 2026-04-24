@@ -1,5 +1,4 @@
 #include "OpenGLBuffer.h"
-#include "pch.h"
 
 #include <glad/gl.h>
 

@@ -1,8 +1,8 @@
 #include "OpenGLCubeMap.h"
-#include "pch.h"
+
+#include "Core/Utilities/Logger.h"
 
 #include <cmath>
-
 #include <glad/gl.h>
 
 namespace Dodo::Platform {
@@ -25,8 +25,8 @@ namespace Dodo::Platform {
         glTextureStorage2D(m_TextureID, mipLevels, GL_RGBA8, width, height);
 
         for (int i = 0; i < 6; i++) {
-            glTextureSubImage3D(m_TextureID, 0, 0, 0, i, width, height, 1,
-                                GL_RGBA, GL_UNSIGNED_BYTE, data.faces[i].pixels.data());
+            glTextureSubImage3D(m_TextureID, 0, 0, 0, i, width, height, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                                data.faces[i].pixels.data());
         }
 
         glGenerateTextureMipmap(m_TextureID);

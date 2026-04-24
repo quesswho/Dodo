@@ -1,5 +1,4 @@
 #include "Renderer3D.h"
-#include "pch.h"
 
 #include "Core/Application/Application.h"
 
@@ -12,7 +11,8 @@ namespace Dodo {
         shadowPipelineDesc.shaderID = id;
         shadowPipelineDesc.culling = CullMode::Front;
         shadowPipelineDesc.depthOnly = true;
-        shadowPipelineDesc.vertexLayout = BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 4}});
+        shadowPipelineDesc.vertexLayout =
+            BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 4}});
         PipelineID shadowPipelineID = assets.CreatePipeline(shadowPipelineDesc, renderAPI);
         m_ShadowMapMaterial = std::make_shared<Material>(assets.GetPipeline(shadowPipelineID));
 
@@ -70,6 +70,7 @@ namespace Dodo {
         frameData.camera = camera.GetCameraMatrix();
         frameData.skyboxCamera = camera.GetProjectionMatrix() * Math::Mat4::RelinquishToMat3(camera.GetViewMatrix());
         frameData.cameraPos = camera.GetPosition();
+
         frameData.lightCamera = scene->m_LightSystem.m_Directional.m_LightCamera;
         frameData.lightDir = scene->m_LightSystem.m_Directional.m_Direction;
         renderAPI.SetFrameData(frameData);

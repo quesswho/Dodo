@@ -13,11 +13,13 @@ namespace Dodo::Platform {
 
     class VulkanCubeMap {
       public:
-        VulkanCubeMap(const CubeMapData& data, VkDevice device, VmaAllocator allocator,
-                      VkCommandPool commandPool, VkQueue queue);
+        VulkanCubeMap(const CubeMapData& data, VkDevice device, VmaAllocator allocator, VkCommandBuffer uploadCmdBuf);
         ~VulkanCubeMap();
 
         VkImageView GetImageView() const { return m_ImageView; }
+
+        // Destroys the staging buffer once the upload fence has signaled.
+        void FinalizeUpload();
 
       private:
         VkDevice m_Device = VK_NULL_HANDLE;
@@ -25,5 +27,7 @@ namespace Dodo::Platform {
         VkImage m_Image = VK_NULL_HANDLE;
         VmaAllocation m_Allocation = nullptr;
         VkImageView m_ImageView = VK_NULL_HANDLE;
+        VkBuffer m_StagingBuffer = VK_NULL_HANDLE;
+        VmaAllocation m_StagingAlloc = nullptr;
     };
 } // namespace Dodo::Platform

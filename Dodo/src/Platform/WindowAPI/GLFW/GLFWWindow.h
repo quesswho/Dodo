@@ -2,6 +2,8 @@
 
 #include <Core/Common.h>
 
+#include "Core/Math/Vector/Vec2.h"
+
 #include "GLFWImGuiBackend.h"
 
 #include <Core/Application/WindowProperties.h>

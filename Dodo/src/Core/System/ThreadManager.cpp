@@ -1,5 +1,4 @@
 #include "ThreadManager.h"
-#include "pch.h"
 
 #include <mutex>
 

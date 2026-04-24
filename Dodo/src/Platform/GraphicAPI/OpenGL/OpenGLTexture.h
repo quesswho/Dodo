@@ -10,6 +10,7 @@ namespace Dodo::Platform {
 
         uint GetTextureID() const { return m_TextureID; }
         const TextureProperties& GetTextureProperties() const { return m_TextureProperties; }
+        void FinalizeUpload() {} // no-op: OpenGL uploads are synchronous
 
       private:
         void Init(uchar* data);

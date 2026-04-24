@@ -1,5 +1,4 @@
 #include "FreeCamera.h"
-#include "pch.h"
 
 namespace Dodo::Math {
     FreeCamera::FreeCamera(const Vec3& pos, float yaw, float pitch, float aspectRatio)

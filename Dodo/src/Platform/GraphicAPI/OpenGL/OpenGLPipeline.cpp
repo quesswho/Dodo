@@ -1,5 +1,4 @@
 #include "OpenGLPipeline.h"
-#include "pch.h"
 
 #include "Core/Application/Application.h"
 #include "Core/System/FileUtils.h"

@@ -20,9 +20,15 @@ namespace Dodo {
          */
         TextureData Load(const std::string& path);
 
-    private:
+      private:
         TextureData LoadHDR(const std::string& path);
         TextureData LoadLDR(const std::string& path);
+
+        /**
+         * Returns 4 channels if the image has 3 or 4 channels, otherwise returns the original channel count.
+         * This ensures the loader pads to RGBA for optimal memory tiling when needed
+         */
+        int GetDesiredChannels(const std::string& path);
     };
 
 } // namespace Dodo

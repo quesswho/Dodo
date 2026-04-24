@@ -1,5 +1,4 @@
 #include "MaterialLoader.h"
-#include "pch.h"
 
 #include "AssetManager.h"
 

@@ -1,5 +1,4 @@
 #include "FreeCameraController.h"
-#include "pch.h"
 
 #include "Core/Application/Application.h"
 
@@ -58,7 +57,7 @@ namespace Dodo {
         if (input.IsKeyPressed(DODO_KEY_SPACE)) inputDir += up;
         if (input.IsKeyPressed(DODO_KEY_LEFT_CONTROL)) inputDir -= up;
 
-        m_Velocity = Math::Vec3::ExpDecay(m_Velocity, inputDir * m_Speed, m_Friction, elapsed);
+        m_Velocity = Math::ExpDecay(m_Velocity, inputDir * m_Speed, m_Friction, elapsed);
         m_Camera.Move(m_Velocity * elapsed);
     }
 

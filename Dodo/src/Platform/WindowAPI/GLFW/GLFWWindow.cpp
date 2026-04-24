@@ -1,7 +1,6 @@
-#include "pch.h"
 
-#include "GLFWImGuiBackend.h"
 #include "GLFWWindow.h"
+#include "GLFWImGuiBackend.h"
 
 // TODO: Remove this when we change the callbacks and viewport handling. This needs to be before the GLFW include
 // because it indirectly includes opengl headers

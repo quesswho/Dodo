@@ -38,22 +38,22 @@ namespace Dodo::Platform {
             magFilter = VK_FILTER_LINEAR;
             mipMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
             break;
-        case SamplerFilter::FILTER_MIN_MAG_MIP_NEAREST:
+        case SamplerFilter::MIN_MAG_MIP_NEAREST:
             minFilter = VK_FILTER_NEAREST;
             magFilter = VK_FILTER_NEAREST;
             mipMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
             break;
-        case SamplerFilter::FILTER_MIN_MAG_NEAREST_MIP_LINEAR:
+        case SamplerFilter::MIN_MAG_NEAREST_MIP_LINEAR:
             minFilter = VK_FILTER_NEAREST;
             magFilter = VK_FILTER_NEAREST;
             mipMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
             break;
-        case SamplerFilter::FILTER_MIN_NEAREST_MAG_LINEAR_MIP_NEAREST:
+        case SamplerFilter::MIN_NEAREST_MAG_LINEAR_MIP_NEAREST:
             minFilter = VK_FILTER_NEAREST;
             magFilter = VK_FILTER_LINEAR;
             mipMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
             break;
-        case SamplerFilter::FILTER_MIN_NEAREST_MAG_MIP_LINEAR:
+        case SamplerFilter::MIN_NEAREST_MAG_MIP_LINEAR:
             minFilter = VK_FILTER_NEAREST;
             magFilter = VK_FILTER_LINEAR;
             mipMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;

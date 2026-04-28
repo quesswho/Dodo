@@ -8,8 +8,8 @@ namespace Dodo::Platform {
     {
         switch (filter) {
         case SamplerFilter::MIN_MAG_NEAREST:
-        case SamplerFilter::FILTER_MIN_MAG_MIP_NEAREST:
-        case SamplerFilter::FILTER_MIN_MAG_NEAREST_MIP_LINEAR:
+        case SamplerFilter::MIN_MAG_MIP_NEAREST:
+        case SamplerFilter::MIN_MAG_NEAREST_MIP_LINEAR:
             return VK_FILTER_NEAREST;
         default:
             return VK_FILTER_LINEAR;

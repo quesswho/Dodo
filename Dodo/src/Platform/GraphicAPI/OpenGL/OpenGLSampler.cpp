@@ -57,19 +57,19 @@ namespace Dodo::Platform {
             glSamplerParameteri(m_SamplerID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
             glSamplerParameteri(m_SamplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             break;
-        case SamplerFilter::FILTER_MIN_MAG_MIP_NEAREST:
+        case SamplerFilter::MIN_MAG_MIP_NEAREST:
             glSamplerParameteri(m_SamplerID, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
             glSamplerParameteri(m_SamplerID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             break;
-        case SamplerFilter::FILTER_MIN_MAG_NEAREST_MIP_LINEAR:
+        case SamplerFilter::MIN_MAG_NEAREST_MIP_LINEAR:
             glSamplerParameteri(m_SamplerID, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
             glSamplerParameteri(m_SamplerID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             break;
-        case SamplerFilter::FILTER_MIN_NEAREST_MAG_LINEAR_MIP_NEAREST:
+        case SamplerFilter::MIN_NEAREST_MAG_LINEAR_MIP_NEAREST:
             glSamplerParameteri(m_SamplerID, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
             glSamplerParameteri(m_SamplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             break;
-        case SamplerFilter::FILTER_MIN_NEAREST_MAG_MIP_LINEAR:
+        case SamplerFilter::MIN_NEAREST_MAG_MIP_LINEAR:
             glSamplerParameteri(m_SamplerID, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
             glSamplerParameteri(m_SamplerID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             break;

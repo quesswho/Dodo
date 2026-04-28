@@ -1,4 +1,23 @@
 // ShadowSampling.slang
+
+
+/*
+    TODO: Implement PCSS:
+    https://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf
+    Our implementation: 
+    1. Blocker search on 6x6 kernel:
+    For each texel: Compute the mean of all depth texels that satisfy d > d_reciever
+    2. w_Penumbra = (d_Receiver – d_Blocker) * w_Light / d_Blocker
+    Where w_light is the brightness of the light.
+    3. Compute PCF with kernel size proportional to w_Penumbra
+
+    Things needed: 
+    1. Add light intensity parameter.
+    2. More flexible sample size for PCF, perhaps picking samples from a distribution but we might get noisy results
+    
+
+*/
+
 // PCF shadow sampling with 3x3 kernel
 float shadowCalculationPCF(
     float4 lightFragPos,
@@ -33,7 +52,7 @@ float shadowCalculationPCF(
         return 0.0f;
 
     float shadow = 0.0f;
-    const int kernelRadius = 1;
+    const int kernelRadius = 2;
 
     for (int x = -kernelRadius; x <= kernelRadius; ++x)
     {
@@ -46,6 +65,6 @@ float shadowCalculationPCF(
         }
     }
 
-    float samples = float(kernelRadius * 2 + 1);
-    return shadow / (samples * samples);
+    float kernelDiameter = float(kernelRadius * 2 + 1);
+    return shadow / (kernelDiameter * kernelDiameter);
 }

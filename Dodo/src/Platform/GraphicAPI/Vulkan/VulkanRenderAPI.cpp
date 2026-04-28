@@ -759,6 +759,7 @@ namespace Dodo::Platform {
         m_ModelUBOCursor = 0;
         m_LastModelOffset = 0;
         m_TexturesDirty = false;
+        m_IsRendering = false;
         if (m_TransientPools[m_CurrentFrame] != VK_NULL_HANDLE)
             vkResetDescriptorPool(m_Device, m_TransientPools[m_CurrentFrame], 0);
 
@@ -775,55 +776,6 @@ namespace Dodo::Platform {
             return;
         }
 
-        // Transition swapchain image to color attachment layout
-        VkImageMemoryBarrier barrier = {};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = m_SwapChainImages[m_CurrentImageIndex];
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
-        barrier.srcAccessMask = 0;
-        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
-                             0, nullptr, 0, nullptr, 1, &barrier);
-
-        VkRenderingAttachmentInfo colorAttachment = {};
-        colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-        colorAttachment.imageView = m_SwapChainImageViews[m_CurrentImageIndex];
-        colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorAttachment.clearValue.color = {{0.1f, 0.1f, 0.1f, 1.0f}};
-
-        VkRenderingInfo renderingInfo = {};
-        renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-        renderingInfo.renderArea = {{0, 0}, m_SwapChainExtent};
-        renderingInfo.layerCount = 1;
-        renderingInfo.colorAttachmentCount = 1;
-        renderingInfo.pColorAttachments = &colorAttachment;
-
-        vkCmdBeginRendering(cmd, &renderingInfo);
-
-        VkViewport viewport = {};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = static_cast<float>(m_SwapChainExtent.width);
-        viewport.height = static_cast<float>(m_SwapChainExtent.height);
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-        vkCmdSetViewport(cmd, 0, 1, &viewport);
-
-        VkRect2D scissor = {};
-        scissor.offset = {0, 0};
-        scissor.extent = m_SwapChainExtent;
-        vkCmdSetScissor(cmd, 0, 1, &scissor);
     }
 
     void VulkanRenderAPI::End()
@@ -832,6 +784,7 @@ namespace Dodo::Platform {
         uint32_t imageIndex = m_CurrentImageIndex;
 
         vkCmdEndRendering(cmd);
+        m_IsRendering = false;
 
         // TODO: Deprecated stuff, use VkImageMemoryBarrier2KHR instead
         // Transition swapchain image back to present layout
@@ -1026,7 +979,24 @@ namespace Dodo::Platform {
             m_BoundFrameBuffer = nullptr;
         }
 
-        // Resume rendering to the swapchain image (already in COLOR_ATTACHMENT_OPTIMAL from Begin())
+        // Transition swapchain image to color attachment layout before rendering to it
+        VkImageMemoryBarrier barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = m_SwapChainImages[m_CurrentImageIndex];
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
+                             0, nullptr, 0, nullptr, 1, &barrier);
+
         VkRenderingAttachmentInfo colorAttachment{};
         colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
         colorAttachment.imageView = m_SwapChainImageViews[m_CurrentImageIndex];
@@ -1043,6 +1013,7 @@ namespace Dodo::Platform {
         renderingInfo.pColorAttachments = &colorAttachment;
 
         vkCmdBeginRendering(cmd, &renderingInfo);
+        m_IsRendering = true;
 
         VkViewport viewport{};
         viewport.x = 0.0f;
@@ -1062,7 +1033,7 @@ namespace Dodo::Platform {
     void VulkanRenderAPI::BindFrameBuffer(Ref<FrameBuffer> framebuffer)
     {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
-        vkCmdEndRendering(cmd);
+        if (m_IsRendering) vkCmdEndRendering(cmd);
 
         auto* vkFB = static_cast<VulkanFrameBuffer*>(framebuffer.get());
 
@@ -1101,6 +1072,7 @@ namespace Dodo::Platform {
         renderingInfo.pDepthAttachment = &depthAttachment;
 
         vkCmdBeginRendering(cmd, &renderingInfo);
+        m_IsRendering = true;
 
         VkViewport viewport{};
         viewport.x = 0.0f;

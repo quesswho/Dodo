@@ -775,7 +775,6 @@ namespace Dodo::Platform {
             DD_ERR("failed to begin recording command buffer!");
             return;
         }
-
     }
 
     void VulkanRenderAPI::End()

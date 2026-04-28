@@ -14,7 +14,17 @@ namespace Dodo {
             // TODO: Perhaps we should do this differently if we decide to support more texture types
             SlangResourceShape shape = static_cast<SlangResourceShape>(
                 param->getTypeLayout()->getType()->getResourceShape() & SLANG_RESOURCE_BASE_SHAPE_MASK);
-            return (shape == SLANG_TEXTURE_CUBE) ? DescriptorType::SampledCubeMap : DescriptorType::SampledTexture;
+            switch (shape) {
+            case SLANG_TEXTURE_CUBE:
+                return DescriptorType::SampledCubeMap;
+            case SLANG_TEXTURE_2D:
+                return DescriptorType::SampledTexture;
+            case SLANG_TEXTURE_2D_ARRAY:
+                return DescriptorType::SampledTextureArray;
+            default:
+                return DescriptorType::UniformBuffer;
+                DD_ERR("SlangCompiler: Unsupported descriptor type: {}", shape);
+            }
         }
         case slang::BindingType::Sampler:
             return DescriptorType::Sampler;

@@ -35,9 +35,13 @@ namespace Dodo::Platform {
       private:
         static VkDescriptorType ToVkDescriptorType(DescriptorType type);
 
-        // Bind set-0 (FrameData + ModelData) with the per-draw dynamic offset.
+        // Bind set-0 (FrameData) once per pipeline switch. No dynamic offset.
         // No-op if the shader does not declare set-0 bindings.
-        void BindGlobalSet(VkCommandBuffer cmd, uint32_t frameIdx, uint32_t modelDynamicOffset);
+        void BindFrameSet(VkCommandBuffer cmd, uint32_t frameIdx);
+
+        // Bind set-2 (ModelData) with the per-draw dynamic offset.
+        // No-op if the shader does not declare set-2 bindings.
+        void BindObjectSet(VkCommandBuffer cmd, uint32_t frameIdx, uint32_t modelDynamicOffset);
 
         // Allocate, update, and bind set-1 (material textures) from the transient pool.
         // No-op if the shader does not declare set-1 bindings.
@@ -52,13 +56,19 @@ namespace Dodo::Platform {
         std::vector<VkDescriptorSetLayout> m_SetLayouts;
         std::vector<DescriptorBindingReflection> m_ShaderBindings;
 
-        bool m_HasSet0 = false; // shader declares set-0 (FrameData + ModelData UBOs)
+        bool m_HasSet0 = false; // shader declares set-0 (FrameData UBO)
         bool m_HasSet1 = false; // shader declares set-1 (material textures)
+        bool m_HasSet2 = false; // shader declares set-2 (ModelData UBO)
 
-        // Per-pipeline, per-frame descriptor sets for set-0.
+        // Per-pipeline, per-frame descriptor sets for set-0 (FrameData).
         // Valid only when m_HasSet0 is true.
         VkDescriptorPool m_Set0Pool = VK_NULL_HANDLE;
         std::array<VkDescriptorSet, PipelineUBOHandles::maxFrames> m_Set0{};
+
+        // Per-pipeline, per-frame descriptor sets for set-2 (ModelData).
+        // Valid only when m_HasSet2 is true.
+        VkDescriptorPool m_Set2Pool = VK_NULL_HANDLE;
+        std::array<VkDescriptorSet, PipelineUBOHandles::maxFrames> m_Set2{};
     };
 
 } // namespace Dodo::Platform

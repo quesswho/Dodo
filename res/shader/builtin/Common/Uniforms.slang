@@ -12,8 +12,8 @@
     float u_FramePadding1;
 };
 
-// Per-draw uniforms (uploaded per mesh)
-[[vk::binding(1, 0)]] cbuffer ModelData : register(b1)
+// Per-object uniforms (uploaded per draw)
+[[vk::binding(0, 2)]] cbuffer ModelData : register(b2)
 {
     float4x4 u_Model;
     float4x4 u_NormalMatrix;

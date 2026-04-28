@@ -976,8 +976,8 @@ namespace Dodo::Platform {
         }
         m_TexturesDirty = true;
 
-        // Bind set-0 (FrameData + ModelData). Pipeline is a no-op if the shader does not declare set-0.
-        m_BoundPipelinePtr->BindGlobalSet(cmd, m_CurrentFrame, m_LastModelOffset);
+        // Bind set-0 (FrameData). Stable for the whole frame; no dynamic offset.
+        m_BoundPipelinePtr->BindFrameSet(cmd, m_CurrentFrame);
     }
 
     void VulkanRenderAPI::PushConstants(const void* data, size_t size)
@@ -1031,6 +1031,7 @@ namespace Dodo::Platform {
     {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
 
+        m_BoundPipelinePtr->BindObjectSet(cmd, m_CurrentFrame, m_LastModelOffset);
         m_BoundPipelinePtr->BindMaterialSet(cmd, m_TransientPools[m_CurrentFrame], m_CurrentFrame, m_PendingImageViews,
                                             m_PendingSamplers, m_PendingIsCubeMap, m_PendingIsDepth, maxTextureSlots,
                                             m_DummyImageView, m_DummySampler);
@@ -1043,7 +1044,7 @@ namespace Dodo::Platform {
     {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
         if (m_BoundPipelinePtr) {
-            m_BoundPipelinePtr->BindGlobalSet(cmd, m_CurrentFrame, m_LastModelOffset);
+            m_BoundPipelinePtr->BindObjectSet(cmd, m_CurrentFrame, m_LastModelOffset);
             m_BoundPipelinePtr->BindMaterialSet(cmd, m_TransientPools[m_CurrentFrame], m_CurrentFrame,
                                                 m_PendingImageViews, m_PendingSamplers, m_PendingIsCubeMap,
                                                 m_PendingIsDepth, maxTextureSlots, m_DummyImageView, m_DummySampler);

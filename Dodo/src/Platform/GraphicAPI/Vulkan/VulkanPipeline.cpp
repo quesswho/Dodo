@@ -81,46 +81,38 @@ namespace Dodo::Platform {
         m_ShaderBindings = shader.descriptorBindings;
         m_HasSet0 = setBindings.count(0) > 0;
         m_HasSet1 = setBindings.count(1) > 0;
+        m_HasSet2 = setBindings.count(2) > 0;
 
         if (!setBindings.empty()) {
             m_SetLayouts.resize(setBindings.rbegin()->first + 1, VK_NULL_HANDLE);
 
             for (auto& [set, bindings] : setBindings) {
                 if (set == 0) {
-                    // Set-0 layout is always the canonical FrameData (binding 0, UNIFORM_BUFFER)
-                    // + ModelData (binding 1, UNIFORM_BUFFER_DYNAMIC), regardless of what reflection
-                    // emits for the descriptor types. The pipeline owns its own per-frame sets.
-                    VkDescriptorSetLayoutBinding set0Bindings[2]{};
-                    set0Bindings[0].binding = 0;
-                    set0Bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                    set0Bindings[0].descriptorCount = 1;
-                    set0Bindings[0].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
-                    set0Bindings[1].binding = 1;
-                    set0Bindings[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-                    set0Bindings[1].descriptorCount = 1;
-                    set0Bindings[1].stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+                    // Set-0: canonical FrameData layout (binding 0, UNIFORM_BUFFER).
+                    // The pipeline owns its own per-frame descriptor sets.
+                    VkDescriptorSetLayoutBinding set0Binding{};
+                    set0Binding.binding = 0;
+                    set0Binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    set0Binding.descriptorCount = 1;
+                    set0Binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
 
                     VkDescriptorSetLayoutCreateInfo info{};
                     info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-                    info.bindingCount = 2;
-                    info.pBindings = set0Bindings;
+                    info.bindingCount = 1;
+                    info.pBindings = &set0Binding;
                     vkCreateDescriptorSetLayout(m_Device, &info, nullptr, &m_SetLayouts[0]);
 
-                    // Create a private pool and allocate one descriptor set per frame
-                    VkDescriptorPoolSize poolSizes[2]{};
-                    poolSizes[0] = {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, PipelineUBOHandles::maxFrames};
-                    poolSizes[1] = {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, PipelineUBOHandles::maxFrames};
+                    VkDescriptorPoolSize poolSize = {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, PipelineUBOHandles::maxFrames};
                     VkDescriptorPoolCreateInfo poolCI{};
                     poolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                     poolCI.maxSets = PipelineUBOHandles::maxFrames;
-                    poolCI.poolSizeCount = 2;
-                    poolCI.pPoolSizes = poolSizes;
+                    poolCI.poolSizeCount = 1;
+                    poolCI.pPoolSizes = &poolSize;
                     vkCreateDescriptorPool(m_Device, &poolCI, nullptr, &m_Set0Pool);
 
                     VkDescriptorSetLayout layouts[PipelineUBOHandles::maxFrames];
-                    for (int i = 0; i < PipelineUBOHandles::maxFrames; i++) {
+                    for (int i = 0; i < PipelineUBOHandles::maxFrames; i++)
                         layouts[i] = m_SetLayouts[0];
-                    }
 
                     VkDescriptorSetAllocateInfo allocInfo{};
                     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -129,34 +121,72 @@ namespace Dodo::Platform {
                     allocInfo.pSetLayouts = layouts;
                     vkAllocateDescriptorSets(m_Device, &allocInfo, m_Set0.data());
 
-                    // Point each per-frame set at the corresponding UBO buffers
                     for (int i = 0; i < PipelineUBOHandles::maxFrames; i++) {
                         VkDescriptorBufferInfo frameBI{};
                         frameBI.buffer = ubos.frameDataBuffers[i];
                         frameBI.offset = 0;
                         frameBI.range = VK_WHOLE_SIZE;
 
+                        VkWriteDescriptorSet write{};
+                        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        write.dstSet = m_Set0[i];
+                        write.dstBinding = 0;
+                        write.descriptorCount = 1;
+                        write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                        write.pBufferInfo = &frameBI;
+                        vkUpdateDescriptorSets(m_Device, 1, &write, 0, nullptr);
+                    }
+                    continue;
+                }
+
+                if (set == 2) {
+                    // Set-2: canonical ModelData layout (binding 0, UNIFORM_BUFFER_DYNAMIC).
+                    // Dynamic offset selects the per-draw slot in the ring buffer.
+                    VkDescriptorSetLayoutBinding set2Binding{};
+                    set2Binding.binding = 0;
+                    set2Binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+                    set2Binding.descriptorCount = 1;
+                    set2Binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+
+                    VkDescriptorSetLayoutCreateInfo info{};
+                    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+                    info.bindingCount = 1;
+                    info.pBindings = &set2Binding;
+                    vkCreateDescriptorSetLayout(m_Device, &info, nullptr, &m_SetLayouts[2]);
+
+                    VkDescriptorPoolSize poolSize = {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, PipelineUBOHandles::maxFrames};
+                    VkDescriptorPoolCreateInfo poolCI{};
+                    poolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                    poolCI.maxSets = PipelineUBOHandles::maxFrames;
+                    poolCI.poolSizeCount = 1;
+                    poolCI.pPoolSizes = &poolSize;
+                    vkCreateDescriptorPool(m_Device, &poolCI, nullptr, &m_Set2Pool);
+
+                    VkDescriptorSetLayout layouts[PipelineUBOHandles::maxFrames];
+                    for (int i = 0; i < PipelineUBOHandles::maxFrames; i++)
+                        layouts[i] = m_SetLayouts[2];
+
+                    VkDescriptorSetAllocateInfo allocInfo{};
+                    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+                    allocInfo.descriptorPool = m_Set2Pool;
+                    allocInfo.descriptorSetCount = PipelineUBOHandles::maxFrames;
+                    allocInfo.pSetLayouts = layouts;
+                    vkAllocateDescriptorSets(m_Device, &allocInfo, m_Set2.data());
+
+                    for (int i = 0; i < PipelineUBOHandles::maxFrames; i++) {
                         VkDescriptorBufferInfo modelBI{};
                         modelBI.buffer = ubos.modelDataBuffers[i];
                         modelBI.offset = 0;
                         modelBI.range = ubos.modelSlotSize;
 
-                        VkWriteDescriptorSet writes[2]{};
-                        writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                        writes[0].dstSet = m_Set0[i];
-                        writes[0].dstBinding = 0;
-                        writes[0].descriptorCount = 1;
-                        writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                        writes[0].pBufferInfo = &frameBI;
-
-                        writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                        writes[1].dstSet = m_Set0[i];
-                        writes[1].dstBinding = 1;
-                        writes[1].descriptorCount = 1;
-                        writes[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-                        writes[1].pBufferInfo = &modelBI;
-
-                        vkUpdateDescriptorSets(m_Device, 2, writes, 0, nullptr);
+                        VkWriteDescriptorSet write{};
+                        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                        write.dstSet = m_Set2[i];
+                        write.dstBinding = 0;
+                        write.descriptorCount = 1;
+                        write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+                        write.pBufferInfo = &modelBI;
+                        vkUpdateDescriptorSets(m_Device, 1, &write, 0, nullptr);
                     }
                     continue;
                 }
@@ -398,15 +428,22 @@ namespace Dodo::Platform {
         vkDestroyPipelineLayout(m_Device, m_Layout, nullptr);
         // Destroying the pool frees all sets allocated from it
         if (m_Set0Pool != VK_NULL_HANDLE) vkDestroyDescriptorPool(m_Device, m_Set0Pool, nullptr);
+        if (m_Set2Pool != VK_NULL_HANDLE) vkDestroyDescriptorPool(m_Device, m_Set2Pool, nullptr);
         for (VkDescriptorSetLayout layout : m_SetLayouts) {
             vkDestroyDescriptorSetLayout(m_Device, layout, nullptr);
         }
     }
 
-    void VulkanPipeline::BindGlobalSet(VkCommandBuffer cmd, uint32_t frameIdx, uint32_t modelDynamicOffset)
+    void VulkanPipeline::BindFrameSet(VkCommandBuffer cmd, uint32_t frameIdx)
     {
         if (!m_HasSet0) return;
-        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Layout, 0, 1, &m_Set0[frameIdx], 1,
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Layout, 0, 1, &m_Set0[frameIdx], 0, nullptr);
+    }
+
+    void VulkanPipeline::BindObjectSet(VkCommandBuffer cmd, uint32_t frameIdx, uint32_t modelDynamicOffset)
+    {
+        if (!m_HasSet2) return;
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Layout, 2, 1, &m_Set2[frameIdx], 1,
                                 &modelDynamicOffset);
     }
 

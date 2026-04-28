@@ -226,6 +226,7 @@ namespace Dodo::Platform {
         class VulkanPipeline* m_BoundPipelinePtr = nullptr;
         class VulkanFrameBuffer* m_BoundFrameBuffer = nullptr;
         bool m_TexturesDirty = false;
+        bool m_IsRendering = false;
 
         // Upload batch: one command buffer shared across all CreateTexture/CreateCubeMap calls per frame.
         // Submitted once at the end of FlushStagingQueue; fence polled next frame to free staging memory.

@@ -8,6 +8,7 @@
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
+#include "Core/Graphics/GpuTimings.h"
 #include "Core/Graphics/RenderAPITypes.h"
 
 #include "Platform/WindowAPI/NativeWindowHandle.h"
@@ -103,6 +104,9 @@ namespace Dodo::Platform {
         void SubmitTextureBatch();
         bool PollTextureBatch();
 
+        void BeginTimestamp(Dodo::GpuTimestampSlot slot);
+        void EndTimestamp(Dodo::GpuTimestampSlot slot);
+
         inline const char* GetAPIName() const { return "Vulkan"; }
         int CurrentVRamUsage() const;
 
@@ -118,6 +122,8 @@ namespace Dodo::Platform {
 
         bool m_CullingDefault;
 
+        Dodo::GpuTimings m_GpuTimings;
+
       private:
         RenderInitError InitInstance();
         RenderInitError SetupDebug();
@@ -130,6 +136,7 @@ namespace Dodo::Platform {
         RenderInitError CreateCommandBuffer();
         RenderInitError CreateSyncObjects();
         RenderInitError InitDescriptors();
+        RenderInitError InitTimestampPools();
         RenderInitError InitImGui();
 
         bool IsDeviceBetter(PhyisicalDeviceInfo bestDevice, PhyisicalDeviceInfo device);
@@ -242,6 +249,12 @@ namespace Dodo::Platform {
         std::vector<VkSemaphore> m_RenderFinishedSemaphores;
         uint m_CurrentFrame = 0;
         uint32_t m_CurrentImageIndex = 0;
+
+        static constexpr uint32_t maxTimestampQueries = static_cast<uint32_t>(Dodo::GpuTimestampSlot::Count) * 2;
+        std::array<VkQueryPool, maxFramesInFlight> m_TimestampPools{};
+        float m_TimestampPeriodNs = 1.0f;
+        bool m_TimestampsSupported = false;
+        void ReadTimestamps();
 
         VkDescriptorPool m_ImGuiDescriptorPool;
         bool m_ImGuiActive = false;

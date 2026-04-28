@@ -1,6 +1,7 @@
 #include "Renderer3D.h"
 
 #include "Core/Application/Application.h"
+#include "Core/Graphics/GpuTimings.h"
 
 namespace Dodo {
 
@@ -82,28 +83,33 @@ namespace Dodo {
     void Renderer3D::DrawShadowedScene(Scene* scene, const Math::FreeCamera& camera, RenderAPI& renderAPI,
                                        AssetManager& assets)
     {
-        // Upload frame data for shadow pass (OpenGL executes draws immediately, so lightCamera
-        // must be in the UBO before shadow draws are recorded).
+        renderAPI.BeginTimestamp(GpuTimestampSlot::Frame);
+
+        // Shadow pass: draw geometry depth to shadow framebuffer
+        renderAPI.BeginTimestamp(GpuTimestampSlot::Shadow);
         FrameData shadowFrameData;
         shadowFrameData.lightCamera = scene->m_LightSystem.m_Directional.m_LightCamera;
         shadowFrameData.lightDir = scene->m_LightSystem.m_Directional.m_Direction;
         renderAPI.SetFrameData(shadowFrameData);
-
-        // Bind target, shadow pipeline and draw geometry to shadowmap
         m_ShadowMap->Bind(renderAPI);
         renderAPI.BindPipeline(m_ShadowMapMaterial->GetShader());
         World& world = scene->GetWorld();
         RenderGeometry(world, renderAPI, assets);
+        renderAPI.EndTimestamp(GpuTimestampSlot::Shadow);
 
-        // Bind postfx render target
+        // Scene pass: geometry + skybox to post-effect framebuffer
+        renderAPI.BeginTimestamp(GpuTimestampSlot::Scene);
         m_PostEffect->Bind(renderAPI);
-
-        // Bind shadowmap to index 3
         renderAPI.BindFrameBufferTexture(3, m_ShadowMap->GetFrameBuffer());
         DrawScene(scene, camera, renderAPI, assets);
+        renderAPI.EndTimestamp(GpuTimestampSlot::Scene);
 
-        // Draw postfx to screen target
+        // Post-effect pass: full-screen composite to swapchain
+        renderAPI.BeginTimestamp(GpuTimestampSlot::PostEffect);
         m_PostEffect->Draw(renderAPI);
+        renderAPI.EndTimestamp(GpuTimestampSlot::PostEffect);
+
+        renderAPI.EndTimestamp(GpuTimestampSlot::Frame);
     }
 
     DrawData Renderer3D::MakeDrawData(const Math::Mat4& model)

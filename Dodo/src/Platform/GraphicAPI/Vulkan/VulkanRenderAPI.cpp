@@ -60,6 +60,9 @@ namespace Dodo::Platform {
         if (m_DummyImageView) vkDestroyImageView(m_Device, m_DummyImageView, nullptr);
         if (m_DummyImage) vmaDestroyImage(m_VmaAllocator, m_DummyImage, m_DummyAllocation);
 
+        for (auto pool : m_TimestampPools)
+            if (pool != VK_NULL_HANDLE) vkDestroyQueryPool(m_Device, pool, nullptr);
+
         if (m_ImGuiActive) {
             ImGui_ImplVulkan_Shutdown();
             vkDestroyDescriptorPool(m_Device, m_ImGuiDescriptorPool, nullptr);
@@ -119,6 +122,7 @@ namespace Dodo::Platform {
         if (Try(CreateCommandBuffer())) return result;
         if (Try(CreateSyncObjects())) return result;
         if (Try(InitDescriptors())) return result;
+        if (Try(InitTimestampPools())) return result;
 
         if (winprop.m_Settings.imgui)
             if (Try(InitImGui())) return result;
@@ -290,12 +294,17 @@ namespace Dodo::Platform {
         dynamicRenderingFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
         dynamicRenderingFeature.dynamicRendering = VK_TRUE;
 
+        VkPhysicalDeviceVulkan12Features vulkan12Features{};
+        vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+        vulkan12Features.hostQueryReset = VK_TRUE;
+        vulkan12Features.pNext = &dynamicRenderingFeature;
+
         // We will specify device features here later
         VkPhysicalDeviceFeatures deviceFeatures{};
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.pNext = &dynamicRenderingFeature;
+        createInfo.pNext = &vulkan12Features;
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
         createInfo.pEnabledFeatures = &deviceFeatures;
@@ -731,6 +740,76 @@ namespace Dodo::Platform {
         return RenderInitError(RenderInitStatus::Success);
     }
 
+    RenderInitError VulkanRenderAPI::InitTimestampPools()
+    {
+        VkPhysicalDeviceProperties props{};
+        vkGetPhysicalDeviceProperties(m_PhysicalDevice, &props);
+
+        if (!props.limits.timestampComputeAndGraphics) {
+            DD_INFO("GPU does not support timestamp queries; GPU timings will be unavailable.");
+            return RenderInitError(RenderInitStatus::Success);
+        }
+
+        m_TimestampPeriodNs = props.limits.timestampPeriod;
+
+        VkQueryPoolCreateInfo ci{};
+        ci.sType      = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+        ci.queryType  = VK_QUERY_TYPE_TIMESTAMP;
+        ci.queryCount = maxTimestampQueries;
+
+        for (int i = 0; i < maxFramesInFlight; i++) {
+            if (vkCreateQueryPool(m_Device, &ci, nullptr, &m_TimestampPools[i]) != VK_SUCCESS)
+                return RenderInitError(RenderInitStatus::Failed, "Failed to create timestamp query pool!");
+            vkResetQueryPool(m_Device, m_TimestampPools[i], 0, maxTimestampQueries);
+        }
+
+        m_TimestampsSupported = true;
+        return RenderInitError(RenderInitStatus::Success);
+    }
+
+    void VulkanRenderAPI::ReadTimestamps()
+    {
+        if (!m_TimestampsSupported) return;
+
+        uint64_t ts[maxTimestampQueries] = {};
+        VkResult r = vkGetQueryPoolResults(m_Device, m_TimestampPools[m_CurrentFrame],
+                                           0, maxTimestampQueries,
+                                           sizeof(ts), ts, sizeof(uint64_t),
+                                           VK_QUERY_RESULT_64_BIT);
+        if (r != VK_SUCCESS) return;
+
+        auto toMs = [&](uint32_t slot) -> float {
+            uint64_t begin = ts[slot * 2];
+            uint64_t end   = ts[slot * 2 + 1];
+            if (end < begin) return 0.0f;
+            return static_cast<float>((end - begin) * m_TimestampPeriodNs / 1e6);
+        };
+
+        m_GpuTimings.frameMs      = toMs(static_cast<uint32_t>(Dodo::GpuTimestampSlot::Frame));
+        m_GpuTimings.shadowMs     = toMs(static_cast<uint32_t>(Dodo::GpuTimestampSlot::Shadow));
+        m_GpuTimings.sceneMs      = toMs(static_cast<uint32_t>(Dodo::GpuTimestampSlot::Scene));
+        m_GpuTimings.postEffectMs = toMs(static_cast<uint32_t>(Dodo::GpuTimestampSlot::PostEffect));
+    }
+
+    void VulkanRenderAPI::BeginTimestamp(Dodo::GpuTimestampSlot slot)
+    {
+        if (!m_TimestampsSupported) return;
+        vkCmdWriteTimestamp(m_Frames[m_CurrentFrame].commandBuffer,
+                            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                            m_TimestampPools[m_CurrentFrame],
+                            static_cast<uint32_t>(slot) * 2);
+    }
+
+    void VulkanRenderAPI::EndTimestamp(Dodo::GpuTimestampSlot slot)
+    {
+        if (!m_TimestampsSupported) return;
+        vkCmdWriteTimestamp(m_Frames[m_CurrentFrame].commandBuffer,
+                            VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                            m_TimestampPools[m_CurrentFrame],
+                            static_cast<uint32_t>(slot) * 2 + 1);
+    }
+
+
     void VulkanRenderAPI::Begin()
     {
         if (m_SwapChainNeedsRecreation) {
@@ -752,6 +831,8 @@ namespace Dodo::Platform {
 
         vkWaitForFences(m_Device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
         vkResetFences(m_Device, 1, &inFlightFence);
+
+        ReadTimestamps();
 
         // Reset per-frame state now that the GPU has finished with this frame slot
         m_BoundPipeline = VK_NULL_HANDLE;
@@ -775,6 +856,9 @@ namespace Dodo::Platform {
             DD_ERR("failed to begin recording command buffer!");
             return;
         }
+
+        if (m_TimestampsSupported)
+            vkCmdResetQueryPool(cmd, m_TimestampPools[m_CurrentFrame], 0, maxTimestampQueries);
     }
 
     void VulkanRenderAPI::End()

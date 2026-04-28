@@ -1,4 +1,5 @@
 #include "SandBox.h"
+#include "DebugLayer.h"
 
 using namespace Dodo;
 using namespace Math;
@@ -159,6 +160,7 @@ class Sandbox : public Application {
         props.m_Width = 1080;
         props.m_Height = 720;
         props.m_Settings.backfaceCull = true;
+        props.m_Settings.imgui = true;
 
         ApplicationConfig conf;
         conf.m_WindowProperties = props;
@@ -166,7 +168,11 @@ class Sandbox : public Application {
         return conf;
     }
 
-    void Init() { PushLayer(new GameLayer(*this)); }
+    void Init()
+    {
+        PushLayer(new GameLayer(*this));
+        PushLayer(new DebugLayer());
+    }
 };
 
 int main()

@@ -5,6 +5,7 @@
 #include <volk.h>
 
 #include "Core/Graphics/Pipeline/PipelineDesc.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanMaterialSet.h"
 
 #include <array>
 #include <vector>
@@ -43,9 +44,10 @@ namespace Dodo::Platform {
         // No-op if the shader does not declare set-2 bindings.
         void BindObjectSet(VkCommandBuffer cmd, uint32_t frameIdx, uint32_t modelDynamicOffset);
 
-        // Allocate, update, and bind set-1 (material textures) from the transient pool.
+        // Bind set-1 (material textures) using the material's persistent descriptor set.
+        // Allocates from m_MaterialPool on first use; re-writes only when matSet.IsDirty().
         // No-op if the shader does not declare set-1 bindings.
-        void BindMaterialSet(VkCommandBuffer cmd, VkDescriptorPool transientPool, uint32_t frameIdx,
+        void BindMaterialSet(VkCommandBuffer cmd, VulkanMaterialSet& matSet, uint32_t frameIdx,
                              const VkImageView* views, const VkSampler* samplers, const bool* isCubeMap,
                              const bool* isDepth, int maxSlots, VkImageView dummyView, VkSampler dummySampler);
 
@@ -69,6 +71,11 @@ namespace Dodo::Platform {
         // Valid only when m_HasSet2 is true.
         VkDescriptorPool m_Set2Pool = VK_NULL_HANDLE;
         std::array<VkDescriptorSet, PipelineUBOHandles::maxFrames> m_Set2{};
+
+        // Persistent pool for per-material descriptor sets (set-1).
+        // All sets are freed together when the pipeline is destroyed.
+        static constexpr uint32_t maxMaterials = 256;
+        VkDescriptorPool m_MaterialPool = VK_NULL_HANDLE;
     };
 
 } // namespace Dodo::Platform

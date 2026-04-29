@@ -8,6 +8,7 @@
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanMaterialSet.h"
 #include "Core/Graphics/GpuTimings.h"
 #include "Core/Graphics/RenderAPITypes.h"
 
@@ -78,6 +79,7 @@ namespace Dodo::Platform {
         void BindVertexBuffer(const Ref<VertexBuffer>& vb);
         void BindIndexBuffer(const Ref<IndexBuffer>& ib);
         void BindPipeline(Ref<Pipeline> pipeline);
+        void SetMaterialDescriptorSet(VulkanMaterialSet& matSet) { m_BoundMaterialSet = &matSet; }
         void PushConstants(const void* data, size_t size);
         void SetFrameData(const Dodo::FrameData& data);
         void SetDrawData(const DrawData& data);
@@ -226,11 +228,9 @@ namespace Dodo::Platform {
         uint32_t m_ModelUBOCursor = 0;   // next free slot index within the current frame
         uint32_t m_LastModelOffset = 0;  // byte offset written by the most recent SetDrawData
 
-        // Per-frame transient descriptor pool for set-1 (material textures), reset each frame
-        std::array<VkDescriptorPool, maxFramesInFlight> m_TransientPools{};
-
         // Current pipeline reference (needed for set-1 layout when binding textures)
         class VulkanPipeline* m_BoundPipelinePtr = nullptr;
+        VulkanMaterialSet* m_BoundMaterialSet = nullptr;
         class VulkanFrameBuffer* m_BoundFrameBuffer = nullptr;
         bool m_TexturesDirty = false;
         bool m_IsRendering = false;

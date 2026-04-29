@@ -3,6 +3,7 @@
 #include "Core/Data/AssetManager.h"
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/CubeMap.h"
+#include "Core/Graphics/Material/MaterialSet.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
 #include "Core/Graphics/RenderAPI.h"
@@ -19,6 +20,7 @@ namespace Dodo {
         Ref<TextureSampler> m_Sampler;
         Ref<Pipeline> m_Shader;
         AssetManager& m_Assets;
+        mutable MaterialSet m_MaterialSet;
 
       public:
         Skybox(std::vector<std::string> paths, AssetManager& assets, RenderAPI& renderAPI);

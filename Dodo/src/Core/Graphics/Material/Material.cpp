@@ -22,11 +22,13 @@ namespace Dodo {
             DD_WARN("Overwriting texture at slot {}", slot);
         }
         m_Textures[slot] = texture;
+        m_DescriptorSet.MarkDirty();
     }
 
     void Material::Bind(RenderAPI& renderAPI) const
     {
         renderAPI.BindPipeline(m_Shader);
+        renderAPI.SetMaterialDescriptorSet(m_DescriptorSet);
         for (const auto& [slot, texture] : m_Textures) {
             renderAPI.BindTexture(slot, texture);
             renderAPI.BindTextureSampler(slot, m_Sampler);

@@ -53,7 +53,6 @@ namespace Dodo::Platform {
                 vmaDestroyBuffer(m_VmaAllocator, m_FrameDataUBOs[i].buffer, m_FrameDataUBOs[i].allocation);
             if (m_ModelDataUBOs[i].buffer)
                 vmaDestroyBuffer(m_VmaAllocator, m_ModelDataUBOs[i].buffer, m_ModelDataUBOs[i].allocation);
-            if (m_TransientPools[i]) vkDestroyDescriptorPool(m_Device, m_TransientPools[i], nullptr);
         }
         if (m_AppDescriptorPool) vkDestroyDescriptorPool(m_Device, m_AppDescriptorPool, nullptr);
         if (m_DummySampler) vkDestroySampler(m_Device, m_DummySampler, nullptr);
@@ -590,22 +589,6 @@ namespace Dodo::Platform {
             m_ModelDataUBOs[i].mapped = vmaInfo.pMappedData;
         }
 
-        // --- Per-frame transient pools for set-1 (material textures) ---
-        VkDescriptorPoolSize transientSizes[] = {
-            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, maxDrawsPerFrame * maxTextureSlots},
-            {VK_DESCRIPTOR_TYPE_SAMPLER, maxDrawsPerFrame * maxTextureSlots},
-            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, maxDrawsPerFrame * maxTextureSlots},
-        };
-        VkDescriptorPoolCreateInfo transientCI{};
-        transientCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        transientCI.maxSets = maxDrawsPerFrame;
-        transientCI.poolSizeCount = (uint32_t)std::size(transientSizes);
-        transientCI.pPoolSizes = transientSizes;
-        for (int i = 0; i < maxFramesInFlight; i++) {
-            if (vkCreateDescriptorPool(m_Device, &transientCI, nullptr, &m_TransientPools[i]) != VK_SUCCESS)
-                return RenderInitError(RenderInitStatus::Failed, "Failed to create transient descriptor pool!");
-        }
-
         // Create a 1x1 black RGBA fallback image for unbound set-1 descriptor slots
         {
             VkImageCreateInfo imageCI{};
@@ -841,9 +824,6 @@ namespace Dodo::Platform {
         m_LastModelOffset = 0;
         m_TexturesDirty = false;
         m_IsRendering = false;
-        if (m_TransientPools[m_CurrentFrame] != VK_NULL_HANDLE)
-            vkResetDescriptorPool(m_Device, m_TransientPools[m_CurrentFrame], 0);
-
         vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_Frames[m_CurrentFrame].imageAvailableSemaphore,
                               VK_NULL_HANDLE, &m_CurrentImageIndex);
 
@@ -973,6 +953,7 @@ namespace Dodo::Platform {
             m_BoundPipeline = pipeline->m_Pipeline;
             m_BoundPipelineLayout = pipeline->m_Layout;
             m_BoundPipelinePtr = pipeline.get();
+            m_BoundMaterialSet = nullptr;
         }
         m_TexturesDirty = true;
 
@@ -1032,9 +1013,10 @@ namespace Dodo::Platform {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
 
         m_BoundPipelinePtr->BindObjectSet(cmd, m_CurrentFrame, m_LastModelOffset);
-        m_BoundPipelinePtr->BindMaterialSet(cmd, m_TransientPools[m_CurrentFrame], m_CurrentFrame, m_PendingImageViews,
-                                            m_PendingSamplers, m_PendingIsCubeMap, m_PendingIsDepth, maxTextureSlots,
-                                            m_DummyImageView, m_DummySampler);
+        if (m_BoundMaterialSet)
+            m_BoundPipelinePtr->BindMaterialSet(cmd, *m_BoundMaterialSet, m_CurrentFrame, m_PendingImageViews,
+                                                m_PendingSamplers, m_PendingIsCubeMap, m_PendingIsDepth,
+                                                maxTextureSlots, m_DummyImageView, m_DummySampler);
         m_TexturesDirty = false;
 
         vkCmdDrawIndexed(cmd, count, 1, 0, 0, 0);
@@ -1045,9 +1027,10 @@ namespace Dodo::Platform {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
         if (m_BoundPipelinePtr) {
             m_BoundPipelinePtr->BindObjectSet(cmd, m_CurrentFrame, m_LastModelOffset);
-            m_BoundPipelinePtr->BindMaterialSet(cmd, m_TransientPools[m_CurrentFrame], m_CurrentFrame,
-                                                m_PendingImageViews, m_PendingSamplers, m_PendingIsCubeMap,
-                                                m_PendingIsDepth, maxTextureSlots, m_DummyImageView, m_DummySampler);
+            if (m_BoundMaterialSet)
+                m_BoundPipelinePtr->BindMaterialSet(cmd, *m_BoundMaterialSet, m_CurrentFrame, m_PendingImageViews,
+                                                    m_PendingSamplers, m_PendingIsCubeMap, m_PendingIsDepth,
+                                                    maxTextureSlots, m_DummyImageView, m_DummySampler);
             m_TexturesDirty = false;
         }
         vkCmdDraw(cmd, count, 1, 0, 0);

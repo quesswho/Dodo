@@ -199,13 +199,57 @@ namespace Dodo::Platform {
             }
 
             // Vulkan requires all pSetLayouts entries to be valid handles.
-            // Fill any gaps (sets with no bindings) with empty layouts.
-            for (auto& layout : m_SetLayouts) {
-                if (layout == VK_NULL_HANDLE) {
-                    VkDescriptorSetLayoutCreateInfo emptyInfo{};
-                    emptyInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-                    vkCreateDescriptorSetLayout(m_Device, &emptyInfo, nullptr, &layout);
+            // Gaps at slots 0 and 2 get canonical layouts so all pipelines are
+            // compatible at those slots even when the shader skips them.
+            for (uint32_t i = 0; i < (uint32_t)m_SetLayouts.size(); i++) {
+                if (m_SetLayouts[i] != VK_NULL_HANDLE) continue;
+
+                VkDescriptorSetLayoutBinding canonBinding{};
+                canonBinding.binding = 0;
+                canonBinding.descriptorCount = 1;
+                canonBinding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+
+                VkDescriptorSetLayoutCreateInfo info{};
+                info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+
+                if (i == 0) {
+                    canonBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                    info.bindingCount = 1;
+                    info.pBindings = &canonBinding;
+                } else if (i == 2) {
+                    canonBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+                    info.bindingCount = 1;
+                    info.pBindings = &canonBinding;
                 }
+
+                vkCreateDescriptorSetLayout(m_Device, &info, nullptr, &m_SetLayouts[i]);
+            }
+
+            // Create persistent pool for per-material descriptor sets (set-1).
+            // Sized by counting actual set-1 bindings so we don't over-allocate.
+            if (m_HasSet1) {
+                uint32_t sampledImages = 0, samplers = 0, combined = 0;
+                for (const auto& b : m_ShaderBindings) {
+                    if (b.set != 1) continue;
+                    if (b.type == DescriptorType::SampledTexture || b.type == DescriptorType::SampledCubeMap)
+                        sampledImages += b.count;
+                    else if (b.type == DescriptorType::Sampler)
+                        samplers += b.count;
+                    else if (b.type == DescriptorType::CombinedImageSampler)
+                        combined += b.count;
+                }
+                uint32_t maxSets = maxMaterials * PipelineUBOHandles::maxFrames;
+                std::vector<VkDescriptorPoolSize> matSizes;
+                if (sampledImages) matSizes.push_back({VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, sampledImages * maxSets});
+                if (samplers)      matSizes.push_back({VK_DESCRIPTOR_TYPE_SAMPLER, samplers * maxSets});
+                if (combined)      matSizes.push_back({VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, combined * maxSets});
+
+                VkDescriptorPoolCreateInfo matPoolCI{};
+                matPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+                matPoolCI.maxSets = maxSets;
+                matPoolCI.poolSizeCount = (uint32_t)matSizes.size();
+                matPoolCI.pPoolSizes = matSizes.data();
+                vkCreateDescriptorPool(m_Device, &matPoolCI, nullptr, &m_MaterialPool);
             }
         }
 
@@ -429,6 +473,7 @@ namespace Dodo::Platform {
         // Destroying the pool frees all sets allocated from it
         if (m_Set0Pool != VK_NULL_HANDLE) vkDestroyDescriptorPool(m_Device, m_Set0Pool, nullptr);
         if (m_Set2Pool != VK_NULL_HANDLE) vkDestroyDescriptorPool(m_Device, m_Set2Pool, nullptr);
+        if (m_MaterialPool != VK_NULL_HANDLE) vkDestroyDescriptorPool(m_Device, m_MaterialPool, nullptr);
         for (VkDescriptorSetLayout layout : m_SetLayouts) {
             vkDestroyDescriptorSetLayout(m_Device, layout, nullptr);
         }
@@ -447,7 +492,7 @@ namespace Dodo::Platform {
                                 &modelDynamicOffset);
     }
 
-    void VulkanPipeline::BindMaterialSet(VkCommandBuffer cmd, VkDescriptorPool transientPool, uint32_t frameIdx,
+    void VulkanPipeline::BindMaterialSet(VkCommandBuffer cmd, VulkanMaterialSet& matSet, uint32_t frameIdx,
                                          const VkImageView* views, const VkSampler* samplers, const bool* isCubeMap,
                                          const bool* isDepth, int maxSlots, VkImageView dummyView,
                                          VkSampler dummySampler)
@@ -455,88 +500,108 @@ namespace Dodo::Platform {
         if (!m_HasSet1) return;
         if (m_SetLayouts.size() <= 1 || m_SetLayouts[1] == VK_NULL_HANDLE) return;
 
-        VkDescriptorSet set1 = VK_NULL_HANDLE;
-        VkDescriptorSetAllocateInfo ai{};
-        ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        ai.descriptorPool = transientPool;
-        ai.descriptorSetCount = 1;
-        ai.pSetLayouts = &m_SetLayouts[1];
-        if (vkAllocateDescriptorSets(m_Device, &ai, &set1) != VK_SUCCESS) return;
+        // Allocate persistent sets from the material pool on first use
+        if (!matSet.IsAllocated()) {
+            VkDescriptorSetLayout layouts[PipelineUBOHandles::maxFrames];
+            for (int i = 0; i < PipelineUBOHandles::maxFrames; i++)
+                layouts[i] = m_SetLayouts[1];
 
-        std::vector<VkWriteDescriptorSet> writes;
-        std::vector<VkDescriptorImageInfo> imageInfos;
-        imageInfos.reserve(maxSlots);
-
-        VkSampler firstSampler = VK_NULL_HANDLE;
-        for (int s = 0; s < maxSlots && firstSampler == VK_NULL_HANDLE; s++)
-            firstSampler = samplers[s];
-
-        for (const auto& b : m_ShaderBindings) {
-            if (b.set != 1) continue;
-
-            VkWriteDescriptorSet w{};
-            w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            w.dstSet = set1;
-            w.dstBinding = b.binding;
-            w.descriptorCount = 1;
-
-            if (b.type == DescriptorType::SampledTexture) {
-                // Only use the pending view if it is a 2D view (never bind a cube view to a Texture2D binding)
-                bool hasPending = b.binding < (uint32_t)maxSlots && views[b.binding] && !isCubeMap[b.binding];
-                VkImageView view = hasPending ? views[b.binding] : dummyView;
-                if (!view) continue;
-                VkDescriptorImageInfo info{};
-                info.imageView = view;
-                info.imageLayout = (hasPending && isDepth[b.binding]) ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
-                                                                      : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageInfos.push_back(info);
-                w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-                w.pImageInfo = &imageInfos.back();
-                writes.push_back(w);
-            } else if (b.type == DescriptorType::SampledCubeMap) {
-                // Only use the pending view if it is a cube view
-                bool hasPending = b.binding < (uint32_t)maxSlots && views[b.binding] && isCubeMap[b.binding];
-                VkImageView view = hasPending ? views[b.binding] : dummyView;
-                if (!view) continue;
-                VkDescriptorImageInfo info{};
-                info.imageView = view;
-                info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageInfos.push_back(info);
-                w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-                w.pImageInfo = &imageInfos.back();
-                writes.push_back(w);
-            } else if (b.type == DescriptorType::Sampler) {
-                VkSampler sampler = (b.binding < (uint32_t)maxSlots && samplers[b.binding])
-                                        ? samplers[b.binding]
-                                        : (firstSampler ? firstSampler : dummySampler);
-                if (!sampler) continue;
-                VkDescriptorImageInfo info{};
-                info.sampler = sampler;
-                imageInfos.push_back(info);
-                w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
-                w.pImageInfo = &imageInfos.back();
-                writes.push_back(w);
-            } else if (b.type == DescriptorType::CombinedImageSampler) {
-                bool hasPendingView = b.binding < (uint32_t)maxSlots && views[b.binding];
-                VkImageView view = hasPendingView ? views[b.binding] : dummyView;
-                VkSampler sampler = (b.binding < (uint32_t)maxSlots && samplers[b.binding])
-                                        ? samplers[b.binding]
-                                        : (firstSampler ? firstSampler : dummySampler);
-                if (!view || !sampler) continue;
-                VkDescriptorImageInfo info{};
-                info.imageView = view;
-                info.imageLayout = (hasPendingView && isDepth[b.binding])
-                                       ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
-                                       : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                info.sampler = sampler;
-                imageInfos.push_back(info);
-                w.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                w.pImageInfo = &imageInfos.back();
-                writes.push_back(w);
-            }
+            VkDescriptorSet sets[PipelineUBOHandles::maxFrames] = {};
+            VkDescriptorSetAllocateInfo ai{};
+            ai.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            ai.descriptorPool = m_MaterialPool;
+            ai.descriptorSetCount = PipelineUBOHandles::maxFrames;
+            ai.pSetLayouts = layouts;
+            if (vkAllocateDescriptorSets(m_Device, &ai, sets) != VK_SUCCESS) return;
+            matSet.Assign(sets[0], sets[1]);
         }
 
-        if (!writes.empty()) vkUpdateDescriptorSets(m_Device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
+        // Re-write descriptors for all frames only when material textures or samplers changed
+        if (matSet.IsDirty()) {
+            VkSampler firstSampler = VK_NULL_HANDLE;
+            for (int s = 0; s < maxSlots && firstSampler == VK_NULL_HANDLE; s++)
+                firstSampler = samplers[s];
+
+            for (int fi = 0; fi < PipelineUBOHandles::maxFrames; fi++) {
+                VkDescriptorSet set1 = matSet.Get(fi);
+
+                std::vector<VkWriteDescriptorSet> writes;
+                std::vector<VkDescriptorImageInfo> imageInfos;
+                imageInfos.reserve(maxSlots);
+
+                for (const auto& b : m_ShaderBindings) {
+                    if (b.set != 1) continue;
+
+                    VkWriteDescriptorSet w{};
+                    w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    w.dstSet = set1;
+                    w.dstBinding = b.binding;
+                    w.descriptorCount = 1;
+
+                    if (b.type == DescriptorType::SampledTexture) {
+                        // Only use the pending view if it is a 2D view (never bind a cube view to a Texture2D binding)
+                        bool hasPending = b.binding < (uint32_t)maxSlots && views[b.binding] && !isCubeMap[b.binding];
+                        VkImageView view = hasPending ? views[b.binding] : dummyView;
+                        if (!view) continue;
+                        VkDescriptorImageInfo info{};
+                        info.imageView = view;
+                        info.imageLayout = (hasPending && isDepth[b.binding])
+                                               ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                                               : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        imageInfos.push_back(info);
+                        w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                        w.pImageInfo = &imageInfos.back();
+                        writes.push_back(w);
+                    } else if (b.type == DescriptorType::SampledCubeMap) {
+                        // Only use the pending view if it is a cube view
+                        bool hasPending = b.binding < (uint32_t)maxSlots && views[b.binding] && isCubeMap[b.binding];
+                        VkImageView view = hasPending ? views[b.binding] : dummyView;
+                        if (!view) continue;
+                        VkDescriptorImageInfo info{};
+                        info.imageView = view;
+                        info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        imageInfos.push_back(info);
+                        w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+                        w.pImageInfo = &imageInfos.back();
+                        writes.push_back(w);
+                    } else if (b.type == DescriptorType::Sampler) {
+                        VkSampler sampler = (b.binding < (uint32_t)maxSlots && samplers[b.binding])
+                                                ? samplers[b.binding]
+                                                : (firstSampler ? firstSampler : dummySampler);
+                        if (!sampler) continue;
+                        VkDescriptorImageInfo info{};
+                        info.sampler = sampler;
+                        imageInfos.push_back(info);
+                        w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+                        w.pImageInfo = &imageInfos.back();
+                        writes.push_back(w);
+                    } else if (b.type == DescriptorType::CombinedImageSampler) {
+                        bool hasPendingView = b.binding < (uint32_t)maxSlots && views[b.binding];
+                        VkImageView view = hasPendingView ? views[b.binding] : dummyView;
+                        VkSampler sampler = (b.binding < (uint32_t)maxSlots && samplers[b.binding])
+                                                ? samplers[b.binding]
+                                                : (firstSampler ? firstSampler : dummySampler);
+                        if (!view || !sampler) continue;
+                        VkDescriptorImageInfo info{};
+                        info.imageView = view;
+                        info.imageLayout = (hasPendingView && isDepth[b.binding])
+                                               ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
+                                               : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                        info.sampler = sampler;
+                        imageInfos.push_back(info);
+                        w.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                        w.pImageInfo = &imageInfos.back();
+                        writes.push_back(w);
+                    }
+                }
+
+                if (!writes.empty())
+                    vkUpdateDescriptorSets(m_Device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
+            }
+            matSet.ClearDirty();
+        }
+
+        VkDescriptorSet set1 = matSet.Get(frameIdx);
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Layout, 1, 1, &set1, 0, nullptr);
     }
 

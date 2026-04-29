@@ -92,14 +92,14 @@ namespace Dodo {
     void Application::Update(float elapsed)
     {
         m_RenderAPI->Begin();
-
+        
         for (auto it = m_Layers.begin(); it != m_Layers.end(); it++) {
             (*it)->Update(elapsed);
             (*it)->Render(*m_RenderAPI, *m_AssetManager);
         }
-
-        m_Window->Update();
+        
         m_RenderAPI->End();
+        m_Window->Update();
         m_AssetManager->FlushStagingQueue(*m_RenderAPI);
     }
 

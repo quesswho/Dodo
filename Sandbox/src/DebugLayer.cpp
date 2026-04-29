@@ -22,8 +22,8 @@ void DebugLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
         ImGui::ProgressBar(ms / frame, ImVec2(-1.0f, 0.0f));
     };
 
-    row("Shadow",      t.shadowMs);
-    row("Scene",       t.sceneMs);
+    row("Shadow", t.shadowMs);
+    row("Scene", t.sceneMs);
     row("Post-Effect", t.postEffectMs);
 
     ImGui::End();

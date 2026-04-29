@@ -736,8 +736,8 @@ namespace Dodo::Platform {
         m_TimestampPeriodNs = props.limits.timestampPeriod;
 
         VkQueryPoolCreateInfo ci{};
-        ci.sType      = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
-        ci.queryType  = VK_QUERY_TYPE_TIMESTAMP;
+        ci.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+        ci.queryType = VK_QUERY_TYPE_TIMESTAMP;
         ci.queryCount = maxTimestampQueries;
 
         for (int i = 0; i < maxFramesInFlight; i++) {
@@ -755,43 +755,36 @@ namespace Dodo::Platform {
         if (!m_TimestampsSupported) return;
 
         uint64_t ts[maxTimestampQueries] = {};
-        VkResult r = vkGetQueryPoolResults(m_Device, m_TimestampPools[m_CurrentFrame],
-                                           0, maxTimestampQueries,
-                                           sizeof(ts), ts, sizeof(uint64_t),
-                                           VK_QUERY_RESULT_64_BIT);
+        VkResult r = vkGetQueryPoolResults(m_Device, m_TimestampPools[m_CurrentFrame], 0, maxTimestampQueries,
+                                           sizeof(ts), ts, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
         if (r != VK_SUCCESS) return;
 
         auto toMs = [&](uint32_t slot) -> float {
             uint64_t begin = ts[slot * 2];
-            uint64_t end   = ts[slot * 2 + 1];
+            uint64_t end = ts[slot * 2 + 1];
             if (end < begin) return 0.0f;
             return static_cast<float>((end - begin) * m_TimestampPeriodNs / 1e6);
         };
 
-        m_GpuTimings.frameMs      = toMs(static_cast<uint32_t>(Dodo::GpuTimestampSlot::Frame));
-        m_GpuTimings.shadowMs     = toMs(static_cast<uint32_t>(Dodo::GpuTimestampSlot::Shadow));
-        m_GpuTimings.sceneMs      = toMs(static_cast<uint32_t>(Dodo::GpuTimestampSlot::Scene));
+        m_GpuTimings.frameMs = toMs(static_cast<uint32_t>(Dodo::GpuTimestampSlot::Frame));
+        m_GpuTimings.shadowMs = toMs(static_cast<uint32_t>(Dodo::GpuTimestampSlot::Shadow));
+        m_GpuTimings.sceneMs = toMs(static_cast<uint32_t>(Dodo::GpuTimestampSlot::Scene));
         m_GpuTimings.postEffectMs = toMs(static_cast<uint32_t>(Dodo::GpuTimestampSlot::PostEffect));
     }
 
     void VulkanRenderAPI::BeginTimestamp(Dodo::GpuTimestampSlot slot)
     {
         if (!m_TimestampsSupported) return;
-        vkCmdWriteTimestamp(m_Frames[m_CurrentFrame].commandBuffer,
-                            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                            m_TimestampPools[m_CurrentFrame],
-                            static_cast<uint32_t>(slot) * 2);
+        vkCmdWriteTimestamp(m_Frames[m_CurrentFrame].commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                            m_TimestampPools[m_CurrentFrame], static_cast<uint32_t>(slot) * 2);
     }
 
     void VulkanRenderAPI::EndTimestamp(Dodo::GpuTimestampSlot slot)
     {
         if (!m_TimestampsSupported) return;
-        vkCmdWriteTimestamp(m_Frames[m_CurrentFrame].commandBuffer,
-                            VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                            m_TimestampPools[m_CurrentFrame],
-                            static_cast<uint32_t>(slot) * 2 + 1);
+        vkCmdWriteTimestamp(m_Frames[m_CurrentFrame].commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                            m_TimestampPools[m_CurrentFrame], static_cast<uint32_t>(slot) * 2 + 1);
     }
-
 
     void VulkanRenderAPI::Begin()
     {
@@ -837,8 +830,7 @@ namespace Dodo::Platform {
             return;
         }
 
-        if (m_TimestampsSupported)
-            vkCmdResetQueryPool(cmd, m_TimestampPools[m_CurrentFrame], 0, maxTimestampQueries);
+        if (m_TimestampsSupported) vkCmdResetQueryPool(cmd, m_TimestampPools[m_CurrentFrame], 0, maxTimestampQueries);
     }
 
     void VulkanRenderAPI::End()
@@ -1015,8 +1007,7 @@ namespace Dodo::Platform {
 
         m_BoundPipelinePtr->BindObjectSet(cmd, m_CurrentFrame, m_LastModelOffset);
         if (m_BoundMaterialSet) {
-            if (m_TexturesDirty)
-                m_BoundMaterialSet->MarkDirty();
+            if (m_TexturesDirty) m_BoundMaterialSet->MarkDirty();
             m_BoundPipelinePtr->BindMaterialSet(cmd, *m_BoundMaterialSet, m_CurrentFrame, m_FrameEpoch,
                                                 m_PendingImageViews, m_PendingSamplers, m_PendingIsCubeMap,
                                                 m_PendingIsDepth, maxTextureSlots, m_DummyImageView, m_DummySampler);
@@ -1032,12 +1023,10 @@ namespace Dodo::Platform {
         if (m_BoundPipelinePtr) {
             m_BoundPipelinePtr->BindObjectSet(cmd, m_CurrentFrame, m_LastModelOffset);
             if (m_BoundMaterialSet) {
-                if (m_TexturesDirty)
-                    m_BoundMaterialSet->MarkDirty();
-                m_BoundPipelinePtr->BindMaterialSet(cmd, *m_BoundMaterialSet, m_CurrentFrame, m_FrameEpoch,
-                                                    m_PendingImageViews, m_PendingSamplers, m_PendingIsCubeMap,
-                                                    m_PendingIsDepth, maxTextureSlots, m_DummyImageView,
-                                                    m_DummySampler);
+                if (m_TexturesDirty) m_BoundMaterialSet->MarkDirty();
+                m_BoundPipelinePtr->BindMaterialSet(
+                    cmd, *m_BoundMaterialSet, m_CurrentFrame, m_FrameEpoch, m_PendingImageViews, m_PendingSamplers,
+                    m_PendingIsCubeMap, m_PendingIsDepth, maxTextureSlots, m_DummyImageView, m_DummySampler);
             }
             m_TexturesDirty = false;
         }

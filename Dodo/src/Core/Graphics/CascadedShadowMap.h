@@ -6,9 +6,6 @@
 namespace Dodo {
 
     class CascadedShadowMap {
-      private:
-        Ref<FrameBuffer> m_FrameBuffer;
-
       public:
         CascadedShadowMap(RenderAPI& renderAPI, uint32_t layers);
         ~CascadedShadowMap();
@@ -19,5 +16,10 @@ namespace Dodo {
         Ref<FrameBuffer> GetFrameBuffer() const { return m_FrameBuffer; }
 
         uint32_t m_Layers;
+
+      private:
+        std::vector<Math::Vec4> GetFrustumCornersWorldSpace(const Math::Mat4& proj, const Math::Mat4& view);
+
+        Ref<FrameBuffer> m_FrameBuffer;
     };
 } // namespace Dodo

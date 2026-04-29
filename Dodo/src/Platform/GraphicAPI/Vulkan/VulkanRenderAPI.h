@@ -5,12 +5,12 @@
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/CubeMap.h"
 #include "Core/Graphics/FrameBuffer.h"
+#include "Core/Graphics/GpuTimings.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
-#include "Platform/GraphicAPI/Vulkan/VulkanMaterialSet.h"
-#include "Core/Graphics/GpuTimings.h"
 #include "Core/Graphics/RenderAPITypes.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanMaterialSet.h"
 
 #include "Platform/WindowAPI/NativeWindowHandle.h"
 #ifdef DD_API_WIN32

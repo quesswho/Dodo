@@ -18,7 +18,11 @@ namespace Dodo {
         Material(Ref<Pipeline> shader, Ref<Texture> texture, Ref<TextureSampler> sampler);
         ~Material();
 
-        void SetShader(Ref<Pipeline> shader) { m_Shader = shader; m_DescriptorSet.Reset(); }
+        void SetShader(Ref<Pipeline> shader)
+        {
+            m_Shader = shader;
+            m_DescriptorSet.Reset();
+        }
         Ref<Pipeline> GetShader() const { return m_Shader; }
 
         void AddTexture(uint slot, Ref<Texture> texture);
@@ -31,7 +35,11 @@ namespace Dodo {
         }
         const std::unordered_map<uint, Ref<Texture>>& GetTextures() const { return m_Textures; }
 
-        void SetSampler(Ref<TextureSampler> sampler) { m_Sampler = sampler; m_DescriptorSet.MarkDirty(); }
+        void SetSampler(Ref<TextureSampler> sampler)
+        {
+            m_Sampler = sampler;
+            m_DescriptorSet.MarkDirty();
+        }
         Ref<TextureSampler> GetSampler() const { return m_Sampler; }
 
         MaterialSet& GetDescriptorSet() const { return m_DescriptorSet; }

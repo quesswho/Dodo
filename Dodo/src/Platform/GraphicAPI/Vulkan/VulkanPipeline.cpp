@@ -154,7 +154,8 @@ namespace Dodo::Platform {
                     info.pBindings = &set2Binding;
                     vkCreateDescriptorSetLayout(m_Device, &info, nullptr, &m_SetLayouts[2]);
 
-                    VkDescriptorPoolSize poolSize = {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, PipelineUBOHandles::maxFrames};
+                    VkDescriptorPoolSize poolSize = {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+                                                     PipelineUBOHandles::maxFrames};
                     VkDescriptorPoolCreateInfo poolCI{};
                     poolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                     poolCI.maxSets = PipelineUBOHandles::maxFrames;
@@ -241,8 +242,8 @@ namespace Dodo::Platform {
                 uint32_t maxSets = maxMaterials * PipelineUBOHandles::maxFrames;
                 std::vector<VkDescriptorPoolSize> matSizes;
                 if (sampledImages) matSizes.push_back({VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, sampledImages * maxSets});
-                if (samplers)      matSizes.push_back({VK_DESCRIPTOR_TYPE_SAMPLER, samplers * maxSets});
-                if (combined)      matSizes.push_back({VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, combined * maxSets});
+                if (samplers) matSizes.push_back({VK_DESCRIPTOR_TYPE_SAMPLER, samplers * maxSets});
+                if (combined) matSizes.push_back({VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, combined * maxSets});
 
                 VkDescriptorPoolCreateInfo matPoolCI{};
                 matPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

@@ -193,6 +193,20 @@ namespace Dodo::Math {
 
         friend Mat4x4 operator*(Mat4x4 left, const Mat4x4& right) { return left *= right; }
 
+        friend Math::TVec4<T> operator*(const Mat4x4& left, const Math::TVec4<T>& right)
+        {
+            const Math::TVec4<T> row0(left.m_Elements[GetIndex(0, 0)], left.m_Elements[GetIndex(1, 0)],
+                                      left.m_Elements[GetIndex(2, 0)], left.m_Elements[GetIndex(3, 0)]);
+            const Math::TVec4<T> row1(left.m_Elements[GetIndex(0, 1)], left.m_Elements[GetIndex(1, 1)],
+                                      left.m_Elements[GetIndex(2, 1)], left.m_Elements[GetIndex(3, 1)]);
+            const Math::TVec4<T> row2(left.m_Elements[GetIndex(0, 2)], left.m_Elements[GetIndex(1, 2)],
+                                      left.m_Elements[GetIndex(2, 2)], left.m_Elements[GetIndex(3, 2)]);
+            const Math::TVec4<T> row3(left.m_Elements[GetIndex(0, 3)], left.m_Elements[GetIndex(1, 3)],
+                                      left.m_Elements[GetIndex(2, 3)], left.m_Elements[GetIndex(3, 3)]);
+
+            return Math::TVec4<T>(row0.Dot(right), row1.Dot(right), row2.Dot(right), row3.Dot(right));
+        }
+
         // Assignment
 
         const Mat4x4& operator=(const Mat4x4& other)

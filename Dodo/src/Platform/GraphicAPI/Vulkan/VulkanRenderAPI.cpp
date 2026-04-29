@@ -903,6 +903,7 @@ namespace Dodo::Platform {
 
         vkQueuePresentKHR(m_PresentQueue, &presentInfo);
 
+        m_FrameEpoch++;
         m_CurrentFrame = (m_CurrentFrame + 1) % maxFramesInFlight;
     }
 
@@ -1013,10 +1014,13 @@ namespace Dodo::Platform {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
 
         m_BoundPipelinePtr->BindObjectSet(cmd, m_CurrentFrame, m_LastModelOffset);
-        if (m_BoundMaterialSet)
-            m_BoundPipelinePtr->BindMaterialSet(cmd, *m_BoundMaterialSet, m_CurrentFrame, m_PendingImageViews,
-                                                m_PendingSamplers, m_PendingIsCubeMap, m_PendingIsDepth,
-                                                maxTextureSlots, m_DummyImageView, m_DummySampler);
+        if (m_BoundMaterialSet) {
+            if (m_TexturesDirty)
+                m_BoundMaterialSet->MarkDirty();
+            m_BoundPipelinePtr->BindMaterialSet(cmd, *m_BoundMaterialSet, m_CurrentFrame, m_FrameEpoch,
+                                                m_PendingImageViews, m_PendingSamplers, m_PendingIsCubeMap,
+                                                m_PendingIsDepth, maxTextureSlots, m_DummyImageView, m_DummySampler);
+        }
         m_TexturesDirty = false;
 
         vkCmdDrawIndexed(cmd, count, 1, 0, 0, 0);
@@ -1027,10 +1031,14 @@ namespace Dodo::Platform {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
         if (m_BoundPipelinePtr) {
             m_BoundPipelinePtr->BindObjectSet(cmd, m_CurrentFrame, m_LastModelOffset);
-            if (m_BoundMaterialSet)
-                m_BoundPipelinePtr->BindMaterialSet(cmd, *m_BoundMaterialSet, m_CurrentFrame, m_PendingImageViews,
-                                                    m_PendingSamplers, m_PendingIsCubeMap, m_PendingIsDepth,
-                                                    maxTextureSlots, m_DummyImageView, m_DummySampler);
+            if (m_BoundMaterialSet) {
+                if (m_TexturesDirty)
+                    m_BoundMaterialSet->MarkDirty();
+                m_BoundPipelinePtr->BindMaterialSet(cmd, *m_BoundMaterialSet, m_CurrentFrame, m_FrameEpoch,
+                                                    m_PendingImageViews, m_PendingSamplers, m_PendingIsCubeMap,
+                                                    m_PendingIsDepth, maxTextureSlots, m_DummyImageView,
+                                                    m_DummySampler);
+            }
             m_TexturesDirty = false;
         }
         vkCmdDraw(cmd, count, 1, 0, 0);

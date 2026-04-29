@@ -493,9 +493,9 @@ namespace Dodo::Platform {
     }
 
     void VulkanPipeline::BindMaterialSet(VkCommandBuffer cmd, VulkanMaterialSet& matSet, uint32_t frameIdx,
-                                         const VkImageView* views, const VkSampler* samplers, const bool* isCubeMap,
-                                         const bool* isDepth, int maxSlots, VkImageView dummyView,
-                                         VkSampler dummySampler)
+                                         uint32_t frameEpoch, const VkImageView* views, const VkSampler* samplers,
+                                         const bool* isCubeMap, const bool* isDepth, int maxSlots,
+                                         VkImageView dummyView, VkSampler dummySampler)
     {
         if (!m_HasSet1) return;
         if (m_SetLayouts.size() <= 1 || m_SetLayouts[1] == VK_NULL_HANDLE) return;
@@ -516,14 +516,16 @@ namespace Dodo::Platform {
             matSet.Assign(sets[0], sets[1]);
         }
 
-        // Re-write descriptors for all frames only when material textures or samplers changed
-        if (matSet.IsDirty()) {
+        // Re-write only the current frame's descriptor set when dirty and not yet updated this epoch.
+        // Guarding on frameEpoch prevents a second vkUpdateDescriptorSets call within the same frame
+        // on a set that is already bound to the recording command buffer, which would invalidate it.
+        if (matSet.IsDirtyForFrame(frameIdx) && !matSet.WasUpdatedThisEpoch(frameIdx, frameEpoch)) {
             VkSampler firstSampler = VK_NULL_HANDLE;
             for (int s = 0; s < maxSlots && firstSampler == VK_NULL_HANDLE; s++)
                 firstSampler = samplers[s];
 
-            for (int fi = 0; fi < PipelineUBOHandles::maxFrames; fi++) {
-                VkDescriptorSet set1 = matSet.Get(fi);
+            {
+                VkDescriptorSet set1 = matSet.Get(frameIdx);
 
                 std::vector<VkWriteDescriptorSet> writes;
                 std::vector<VkDescriptorImageInfo> imageInfos;
@@ -598,7 +600,8 @@ namespace Dodo::Platform {
                 if (!writes.empty())
                     vkUpdateDescriptorSets(m_Device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
             }
-            matSet.ClearDirty();
+            matSet.SetUpdatedEpoch(frameIdx, frameEpoch);
+            matSet.ClearDirtyForFrame(frameIdx);
         }
 
         VkDescriptorSet set1 = matSet.Get(frameIdx);

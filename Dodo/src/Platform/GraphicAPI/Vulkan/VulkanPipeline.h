@@ -47,7 +47,7 @@ namespace Dodo::Platform {
         // Bind set-1 (material textures) using the material's persistent descriptor set.
         // Allocates from m_MaterialPool on first use; re-writes only when matSet.IsDirty().
         // No-op if the shader does not declare set-1 bindings.
-        void BindMaterialSet(VkCommandBuffer cmd, VulkanMaterialSet& matSet, uint32_t frameIdx,
+        void BindMaterialSet(VkCommandBuffer cmd, VulkanMaterialSet& matSet, uint32_t frameIdx, uint32_t frameEpoch,
                              const VkImageView* views, const VkSampler* samplers, const bool* isCubeMap,
                              const bool* isDepth, int maxSlots, VkImageView dummyView, VkSampler dummySampler);
 

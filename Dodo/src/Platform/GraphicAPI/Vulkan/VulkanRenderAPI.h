@@ -249,6 +249,7 @@ namespace Dodo::Platform {
         std::vector<VkSemaphore> m_RenderFinishedSemaphores;
         uint m_CurrentFrame = 0;
         uint32_t m_CurrentImageIndex = 0;
+        uint32_t m_FrameEpoch = 0;
 
         static constexpr uint32_t maxTimestampQueries = static_cast<uint32_t>(Dodo::GpuTimestampSlot::Count) * 2;
         std::array<VkQueryPool, maxFramesInFlight> m_TimestampPools{};

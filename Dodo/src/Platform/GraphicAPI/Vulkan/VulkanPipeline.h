@@ -18,6 +18,7 @@ namespace Dodo::Platform {
         static constexpr int maxFrames = 2;
         VkBuffer frameDataBuffers[maxFrames];
         VkBuffer modelDataBuffers[maxFrames];
+        VkBuffer csmDataBuffers[maxFrames];
         uint32_t modelSlotSize; // aligned slot size for dynamic offset
     };
 

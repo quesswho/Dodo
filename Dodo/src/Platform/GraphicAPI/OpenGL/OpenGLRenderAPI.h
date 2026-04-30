@@ -62,6 +62,12 @@ namespace Dodo::Platform {
         void PushConstants(const void* data, size_t size);
         void SetFrameData(const FrameData& data);
         void SetDrawData(const DrawData& data);
+        inline void SetCSMData(const CsmData& data)
+        {
+            glBindBuffer(GL_UNIFORM_BUFFER, m_LightSpaceUBO);
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(CsmData), &data);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        }
         void DrawIndexed(const Ref<VertexBuffer>& va);
         inline void DrawIndices(uint count) const { glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); }
         inline void DrawArray(uint count) const { glDrawArrays(GL_TRIANGLES, 0, count); }
@@ -133,6 +139,7 @@ namespace Dodo::Platform {
         uint m_FrameUBO = 0;
         uint m_ModelUBO = 0;
         uint m_PushConstantUBO = 0;
+        uint m_LightSpaceUBO = 0;
 
         bool m_ImGuiLoaded = false;
 

@@ -17,12 +17,20 @@ namespace Dodo {
 
     struct FrameData {
         Math::Mat4 camera;
+        Math::Mat4 cameraView;   // view matrix only (no projection), for cascade depth selection
         Math::Mat4 skyboxCamera; // P * View with translation stripped, for skybox rendering
         Math::Mat4 lightCamera;
         Math::Vec3 lightDir;
         float pad0; // std140 alignment
         Math::Vec3 cameraPos;
         float pad1;
+    };
+
+    struct CsmData {
+        Math::Mat4 lightSpaceMatrices[4];
+        Math::Vec4 cascadeSplitDepths; // x,y,z,w = view-space depths for up to 4 cascades
+        int numCascades;
+        float pad[3];
     };
 
     struct DrawData {

@@ -53,6 +53,8 @@ namespace Dodo::Platform {
                 vmaDestroyBuffer(m_VmaAllocator, m_FrameDataUBOs[i].buffer, m_FrameDataUBOs[i].allocation);
             if (m_ModelDataUBOs[i].buffer)
                 vmaDestroyBuffer(m_VmaAllocator, m_ModelDataUBOs[i].buffer, m_ModelDataUBOs[i].allocation);
+            if (m_CsmDataUBOs[i].buffer)
+                vmaDestroyBuffer(m_VmaAllocator, m_CsmDataUBOs[i].buffer, m_CsmDataUBOs[i].allocation);
         }
         if (m_AppDescriptorPool) vkDestroyDescriptorPool(m_Device, m_AppDescriptorPool, nullptr);
         if (m_DummySampler) vkDestroySampler(m_Device, m_DummySampler, nullptr);
@@ -296,10 +298,11 @@ namespace Dodo::Platform {
         VkPhysicalDeviceVulkan12Features vulkan12Features{};
         vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
         vulkan12Features.hostQueryReset = VK_TRUE;
+        vulkan12Features.shaderOutputLayer = VK_TRUE;
         vulkan12Features.pNext = &dynamicRenderingFeature;
 
-        // We will specify device features here later
         VkPhysicalDeviceFeatures deviceFeatures{};
+        deviceFeatures.geometryShader = VK_TRUE;
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -587,6 +590,13 @@ namespace Dodo::Platform {
                                 &m_ModelDataUBOs[i].allocation, &vmaInfo) != VK_SUCCESS)
                 return RenderInitError(RenderInitStatus::Failed, "Failed to create ModelData UBO!");
             m_ModelDataUBOs[i].mapped = vmaInfo.pMappedData;
+
+            // CsmData UBO (per-frame CSM matrices and split depths)
+            bufCI.size = sizeof(Dodo::CsmData);
+            if (vmaCreateBuffer(m_VmaAllocator, &bufCI, &allocCI, &m_CsmDataUBOs[i].buffer,
+                                &m_CsmDataUBOs[i].allocation, &vmaInfo) != VK_SUCCESS)
+                return RenderInitError(RenderInitStatus::Failed, "Failed to create CsmData UBO!");
+            m_CsmDataUBOs[i].mapped = vmaInfo.pMappedData;
         }
 
         // Create a 1x1 black RGBA fallback image for unbound set-1 descriptor slots
@@ -967,6 +977,12 @@ namespace Dodo::Platform {
             memcpy(m_FrameDataUBOs[m_CurrentFrame].mapped, &data, sizeof(Dodo::FrameData));
     }
 
+    void VulkanRenderAPI::SetCSMData(const Dodo::CsmData& data)
+    {
+        if (m_CsmDataUBOs[m_CurrentFrame].mapped)
+            memcpy(m_CsmDataUBOs[m_CurrentFrame].mapped, &data, sizeof(Dodo::CsmData));
+    }
+
     void VulkanRenderAPI::SetDrawData(const DrawData& data)
     {
         if (!m_ModelDataUBOs[m_CurrentFrame].mapped) return;
@@ -1114,7 +1130,7 @@ namespace Dodo::Platform {
         VkRenderingInfo renderingInfo{};
         renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
         renderingInfo.renderArea = {{0, 0}, extent};
-        renderingInfo.layerCount = 1;
+        renderingInfo.layerCount = vkFB->GetLayerCount();
 
         if (vkFB->HasColor()) {
             colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -1180,6 +1196,7 @@ namespace Dodo::Platform {
         for (int i = 0; i < maxFramesInFlight; i++) {
             ubos.frameDataBuffers[i] = m_FrameDataUBOs[i].buffer;
             ubos.modelDataBuffers[i] = m_ModelDataUBOs[i].buffer;
+            ubos.csmDataBuffers[i] = m_CsmDataUBOs[i].buffer;
         }
         ubos.modelSlotSize = m_ModelUBOSlotSize;
         return std::make_shared<VulkanPipeline>(m_Device, colorFormat, VK_FORMAT_D32_SFLOAT, shader, desc, ubos);

@@ -5,7 +5,7 @@
 #include <Core/Data/AssetManager.h>
 #include <Core/Graphics/PostEffect.h>
 #include <Core/Graphics/Scene/Scene.h>
-#include <Core/Graphics/ShadowMap.h>
+#include <Core/Graphics/CascadedShadowMap.h>
 #include <Core/Graphics/Skybox.h>
 
 #include <Core/Math/Camera/FreeCamera.h>
@@ -15,7 +15,7 @@ namespace Dodo {
     class Renderer3D {
         PostEffect* m_PostEffect;
 
-        ShadowMap* m_ShadowMap;
+        CascadedShadowMap* m_CascadedShadowMap;
         Ref<Material> m_ShadowMapMaterial;
 
       public:

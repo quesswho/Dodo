@@ -16,5 +16,5 @@ struct VertexOutput
     float2 texCoord;
     float3 normalWS;   // world-space normal (for TBN reconstruction)
     float4 tangentWS;  // world-space tangent xyz, w = bitangent sign (for TBN reconstruction)
-    float4 positionLL; // light-space position for shadow mapping
+    // positionLL removed: cascade light-space transform is done per-fragment using the selected cascade matrix
 };

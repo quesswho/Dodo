@@ -88,21 +88,35 @@ namespace Dodo::Platform {
 
             for (auto& [set, bindings] : setBindings) {
                 if (set == 0) {
-                    // Set-0: canonical FrameData layout (binding 0, UNIFORM_BUFFER).
-                    // The pipeline owns its own per-frame descriptor sets.
-                    VkDescriptorSetLayoutBinding set0Binding{};
-                    set0Binding.binding = 0;
-                    set0Binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                    set0Binding.descriptorCount = 1;
-                    set0Binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+                    // Set-0 holds per-frame UBOs. Binding 0 = FrameData, binding 3 = CsmData.
+                    // Build the layout from the bindings the shader actually declares.
+                    bool hasFrameData = false, hasCsmData = false;
+                    for (const auto& b : bindings) {
+                        if (b.binding == 0) hasFrameData = true;
+                        if (b.binding == 3) hasCsmData = true;
+                    }
+
+                    std::vector<VkDescriptorSetLayoutBinding> set0Bindings;
+                    auto makeUBOBinding = [](uint32_t binding) {
+                        VkDescriptorSetLayoutBinding b{};
+                        b.binding = binding;
+                        b.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                        b.descriptorCount = 1;
+                        b.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+                        return b;
+                    };
+                    if (hasFrameData) set0Bindings.push_back(makeUBOBinding(0));
+                    if (hasCsmData)   set0Bindings.push_back(makeUBOBinding(3));
 
                     VkDescriptorSetLayoutCreateInfo info{};
                     info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-                    info.bindingCount = 1;
-                    info.pBindings = &set0Binding;
+                    info.bindingCount = (uint32_t)set0Bindings.size();
+                    info.pBindings = set0Bindings.data();
                     vkCreateDescriptorSetLayout(m_Device, &info, nullptr, &m_SetLayouts[0]);
 
-                    VkDescriptorPoolSize poolSize = {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, PipelineUBOHandles::maxFrames};
+                    uint32_t descriptorsPerSet = (uint32_t)set0Bindings.size();
+                    VkDescriptorPoolSize poolSize = {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                                     descriptorsPerSet * PipelineUBOHandles::maxFrames};
                     VkDescriptorPoolCreateInfo poolCI{};
                     poolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
                     poolCI.maxSets = PipelineUBOHandles::maxFrames;
@@ -122,19 +136,36 @@ namespace Dodo::Platform {
                     vkAllocateDescriptorSets(m_Device, &allocInfo, m_Set0.data());
 
                     for (int i = 0; i < PipelineUBOHandles::maxFrames; i++) {
-                        VkDescriptorBufferInfo frameBI{};
-                        frameBI.buffer = ubos.frameDataBuffers[i];
-                        frameBI.offset = 0;
-                        frameBI.range = VK_WHOLE_SIZE;
+                        VkDescriptorBufferInfo frameBI{}, csmBI{};
+                        std::vector<VkWriteDescriptorSet> writes;
 
-                        VkWriteDescriptorSet write{};
-                        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                        write.dstSet = m_Set0[i];
-                        write.dstBinding = 0;
-                        write.descriptorCount = 1;
-                        write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                        write.pBufferInfo = &frameBI;
-                        vkUpdateDescriptorSets(m_Device, 1, &write, 0, nullptr);
+                        if (hasFrameData) {
+                            frameBI.buffer = ubos.frameDataBuffers[i];
+                            frameBI.offset = 0;
+                            frameBI.range = VK_WHOLE_SIZE;
+                            VkWriteDescriptorSet w{};
+                            w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                            w.dstSet = m_Set0[i];
+                            w.dstBinding = 0;
+                            w.descriptorCount = 1;
+                            w.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                            w.pBufferInfo = &frameBI;
+                            writes.push_back(w);
+                        }
+                        if (hasCsmData) {
+                            csmBI.buffer = ubos.csmDataBuffers[i];
+                            csmBI.offset = 0;
+                            csmBI.range = VK_WHOLE_SIZE;
+                            VkWriteDescriptorSet w{};
+                            w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                            w.dstSet = m_Set0[i];
+                            w.dstBinding = 3;
+                            w.descriptorCount = 1;
+                            w.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                            w.pBufferInfo = &csmBI;
+                            writes.push_back(w);
+                        }
+                        vkUpdateDescriptorSets(m_Device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
                     }
                     continue;
                 }

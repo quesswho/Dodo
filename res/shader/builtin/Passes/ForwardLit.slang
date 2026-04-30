@@ -1,5 +1,6 @@
 // ForwardLit.slang
 #include "../Common/Uniforms.slang"
+#include "../Common/CsmUniforms.slang"
 #include "../Common/Material.slang"
 #include "../Common/VertexInterface.slang"
 #include "../Common/TangentSpace.slang"
@@ -11,7 +12,7 @@
 [[vk::binding(0, 1)]] Texture2D<float4> u_AlbedoMap;
 [[vk::binding(1, 1)]] Texture2D<float4> u_RoughnessMap; // sample .g (works for both ORM-packed and greyscale)
 [[vk::binding(2, 1)]] Texture2D<float4> u_NormalMap;
-[[vk::binding(3, 1)]] Texture2D<float> u_ShadowMap;
+[[vk::binding(3, 1)]] Texture2DArray<float> u_ShadowMap; // cascade depth array
 
 // Shared sampler for all material textures and shadow map
 [[vk::binding(4, 1)]] SamplerState u_LinearSampler;
@@ -28,7 +29,6 @@ VertexOutput vertexMain(VertexInput input)
     output.texCoord   = input.texCoord;
     output.normalWS   = normalize(mul(u_NormalMatrix, float4(input.normal,  0.0f)).xyz);
     output.tangentWS  = float4(normalize(mul(u_NormalMatrix, float4(input.tangent.xyz, 0.0f)).xyz), input.tangent.w);
-    output.positionLL = mul(u_LightCamera, float4(output.positionWS, 1.0f));
     return output;
 }
 
@@ -64,7 +64,9 @@ float4 fragmentMain(VertexOutput input) : SV_Target
     float3 radiance = dl.Irradiance(input.positionWS);
     float3 L        = normalize(-dl.m_Direction);
 
-    float shadow = shadowCalculationPCF(input.positionLL, N, L, u_ShadowMap, u_LinearSampler);
+    // View-space depth for cascade selection
+    float viewDepth = abs(mul(u_CameraView, float4(input.positionWS, 1.0f)).z);
+    float shadow    = shadowCalculationCSM(input.positionWS, N, L, u_ShadowMap, u_LinearSampler, viewDepth);
 
     float3 Lo      = evaluateBRDFDirect(radiance, albedoSample.rgb, N, V, L, roughness, metallic, shadow);
     float3 ambient = evaluateAmbient(albedoSample.rgb, ao);

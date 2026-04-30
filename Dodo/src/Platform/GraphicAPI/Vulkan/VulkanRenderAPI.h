@@ -83,6 +83,7 @@ namespace Dodo::Platform {
         void PushConstants(const void* data, size_t size);
         void SetFrameData(const Dodo::FrameData& data);
         void SetDrawData(const DrawData& data);
+        void SetCSMData(const CsmData& data);
         void DrawIndices(uint count);
         void DrawArray(uint count);
         void DefaultFrameBuffer();
@@ -220,6 +221,7 @@ namespace Dodo::Platform {
             void* mapped = nullptr;
         };
         std::array<MappedBuffer, maxFramesInFlight> m_FrameDataUBOs{};
+        std::array<MappedBuffer, maxFramesInFlight> m_CsmDataUBOs{};
 
         // Dynamic UBO ring buffer for per-draw ModelData (one large buffer per frame)
         static constexpr uint32_t maxDrawsPerFrame = 1024;

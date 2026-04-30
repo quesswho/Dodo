@@ -21,6 +21,7 @@ namespace Dodo::Platform {
         glDeleteBuffers(1, &m_FrameUBO);
         glDeleteBuffers(1, &m_ModelUBO);
         glDeleteBuffers(1, &m_PushConstantUBO);
+        glDeleteBuffers(1, &m_LightSpaceUBO);
         gladLoaderUnloadGL();
     }
 
@@ -80,6 +81,13 @@ namespace Dodo::Platform {
         glBindBuffer(GL_UNIFORM_BUFFER, m_PushConstantUBO);
         glBufferData(GL_UNIFORM_BUFFER, 128, nullptr, GL_DYNAMIC_DRAW); // 128 byte Vulkan guaranteed min
         glBindBufferBase(GL_UNIFORM_BUFFER, 2, m_PushConstantUBO);      // binding point 2
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+        // Create CSM light space matrices UBO
+        glGenBuffers(1, &m_LightSpaceUBO);
+        glBindBuffer(GL_UNIFORM_BUFFER, m_LightSpaceUBO);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(CsmData), nullptr, GL_DYNAMIC_DRAW);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 3, m_LightSpaceUBO); // binding point 3
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         return RenderInitError(RenderInitStatus::Success, "");

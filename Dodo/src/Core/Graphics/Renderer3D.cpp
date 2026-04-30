@@ -5,7 +5,8 @@
 
 namespace Dodo {
 
-    Renderer3D::Renderer3D(RenderAPI& renderAPI, AssetManager& assets) : m_ShadowMap(new ShadowMap(renderAPI))
+    Renderer3D::Renderer3D(RenderAPI& renderAPI, AssetManager& assets)
+        : m_CascadedShadowMap(new CascadedShadowMap(renderAPI))
     {
         ShaderID id = assets.LoadShaderFromPath("res/shader/builtin/Passes/Shadow.slang");
         PipelineDesc shadowPipelineDesc;
@@ -69,6 +70,7 @@ namespace Dodo {
     {
         FrameData frameData;
         frameData.camera = camera.GetCameraMatrix();
+        frameData.cameraView = camera.GetViewMatrix();
         frameData.skyboxCamera = camera.GetProjectionMatrix() * Math::Mat4::RelinquishToMat3(camera.GetViewMatrix());
         frameData.cameraPos = camera.GetPosition();
 
@@ -85,13 +87,20 @@ namespace Dodo {
     {
         renderAPI.BeginTimestamp(GpuTimestampSlot::Frame);
 
-        // Shadow pass: draw geometry depth to shadow framebuffer
+        // Shadow pass: one draw fills all 4 cascade layers via the geometry shader
         renderAPI.BeginTimestamp(GpuTimestampSlot::Shadow);
+        m_CascadedShadowMap->UpdateCamera(
+            camera.GetProjectionMatrix(), camera.GetViewMatrix(),
+            scene->m_LightSystem.m_Directional.m_Direction,
+            camera.GetNearPlane(), camera.GetFarPlane(),
+            camera.GetFov(), camera.GetAspectRatio());
+        CsmData csmData = m_CascadedShadowMap->GetCsmData();
+        renderAPI.SetCSMData(csmData);
         FrameData shadowFrameData;
-        shadowFrameData.lightCamera = scene->m_LightSystem.m_Directional.m_LightCamera;
+        shadowFrameData.lightCamera = csmData.lightSpaceMatrices[0]; // first cascade for FrameData compat
         shadowFrameData.lightDir = scene->m_LightSystem.m_Directional.m_Direction;
         renderAPI.SetFrameData(shadowFrameData);
-        m_ShadowMap->Bind(renderAPI);
+        m_CascadedShadowMap->Bind(renderAPI);
         renderAPI.BindPipeline(m_ShadowMapMaterial->GetShader());
         World& world = scene->GetWorld();
         RenderGeometry(world, renderAPI, assets);
@@ -99,8 +108,9 @@ namespace Dodo {
 
         // Scene pass: geometry + skybox to post-effect framebuffer
         renderAPI.BeginTimestamp(GpuTimestampSlot::Scene);
+        renderAPI.SetCSMData(csmData); // re-upload so fragment shader cascade selection is live
         m_PostEffect->Bind(renderAPI);
-        renderAPI.BindFrameBufferTexture(3, m_ShadowMap->GetFrameBuffer());
+        renderAPI.BindFrameBufferTexture(3, m_CascadedShadowMap->GetFrameBuffer());
         DrawScene(scene, camera, renderAPI, assets);
         renderAPI.EndTimestamp(GpuTimestampSlot::Scene);
 

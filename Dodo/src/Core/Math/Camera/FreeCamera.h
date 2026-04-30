@@ -8,6 +8,11 @@ namespace Dodo::Math {
       public:
         FreeCamera(const Vec3& pos, float yaw, float pitch, float aspectRatio);
 
+        float GetNearPlane()   const { return m_NearPlane; }
+        float GetFarPlane()    const { return m_FarPlane; }
+        float GetFov()         const { return m_Fov; }
+        float GetAspectRatio() const { return m_AspectRatio; }
+
         void SetPosition(const Vec3& pos);
         void Move(const Vec3& delta);
         void Rotate(float yaw, float pitch);
@@ -66,5 +71,9 @@ namespace Dodo::Math {
         Vec3 m_CameraPos;
         Vec3 m_WorldUp;
         float m_Yaw, m_Pitch;
+        float m_NearPlane = 0.1f;
+        float m_FarPlane = 1000.0f;
+        float m_Fov = 45.0f;
+        float m_AspectRatio = 1.0f;
     };
 } // namespace Dodo::Math

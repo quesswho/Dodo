@@ -2,9 +2,10 @@
 
 namespace Dodo::Math {
     FreeCamera::FreeCamera(const Vec3& pos, float yaw, float pitch, float aspectRatio)
-        : m_CameraPos(pos), m_Yaw(yaw), m_Pitch(pitch), m_WorldUp(Vec3(0.0f, 1.0f, 0.0f))
+        : m_CameraPos(pos), m_Yaw(yaw), m_Pitch(pitch), m_WorldUp(Vec3(0.0f, 1.0f, 0.0f)),
+          m_NearPlane(0.1f), m_FarPlane(1000.0f), m_Fov(45.0f), m_AspectRatio(aspectRatio)
     {
-        m_ProjectionMatrix = Mat4::Perspective(45.0f, aspectRatio, 0.1f, 1000.0f);
+        m_ProjectionMatrix = Mat4::Perspective(m_Fov, aspectRatio, m_NearPlane, m_FarPlane);
         m_Dirty = true;
     }
 
@@ -34,7 +35,8 @@ namespace Dodo::Math {
 
     void FreeCamera::Resize(uint width, uint height)
     {
-        m_ProjectionMatrix = Mat4::Perspective(45.0f, (float)width / height, 0.1f, 1000.0f);
+        m_AspectRatio = (float)width / height;
+        m_ProjectionMatrix = Mat4::Perspective(m_Fov, m_AspectRatio, m_NearPlane, m_FarPlane);
         m_Dirty = true;
     }
 

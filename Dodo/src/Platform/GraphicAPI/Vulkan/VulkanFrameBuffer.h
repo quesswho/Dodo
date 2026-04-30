@@ -2,6 +2,7 @@
 
 #include "Core/Graphics/FrameBufferProperties.h"
 #include <Core/Common.h>
+#include <vector>
 #include <volk.h>
 
 // Forward-declare VMA types to avoid including vk_mem_alloc.h before VMA_IMPLEMENTATION is defined
@@ -21,6 +22,10 @@ namespace Dodo::Platform {
 
         VkImageView GetColorImageView() const { return m_ColorImageView; }
         VkImageView GetDepthImageView() const { return m_DepthImageView; }
+        VkImageView GetDepthLayerView(uint32_t layer) const
+        {
+            return layer < m_DepthLayerViews.size() ? m_DepthLayerViews[layer] : VK_NULL_HANDLE;
+        }
         VkSampler GetSampler() const { return m_Sampler; }
         VkExtent2D GetExtent() const { return {m_Properties.m_Width, m_Properties.m_Height}; }
         VkFormat GetColorFormat() const { return VK_FORMAT_R16G16B16A16_SFLOAT; }
@@ -28,6 +33,11 @@ namespace Dodo::Platform {
         {
             return m_Properties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL;
         }
+        bool IsDepthArray() const
+        {
+            return m_Properties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_DEPTH_ARRAY;
+        }
+        uint32_t GetLayerCount() const { return IsDepthArray() ? m_Properties.m_Layers : 1; }
 
         inline void Bind() const {}
         void Resize(uint width, uint height);
@@ -49,6 +59,7 @@ namespace Dodo::Platform {
         VkImage m_DepthImage = VK_NULL_HANDLE;
         VmaAllocation m_DepthAllocation = nullptr;
         VkImageView m_DepthImageView = VK_NULL_HANDLE;
+        std::vector<VkImageView> m_DepthLayerViews;
         VkImageLayout m_DepthCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
         VkSampler m_Sampler = VK_NULL_HANDLE;

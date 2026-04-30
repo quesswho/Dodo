@@ -4,7 +4,7 @@
 
 namespace Dodo::Platform {
     OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferProperties& framebufferProp)
-        : m_FrameBufferProperties(framebufferProp)
+        : m_FrameBufferProperties(framebufferProp), m_Layers(framebufferProp.m_Layers)
     {
         Create();
     }
@@ -32,6 +32,20 @@ namespace Dodo::Platform {
                          m_FrameBufferProperties.m_Height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
             SetFilter(m_FrameBufferProperties.m_SamplerProperties.m_Filter);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_TextureID, 0);
+            glDrawBuffer(GL_NONE);
+            glReadBuffer(GL_NONE);
+        } else if (m_FrameBufferProperties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_DEPTH_ARRAY) {
+            glBindTexture(GL_TEXTURE_2D_ARRAY, m_TextureID);
+            glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, GL_DEPTH_COMPONENT32F, m_FrameBufferProperties.m_Width,
+                         m_FrameBufferProperties.m_Height, m_Layers, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+            constexpr float border[] = {1.0f, 1.0f, 1.0f, 1.0f};
+            glTexParameterfv(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BORDER_COLOR, border);
+            // Layered attachment: geometry shader selects the layer via gl_Layer
+            glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_TextureID, 0);
             glDrawBuffer(GL_NONE);
             glReadBuffer(GL_NONE);
         }

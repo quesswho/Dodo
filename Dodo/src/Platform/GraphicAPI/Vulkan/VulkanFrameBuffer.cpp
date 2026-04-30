@@ -41,6 +41,8 @@ namespace Dodo::Platform {
         const uint32_t width = m_Properties.m_Width;
         const uint32_t height = m_Properties.m_Height;
         const bool hasColor = HasColor();
+        const bool isDepthArray = IsDepthArray();
+        const uint32_t layers = isDepthArray ? m_Properties.m_Layers : 1;
 
         VmaAllocationCreateInfo allocCI{};
         allocCI.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -76,9 +78,9 @@ namespace Dodo::Platform {
             m_ColorCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         }
 
-        // Depth attachment (always present)
+        // Depth attachment (always present); depth-only and depth-array are sampled directly
         VkImageUsageFlags depthUsage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-        if (!hasColor) depthUsage |= VK_IMAGE_USAGE_SAMPLED_BIT; // depth-only fb is sampled directly
+        if (!hasColor) depthUsage |= VK_IMAGE_USAGE_SAMPLED_BIT;
 
         VkImageCreateInfo depthCI{};
         depthCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -86,7 +88,7 @@ namespace Dodo::Platform {
         depthCI.format = VK_FORMAT_D32_SFLOAT;
         depthCI.extent = {width, height, 1};
         depthCI.mipLevels = 1;
-        depthCI.arrayLayers = 1;
+        depthCI.arrayLayers = layers;
         depthCI.samples = VK_SAMPLE_COUNT_1_BIT;
         depthCI.tiling = VK_IMAGE_TILING_OPTIMAL;
         depthCI.usage = depthUsage;
@@ -94,17 +96,30 @@ namespace Dodo::Platform {
         depthCI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         vmaCreateImage(m_Allocator, &depthCI, &allocCI, &m_DepthImage, &m_DepthAllocation, nullptr);
 
+        // Array view covering all layers: used as render target (layered rendering) and as sampled texture
         VkImageViewCreateInfo depthViewCI{};
         depthViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         depthViewCI.image = m_DepthImage;
-        depthViewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        depthViewCI.viewType = isDepthArray ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
         depthViewCI.format = VK_FORMAT_D32_SFLOAT;
         depthViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
         depthViewCI.subresourceRange.baseMipLevel = 0;
         depthViewCI.subresourceRange.levelCount = 1;
         depthViewCI.subresourceRange.baseArrayLayer = 0;
-        depthViewCI.subresourceRange.layerCount = 1;
+        depthViewCI.subresourceRange.layerCount = layers;
         vkCreateImageView(m_Device, &depthViewCI, nullptr, &m_DepthImageView);
+
+        // Per-layer 2D views for depth array
+        if (isDepthArray) {
+            m_DepthLayerViews.resize(layers);
+            for (uint32_t i = 0; i < layers; i++) {
+                VkImageViewCreateInfo layerViewCI = depthViewCI;
+                layerViewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                layerViewCI.subresourceRange.baseArrayLayer = i;
+                layerViewCI.subresourceRange.layerCount = 1;
+                vkCreateImageView(m_Device, &layerViewCI, nullptr, &m_DepthLayerViews[i]);
+            }
+        }
 
         m_DepthCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
@@ -133,6 +148,9 @@ namespace Dodo::Platform {
 
         vkDestroyImageView(m_Device, m_DepthImageView, nullptr);
         m_DepthImageView = VK_NULL_HANDLE;
+        for (VkImageView view : m_DepthLayerViews)
+            vkDestroyImageView(m_Device, view, nullptr);
+        m_DepthLayerViews.clear();
         vmaDestroyImage(m_Allocator, m_DepthImage, m_DepthAllocation);
         m_DepthImage = VK_NULL_HANDLE;
         m_DepthAllocation = nullptr;
@@ -186,7 +204,7 @@ namespace Dodo::Platform {
             depthBarrier.subresourceRange.baseMipLevel = 0;
             depthBarrier.subresourceRange.levelCount = 1;
             depthBarrier.subresourceRange.baseArrayLayer = 0;
-            depthBarrier.subresourceRange.layerCount = 1;
+            depthBarrier.subresourceRange.layerCount = GetLayerCount();
             depthBarrier.srcAccessMask = 0;
             depthBarrier.dstAccessMask =
                 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
@@ -232,7 +250,7 @@ namespace Dodo::Platform {
             depthBarrier.subresourceRange.baseMipLevel = 0;
             depthBarrier.subresourceRange.levelCount = 1;
             depthBarrier.subresourceRange.baseArrayLayer = 0;
-            depthBarrier.subresourceRange.layerCount = 1;
+            depthBarrier.subresourceRange.layerCount = GetLayerCount();
             depthBarrier.srcAccessMask =
                 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
             depthBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;

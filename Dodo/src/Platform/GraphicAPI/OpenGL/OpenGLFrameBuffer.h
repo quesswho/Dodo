@@ -12,6 +12,7 @@ namespace Dodo::Platform {
 
       private:
         uint m_FrameBufferID, m_TextureID, m_RenderBuffer;
+        uint m_Layers = 1;
         FrameBufferProperties m_FrameBufferProperties;
         Ref<OpenGLSampler> m_Sampler;
 

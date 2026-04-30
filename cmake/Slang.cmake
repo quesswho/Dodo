@@ -1,6 +1,6 @@
 message(STATUS "=== Configuring Slang ===")
 
-set(SLANG_VERSION "2026.5.2" CACHE STRING "Slang version")
+set(SLANG_VERSION "2026.7.1" CACHE STRING "Slang version")
 
 # Detect os and arch
 if(WIN32)

@@ -6,63 +6,6 @@
 
 namespace Dodo::Platform {
 
-    VkDescriptorType VulkanPipeline::ToVkDescriptorType(DescriptorType type)
-    {
-        switch (type) {
-        case DescriptorType::UniformBuffer:
-            return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        case DescriptorType::SampledTexture:
-        case DescriptorType::SampledCubeMap:
-            return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-        case DescriptorType::Sampler:
-            return VK_DESCRIPTOR_TYPE_SAMPLER;
-        case DescriptorType::CombinedImageSampler:
-            return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        default:
-            return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        }
-    }
-
-    static VkShaderStageFlagBits ToVkStage(ShaderStage stage)
-    {
-        switch (stage) {
-        case ShaderStage::Vertex:
-            return VK_SHADER_STAGE_VERTEX_BIT;
-        case ShaderStage::Fragment:
-            return VK_SHADER_STAGE_FRAGMENT_BIT;
-        case ShaderStage::Geometry:
-            return VK_SHADER_STAGE_GEOMETRY_BIT;
-        case ShaderStage::Compute:
-            return VK_SHADER_STAGE_COMPUTE_BIT;
-        default:
-            return VK_SHADER_STAGE_VERTEX_BIT;
-        }
-    }
-
-    static VkCompareOp ToVkDepthOp(DepthMode mode)
-    {
-        switch (mode) {
-        case DepthMode::Never:
-            return VK_COMPARE_OP_NEVER;
-        case DepthMode::Less:
-            return VK_COMPARE_OP_LESS;
-        case DepthMode::Equal:
-            return VK_COMPARE_OP_EQUAL;
-        case DepthMode::LessEqual:
-            return VK_COMPARE_OP_LESS_OR_EQUAL;
-        case DepthMode::Greater:
-            return VK_COMPARE_OP_GREATER;
-        case DepthMode::NotEqual:
-            return VK_COMPARE_OP_NOT_EQUAL;
-        case DepthMode::GreaterEqual:
-            return VK_COMPARE_OP_GREATER_OR_EQUAL;
-        case DepthMode::Always:
-            return VK_COMPARE_OP_ALWAYS;
-        default:
-            return VK_COMPARE_OP_LESS;
-        }
-    }
-
     VulkanPipeline::VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat,
                                    const ShaderAsset& shader, const PipelineDesc& desc, const PipelineUBOHandles& ubos)
         : m_Device(device), m_Desc(desc)
@@ -640,4 +583,60 @@ namespace Dodo::Platform {
         vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_Layout, 1, 1, &set1, 0, nullptr);
     }
 
+        VkDescriptorType VulkanPipeline::ToVkDescriptorType(DescriptorType type)
+    {
+        switch (type) {
+        case DescriptorType::UniformBuffer:
+            return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        case DescriptorType::SampledTexture:
+        case DescriptorType::SampledCubeMap:
+            return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        case DescriptorType::Sampler:
+            return VK_DESCRIPTOR_TYPE_SAMPLER;
+        case DescriptorType::CombinedImageSampler:
+            return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        default:
+            return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        }
+    }
+
+    static VkShaderStageFlagBits ToVkStage(ShaderStage stage)
+    {
+        switch (stage) {
+        case ShaderStage::Vertex:
+            return VK_SHADER_STAGE_VERTEX_BIT;
+        case ShaderStage::Fragment:
+            return VK_SHADER_STAGE_FRAGMENT_BIT;
+        case ShaderStage::Geometry:
+            return VK_SHADER_STAGE_GEOMETRY_BIT;
+        case ShaderStage::Compute:
+            return VK_SHADER_STAGE_COMPUTE_BIT;
+        default:
+            return VK_SHADER_STAGE_VERTEX_BIT;
+        }
+    }
+
+    static VkCompareOp ToVkDepthOp(DepthMode mode)
+    {
+        switch (mode) {
+        case DepthMode::Never:
+            return VK_COMPARE_OP_NEVER;
+        case DepthMode::Less:
+            return VK_COMPARE_OP_LESS;
+        case DepthMode::Equal:
+            return VK_COMPARE_OP_EQUAL;
+        case DepthMode::LessEqual:
+            return VK_COMPARE_OP_LESS_OR_EQUAL;
+        case DepthMode::Greater:
+            return VK_COMPARE_OP_GREATER;
+        case DepthMode::NotEqual:
+            return VK_COMPARE_OP_NOT_EQUAL;
+        case DepthMode::GreaterEqual:
+            return VK_COMPARE_OP_GREATER_OR_EQUAL;
+        case DepthMode::Always:
+            return VK_COMPARE_OP_ALWAYS;
+        default:
+            return VK_COMPARE_OP_LESS;
+        }
+    }
 } // namespace Dodo::Platform

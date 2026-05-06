@@ -303,6 +303,7 @@ namespace Dodo::Platform {
 
         VkPhysicalDeviceFeatures deviceFeatures{};
         deviceFeatures.geometryShader = VK_TRUE;
+        deviceFeatures.tessellationShader = VK_TRUE;
 
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -1358,6 +1359,9 @@ namespace Dodo::Platform {
         if (!device.features.geometryShader)
             return false; // Note: This might fail on MacOS even though the device supports geometry shaders, due to
                           // MoltenVK not reporting it correctly.
+        if (!device.features.tessellationShader)
+            return false;
+        
         if (!device.indices.IsComplete()) return false;
 
         // Check if all required device extensions are supported

@@ -56,7 +56,8 @@ namespace Dodo::Platform {
             if (m_CsmDataUBOs[i].buffer)
                 vmaDestroyBuffer(m_VmaAllocator, m_CsmDataUBOs[i].buffer, m_CsmDataUBOs[i].allocation);
         }
-        if (m_AppDescriptorPool) vkDestroyDescriptorPool(m_Device, m_AppDescriptorPool, nullptr);
+        m_LayoutCache.reset();
+        m_DescriptorAllocator.reset();
         if (m_DummySampler) vkDestroySampler(m_Device, m_DummySampler, nullptr);
         if (m_DummyImageView) vkDestroyImageView(m_Device, m_DummyImageView, nullptr);
         if (m_DummyImage) vmaDestroyImage(m_VmaAllocator, m_DummyImage, m_DummyAllocation);
@@ -551,19 +552,8 @@ namespace Dodo::Platform {
         uint32_t rawSize = (uint32_t)sizeof(GPUModelData);
         m_ModelUBOSlotSize = (rawSize + alignment - 1) & ~(alignment - 1);
 
-        // --- Application descriptor pool ---
-        VkDescriptorPoolSize poolSizes[] = {
-            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 64},          {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 64},
-            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 256},          {VK_DESCRIPTOR_TYPE_SAMPLER, 256},
-            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 256},
-        };
-        VkDescriptorPoolCreateInfo poolCI{};
-        poolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        poolCI.maxSets = 256;
-        poolCI.poolSizeCount = (uint32_t)std::size(poolSizes);
-        poolCI.pPoolSizes = poolSizes;
-        if (vkCreateDescriptorPool(m_Device, &poolCI, nullptr, &m_AppDescriptorPool) != VK_SUCCESS)
-            return RenderInitError(RenderInitStatus::Failed, "Failed to create application descriptor pool!");
+        m_LayoutCache = std::make_unique<VulkanDescriptorLayoutCache>(m_Device);
+        m_DescriptorAllocator = std::make_unique<VulkanDescriptorAllocator>(m_Device);
 
         // --- Create per-frame UBOs via VMA ---
         VkBufferCreateInfo bufCI{};
@@ -1208,7 +1198,8 @@ namespace Dodo::Platform {
             ubos.csmDataBuffers[i] = m_CsmDataUBOs[i].buffer;
         }
         ubos.modelSlotSize = m_ModelUBOSlotSize;
-        return std::make_shared<VulkanPipeline>(m_Device, colorFormat, VK_FORMAT_D32_SFLOAT, shader, desc, ubos);
+        return std::make_shared<VulkanPipeline>(m_Device, colorFormat, VK_FORMAT_D32_SFLOAT, shader, desc, ubos,
+                                                *m_LayoutCache, *m_DescriptorAllocator);
     }
 
     Ref<VertexBuffer> VulkanRenderAPI::CreateVertexBuffer(const float* vertices, uint size,
@@ -1359,9 +1350,8 @@ namespace Dodo::Platform {
         if (!device.features.geometryShader)
             return false; // Note: This might fail on MacOS even though the device supports geometry shaders, due to
                           // MoltenVK not reporting it correctly.
-        if (!device.features.tessellationShader)
-            return false;
-        
+        if (!device.features.tessellationShader) return false;
+
         if (!device.indices.IsComplete()) return false;
 
         // Check if all required device extensions are supported

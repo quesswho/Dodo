@@ -5,6 +5,8 @@
 #include <volk.h>
 
 #include "Core/Graphics/Pipeline/PipelineDesc.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanDescriptorAllocator.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanDescriptorLayoutCache.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanMaterialSet.h"
 
 #include <array>
@@ -27,7 +29,8 @@ namespace Dodo::Platform {
 
       public:
         VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, const ShaderAsset& shader,
-                       const PipelineDesc& desc, const PipelineUBOHandles& ubos);
+                       const PipelineDesc& desc, const PipelineUBOHandles& ubos,
+                       VulkanDescriptorLayoutCache& layoutCache, VulkanDescriptorAllocator& allocator);
         ~VulkanPipeline();
 
         VkPipeline GetPipeline() const { return m_Pipeline; }
@@ -35,8 +38,6 @@ namespace Dodo::Platform {
         const PipelineDesc& GetDesc() const { return m_Desc; }
 
       private:
-        static VkDescriptorType ToVkDescriptorType(DescriptorType type);
-
         // Bind set-0 (FrameData) once per pipeline switch. No dynamic offset.
         // No-op if the shader does not declare set-0 bindings.
         void BindFrameSet(VkCommandBuffer cmd, uint32_t frameIdx);
@@ -63,20 +64,14 @@ namespace Dodo::Platform {
         bool m_HasSet1 = false; // shader declares set-1 (material textures)
         bool m_HasSet2 = false; // shader declares set-2 (ModelData UBO)
 
-        // Per-pipeline, per-frame descriptor sets for set-0 (FrameData).
-        // Valid only when m_HasSet0 is true.
-        VkDescriptorPool m_Set0Pool = VK_NULL_HANDLE;
-        std::array<VkDescriptorSet, PipelineUBOHandles::maxFrames> m_Set0{};
+        // Per-pipeline, per-frame descriptor sets for set-0 (FrameData) and set-2 (ModelData).
+        // Valid only when the corresponding m_HasSetN flag is true.
+        std::array<VulkanDescriptorSet, PipelineUBOHandles::maxFrames> m_Set0{};
+        std::array<VulkanDescriptorSet, PipelineUBOHandles::maxFrames> m_Set2{};
 
-        // Per-pipeline, per-frame descriptor sets for set-2 (ModelData).
-        // Valid only when m_HasSet2 is true.
-        VkDescriptorPool m_Set2Pool = VK_NULL_HANDLE;
-        std::array<VkDescriptorSet, PipelineUBOHandles::maxFrames> m_Set2{};
-
-        // Persistent pool for per-material descriptor sets (set-1).
-        // All sets are freed together when the pipeline is destroyed.
-        static constexpr uint32_t maxMaterials = 256;
-        VkDescriptorPool m_MaterialPool = VK_NULL_HANDLE;
+        // Non-owning pointers into the shared cache and allocator owned by VulkanRenderAPI.
+        VulkanDescriptorLayoutCache* m_LayoutCache = nullptr;
+        VulkanDescriptorAllocator* m_Allocator = nullptr;
     };
 
 } // namespace Dodo::Platform

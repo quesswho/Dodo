@@ -10,6 +10,8 @@
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
 #include "Core/Graphics/RenderAPITypes.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanDescriptorAllocator.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanDescriptorLayoutCache.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanMaterialSet.h"
 
 #include "Platform/WindowAPI/NativeWindowHandle.h"
@@ -205,9 +207,10 @@ namespace Dodo::Platform {
         VkImageView m_DummyImageView = VK_NULL_HANDLE;
         VkSampler m_DummySampler = VK_NULL_HANDLE;
 
-        // Application descriptor infrastructure (separate from ImGui pool)
+        // Descriptor infrastructure shared across all pipelines
         static constexpr int maxFramesInFlight = 2;
-        VkDescriptorPool m_AppDescriptorPool = VK_NULL_HANDLE;
+        std::unique_ptr<VulkanDescriptorLayoutCache> m_LayoutCache;
+        std::unique_ptr<VulkanDescriptorAllocator> m_DescriptorAllocator;
 
         // GPU-side layout for ModelData cbuffer (float4x4 model + float4x4 normal = 128 bytes)
         struct GPUModelData {

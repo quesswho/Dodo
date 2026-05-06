@@ -22,7 +22,7 @@ namespace Dodo {
     CascadedShadowMap::~CascadedShadowMap() {}
 
     std::vector<Math::Vec4> CascadedShadowMap::GetFrustumCornersWorldSpace(const Math::Mat4& proj,
-                                                                            const Math::Mat4& view)
+                                                                           const Math::Mat4& view)
     {
         const Math::Mat4 inv = Math::Mat4::Inverse(proj * view);
 
@@ -31,8 +31,7 @@ namespace Dodo {
         for (uint32_t x = 0; x < 2; x++) {
             for (uint32_t y = 0; y < 2; y++) {
                 for (uint32_t z = 0; z < 2; z++) {
-                    const Math::Vec4 pt =
-                        inv * Math::Vec4(x * 2.0f - 1.0f, y * 2.0f - 1.0f, z * 2.0f - 1.0f, 1.0f);
+                    const Math::Vec4 pt = inv * Math::Vec4(x * 2.0f - 1.0f, y * 2.0f - 1.0f, z * 2.0f - 1.0f, 1.0f);
                     frustumCorners.push_back(pt / pt.w);
                 }
             }
@@ -40,9 +39,8 @@ namespace Dodo {
         return frustumCorners;
     }
 
-    void CascadedShadowMap::UpdateCamera(const Math::Mat4& proj, const Math::Mat4& view,
-                                         const Math::Vec3& lightDir, float nearPlane, float farPlane,
-                                         float fov, float aspectRatio)
+    void CascadedShadowMap::UpdateCamera(const Math::Mat4& proj, const Math::Mat4& view, const Math::Vec3& lightDir,
+                                         float nearPlane, float farPlane, float fov, float aspectRatio)
     {
         constexpr float lambda = 0.5f; // blend between log and uniform split distributions
 
@@ -59,9 +57,8 @@ namespace Dodo {
 
         const Math::Vec3 lightDirNorm = Math::Normalize(lightDir);
         // Avoid up = lightDir singularity
-        const Math::Vec3 up = (std::abs(lightDirNorm.y) > 0.99f)
-                                  ? Math::Vec3(0.0f, 0.0f, 1.0f)
-                                  : Math::Vec3(0.0f, 1.0f, 0.0f);
+        const Math::Vec3 up =
+            (std::abs(lightDirNorm.y) > 0.99f) ? Math::Vec3(0.0f, 0.0f, 1.0f) : Math::Vec3(0.0f, 1.0f, 0.0f);
 
         float prevSplit = nearPlane;
         for (uint32_t i = 0; i < m_Levels; i++) {
@@ -102,10 +99,14 @@ namespace Dodo {
 
             // Pull the near plane back to capture shadow casters behind the frustum
             constexpr float zMult = 10.0f;
-            if (minZ < 0.0f) minZ *= zMult;
-            else minZ /= zMult;
-            if (maxZ < 0.0f) maxZ /= zMult;
-            else maxZ *= zMult;
+            if (minZ < 0.0f)
+                minZ *= zMult;
+            else
+                minZ /= zMult;
+            if (maxZ < 0.0f)
+                maxZ /= zMult;
+            else
+                maxZ *= zMult;
 
             Math::Mat4 lightProj = Math::Mat4::Orthographic(minX, maxX, minY, maxY, minZ, maxZ);
             m_LightSpaceMatrices[i] = lightProj * lightView;

@@ -106,7 +106,7 @@ namespace Dodo::Platform {
                         return b;
                     };
                     if (hasFrameData) set0Bindings.push_back(makeUBOBinding(0));
-                    if (hasCsmData)   set0Bindings.push_back(makeUBOBinding(3));
+                    if (hasCsmData) set0Bindings.push_back(makeUBOBinding(3));
 
                     VkDescriptorSetLayoutCreateInfo info{};
                     info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

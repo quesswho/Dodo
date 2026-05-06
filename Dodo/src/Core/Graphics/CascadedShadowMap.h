@@ -13,8 +13,8 @@ namespace Dodo {
         CascadedShadowMap(RenderAPI& renderAPI, uint32_t levels = 4);
         ~CascadedShadowMap();
 
-        void UpdateCamera(const Math::Mat4& proj, const Math::Mat4& view, const Math::Vec3& lightDir,
-                          float nearPlane, float farPlane, float fov, float aspectRatio);
+        void UpdateCamera(const Math::Mat4& proj, const Math::Mat4& view, const Math::Vec3& lightDir, float nearPlane,
+                          float farPlane, float fov, float aspectRatio);
         void Bind(RenderAPI& renderAPI);
 
         CsmData GetCsmData() const;

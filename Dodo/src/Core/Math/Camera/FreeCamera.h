@@ -8,9 +8,9 @@ namespace Dodo::Math {
       public:
         FreeCamera(const Vec3& pos, float yaw, float pitch, float aspectRatio);
 
-        float GetNearPlane()   const { return m_NearPlane; }
-        float GetFarPlane()    const { return m_FarPlane; }
-        float GetFov()         const { return m_Fov; }
+        float GetNearPlane() const { return m_NearPlane; }
+        float GetFarPlane() const { return m_FarPlane; }
+        float GetFov() const { return m_Fov; }
         float GetAspectRatio() const { return m_AspectRatio; }
 
         void SetPosition(const Vec3& pos);

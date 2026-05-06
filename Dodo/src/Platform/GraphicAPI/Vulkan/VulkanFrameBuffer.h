@@ -33,10 +33,7 @@ namespace Dodo::Platform {
         {
             return m_Properties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL;
         }
-        bool IsDepthArray() const
-        {
-            return m_Properties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_DEPTH_ARRAY;
-        }
+        bool IsDepthArray() const { return m_Properties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_DEPTH_ARRAY; }
         uint32_t GetLayerCount() const { return IsDepthArray() ? m_Properties.m_Layers : 1; }
 
         inline void Bind() const {}

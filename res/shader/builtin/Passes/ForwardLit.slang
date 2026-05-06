@@ -1,6 +1,5 @@
 // ForwardLit.slang
 #include "../Common/Uniforms.slang"
-#include "../Common/CsmUniforms.slang"
 #include "../Common/Material.slang"
 #include "../Common/VertexInterface.slang"
 #include "../Common/TangentSpace.slang"

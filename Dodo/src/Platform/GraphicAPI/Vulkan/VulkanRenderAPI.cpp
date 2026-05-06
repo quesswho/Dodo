@@ -1033,6 +1033,14 @@ namespace Dodo::Platform {
         vkCmdDrawIndexed(cmd, count, 1, 0, 0, 0);
     }
 
+    void VulkanRenderAPI::DrawIndicesInstanced(uint count, uint instanceCount)
+    {
+        VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
+        m_BoundPipelinePtr->BindObjectSet(cmd, m_CurrentFrame, m_LastModelOffset);
+        m_TexturesDirty = false;
+        vkCmdDrawIndexed(cmd, count, instanceCount, 0, 0, 0);
+    }
+
     void VulkanRenderAPI::DrawArray(uint count)
     {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
@@ -1492,6 +1500,8 @@ namespace Dodo::Platform {
             extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
         }
 
+        extensions.push_back(VK_KHR_SHADER_DRAW_PARAMETERS_EXTENSION_NAME);
+
         return extensions;
     }
 
@@ -1577,12 +1587,16 @@ namespace Dodo::Platform {
      */
     VkPresentModeKHR VulkanRenderAPI::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
     {
-        // TODO: We want to choose this based on hardware. For example on pcs we want to use MAILBOX but on mobile
-        // devices or laptops we want to avoid MAILBOX since it consumes a lot of battery See
-        // https://youtu.be/0OqJtPnkfC8?si=Bi7aUphwI486H_Ba&t=1200
-        for (const auto& availablePresentMode : availablePresentModes) {
-            if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
-                return availablePresentMode;
+        VkPhysicalDeviceProperties props{};
+        vkGetPhysicalDeviceProperties(m_PhysicalDevice, &props);
+
+        if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+            for (const auto& mode : availablePresentModes) {
+                if (mode == VK_PRESENT_MODE_MAILBOX_KHR) return mode;
+            }
+        } else {
+            for (const auto& mode : availablePresentModes) {
+                if (mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR) return mode;
             }
         }
 

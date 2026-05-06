@@ -87,13 +87,12 @@ namespace Dodo {
     {
         renderAPI.BeginTimestamp(GpuTimestampSlot::Frame);
 
-        // Shadow pass: one draw fills all 4 cascade layers via the geometry shader
+        // Shadow pass: each mesh is drawn with instanceCount = numCascades so the VS
+        // fans the geometry across all cascade layers via SV_InstanceID / SV_RenderTargetArrayIndex.
         renderAPI.BeginTimestamp(GpuTimestampSlot::Shadow);
-        m_CascadedShadowMap->UpdateCamera(
-            camera.GetProjectionMatrix(), camera.GetViewMatrix(),
-            scene->m_LightSystem.m_Directional.m_Direction,
-            camera.GetNearPlane(), camera.GetFarPlane(),
-            camera.GetFov(), camera.GetAspectRatio());
+        m_CascadedShadowMap->UpdateCamera(camera.GetProjectionMatrix(), camera.GetViewMatrix(),
+                                          scene->m_LightSystem.m_Directional.m_Direction, camera.GetNearPlane(),
+                                          camera.GetFarPlane(), camera.GetFov(), camera.GetAspectRatio());
         CsmData csmData = m_CascadedShadowMap->GetCsmData();
         renderAPI.SetCSMData(csmData);
         FrameData shadowFrameData;
@@ -103,7 +102,11 @@ namespace Dodo {
         m_CascadedShadowMap->Bind(renderAPI);
         renderAPI.BindPipeline(m_ShadowMapMaterial->GetShader());
         World& world = scene->GetWorld();
-        RenderGeometry(world, renderAPI, assets);
+        const auto& shadowModelPool = world.GetPool<ModelComponent>();
+        for (const auto& modelComponent : shadowModelPool.GetComponents()) {
+            renderAPI.SetDrawData(MakeDrawData(modelComponent.m_Transformation.m_Model));
+            assets.GetModel(modelComponent.m_ModelID)->DrawGeometryInstanced(renderAPI, csmData.numCascades);
+        }
         renderAPI.EndTimestamp(GpuTimestampSlot::Shadow);
 
         // Scene pass: geometry + skybox to post-effect framebuffer

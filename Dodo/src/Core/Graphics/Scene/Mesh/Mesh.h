@@ -24,6 +24,7 @@ namespace Dodo {
 
         void Draw(RenderAPI& renderAPI) const;
         void DrawGeometry(RenderAPI& renderAPI) const;
+        void DrawGeometryInstanced(RenderAPI& renderAPI, uint instances) const;
         void Draw(Ref<Material> material, RenderAPI& renderAPI) const;
     };
 } // namespace Dodo

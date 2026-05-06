@@ -2,6 +2,8 @@
 // PCF sampling from a Texture2DArray cascade shadow map.
 // Cascade selection is based on view-space depth of the fragment.
 
+#include "../Common/CsmUniforms.slang"
+
 float shadowCalculationCSM(
     float3 positionWS,
     float3 normal,
@@ -11,8 +13,8 @@ float shadowCalculationCSM(
     float viewDepth)           // abs(view-space z) of the fragment
 {
     // Select the tightest cascade that covers this fragment's depth
-    int cascadeIndex = u_NumCascades - 1;
-    for (int i = 0; i < u_NumCascades - 1; i++)
+    int cascadeIndex = numCascades - 1;
+    for (int i = 0; i < numCascades - 1; i++)
     {
         if (viewDepth < u_CascadeSplitDepths[i])
         {

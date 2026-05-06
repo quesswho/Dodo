@@ -18,6 +18,12 @@ namespace Dodo {
             mesh->DrawGeometry(renderAPI);
     }
 
+    void Model::DrawGeometryInstanced(RenderAPI& renderAPI, uint instances) const
+    {
+        for (auto mesh : m_Meshes)
+            mesh->DrawGeometryInstanced(renderAPI, instances);
+    }
+
     void Model::Draw(Ref<Material> material, RenderAPI& renderAPI) const
     {
         material->Bind(renderAPI);

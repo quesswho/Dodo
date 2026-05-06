@@ -16,6 +16,7 @@ namespace Dodo {
         const std::vector<Ref<Mesh>>& GetMeshes() const { return m_Meshes; }
         void Draw(RenderAPI& renderAPI) const;
         void DrawGeometry(RenderAPI& renderAPI) const;
+        void DrawGeometryInstanced(RenderAPI& renderAPI, uint instances) const;
         void Draw(Ref<Material> material, RenderAPI& renderAPI) const;
     };
 } // namespace Dodo

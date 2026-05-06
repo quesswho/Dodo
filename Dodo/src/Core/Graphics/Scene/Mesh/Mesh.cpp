@@ -25,6 +25,13 @@ namespace Dodo {
         renderAPI.DrawIndices(m_IBuffer->GetCount());
     }
 
+    void Mesh::DrawGeometryInstanced(RenderAPI& renderAPI, uint instances) const
+    {
+        renderAPI.BindVertexBuffer(m_VBuffer);
+        renderAPI.BindIndexBuffer(m_IBuffer);
+        renderAPI.DrawIndicesInstanced(m_IBuffer->GetCount(), instances);
+    }
+
     void Mesh::Draw(Ref<Material> material, RenderAPI& renderAPI) const
     {
         material->Bind(renderAPI);

@@ -70,6 +70,10 @@ namespace Dodo::Platform {
         }
         void DrawIndexed(const Ref<VertexBuffer>& va);
         inline void DrawIndices(uint count) const { glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0); }
+        inline void DrawIndicesInstanced(uint count, uint instanceCount) const
+        {
+            glDrawElementsInstanced(GL_TRIANGLES, count, GL_UNSIGNED_INT, 0, instanceCount);
+        }
         inline void DrawArray(uint count) const { glDrawArrays(GL_TRIANGLES, 0, count); }
         void DefaultFrameBuffer() const;
         void SetViewport(uint width, uint height);

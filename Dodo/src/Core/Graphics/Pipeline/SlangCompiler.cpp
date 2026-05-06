@@ -243,6 +243,7 @@ namespace Dodo {
 
         // Reflect vertex inputs (location + component count) via Slang entry point reflection.
         auto extractVertexInput = [&](slang::VariableLayoutReflection* var) {
+            if (var->getCategory() != slang::ParameterCategory::VaryingInput) return;
             uint32_t loc = (uint32_t)var->getOffset(SLANG_PARAMETER_CATEGORY_VARYING_INPUT);
             slang::TypeReflection* type = var->getTypeLayout()->getType();
             uint32_t count = 1;

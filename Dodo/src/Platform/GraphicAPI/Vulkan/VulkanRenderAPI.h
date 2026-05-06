@@ -85,6 +85,7 @@ namespace Dodo::Platform {
         void SetDrawData(const DrawData& data);
         void SetCSMData(const CsmData& data);
         void DrawIndices(uint count);
+        void DrawIndicesInstanced(uint count, uint instanceCount);
         void DrawArray(uint count);
         void DefaultFrameBuffer();
         void BindFrameBuffer(Ref<FrameBuffer> framebuffer);

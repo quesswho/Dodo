@@ -2,7 +2,7 @@
 
 namespace Dodo::Platform {
 
-    class OpenGLMaterialSet {
+    class OpenGLFrameBufferedDescriptorSet {
       public:
         void MarkDirty() {}
         void Reset() {}

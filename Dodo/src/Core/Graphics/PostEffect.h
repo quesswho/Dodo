@@ -6,7 +6,7 @@
 
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/FrameBuffer.h"
-#include "Core/Graphics/Material/MaterialSet.h"
+#include "Core/Graphics/FrameBufferedDescriptorSet.h"
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
 
@@ -18,7 +18,7 @@ namespace Dodo {
         Ref<Pipeline> m_Shader;
         Ref<TextureSampler> m_Sampler;
         std::vector<uint8_t> m_PushConstantData;
-        mutable MaterialSet m_MaterialSet;
+        mutable FrameBufferedDescriptorSet m_MaterialSet;
 
       public:
         PostEffect(const FrameBufferProperties& framebufferprop, const char* path, RenderAPI& renderAPI,

@@ -38,7 +38,7 @@ GameLayer::GameLayer(Application& app)
     m_Renderer->SetPostEffect(m_PostEffect);
 
     m_Scene = m_File.Read("res/sponza/sponza.das");
-    // m_Scene = m_File.Read("res/knife.das");
+    //m_Scene = m_File.Read("res/san_miguel/san_miguel.das");
     DD_INFO("Finished loading scene");
     
     std::vector<std::string> skyboxPath = {

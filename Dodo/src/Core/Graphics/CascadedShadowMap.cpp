@@ -3,6 +3,8 @@
 #include "Core/Graphics/FrameBufferProperties.h"
 #include "Core/Graphics/Material/SamplerProperties.h"
 #include "Core/Math/MathFunc.h"
+#include "Core/Utilities/Logger.h"
+
 
 #include <algorithm>
 #include <cmath>
@@ -10,8 +12,13 @@
 namespace Dodo {
 
     CascadedShadowMap::CascadedShadowMap(RenderAPI& renderAPI, uint32_t levels, uint32_t shadowMapResolution)
-        : m_Levels(levels), m_LightSpaceMatrices(levels), m_CascadeSplitDepths(levels), m_ShadowMapResolution(shadowMapResolution)
+        : m_Levels(levels), m_ShadowMapResolution(shadowMapResolution)
     {
+        if (levels != 4) {
+            DD_WARN("Only 4 cascades are supported, overriding levels to 4!");
+            levels = 4;
+        }
+
         FrameBufferProperties props(m_ShadowMapResolution, m_ShadowMapResolution, FrameBufferType::FRAMEBUFFER_DEPTH_ARRAY, levels);
         props.m_SamplerProperties =
             SamplerProperties(SamplerFilter::MIN_MAG_LINEAR, SamplerWrapMode::WRAP_CLAMP_TO_BORDER,
@@ -51,7 +58,7 @@ namespace Dodo {
             float p = (float)(i + 1) / (float)m_Levels;
             float logSplit = nearPlane * std::pow(farPlane / nearPlane, p);
             float uniSplit = nearPlane + (farPlane - nearPlane) * p;
-            m_CascadeSplitDepths[i] = lambda * logSplit + (1.0f - lambda) * uniSplit;
+            m_CsmData.cascadeSplitDepths[i] = lambda * logSplit + (1.0f - lambda) * uniSplit;
         }
 
         const Math::Vec3 lightDirNorm = Math::Normalize(lightDir);
@@ -61,7 +68,7 @@ namespace Dodo {
 
         float prevSplit = nearPlane;
         for (uint32_t i = 0; i < m_Levels; i++) {
-            float splitFar = m_CascadeSplitDepths[i];
+            float splitFar = m_CsmData.cascadeSplitDepths[i];
 
             // Build a perspective matrix for just this sub-frustum
             Math::Mat4 subProj = Math::Mat4::Perspective(fov, aspectRatio, prevSplit, splitFar);
@@ -108,24 +115,14 @@ namespace Dodo {
                 maxZ *= zMult;
 
             Math::Mat4 lightProj = Math::Mat4::Orthographic(minX, maxX, minY, maxY, minZ, maxZ);
-            m_LightSpaceMatrices[i] = lightProj * lightView;
+            m_CsmData.lightSpaceMatrices[i] = lightProj * lightView;
         }
+        m_CsmData.numCascades = (int)m_Levels;
+        m_CsmData.pad[0] = m_CsmData.pad[1] = m_CsmData.pad[2] = 0.0f;
     }
 
     void CascadedShadowMap::Bind(RenderAPI& renderAPI)
     {
         renderAPI.BindFrameBuffer(m_FrameBuffer);
-    }
-
-    CsmData CascadedShadowMap::GetCsmData() const
-    {
-        CsmData data;
-        for (uint32_t i = 0; i < m_Levels; i++) {
-            data.lightSpaceMatrices[i] = m_LightSpaceMatrices[i];
-            data.cascadeSplitDepths[i] = m_CascadeSplitDepths[i];
-        }
-        data.numCascades = (int)m_Levels;
-        data.pad[0] = data.pad[1] = data.pad[2] = 0.0f;
-        return data;
     }
 } // namespace Dodo

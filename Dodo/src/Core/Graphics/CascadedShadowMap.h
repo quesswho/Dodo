@@ -17,7 +17,7 @@ namespace Dodo {
                           float farPlane, float fov, float aspectRatio);
         void Bind(RenderAPI& renderAPI);
 
-        CsmData GetCsmData() const;
+        CsmData GetCsmData() const { return m_CsmData; }
         Ref<FrameBuffer> GetFrameBuffer() const { return m_FrameBuffer; }
 
         uint32_t m_Levels;
@@ -25,9 +25,9 @@ namespace Dodo {
       private:
         std::vector<Math::Vec4> GetFrustumCornersWorldSpace(const Math::Mat4& proj, const Math::Mat4& view);
 
-        std::vector<Math::Mat4> m_LightSpaceMatrices;
-        std::vector<float> m_CascadeSplitDepths;
         Ref<FrameBuffer> m_FrameBuffer;
         uint32_t m_ShadowMapResolution;
+    
+        CsmData m_CsmData;
     };
 } // namespace Dodo

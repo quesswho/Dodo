@@ -39,6 +39,25 @@ namespace Dodo {
         m_Shader = assets.GetPipeline(pipelineID);
     }
 
+    Skybox::Skybox(std::string hdrPath, uint faceSize, AssetManager& assets, RenderAPI& renderAPI)
+        : m_VertexBuffer(renderAPI.CreateVertexBuffer(s_SkyboxVertices, sizeof(s_SkyboxVertices),
+                                                      BufferProperties({{"POSITION", 3}}))),
+          m_Sampler(renderAPI.CreateSampler(SamplerProperties(SamplerFilter::MIN_MAG_MIP_LINEAR,
+                                                              SamplerWrapMode::WRAP_CLAMP_TO_EDGE,
+                                                              SamplerWrapMode::WRAP_CLAMP_TO_EDGE))),
+          m_Assets(assets)
+    {
+        m_CubeMapID = assets.CreateCubeMapFromEquirectangular(hdrPath, faceSize);
+
+        ShaderID id = assets.LoadShaderFromPath("res/shader/builtin/Passes/Skybox.slang");
+        PipelineDesc pipelineDesc;
+        pipelineDesc.shaderID = id;
+        pipelineDesc.depthMode = DepthMode::LessEqual;
+        pipelineDesc.culling = CullMode::None;
+        PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
+        m_Shader = assets.GetPipeline(pipelineID);
+    }
+
     Skybox::~Skybox() {}
 
     void Skybox::Draw(RenderAPI& renderAPI) const

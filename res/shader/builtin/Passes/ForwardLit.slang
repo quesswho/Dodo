@@ -65,7 +65,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 
     // View-space depth for cascade selection
     float viewDepth = abs(mul(u_CameraView, float4(input.positionWS, 1.0f)).z);
-    float shadow    = shadowCalculationCSM(input.positionWS, N, L, u_ShadowMap, u_LinearSampler, viewDepth);
+    float shadow    = shadowCalculationCSM(input.positionWS, N, L, u_ShadowMap, u_LinearSampler, viewDepth, 5.0f);
 
     float3 Lo      = evaluateBRDFDirect(radiance, albedoSample.rgb, N, V, L, roughness, metallic, shadow);
     float3 ambient = evaluateAmbient(albedoSample.rgb, ao);

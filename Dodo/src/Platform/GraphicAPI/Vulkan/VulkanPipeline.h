@@ -15,12 +15,10 @@
 namespace Dodo::Platform {
 
     // Handles to the per-frame UBO buffers owned by VulkanRenderAPI.
-    // Passed to each pipeline at creation so it can write its own set-0 descriptors.
+    // Set 0 (FrameData + CsmData) is bound globally by VulkanRenderAPI, not per-pipeline.
     struct PipelineUBOHandles {
         static constexpr int maxFrames = 2;
-        VkBuffer frameDataBuffers[maxFrames];
         VkBuffer modelDataBuffers[maxFrames];
-        VkBuffer csmDataBuffers[maxFrames];
         uint32_t modelSlotSize; // aligned slot size for dynamic offset
     };
 
@@ -30,6 +28,7 @@ namespace Dodo::Platform {
       public:
         VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, const ShaderAsset& shader,
                        const PipelineDesc& desc, const PipelineUBOHandles& ubos,
+                       VkDescriptorSetLayout globalSet0Layout,
                        VulkanDescriptorLayoutCache& layoutCache, VulkanDescriptorAllocator& allocator);
         ~VulkanPipeline();
 
@@ -38,10 +37,6 @@ namespace Dodo::Platform {
         const PipelineDesc& GetDesc() const { return m_Desc; }
 
       private:
-        // Bind set-0 (FrameData) once per pipeline switch. No dynamic offset.
-        // No-op if the shader does not declare set-0 bindings.
-        void BindFrameSet(VkCommandBuffer cmd, uint32_t frameIdx);
-
         // Bind set-2 (ModelData) with the per-draw dynamic offset.
         // No-op if the shader does not declare set-2 bindings.
         void BindObjectSet(VkCommandBuffer cmd, uint32_t frameIdx, uint32_t modelDynamicOffset);
@@ -61,13 +56,11 @@ namespace Dodo::Platform {
         std::vector<VkDescriptorSetLayout> m_SetLayouts;
         std::vector<DescriptorBindingReflection> m_ShaderBindings;
 
-        bool m_HasSet0 = false; // shader declares set-0 (FrameData UBO)
         bool m_HasSet1 = false; // shader declares set-1 (material textures)
         bool m_HasSet2 = false; // shader declares set-2 (ModelData UBO)
 
-        // Per-pipeline, per-frame descriptor sets for set-0 (FrameData) and set-2 (ModelData).
-        // Valid only when the corresponding m_HasSetN flag is true.
-        std::array<VulkanDescriptorSet, PipelineUBOHandles::maxFrames> m_Set0{};
+        // Per-pipeline, per-frame descriptor set for set-2 (ModelData).
+        // Valid only when m_HasSet2 is true.
         std::array<VulkanDescriptorSet, PipelineUBOHandles::maxFrames> m_Set2{};
 
         // Non-owning pointers into the shared cache and allocator owned by VulkanRenderAPI.

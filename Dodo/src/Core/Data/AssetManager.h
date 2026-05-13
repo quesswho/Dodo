@@ -46,6 +46,7 @@ namespace Dodo {
         Ref<Texture> GetTexture(TextureID id);
 
         CubeMapID LoadCubeMap(const std::vector<std::string>& paths);
+        CubeMapID CreateCubeMapFromEquirectangular(const std::string& hdrPath, uint faceSize);
         Ref<CubeMap> GetCubeMap(CubeMapID id); // Returns nullptr if still loading
 
         MaterialID LoadMaterial(const std::string& path);

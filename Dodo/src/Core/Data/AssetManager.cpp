@@ -160,6 +160,21 @@ namespace Dodo {
         return id;
     }
 
+    CubeMapID AssetManager::CreateCubeMapFromEquirectangular(const std::string& hdrPath, uint faceSize)
+    {
+        TextureData data = m_TextureLoader.Load(hdrPath);
+        if (data.pixels.empty()) {
+            DD_ERR("AssetManager: failed to load HDR for cubemap conversion: {}", hdrPath);
+            return 0;
+        }
+        Ref<Texture> tex = m_RenderAPI.CreateTexture(data.pixels.data(), data.props);
+        Ref<CubeMap> cubeMap = m_RenderAPI.CreateCubeMapFromEquirectangular(tex, faceSize, *this);
+        CubeMapID id = m_NextCubeMapID++;
+        m_CubeMaps.emplace(id, std::move(cubeMap));
+        m_CubeMapStates.emplace(id, AssetState::Loaded);
+        return id;
+    }
+
     Ref<CubeMap> AssetManager::GetCubeMap(CubeMapID id)
     {
         auto it = m_CubeMaps.find(id);

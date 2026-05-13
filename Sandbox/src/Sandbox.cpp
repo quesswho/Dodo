@@ -40,13 +40,15 @@ GameLayer::GameLayer(Application& app)
     m_Scene = m_File.Read("res/sponza/sponza.das");
     // m_Scene = m_File.Read("res/knife.das");
     DD_INFO("Finished loading scene");
-
+    
     std::vector<std::string> skyboxPath = {
         "res/texture/skybox/right.jpg",  "res/texture/skybox/left.jpg",  "res/texture/skybox/top.jpg",
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
     m_Scene->m_SkyBox = new Skybox(skyboxPath, assets, renderAPI);
+
+    //m_Scene->m_SkyBox = new Skybox("res/sponza/textures/kloppenheim_05_4k.hdr", 512u, assets, renderAPI);
     DD_INFO("Finished loading skybox");
     m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(Vec3(0.2f, -0.5f, -0.5f));
     m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;

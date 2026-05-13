@@ -56,6 +56,7 @@ namespace Dodo::Platform {
             if (m_CsmDataUBOs[i].buffer)
                 vmaDestroyBuffer(m_VmaAllocator, m_CsmDataUBOs[i].buffer, m_CsmDataUBOs[i].allocation);
         }
+        if (m_GlobalFrameLayout) vkDestroyPipelineLayout(m_Device, m_GlobalFrameLayout, nullptr);
         m_LayoutCache.reset();
         m_DescriptorAllocator.reset();
         if (m_DummySampler) vkDestroySampler(m_Device, m_DummySampler, nullptr);
@@ -591,6 +592,45 @@ namespace Dodo::Platform {
             m_CsmDataUBOs[i].mapped = vmaInfo.pMappedData;
         }
 
+        // Create the global set 0 (FrameData binding 0 + CsmData binding 3).
+        // All pipelines are created with this same layout, so binding it once per frame
+        // satisfies all pipeline layout compatibility requirements.
+        {
+            auto makeUBOBinding = [](uint32_t binding) {
+                VkDescriptorSetLayoutBinding b{};
+                b.binding = binding;
+                b.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                b.descriptorCount = 1;
+                b.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+                return b;
+            };
+            m_GlobalSet0Layout = m_LayoutCache->GetOrCreate({makeUBOBinding(0), makeUBOBinding(3)});
+
+            // Push constants must match all actual pipeline layouts so the set 0 binding
+            // remains valid across pipeline switches (pipeline layout compatibility rule).
+            VkPushConstantRange pushConst{};
+            pushConst.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+            pushConst.offset = 0;
+            pushConst.size = 112;
+
+            VkPipelineLayoutCreateInfo layoutCI{};
+            layoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            layoutCI.setLayoutCount = 1;
+            layoutCI.pSetLayouts = &m_GlobalSet0Layout;
+            layoutCI.pushConstantRangeCount = 1;
+            layoutCI.pPushConstantRanges = &pushConst;
+            vkCreatePipelineLayout(m_Device, &layoutCI, nullptr, &m_GlobalFrameLayout);
+
+            for (int i = 0; i < maxFramesInFlight; i++) {
+                m_GlobalSet0[i] = m_DescriptorAllocator->Allocate(m_GlobalSet0Layout, 0);
+                m_GlobalSet0[i].Write(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, m_FrameDataUBOs[i].buffer, 0,
+                                      VK_WHOLE_SIZE);
+                m_GlobalSet0[i].Write(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, m_CsmDataUBOs[i].buffer, 0,
+                                      VK_WHOLE_SIZE);
+                m_GlobalSet0[i].Flush(m_Device);
+            }
+        }
+
         // Create a 1x1 black RGBA fallback image for unbound set-1 descriptor slots
         {
             VkImageCreateInfo imageCI{};
@@ -832,6 +872,10 @@ namespace Dodo::Platform {
             return;
         }
 
+        // Bind set 0 (FrameData + CsmData) once for the entire frame. All pipeline layouts
+        // use the same set 0 layout, so this binding is never invalidated by pipeline switches.
+        m_GlobalSet0[m_CurrentFrame].Bind(cmd, m_GlobalFrameLayout);
+
         if (m_TimestampsSupported) vkCmdResetQueryPool(cmd, m_TimestampPools[m_CurrentFrame], 0, maxTimestampQueries);
     }
 
@@ -951,9 +995,6 @@ namespace Dodo::Platform {
             m_BoundMaterialSet = nullptr;
         }
         m_TexturesDirty = true;
-
-        // Bind set-0 (FrameData). Stable for the whole frame; no dynamic offset.
-        m_BoundPipelinePtr->BindFrameSet(cmd, m_CurrentFrame);
     }
 
     void VulkanRenderAPI::PushConstants(const void* data, size_t size)
@@ -1193,14 +1234,11 @@ namespace Dodo::Platform {
         if (!desc.depthOnly)
             colorFormat = desc.renderToSwapchain ? m_SwapChainImageFormat : VK_FORMAT_R16G16B16A16_SFLOAT;
         PipelineUBOHandles ubos{};
-        for (int i = 0; i < maxFramesInFlight; i++) {
-            ubos.frameDataBuffers[i] = m_FrameDataUBOs[i].buffer;
+        for (int i = 0; i < maxFramesInFlight; i++)
             ubos.modelDataBuffers[i] = m_ModelDataUBOs[i].buffer;
-            ubos.csmDataBuffers[i] = m_CsmDataUBOs[i].buffer;
-        }
         ubos.modelSlotSize = m_ModelUBOSlotSize;
         return std::make_shared<VulkanPipeline>(m_Device, colorFormat, VK_FORMAT_D32_SFLOAT, shader, desc, ubos,
-                                                *m_LayoutCache, *m_DescriptorAllocator);
+                                                m_GlobalSet0Layout, *m_LayoutCache, *m_DescriptorAllocator);
     }
 
     Ref<VertexBuffer> VulkanRenderAPI::CreateVertexBuffer(const float* vertices, uint size,

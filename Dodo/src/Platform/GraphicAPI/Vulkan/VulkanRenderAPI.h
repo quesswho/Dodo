@@ -212,6 +212,13 @@ namespace Dodo::Platform {
         std::unique_ptr<VulkanDescriptorLayoutCache> m_LayoutCache;
         std::unique_ptr<VulkanDescriptorAllocator> m_DescriptorAllocator;
 
+        // Global set 0 (FrameData + CsmData): single descriptor set per frame, bound once at
+        // the start of each command buffer. All pipeline layouts use the same set 0 layout so
+        // the binding is never invalidated by pipeline switches within a frame.
+        VkDescriptorSetLayout m_GlobalSet0Layout = VK_NULL_HANDLE;
+        VkPipelineLayout m_GlobalFrameLayout = VK_NULL_HANDLE;
+        std::array<VulkanDescriptorSet, maxFramesInFlight> m_GlobalSet0{};
+
         // GPU-side layout for ModelData cbuffer (float4x4 model + float4x4 normal = 128 bytes)
         struct GPUModelData {
             float model[16];  // Mat4

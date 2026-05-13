@@ -65,10 +65,11 @@ namespace Dodo::Platform {
 
     VulkanPipeline::VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat,
                                    const ShaderAsset& shader, const PipelineDesc& desc, const PipelineUBOHandles& ubos,
+                                   VkDescriptorSetLayout globalSet0Layout,
                                    VulkanDescriptorLayoutCache& layoutCache, VulkanDescriptorAllocator& allocator)
         : m_Device(device), m_Desc(desc), m_LayoutCache(&layoutCache), m_Allocator(&allocator)
     {
-        // Determine which sets the shader declares via reflection
+        // Determine which sets the shader declares via reflection (set 0 is handled globally)
         std::map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> setBindings;
         for (const auto& b : shader.descriptorBindings) {
             VkDescriptorSetLayoutBinding vkb{};
@@ -80,87 +81,53 @@ namespace Dodo::Platform {
         }
 
         m_ShaderBindings = shader.descriptorBindings;
-        m_HasSet0 = setBindings.count(0) > 0;
         m_HasSet1 = setBindings.count(1) > 0;
         m_HasSet2 = setBindings.count(2) > 0;
 
-        if (!setBindings.empty()) {
-            m_SetLayouts.resize(setBindings.rbegin()->first + 1, VK_NULL_HANDLE);
+        // Set 0 (FrameData + CsmData) is owned and bound globally by VulkanRenderAPI, not per-pipeline.
+        // All pipelines use the same global layout so the single bind at frame start is always compatible.
+        uint32_t highestSet = 0;
+        for (const auto& [s, _] : setBindings) highestSet = std::max(highestSet, s);
+        m_SetLayouts.resize(std::max(highestSet + 1u, 1u), VK_NULL_HANDLE);
+        m_SetLayouts[0] = globalSet0Layout;
 
-            for (auto& [set, bindings] : setBindings) {
-                if (set == 0) {
-                    bool hasFrameData = false, hasCsmData = false;
-                    for (const auto& b : bindings) {
-                        if (b.binding == 0) hasFrameData = true;
-                        if (b.binding == 3) hasCsmData = true;
-                    }
+        for (auto& [set, bindings] : setBindings) {
+            if (set == 0) continue;
 
-                    auto makeUBOBinding = [](uint32_t binding) {
-                        VkDescriptorSetLayoutBinding b{};
-                        b.binding = binding;
-                        b.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                        b.descriptorCount = 1;
-                        b.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
-                        return b;
-                    };
+            if (set == 2) {
+                // Canonical ModelData layout: binding 0, UNIFORM_BUFFER_DYNAMIC.
+                VkDescriptorSetLayoutBinding set2Binding{};
+                set2Binding.binding = 0;
+                set2Binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+                set2Binding.descriptorCount = 1;
+                set2Binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+                m_SetLayouts[2] = m_LayoutCache->GetOrCreate({set2Binding});
 
-                    std::vector<VkDescriptorSetLayoutBinding> set0Bindings;
-                    if (hasFrameData) set0Bindings.push_back(makeUBOBinding(0));
-                    if (hasCsmData) set0Bindings.push_back(makeUBOBinding(3));
-                    m_SetLayouts[0] = m_LayoutCache->GetOrCreate(set0Bindings);
-
-                    for (int i = 0; i < PipelineUBOHandles::maxFrames; i++) {
-                        m_Set0[i] = m_Allocator->Allocate(m_SetLayouts[0], 0);
-                        if (hasFrameData)
-                            m_Set0[i].Write(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubos.frameDataBuffers[i], 0,
-                                            VK_WHOLE_SIZE);
-                        if (hasCsmData)
-                            m_Set0[i].Write(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubos.csmDataBuffers[i], 0,
-                                            VK_WHOLE_SIZE);
-                        m_Set0[i].Flush(m_Device);
-                    }
-                    continue;
+                for (int i = 0; i < PipelineUBOHandles::maxFrames; i++) {
+                    m_Set2[i] = m_Allocator->Allocate(m_SetLayouts[2], 2);
+                    m_Set2[i].Write(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, ubos.modelDataBuffers[i], 0,
+                                    ubos.modelSlotSize);
+                    m_Set2[i].Flush(m_Device);
                 }
-
-                if (set == 2) {
-                    // Canonical ModelData layout: binding 0, UNIFORM_BUFFER_DYNAMIC.
-                    VkDescriptorSetLayoutBinding set2Binding{};
-                    set2Binding.binding = 0;
-                    set2Binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-                    set2Binding.descriptorCount = 1;
-                    set2Binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
-                    m_SetLayouts[2] = m_LayoutCache->GetOrCreate({set2Binding});
-
-                    for (int i = 0; i < PipelineUBOHandles::maxFrames; i++) {
-                        m_Set2[i] = m_Allocator->Allocate(m_SetLayouts[2], 2);
-                        m_Set2[i].Write(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, ubos.modelDataBuffers[i], 0,
-                                        ubos.modelSlotSize);
-                        m_Set2[i].Flush(m_Device);
-                    }
-                    continue;
-                }
-
-                m_SetLayouts[set] = m_LayoutCache->GetOrCreate(bindings);
+                continue;
             }
 
-            // Vulkan requires all pSetLayouts entries to be valid handles.
-            // Gaps at slots 0 and 2 get canonical layouts so all pipelines are
-            // compatible at those slots even when the shader skips them.
-            for (uint32_t i = 0; i < (uint32_t)m_SetLayouts.size(); i++) {
-                if (m_SetLayouts[i] != VK_NULL_HANDLE) continue;
+            m_SetLayouts[set] = m_LayoutCache->GetOrCreate(bindings);
+        }
 
-                VkDescriptorSetLayoutBinding canonBinding{};
-                canonBinding.binding = 0;
-                canonBinding.descriptorCount = 1;
-                canonBinding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+        // Vulkan requires all pSetLayouts entries to be valid handles.
+        // Gaps at slots 1+ get canonical layouts so all pipelines are compatible at those slots.
+        for (uint32_t i = 1; i < (uint32_t)m_SetLayouts.size(); i++) {
+            if (m_SetLayouts[i] != VK_NULL_HANDLE) continue;
 
-                if (i == 0)
-                    canonBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-                else if (i == 2)
-                    canonBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+            VkDescriptorSetLayoutBinding canonBinding{};
+            canonBinding.binding = 0;
+            canonBinding.descriptorCount = 1;
+            canonBinding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+            canonBinding.descriptorType =
+                (i == 2) ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
-                m_SetLayouts[i] = m_LayoutCache->GetOrCreate({canonBinding});
-            }
+            m_SetLayouts[i] = m_LayoutCache->GetOrCreate({canonBinding});
         }
 
         // Push constants: DrawData (model matrix + normal matrix)
@@ -376,12 +343,6 @@ namespace Dodo::Platform {
         vkDestroyPipelineLayout(m_Device, m_Layout, nullptr);
         // Descriptor set layouts are owned by VulkanDescriptorLayoutCache.
         // Descriptor set allocations are owned by VulkanDescriptorAllocator.
-    }
-
-    void VulkanPipeline::BindFrameSet(VkCommandBuffer cmd, uint32_t frameIdx)
-    {
-        if (!m_HasSet0) return;
-        m_Set0[frameIdx].Bind(cmd, m_Layout);
     }
 
     void VulkanPipeline::BindObjectSet(VkCommandBuffer cmd, uint32_t frameIdx, uint32_t modelDynamicOffset)

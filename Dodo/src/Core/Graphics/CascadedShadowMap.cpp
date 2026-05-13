@@ -11,7 +11,7 @@ namespace Dodo {
 
     CascadedShadowMap::CascadedShadowMap(RenderAPI& renderAPI, uint32_t levels) : m_Levels(levels)
     {
-        FrameBufferProperties props(4096, 4096, FrameBufferType::FRAMEBUFFER_DEPTH_ARRAY, levels);
+        FrameBufferProperties props(1024, 1024, FrameBufferType::FRAMEBUFFER_DEPTH_ARRAY, levels);
         props.m_SamplerProperties =
             SamplerProperties(SamplerFilter::MIN_MAG_LINEAR, SamplerWrapMode::WRAP_CLAMP_TO_BORDER,
                               SamplerWrapMode::WRAP_CLAMP_TO_BORDER)

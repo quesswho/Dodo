@@ -13,6 +13,7 @@ namespace Dodo {
         shadowPipelineDesc.shaderID = id;
         shadowPipelineDesc.culling = CullMode::Front;
         shadowPipelineDesc.depthOnly = true;
+        shadowPipelineDesc.depthClip = true;
         shadowPipelineDesc.vertexLayout =
             BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 4}});
         PipelineID shadowPipelineID = assets.CreatePipeline(shadowPipelineDesc, renderAPI);

@@ -268,7 +268,7 @@ namespace Dodo::Platform {
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
         rasterizer.lineWidth = 1.0f;
         rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
-        rasterizer.depthClampEnable = VK_FALSE;
+        rasterizer.depthClampEnable = desc.depthClip;
         rasterizer.rasterizerDiscardEnable = VK_FALSE;
         rasterizer.depthBiasEnable = VK_FALSE;
 

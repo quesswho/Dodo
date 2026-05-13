@@ -10,7 +10,7 @@ namespace Dodo {
 
     class CascadedShadowMap {
       public:
-        CascadedShadowMap(RenderAPI& renderAPI, uint32_t levels = 4);
+        CascadedShadowMap(RenderAPI& renderAPI, uint32_t levels = 4, uint32_t shadowMapResolution = 2048);
         ~CascadedShadowMap();
 
         void UpdateCamera(const Math::Mat4& proj, const Math::Mat4& view, const Math::Vec3& lightDir, float nearPlane,
@@ -25,8 +25,9 @@ namespace Dodo {
       private:
         std::vector<Math::Vec4> GetFrustumCornersWorldSpace(const Math::Mat4& proj, const Math::Mat4& view);
 
-        Math::Mat4 m_LightSpaceMatrices[4];
-        Math::Vec4 m_CascadeSplitDepths;
+        std::vector<Math::Mat4> m_LightSpaceMatrices;
+        std::vector<float> m_CascadeSplitDepths;
         Ref<FrameBuffer> m_FrameBuffer;
+        uint32_t m_ShadowMapResolution;
     };
 } // namespace Dodo

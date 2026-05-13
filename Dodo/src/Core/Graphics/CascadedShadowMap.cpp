@@ -9,9 +9,10 @@
 
 namespace Dodo {
 
-    CascadedShadowMap::CascadedShadowMap(RenderAPI& renderAPI, uint32_t levels) : m_Levels(levels)
+    CascadedShadowMap::CascadedShadowMap(RenderAPI& renderAPI, uint32_t levels, uint32_t shadowMapResolution)
+        : m_Levels(levels), m_LightSpaceMatrices(levels), m_CascadeSplitDepths(levels), m_ShadowMapResolution(shadowMapResolution)
     {
-        FrameBufferProperties props(1024, 1024, FrameBufferType::FRAMEBUFFER_DEPTH_ARRAY, levels);
+        FrameBufferProperties props(m_ShadowMapResolution, m_ShadowMapResolution, FrameBufferType::FRAMEBUFFER_DEPTH_ARRAY, levels);
         props.m_SamplerProperties =
             SamplerProperties(SamplerFilter::MIN_MAG_LINEAR, SamplerWrapMode::WRAP_CLAMP_TO_BORDER,
                               SamplerWrapMode::WRAP_CLAMP_TO_BORDER)
@@ -44,16 +45,14 @@ namespace Dodo {
     {
         constexpr float lambda = 0.5f; // blend between log and uniform split distributions
 
-        // Compute cascade far-plane depths with a logarithmic-linear blend
-        float cascadeSplits[4];
+        // Compute cascade far-plane depths with a logarithmic-linear split scheme
+        // https://dl.acm.org/doi/pdf/10.1145/1128923.1128975
         for (uint32_t i = 0; i < m_Levels; i++) {
             float p = (float)(i + 1) / (float)m_Levels;
             float logSplit = nearPlane * std::pow(farPlane / nearPlane, p);
             float uniSplit = nearPlane + (farPlane - nearPlane) * p;
-            cascadeSplits[i] = lambda * logSplit + (1.0f - lambda) * uniSplit;
+            m_CascadeSplitDepths[i] = lambda * logSplit + (1.0f - lambda) * uniSplit;
         }
-        // Store as Vec4 components for the shader
-        m_CascadeSplitDepths = Math::Vec4(cascadeSplits[0], cascadeSplits[1], cascadeSplits[2], cascadeSplits[3]);
 
         const Math::Vec3 lightDirNorm = Math::Normalize(lightDir);
         // Avoid up = lightDir singularity
@@ -62,7 +61,7 @@ namespace Dodo {
 
         float prevSplit = nearPlane;
         for (uint32_t i = 0; i < m_Levels; i++) {
-            float splitFar = cascadeSplits[i];
+            float splitFar = m_CascadeSplitDepths[i];
 
             // Build a perspective matrix for just this sub-frustum
             Math::Mat4 subProj = Math::Mat4::Perspective(fov, aspectRatio, prevSplit, splitFar);
@@ -121,9 +120,10 @@ namespace Dodo {
     CsmData CascadedShadowMap::GetCsmData() const
     {
         CsmData data;
-        for (uint32_t i = 0; i < m_Levels; i++)
+        for (uint32_t i = 0; i < m_Levels; i++) {
             data.lightSpaceMatrices[i] = m_LightSpaceMatrices[i];
-        data.cascadeSplitDepths = m_CascadeSplitDepths;
+            data.cascadeSplitDepths[i] = m_CascadeSplitDepths[i];
+        }
         data.numCascades = (int)m_Levels;
         data.pad[0] = data.pad[1] = data.pad[2] = 0.0f;
         return data;

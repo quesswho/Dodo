@@ -14,6 +14,29 @@ float2 vogelDiskSample(int sampleIndex, int sampleCount, float phi)
     return float2(cos(theta), sin(theta)) * r;
 }
 
+#include "../Common/Debug.slang"
+
+float3 debugCSMSample(
+    float3 positionWS,
+    float3 normal,
+    float3 lightDirection,
+    Texture2DArray<float> shadowMap,
+    SamplerState shadowSampler,
+    float viewDepth,
+    float lightSize)
+{
+    int cascadeIndex = numCascades - 1;
+    for (int i = 0; i < numCascades - 1; i++)
+    {
+        if (viewDepth < u_CascadeSplitDepths[i])
+        {
+            cascadeIndex = i;
+            break;
+        }
+    }
+    return debugFloat(cascadeIndex/float(numCascades-1));
+}
+
 float shadowCalculationCSM(
     float3 positionWS,
     float3 normal,

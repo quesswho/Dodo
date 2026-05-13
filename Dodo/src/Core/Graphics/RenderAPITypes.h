@@ -28,7 +28,7 @@ namespace Dodo {
 
     struct CsmData {
         Math::Mat4 lightSpaceMatrices[4];
-        Math::Vec4 cascadeSplitDepths; // x,y,z,w = view-space depths for up to 4 cascades
+        float cascadeSplitDepths[4];
         int numCascades;
         float pad[3];
     };

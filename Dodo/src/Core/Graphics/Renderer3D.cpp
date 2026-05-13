@@ -6,12 +6,12 @@
 namespace Dodo {
 
     Renderer3D::Renderer3D(RenderAPI& renderAPI, AssetManager& assets)
-        : m_CascadedShadowMap(new CascadedShadowMap(renderAPI))
+        : m_CascadedShadowMap(new CascadedShadowMap(renderAPI, 4, 4096))
     {
         ShaderID id = assets.LoadShaderFromPath("res/shader/builtin/Passes/Shadow.slang");
         PipelineDesc shadowPipelineDesc;
         shadowPipelineDesc.shaderID = id;
-        shadowPipelineDesc.culling = CullMode::Front;
+        shadowPipelineDesc.culling = CullMode::Back;
         shadowPipelineDesc.depthOnly = true;
         shadowPipelineDesc.depthClip = true;
         shadowPipelineDesc.vertexLayout =
@@ -106,7 +106,14 @@ namespace Dodo {
         const auto& shadowModelPool = world.GetPool<ModelComponent>();
         for (const auto& modelComponent : shadowModelPool.GetComponents()) {
             renderAPI.SetDrawData(MakeDrawData(modelComponent.m_Transformation.m_Model));
-            assets.GetModel(modelComponent.m_ModelID)->DrawGeometryInstanced(renderAPI, csmData.numCascades);
+            auto model = assets.GetModel(modelComponent.m_ModelID);
+
+            // Skip transparent meshes in the shadow pass
+            for (auto mesh : model->GetMeshes()) {
+                auto shader = mesh->GetMaterial()->GetShader();
+                if (shader && shader->GetDesc().blendMode == BlendMode::AlphaBlend) continue;
+                mesh->DrawGeometryInstanced(renderAPI, csmData.numCascades);
+            }
         }
         renderAPI.EndTimestamp(GpuTimestampSlot::Shadow);
 

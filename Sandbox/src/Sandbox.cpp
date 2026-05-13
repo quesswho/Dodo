@@ -173,7 +173,7 @@ class Sandbox : public Application {
     void Init()
     {
         PushLayer(new GameLayer(*this));
-        PushLayer(new DebugLayer());
+        //PushLayer(new DebugLayer());
     }
 };
 

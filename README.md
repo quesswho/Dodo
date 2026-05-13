@@ -93,4 +93,7 @@ cmake --preset default -DDD_API_OPENGL=OFF -DDD_API_VULKAN=ON
 
 
 ### Graphics
+- We use cascaded shadow maps for directional lights:
 ![Cascaded Shadow Maps](https://i.imgur.com/fBgjl41.png)
+- Percentage-Closer Soft Shadows using Poisson disc sampling
+![PCSS and Poisson disc sampling](https://i.imgur.com/aIfWOVk.png)

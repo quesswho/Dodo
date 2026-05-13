@@ -624,9 +624,9 @@ namespace Dodo::Platform {
             for (int i = 0; i < maxFramesInFlight; i++) {
                 m_GlobalSet0[i] = m_DescriptorAllocator->Allocate(m_GlobalSet0Layout, 0);
                 m_GlobalSet0[i].Write(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, m_FrameDataUBOs[i].buffer, 0,
-                                      VK_WHOLE_SIZE);
+                                      sizeof(Dodo::FrameData));
                 m_GlobalSet0[i].Write(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, m_CsmDataUBOs[i].buffer, 0,
-                                      VK_WHOLE_SIZE);
+                                      sizeof(Dodo::CsmData));
                 m_GlobalSet0[i].Flush(m_Device);
             }
         }

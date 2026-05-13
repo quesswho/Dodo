@@ -75,7 +75,7 @@ namespace Dodo {
             Math::Vec3 centroid(0.0f, 0.0f, 0.0f);
             for (const auto& c : corners)
                 centroid = centroid + Math::Vec3(c.x, c.y, c.z);
-            centroid = centroid * (1.0f / 8.0f);
+            centroid /= (int)corners.size();
 
             Math::Mat4 lightView = Math::Mat4::LookAt(centroid - lightDirNorm, centroid, up);
 
@@ -98,7 +98,7 @@ namespace Dodo {
             }
 
             // Pull the near plane back to capture shadow casters behind the frustum
-            constexpr float zMult = 10.0f;
+            constexpr float zMult = 3.0f;
             if (minZ < 0.0f)
                 minZ *= zMult;
             else

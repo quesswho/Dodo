@@ -219,6 +219,11 @@ namespace Dodo::Platform {
         VkPipelineLayout m_GlobalFrameLayout = VK_NULL_HANDLE;
         std::array<VulkanDescriptorSet, maxFramesInFlight> m_GlobalSet0{};
 
+        // Global set 2 (ModelData dynamic UBO): shared across all pipelines. All pipelines that
+        // declare set 2 point to the same UBO buffers, so one descriptor set per frame suffices.
+        VkDescriptorSetLayout m_GlobalSet2Layout = VK_NULL_HANDLE;
+        std::array<VulkanDescriptorSet, maxFramesInFlight> m_GlobalSet2{};
+
         // GPU-side layout for ModelData cbuffer (float4x4 model + float4x4 normal = 128 bytes)
         struct GPUModelData {
             float model[16];  // Mat4
@@ -245,7 +250,6 @@ namespace Dodo::Platform {
         class VulkanPipeline* m_BoundPipelinePtr = nullptr;
         VulkanFrameBufferedDescriptorSet* m_BoundMaterialSet = nullptr;
         class VulkanFrameBuffer* m_BoundFrameBuffer = nullptr;
-        bool m_TexturesDirty = false;
         bool m_IsRendering = false;
 
         // Upload batch: one command buffer shared across all CreateTexture/CreateCubeMap calls per frame.

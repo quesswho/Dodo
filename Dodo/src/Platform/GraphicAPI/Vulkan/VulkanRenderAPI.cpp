@@ -631,6 +631,25 @@ namespace Dodo::Platform {
             }
         }
 
+        // Create the global set 2 (ModelData dynamic UBO) shared across all pipelines.
+        // All pipelines that declare set 2 point to the same UBO, so one shared descriptor
+        // set per frame is sufficient; pipelines no longer allocate their own.
+        {
+            VkDescriptorSetLayoutBinding set2Binding{};
+            set2Binding.binding = 0;
+            set2Binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+            set2Binding.descriptorCount = 1;
+            set2Binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
+            m_GlobalSet2Layout = m_LayoutCache->GetOrCreate({set2Binding});
+
+            for (int i = 0; i < maxFramesInFlight; i++) {
+                m_GlobalSet2[i] = m_DescriptorAllocator->Allocate(m_GlobalSet2Layout, 2);
+                m_GlobalSet2[i].Write(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, m_ModelDataUBOs[i].buffer, 0,
+                                      m_ModelUBOSlotSize);
+                m_GlobalSet2[i].Flush(m_Device);
+            }
+        }
+
         // Create a 1x1 black RGBA fallback image for unbound set-1 descriptor slots
         {
             VkImageCreateInfo imageCI{};
@@ -857,7 +876,6 @@ namespace Dodo::Platform {
         m_BoundPipelinePtr = nullptr;
         m_ModelUBOCursor = 0;
         m_LastModelOffset = 0;
-        m_TexturesDirty = false;
         m_IsRendering = false;
         vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_Frames[m_CurrentFrame].imageAvailableSemaphore,
                               VK_NULL_HANDLE, &m_CurrentImageIndex);
@@ -950,26 +968,29 @@ namespace Dodo::Platform {
     void VulkanRenderAPI::BindCubeMap(uint slot, Ref<CubeMap> cubemap)
     {
         if (slot >= maxTextureSlots || !cubemap) return;
-        m_PendingImageViews[slot] = cubemap->GetImageView();
+        VkImageView newView = cubemap->GetImageView();
+        if (m_PendingImageViews[slot] == newView && m_PendingIsCubeMap[slot] && !m_PendingIsDepth[slot]) return;
+        m_PendingImageViews[slot] = newView;
         m_PendingIsCubeMap[slot] = true;
         m_PendingIsDepth[slot] = false;
-        m_TexturesDirty = true;
     }
 
     void VulkanRenderAPI::BindTexture(uint slot, Ref<Texture> texture)
     {
         if (slot >= maxTextureSlots || !texture) return;
-        m_PendingImageViews[slot] = texture->GetImageView();
+        VkImageView newView = texture->GetImageView();
+        if (m_PendingImageViews[slot] == newView && !m_PendingIsCubeMap[slot] && !m_PendingIsDepth[slot]) return;
+        m_PendingImageViews[slot] = newView;
         m_PendingIsCubeMap[slot] = false;
         m_PendingIsDepth[slot] = false;
-        m_TexturesDirty = true;
     }
 
     void VulkanRenderAPI::BindTextureSampler(uint slot, Ref<TextureSampler> sampler)
     {
         if (slot >= maxTextureSlots || !sampler) return;
-        m_PendingSamplers[slot] = sampler->GetSampler();
-        m_TexturesDirty = true;
+        VkSampler newSampler = sampler->GetSampler();
+        if (m_PendingSamplers[slot] == newSampler) return;
+        m_PendingSamplers[slot] = newSampler;
     }
 
     void VulkanRenderAPI::BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer)
@@ -977,11 +998,15 @@ namespace Dodo::Platform {
         if (slot >= maxTextureSlots || !framebuffer) return;
         auto* vkFB = static_cast<VulkanFrameBuffer*>(framebuffer.get());
         const bool depthOnly = !vkFB->HasColor();
-        m_PendingImageViews[slot] = depthOnly ? vkFB->GetDepthImageView() : vkFB->GetColorImageView();
-        m_PendingSamplers[slot] = vkFB->GetSampler();
+        VkImageView newView = depthOnly ? vkFB->GetDepthImageView() : vkFB->GetColorImageView();
+        VkSampler newSampler = vkFB->GetSampler();
+        if (m_PendingImageViews[slot] == newView && m_PendingSamplers[slot] == newSampler &&
+            !m_PendingIsCubeMap[slot] && m_PendingIsDepth[slot] == depthOnly)
+            return;
+        m_PendingImageViews[slot] = newView;
+        m_PendingSamplers[slot] = newSampler;
         m_PendingIsCubeMap[slot] = false;
         m_PendingIsDepth[slot] = depthOnly;
-        m_TexturesDirty = true;
     }
 
     void VulkanRenderAPI::BindPipeline(Ref<Pipeline> pipeline)
@@ -994,7 +1019,6 @@ namespace Dodo::Platform {
             m_BoundPipelinePtr = pipeline.get();
             m_BoundMaterialSet = nullptr;
         }
-        m_TexturesDirty = true;
     }
 
     void VulkanRenderAPI::PushConstants(const void* data, size_t size)
@@ -1054,14 +1078,12 @@ namespace Dodo::Platform {
     {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
 
-        m_BoundPipelinePtr->BindObjectSet(cmd, m_CurrentFrame, m_LastModelOffset);
+        m_BoundPipelinePtr->BindObjectSet(cmd, m_GlobalSet2[m_CurrentFrame], m_LastModelOffset);
         if (m_BoundMaterialSet) {
-            if (m_TexturesDirty) m_BoundMaterialSet->MarkDirty();
             m_BoundPipelinePtr->BindMaterialSet(cmd, *m_BoundMaterialSet, m_CurrentFrame, m_FrameEpoch,
                                                 m_PendingImageViews, m_PendingSamplers, m_PendingIsCubeMap,
                                                 m_PendingIsDepth, maxTextureSlots, m_DummyImageView, m_DummySampler);
         }
-        m_TexturesDirty = false;
 
         vkCmdDrawIndexed(cmd, count, 1, 0, 0, 0);
     }
@@ -1069,8 +1091,7 @@ namespace Dodo::Platform {
     void VulkanRenderAPI::DrawIndicesInstanced(uint count, uint instanceCount)
     {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
-        m_BoundPipelinePtr->BindObjectSet(cmd, m_CurrentFrame, m_LastModelOffset);
-        m_TexturesDirty = false;
+        m_BoundPipelinePtr->BindObjectSet(cmd, m_GlobalSet2[m_CurrentFrame], m_LastModelOffset);
         vkCmdDrawIndexed(cmd, count, instanceCount, 0, 0, 0);
     }
 
@@ -1078,14 +1099,12 @@ namespace Dodo::Platform {
     {
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
         if (m_BoundPipelinePtr) {
-            m_BoundPipelinePtr->BindObjectSet(cmd, m_CurrentFrame, m_LastModelOffset);
+            m_BoundPipelinePtr->BindObjectSet(cmd, m_GlobalSet2[m_CurrentFrame], m_LastModelOffset);
             if (m_BoundMaterialSet) {
-                if (m_TexturesDirty) m_BoundMaterialSet->MarkDirty();
                 m_BoundPipelinePtr->BindMaterialSet(
                     cmd, *m_BoundMaterialSet, m_CurrentFrame, m_FrameEpoch, m_PendingImageViews, m_PendingSamplers,
                     m_PendingIsCubeMap, m_PendingIsDepth, maxTextureSlots, m_DummyImageView, m_DummySampler);
             }
-            m_TexturesDirty = false;
         }
         vkCmdDraw(cmd, count, 1, 0, 0);
     }
@@ -1233,12 +1252,9 @@ namespace Dodo::Platform {
         VkFormat colorFormat = VK_FORMAT_UNDEFINED;
         if (!desc.depthOnly)
             colorFormat = desc.renderToSwapchain ? m_SwapChainImageFormat : VK_FORMAT_R16G16B16A16_SFLOAT;
-        PipelineUBOHandles ubos{};
-        for (int i = 0; i < maxFramesInFlight; i++)
-            ubos.modelDataBuffers[i] = m_ModelDataUBOs[i].buffer;
-        ubos.modelSlotSize = m_ModelUBOSlotSize;
-        return std::make_shared<VulkanPipeline>(m_Device, colorFormat, VK_FORMAT_D32_SFLOAT, shader, desc, ubos,
-                                                m_GlobalSet0Layout, *m_LayoutCache, *m_DescriptorAllocator);
+        return std::make_shared<VulkanPipeline>(m_Device, colorFormat, VK_FORMAT_D32_SFLOAT, shader, desc,
+                                                m_GlobalSet0Layout, m_GlobalSet2Layout,
+                                                *m_LayoutCache, *m_DescriptorAllocator);
     }
 
     Ref<VertexBuffer> VulkanRenderAPI::CreateVertexBuffer(const float* vertices, uint size,

@@ -64,8 +64,8 @@ namespace Dodo::Platform {
     }
 
     VulkanPipeline::VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat,
-                                   const ShaderAsset& shader, const PipelineDesc& desc, const PipelineUBOHandles& ubos,
-                                   VkDescriptorSetLayout globalSet0Layout,
+                                   const ShaderAsset& shader, const PipelineDesc& desc,
+                                   VkDescriptorSetLayout globalSet0Layout, VkDescriptorSetLayout globalSet2Layout,
                                    VulkanDescriptorLayoutCache& layoutCache, VulkanDescriptorAllocator& allocator)
         : m_Device(device), m_Desc(desc), m_LayoutCache(&layoutCache), m_Allocator(&allocator)
     {
@@ -95,20 +95,9 @@ namespace Dodo::Platform {
             if (set == 0) continue;
 
             if (set == 2) {
-                // Canonical ModelData layout: binding 0, UNIFORM_BUFFER_DYNAMIC.
-                VkDescriptorSetLayoutBinding set2Binding{};
-                set2Binding.binding = 0;
-                set2Binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-                set2Binding.descriptorCount = 1;
-                set2Binding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
-                m_SetLayouts[2] = m_LayoutCache->GetOrCreate({set2Binding});
-
-                for (int i = 0; i < PipelineUBOHandles::maxFrames; i++) {
-                    m_Set2[i] = m_Allocator->Allocate(m_SetLayouts[2], 2);
-                    m_Set2[i].Write(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, ubos.modelDataBuffers[i], 0,
-                                    ubos.modelSlotSize);
-                    m_Set2[i].Flush(m_Device);
-                }
+                // Use the shared global Set 2 layout (ModelData UBO, binding 0, UNIFORM_BUFFER_DYNAMIC).
+                // The descriptor set itself is owned by VulkanRenderAPI and bound via BindObjectSet.
+                m_SetLayouts[2] = globalSet2Layout;
                 continue;
             }
 
@@ -345,10 +334,11 @@ namespace Dodo::Platform {
         // Descriptor set allocations are owned by VulkanDescriptorAllocator.
     }
 
-    void VulkanPipeline::BindObjectSet(VkCommandBuffer cmd, uint32_t frameIdx, uint32_t modelDynamicOffset)
+    void VulkanPipeline::BindObjectSet(VkCommandBuffer cmd, const VulkanDescriptorSet& globalSet2,
+                                       uint32_t modelDynamicOffset)
     {
         if (!m_HasSet2) return;
-        m_Set2[frameIdx].Bind(cmd, m_Layout, modelDynamicOffset);
+        globalSet2.Bind(cmd, m_Layout, modelDynamicOffset);
     }
 
     void VulkanPipeline::BindMaterialSet(VkCommandBuffer cmd, VulkanFrameBufferedDescriptorSet& matSet,
@@ -361,7 +351,7 @@ namespace Dodo::Platform {
 
         // Allocate persistent sets from the shared allocator on first use
         if (!matSet.IsAllocated()) {
-            for (int i = 0; i < PipelineUBOHandles::maxFrames; i++) {
+            for (int i = 0; i < 2; i++) {
                 matSet.Get(i) = m_Allocator->Allocate(m_SetLayouts[1], 1);
                 if (!matSet.Get(i).IsValid()) return;
             }

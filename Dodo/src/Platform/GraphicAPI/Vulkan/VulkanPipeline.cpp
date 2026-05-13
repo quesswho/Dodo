@@ -367,9 +367,7 @@ namespace Dodo::Platform {
             }
         }
 
-        // Re-write only the current frame's descriptor set when dirty and not yet updated this epoch.
-        // Guarding on frameEpoch prevents a second vkUpdateDescriptorSets call within the same frame
-        // on a set that is already bound to the recording command buffer, which would invalidate it.
+        
         if (matSet.IsDirtyForFrame(frameIdx) && !matSet.WasUpdatedThisEpoch(frameIdx, frameEpoch)) {
             VkSampler firstSampler = VK_NULL_HANDLE;
             for (int s = 0; s < maxSlots && firstSampler == VK_NULL_HANDLE; s++)

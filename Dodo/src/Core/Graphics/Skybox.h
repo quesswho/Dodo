@@ -24,6 +24,7 @@ namespace Dodo {
 
       public:
         Skybox(std::vector<std::string> paths, AssetManager& assets, RenderAPI& renderAPI);
+        Skybox(std::string hdrPath, uint faceSize, AssetManager& assets, RenderAPI& renderAPI);
         ~Skybox();
 
         void Draw(RenderAPI& renderAPI) const;

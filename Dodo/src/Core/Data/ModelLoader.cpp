@@ -26,7 +26,7 @@ namespace Dodo {
         }
 
         std::filesystem::path modelDir = std::filesystem::path(path).parent_path();
-
+        
         // Collect material texture paths. Texture loading is done async in AssetManager
         for (uint i = 0; i < scene->mNumMaterials; i++) {
             aiMaterial* aiMat = scene->mMaterials[i];

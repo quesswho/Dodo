@@ -12,7 +12,7 @@
 #include "Core/Graphics/RenderAPITypes.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanDescriptorAllocator.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanDescriptorLayoutCache.h"
-#include "Platform/GraphicAPI/Vulkan/VulkanMaterialSet.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanFrameBufferedDescriptorSet.h"
 
 #include "Platform/WindowAPI/NativeWindowHandle.h"
 #ifdef DD_API_WIN32
@@ -81,7 +81,7 @@ namespace Dodo::Platform {
         void BindVertexBuffer(const Ref<VertexBuffer>& vb);
         void BindIndexBuffer(const Ref<IndexBuffer>& ib);
         void BindPipeline(Ref<Pipeline> pipeline);
-        void SetMaterialDescriptorSet(VulkanMaterialSet& matSet) { m_BoundMaterialSet = &matSet; }
+        void SetMaterialDescriptorSet(VulkanFrameBufferedDescriptorSet& matSet) { m_BoundMaterialSet = &matSet; }
         void PushConstants(const void* data, size_t size);
         void SetFrameData(const Dodo::FrameData& data);
         void SetDrawData(const DrawData& data);
@@ -236,7 +236,7 @@ namespace Dodo::Platform {
 
         // Current pipeline reference (needed for set-1 layout when binding textures)
         class VulkanPipeline* m_BoundPipelinePtr = nullptr;
-        VulkanMaterialSet* m_BoundMaterialSet = nullptr;
+        VulkanFrameBufferedDescriptorSet* m_BoundMaterialSet = nullptr;
         class VulkanFrameBuffer* m_BoundFrameBuffer = nullptr;
         bool m_TexturesDirty = false;
         bool m_IsRendering = false;

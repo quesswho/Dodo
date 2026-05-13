@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Common.h"
-#include "Core/Graphics/Material/MaterialSet.h"
+#include "Core/Graphics/FrameBufferedDescriptorSet.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
@@ -42,7 +42,7 @@ namespace Dodo {
         }
         Ref<TextureSampler> GetSampler() const { return m_Sampler; }
 
-        MaterialSet& GetDescriptorSet() const { return m_DescriptorSet; }
+        FrameBufferedDescriptorSet& GetDescriptorSet() const { return m_DescriptorSet; }
 
         void Bind(RenderAPI& renderAPI) const;
 
@@ -50,6 +50,6 @@ namespace Dodo {
         Ref<Pipeline> m_Shader;
         std::unordered_map<uint, Ref<Texture>> m_Textures;
         Ref<TextureSampler> m_Sampler;
-        mutable MaterialSet m_DescriptorSet;
+        mutable FrameBufferedDescriptorSet m_DescriptorSet;
     };
 } // namespace Dodo

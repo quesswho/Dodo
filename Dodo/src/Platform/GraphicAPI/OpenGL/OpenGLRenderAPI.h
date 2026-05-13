@@ -5,7 +5,7 @@
 #include "Core/Graphics/Buffer.h"
 #include "Core/Graphics/CubeMap.h"
 #include "Core/Graphics/FrameBuffer.h"
-#include "Core/Graphics/Material/MaterialSet.h"
+#include "Core/Graphics/FrameBufferedDescriptorSet.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
@@ -58,7 +58,7 @@ namespace Dodo::Platform {
         }
 
         void BindPipeline(Ref<Pipeline> pipeline);
-        void SetMaterialDescriptorSet(MaterialSet&) {}
+        void SetMaterialDescriptorSet(FrameBufferedDescriptorSet&) {}
         void PushConstants(const void* data, size_t size);
         void SetFrameData(const FrameData& data);
         void SetDrawData(const DrawData& data);

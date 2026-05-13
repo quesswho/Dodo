@@ -390,10 +390,10 @@ namespace Dodo::Platform {
         m_Set2[frameIdx].Bind(cmd, m_Layout, modelDynamicOffset);
     }
 
-    void VulkanPipeline::BindMaterialSet(VkCommandBuffer cmd, VulkanMaterialSet& matSet, uint32_t frameIdx,
-                                         uint32_t frameEpoch, const VkImageView* views, const VkSampler* samplers,
-                                         const bool* isCubeMap, const bool* isDepth, int maxSlots,
-                                         VkImageView dummyView, VkSampler dummySampler)
+    void VulkanPipeline::BindMaterialSet(VkCommandBuffer cmd, VulkanFrameBufferedDescriptorSet& matSet,
+                                         uint32_t frameIdx, uint32_t frameEpoch, const VkImageView* views,
+                                         const VkSampler* samplers, const bool* isCubeMap, const bool* isDepth,
+                                         int maxSlots, VkImageView dummyView, VkSampler dummySampler)
     {
         if (!m_HasSet1) return;
         if (m_SetLayouts.size() <= 1 || m_SetLayouts[1] == VK_NULL_HANDLE) return;

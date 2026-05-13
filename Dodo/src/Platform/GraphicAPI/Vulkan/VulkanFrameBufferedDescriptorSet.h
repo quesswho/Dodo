@@ -4,7 +4,16 @@
 
 namespace Dodo::Platform {
 
-    class VulkanMaterialSet {
+    /**
+     * Owns one VulkanDescriptorSet per frame in flight (2) plus a per-frame
+     * dirty mask and write-epoch. Re-writing a descriptor set already bound
+     * to an in-flight command buffer is undefined, so callers should only
+     * (re)write the set for a frame when both:
+     *     IsDirtyForFrame(frame) is true, AND
+     *     WasUpdatedThisEpoch(frame, currentEpoch) is false.
+     * After flushing writes, call SetUpdatedEpoch + ClearDirtyForFrame.
+     */
+    class VulkanFrameBufferedDescriptorSet {
       public:
         bool IsAllocated() const { return m_Sets[0].IsValid(); }
 

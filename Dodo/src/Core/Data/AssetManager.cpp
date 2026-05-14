@@ -167,6 +167,7 @@ namespace Dodo {
             DD_ERR("AssetManager: failed to load HDR for cubemap conversion: {}", hdrPath);
             return 0;
         }
+        data.props.m_MipmapMode = MipmapMode::None; // Disable mipmaps for the equirectangular textures
         Ref<Texture> tex = m_RenderAPI.CreateTexture(data.pixels.data(), data.props);
         Ref<CubeMap> cubeMap = m_RenderAPI.CreateCubeMapFromEquirectangular(tex, faceSize, *this);
         CubeMapID id = m_NextCubeMapID++;

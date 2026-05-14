@@ -41,6 +41,16 @@ namespace Dodo::Platform {
         }
     }
 
+    static uint32_t BytesPerPixel(TextureFormat fmt)
+    {
+        switch (fmt) {
+        case TextureFormat::FORMAT_RED:     return 1;
+        case TextureFormat::FORMAT_RGBA:    return 4;
+        case TextureFormat::FORMAT_RGBA16F: return 8;
+        default:                            return 4;
+        }
+    }
+
     void VulkanTexture::TransitionImageLayout(VkCommandBuffer cmd, VkImageLayout oldLayout, VkImageLayout newLayout,
                                               uint32_t baseMipLevel, uint32_t levelCount)
     {
@@ -91,18 +101,30 @@ namespace Dodo::Platform {
 
     void VulkanTexture::CopyBufferToImage(VkCommandBuffer cmd, VkBuffer buffer)
     {
-        VkBufferImageCopy region{};
-        region.bufferOffset = 0;
-        region.bufferRowLength = 0;
-        region.bufferImageHeight = 0;
-        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        region.imageSubresource.mipLevel = 0;
-        region.imageSubresource.baseArrayLayer = 0;
-        region.imageSubresource.layerCount = 1;
-        region.imageOffset = {0, 0, 0};
-        region.imageExtent = {m_TextureProperties.m_Width, m_TextureProperties.m_Height, 1};
+        if (m_TextureProperties.m_MipmapMode != MipmapMode::Preloaded) {
+            VkBufferImageCopy region{};
+            region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            region.imageSubresource.layerCount = 1;
+            region.imageExtent = {m_TextureProperties.m_Width, m_TextureProperties.m_Height, 1};
+            vkCmdCopyBufferToImage(cmd, buffer, m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+            return;
+        }
 
-        vkCmdCopyBufferToImage(cmd, buffer, m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
+        uint32_t bpp = BytesPerPixel(m_TextureProperties.m_Format);
+        std::vector<VkBufferImageCopy> regions(m_MipLevels);
+        VkDeviceSize offset = 0;
+        for (uint32_t i = 0; i < m_MipLevels; i++) {
+            uint32_t w = (std::max)(1u, m_TextureProperties.m_Width  >> i);
+            uint32_t h = (std::max)(1u, m_TextureProperties.m_Height >> i);
+            regions[i].bufferOffset = offset;
+            regions[i].imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            regions[i].imageSubresource.mipLevel = i;
+            regions[i].imageSubresource.layerCount = 1;
+            regions[i].imageExtent = {w, h, 1};
+            offset += (VkDeviceSize)w * h * bpp;
+        }
+        vkCmdCopyBufferToImage(cmd, buffer, m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                               m_MipLevels, regions.data());
     }
 
     void VulkanTexture::Init(uchar* data, VkCommandBuffer uploadCmdBuf)
@@ -129,10 +151,34 @@ namespace Dodo::Platform {
             return;
         }
 
+        switch (m_TextureProperties.m_MipmapMode) {
+        case MipmapMode::None:
+            m_MipLevels = 1;
+            break;
+        case MipmapMode::Generated:
+            m_MipLevels = 1 + static_cast<uint32_t>(std::floor(std::log2(static_cast<double>(
+                                  (std::max)(m_TextureProperties.m_Width, m_TextureProperties.m_Height)))));
+            break;
+        case MipmapMode::Preloaded:
+            m_MipLevels = (std::max)(1u, m_TextureProperties.m_MipLevels);
+            break;
+        }
+
+        VkDeviceSize stagingSize = imageSize;
+        if (m_TextureProperties.m_MipmapMode == MipmapMode::Preloaded) {
+            uint32_t bpp = BytesPerPixel(m_TextureProperties.m_Format);
+            stagingSize = 0;
+            for (uint32_t i = 0; i < m_MipLevels; i++) {
+                uint32_t w = (std::max)(1u, m_TextureProperties.m_Width  >> i);
+                uint32_t h = (std::max)(1u, m_TextureProperties.m_Height >> i);
+                stagingSize += (VkDeviceSize)w * h * bpp;
+            }
+        }
+
         // Upload pixel data via a host-visible staging buffer (kept alive until FinalizeUpload)
         VkBufferCreateInfo stagingCI{};
         stagingCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        stagingCI.size = imageSize;
+        stagingCI.size = stagingSize;
         stagingCI.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
         stagingCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         VmaAllocationCreateInfo stagingAllocCI{};
@@ -142,11 +188,8 @@ namespace Dodo::Platform {
 
         void* mapped;
         vmaMapMemory(m_Allocator, m_StagingAlloc, &mapped);
-        memcpy(mapped, uploadData, (size_t)imageSize);
+        memcpy(mapped, uploadData, (size_t)stagingSize);
         vmaUnmapMemory(m_Allocator, m_StagingAlloc);
-
-        m_MipLevels = 1 + static_cast<uint32_t>(std::floor(std::log2(static_cast<double>(
-                              (std::max)(m_TextureProperties.m_Width, m_TextureProperties.m_Height)))));
 
         // Create device-local VkImage via VMA
         VkImageCreateInfo imageInfo{};
@@ -160,8 +203,9 @@ namespace Dodo::Platform {
         imageInfo.format = format;
         imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage =
-            VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        imageInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        if (m_TextureProperties.m_MipmapMode == MipmapMode::Generated)
+            imageInfo.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 
@@ -176,7 +220,12 @@ namespace Dodo::Platform {
         TransitionImageLayout(uploadCmdBuf, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0,
                               m_MipLevels);
         CopyBufferToImage(uploadCmdBuf, m_StagingBuffer);
-        GenerateMipmaps(uploadCmdBuf);
+        if (m_TextureProperties.m_MipmapMode == MipmapMode::Generated) {
+            GenerateMipmaps(uploadCmdBuf);
+        } else {
+            TransitionImageLayout(uploadCmdBuf, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                                  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 0, m_MipLevels);
+        }
 
         // Create the image view now: VkImageView creation is purely metadata and does not
         // require the GPU upload to have completed yet.

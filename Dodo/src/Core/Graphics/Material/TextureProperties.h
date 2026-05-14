@@ -4,6 +4,8 @@
 
 namespace Dodo {
 
+    enum class MipmapMode : uint8_t { None, Generated, Preloaded };
+
     enum class TextureFormat : uint8_t {
         FORMAT_RED,
         FORMAT_RGB,
@@ -15,18 +17,25 @@ namespace Dodo {
     };
 
     struct TextureProperties {
-        TextureProperties() : m_Width(0), m_Height(0), m_Format(TextureFormat::FORMAT_RGBA) {}
+        TextureProperties()
+            : m_Width(0), m_Height(0), m_Format(TextureFormat::FORMAT_RGBA),
+              m_MipmapMode(MipmapMode::Generated), m_MipLevels(0)
+        {}
 
         TextureProperties(uint width, uint height)
-            : m_Width(width), m_Height(height), m_Format(TextureFormat::FORMAT_RGBA)
+            : m_Width(width), m_Height(height), m_Format(TextureFormat::FORMAT_RGBA),
+              m_MipmapMode(MipmapMode::Generated), m_MipLevels(0)
         {}
 
         TextureProperties(uint width, uint height, TextureFormat format)
-            : m_Width(width), m_Height(height), m_Format(format)
+            : m_Width(width), m_Height(height), m_Format(format),
+              m_MipmapMode(MipmapMode::Generated), m_MipLevels(0)
         {}
 
         uint m_Width;
         uint m_Height;
         TextureFormat m_Format;
+        MipmapMode m_MipmapMode = MipmapMode::Generated;
+        uint32_t m_MipLevels = 0; // only used when m_MipmapMode == Preloaded
     };
 } // namespace Dodo

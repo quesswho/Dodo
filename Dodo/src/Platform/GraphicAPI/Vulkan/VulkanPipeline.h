@@ -20,8 +20,8 @@ namespace Dodo::Platform {
       public:
         VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, const ShaderAsset& shader,
                        const PipelineDesc& desc, VkDescriptorSetLayout globalSet0Layout,
-                       VkDescriptorSetLayout globalSet2Layout,
-                       VulkanDescriptorLayoutCache& layoutCache, VulkanDescriptorAllocator& allocator);
+                       VkDescriptorSetLayout globalSet2Layout, VulkanDescriptorLayoutCache& layoutCache,
+                       VulkanDescriptorAllocator& allocator);
         ~VulkanPipeline();
 
         VkPipeline GetPipeline() const { return m_Pipeline; }

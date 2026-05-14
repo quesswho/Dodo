@@ -1253,8 +1253,8 @@ namespace Dodo::Platform {
         if (!desc.depthOnly)
             colorFormat = desc.renderToSwapchain ? m_SwapChainImageFormat : VK_FORMAT_R16G16B16A16_SFLOAT;
         return std::make_shared<VulkanPipeline>(m_Device, colorFormat, VK_FORMAT_D32_SFLOAT, shader, desc,
-                                                m_GlobalSet0Layout, m_GlobalSet2Layout,
-                                                *m_LayoutCache, *m_DescriptorAllocator);
+                                                m_GlobalSet0Layout, m_GlobalSet2Layout, *m_LayoutCache,
+                                                *m_DescriptorAllocator);
     }
 
     Ref<VertexBuffer> VulkanRenderAPI::CreateVertexBuffer(const float* vertices, uint size,

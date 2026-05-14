@@ -43,7 +43,7 @@ namespace Dodo {
         bool stencilTest = false;
         bool depthOnly = false; // No color attachment (e.g. shadow pass)
         bool renderToSwapchain =
-            false; // Outputs directly to the swapchain; most pipelines render to the HDR offscreen buffer
+            false;              // Outputs directly to the swapchain; most pipelines render to the HDR offscreen buffer
         bool depthClip = false; // Anything in front of the near plane will be clamped to Z=0
 
         // When non-empty (m_Stride > 0), overrides stride and per-attribute offsets derived from

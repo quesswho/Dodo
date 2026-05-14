@@ -5,7 +5,6 @@
 #include "Core/Math/MathFunc.h"
 #include "Core/Utilities/Logger.h"
 
-
 #include <algorithm>
 #include <cmath>
 
@@ -15,11 +14,16 @@ namespace Dodo {
         : m_Levels(levels), m_ShadowMapResolution(shadowMapResolution)
     {
         if (levels != 4) {
+            // Right now there is too much work required to support any number of cascades.
+            // Supporting any cascades means that we would need to write slang shader specialization logic to allow us
+            // to compile with We would also need to create memory with paddings for arbitrary levels in the vulkan
+            // renderer
             DD_WARN("Only 4 cascades are supported, overriding levels to 4!");
             levels = 4;
         }
 
-        FrameBufferProperties props(m_ShadowMapResolution, m_ShadowMapResolution, FrameBufferType::FRAMEBUFFER_DEPTH_ARRAY, levels);
+        FrameBufferProperties props(m_ShadowMapResolution, m_ShadowMapResolution,
+                                    FrameBufferType::FRAMEBUFFER_DEPTH_ARRAY, levels);
         props.m_SamplerProperties =
             SamplerProperties(SamplerFilter::MIN_MAG_LINEAR, SamplerWrapMode::WRAP_CLAMP_TO_BORDER,
                               SamplerWrapMode::WRAP_CLAMP_TO_BORDER)

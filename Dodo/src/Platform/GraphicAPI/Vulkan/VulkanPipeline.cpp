@@ -87,7 +87,8 @@ namespace Dodo::Platform {
         // Set 0 (FrameData + CsmData) is owned and bound globally by VulkanRenderAPI, not per-pipeline.
         // All pipelines use the same global layout so the single bind at frame start is always compatible.
         uint32_t highestSet = 0;
-        for (const auto& [s, _] : setBindings) highestSet = std::max(highestSet, s);
+        for (const auto& [s, _] : setBindings)
+            highestSet = std::max(highestSet, s);
         m_SetLayouts.resize(std::max(highestSet + 1u, 1u), VK_NULL_HANDLE);
         m_SetLayouts[0] = globalSet0Layout;
 
@@ -357,7 +358,6 @@ namespace Dodo::Platform {
             }
         }
 
-        
         if (matSet.IsDirtyForFrame(frameIdx) && !matSet.WasUpdatedThisEpoch(frameIdx, frameEpoch)) {
             VkSampler firstSampler = VK_NULL_HANDLE;
             for (int s = 0; s < maxSlots && firstSampler == VK_NULL_HANDLE; s++)

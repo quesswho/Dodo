@@ -27,7 +27,7 @@ namespace Dodo {
 
         Ref<FrameBuffer> m_FrameBuffer;
         uint32_t m_ShadowMapResolution;
-    
+
         CsmData m_CsmData;
     };
 } // namespace Dodo

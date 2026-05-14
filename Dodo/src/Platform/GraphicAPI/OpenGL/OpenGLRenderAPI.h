@@ -56,6 +56,10 @@ namespace Dodo::Platform {
             glBindSampler(slot, framebuffer->m_Sampler->GetSamplerID());
             glBindTextureUnit(slot, framebuffer->m_TextureID);
         }
+        inline void* GetFrameBufferImGuiTextureID(Ref<FrameBuffer> framebuffer)
+        {
+            return (void*)(uintptr_t)framebuffer->GetTextureHandle();
+        }
 
         void BindPipeline(Ref<Pipeline> pipeline);
         void SetMaterialDescriptorSet(FrameBufferedDescriptorSet&) {}

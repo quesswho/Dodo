@@ -30,6 +30,7 @@ using VulkanContext = Dodo::Platform::VulkanGLFWContext;
 #include <array>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace Dodo {
@@ -80,6 +81,7 @@ namespace Dodo::Platform {
         void BindTexture(uint slot, Ref<Texture> texture);
         void BindTextureSampler(uint slot, Ref<TextureSampler> sampler);
         void BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer);
+        void* GetFrameBufferImGuiTextureID(Ref<FrameBuffer> framebuffer);
         void BindVertexBuffer(const Ref<VertexBuffer>& vb);
         void BindIndexBuffer(const Ref<IndexBuffer>& ib);
         void BindPipeline(Ref<Pipeline> pipeline);
@@ -200,6 +202,12 @@ namespace Dodo::Platform {
         VkCommandPool m_CommandPool;
         VkPipeline m_BoundPipeline;
         VkPipelineLayout m_BoundPipelineLayout = VK_NULL_HANDLE;
+
+        struct ImGuiFrameBufferEntry {
+            VkDescriptorSet set;
+            VkExtent2D extent;
+        };
+        std::unordered_map<VulkanFrameBuffer*, ImGuiFrameBufferEntry> m_ImGuiFrameBufferEntries;
 
         // Pending texture/sampler state (bound before each draw)
         static constexpr int maxTextureSlots = 8;

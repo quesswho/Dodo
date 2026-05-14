@@ -1,0 +1,25 @@
+# Scene v1
+
+[Entity:2]
+[ModelComponent]
+path=""
+position=-28.549999,-7.750000,0.000000
+scale=1.000000,0.500000,1.000000
+rotation=0.000000,0.000000,0.000000
+
+[Entity:1]
+[ModelComponent]
+path="res/sponza/NewSponza_Main_glTF_003.gltf"
+position=-0.750000,2.200000,-37.049999
+scale=1.000000,1.000000,1.000000
+rotation=0.000000,-2.967060,0.000000
+
+[Editor]
+[NameComponent]
+id=2
+name="terrain"
+
+[NameComponent]
+id=1
+name="sponza"
+

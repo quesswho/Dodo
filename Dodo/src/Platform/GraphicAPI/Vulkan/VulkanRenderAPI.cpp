@@ -72,6 +72,9 @@ namespace Dodo::Platform {
             if (pool != VK_NULL_HANDLE) vkDestroyQueryPool(m_Device, pool, nullptr);
 
         if (m_ImGuiActive) {
+            for (auto& [fb, entry] : m_ImGuiFrameBufferEntries)
+                ImGui_ImplVulkan_RemoveTexture(entry.set);
+            m_ImGuiFrameBufferEntries.clear();
             ImGui_ImplVulkan_Shutdown();
             vkDestroyDescriptorPool(m_Device, m_ImGuiDescriptorPool, nullptr);
         }
@@ -1442,6 +1445,23 @@ namespace Dodo::Platform {
     Ref<FrameBuffer> VulkanRenderAPI::CreateFrameBuffer(const FrameBufferProperties& props)
     {
         return std::make_shared<VulkanFrameBuffer>(props, m_Device, m_VmaAllocator);
+    }
+
+    void* VulkanRenderAPI::GetFrameBufferImGuiTextureID(Ref<FrameBuffer> framebuffer)
+    {
+        auto* fb = static_cast<VulkanFrameBuffer*>(framebuffer.get());
+        VkExtent2D current = fb->GetExtent();
+        auto it = m_ImGuiFrameBufferEntries.find(fb);
+        if (it != m_ImGuiFrameBufferEntries.end()) {
+            if (it->second.extent.width == current.width && it->second.extent.height == current.height)
+                return (void*)it->second.set;
+            ImGui_ImplVulkan_RemoveTexture(it->second.set);
+            m_ImGuiFrameBufferEntries.erase(it);
+        }
+        VkDescriptorSet set = ImGui_ImplVulkan_AddTexture(
+            fb->GetSampler(), fb->GetColorImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        m_ImGuiFrameBufferEntries[fb] = {set, current};
+        return (void*)set;
     }
 
     void VulkanRenderAPI::ImGuiNewFrame() const

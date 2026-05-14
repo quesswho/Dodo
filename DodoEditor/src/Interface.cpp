@@ -251,11 +251,16 @@ bool Interface::BeginViewport()
 
 void Interface::EndViewport(RenderAPI& renderAPI, Ref<FrameBuffer> framebuffer)
 {
-    // TODO: This is the OpenGL way of doing things
     if (m_ViewportState.visible) {
+        void* texID = renderAPI.GetFrameBufferImGuiTextureID(framebuffer);
+#ifdef DD_API_VULKAN
+        ImGui::Image(texID, ImVec2((float)m_ViewportState.width, (float)m_ViewportState.height),
+                     ImVec2(0, 1), ImVec2(1, 0));
+#else
         renderAPI.BindFrameBufferTexture(0, framebuffer);
-        ImGui::Image((void*)(intptr_t)framebuffer->GetTextureHandle(),
-                     ImVec2((float)m_ViewportState.width, (float)m_ViewportState.height), ImVec2(0, 1), ImVec2(1, 0));
+        ImGui::Image(texID, ImVec2((float)m_ViewportState.width, (float)m_ViewportState.height),
+                     ImVec2(0, 1), ImVec2(1, 0));
+#endif
         ImGui::End();
     }
 }

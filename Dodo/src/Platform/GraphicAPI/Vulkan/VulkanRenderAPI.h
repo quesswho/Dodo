@@ -106,6 +106,7 @@ namespace Dodo::Platform {
         Ref<TextureSampler> CreateSampler(const SamplerProperties& prop);
         Ref<CubeMap> CreateCubeMap(const CubeMapData& data);
         Ref<CubeMap> CreateCubeMapFromEquirectangular(Ref<Texture> equirect, uint faceSize, AssetManager& assets);
+        Ref<CubeMap> CreateIrradianceMap(Ref<CubeMap> envMap, uint faceSize, AssetManager& assets);
         Ref<FrameBuffer> CreateFrameBuffer(const FrameBufferProperties& props);
 
         // Batched async texture upload. CreateTexture/CreateCubeMap record into a shared command
@@ -116,8 +117,10 @@ namespace Dodo::Platform {
 
         // One-shot GPU computation passes. SubmitGpuPass records and queues a pass asynchronously.
         // PollGpuPasses checks completion each frame and calls Finalize() on finished passes.
+        // WaitGpuPasses blocks until all pending passes are finalized (use for chained passes).
         void SubmitGpuPass(std::unique_ptr<VulkanGpuPass> pass);
         void PollGpuPasses();
+        void WaitGpuPasses();
 
         void BeginTimestamp(Dodo::GpuTimestampSlot slot);
         void EndTimestamp(Dodo::GpuTimestampSlot slot);

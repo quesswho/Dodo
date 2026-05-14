@@ -17,6 +17,7 @@ namespace Dodo {
       private:
         Ref<VertexBuffer> m_VertexBuffer;
         CubeMapID m_CubeMapID = 0;
+        CubeMapID m_IrradianceMapID = 0;
         Ref<TextureSampler> m_Sampler;
         Ref<Pipeline> m_Shader;
         AssetManager& m_Assets;
@@ -26,6 +27,8 @@ namespace Dodo {
         Skybox(std::vector<std::string> paths, AssetManager& assets, RenderAPI& renderAPI);
         Skybox(std::string hdrPath, uint faceSize, AssetManager& assets, RenderAPI& renderAPI);
         ~Skybox();
+
+        CubeMapID GetIrradianceMapID() const { return m_IrradianceMapID; }
 
         void Draw(RenderAPI& renderAPI) const;
     };

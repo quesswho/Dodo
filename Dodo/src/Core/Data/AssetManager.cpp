@@ -176,6 +176,20 @@ namespace Dodo {
         return id;
     }
 
+    CubeMapID AssetManager::CreateIrradianceMap(CubeMapID envMapID, uint faceSize)
+    {
+        auto it = m_CubeMaps.find(envMapID);
+        if (it == m_CubeMaps.end()) {
+            DD_ERR("AssetManager: invalid envMapID {} for irradiance map creation", envMapID);
+            return 0;
+        }
+        Ref<CubeMap> irradianceMap = m_RenderAPI.CreateIrradianceMap(it->second, faceSize, *this);
+        CubeMapID id = m_NextCubeMapID++;
+        m_CubeMaps.emplace(id, std::move(irradianceMap));
+        m_CubeMapStates.emplace(id, AssetState::Loaded);
+        return id;
+    }
+
     Ref<CubeMap> AssetManager::GetCubeMap(CubeMapID id)
     {
         auto it = m_CubeMaps.find(id);

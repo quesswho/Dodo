@@ -9,6 +9,7 @@
 #include "VulkanSampler.h"
 #include "VulkanTexture.h"
 #include "Passes/VulkanEquirectangularPass.h"
+#include "Passes/VulkanCubemapConvolutionPass.h"
 
 #include <backends/imgui_impl_vulkan.h>
 #include <unordered_set>
@@ -1440,6 +1441,55 @@ namespace Dodo::Platform {
     void VulkanRenderAPI::PollGpuPasses()
     {
         m_GpuPassQueue->Poll();
+    }
+
+    void VulkanRenderAPI::WaitGpuPasses()
+    {
+        m_GpuPassQueue->WaitAll();
+    }
+
+    Ref<CubeMap> VulkanRenderAPI::CreateIrradianceMap(Ref<CubeMap> envMap, uint faceSize,
+                                                      AssetManager& assets)
+    {
+        // Finalize any pending passes (e.g., the equirectangular pass) so the env cubemap
+        // image is in SHADER_READ_ONLY_OPTIMAL before the convolution shader samples it.
+        m_GpuPassQueue->WaitAll();
+
+        ShaderID shaderID =
+            assets.LoadShaderFromPath("res/shader/builtin/Passes/CubemapConvolution.slang");
+        PipelineDesc pipelineDesc;
+        pipelineDesc.shaderID = shaderID;
+        pipelineDesc.culling  = CullMode::None;
+        auto pipeline =
+            std::static_pointer_cast<VulkanPipeline>(assets.GetPipeline(assets.CreatePipeline(pipelineDesc, *this)));
+        VkDescriptorSetLayout set1Layout = pipeline->m_SetLayouts[1];
+
+        static const float s_CubeVertices[] = {
+            -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+            1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f,
+            -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
+            -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,
+            1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
+            -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f,
+            -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f,
+            1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,
+        };
+        auto vbo = std::static_pointer_cast<VulkanVertexBuffer>(
+            CreateVertexBuffer(s_CubeVertices, sizeof(s_CubeVertices), BufferProperties({{"POSITION", 3}})));
+        auto sampler = std::static_pointer_cast<VulkanSampler>(CreateSampler(SamplerProperties(
+            SamplerFilter::MIN_MAG_LINEAR, SamplerWrapMode::WRAP_CLAMP_TO_EDGE,
+            SamplerWrapMode::WRAP_CLAMP_TO_EDGE)));
+
+        auto vkEnvMap = std::static_pointer_cast<VulkanCubeMap>(envMap);
+        auto pass = std::make_unique<VulkanCubemapConvolutionPass>(
+            vkEnvMap, faceSize, pipeline, set1Layout, vbo, sampler, MakeGpuPassContext());
+        Ref<CubeMap> result = pass->GetResult();
+        m_GpuPassQueue->Submit(std::move(pass));
+        return result;
     }
 
     Ref<FrameBuffer> VulkanRenderAPI::CreateFrameBuffer(const FrameBufferProperties& props)

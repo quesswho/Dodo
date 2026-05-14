@@ -47,7 +47,8 @@ namespace Dodo {
                                                               SamplerWrapMode::WRAP_CLAMP_TO_EDGE))),
           m_Assets(assets)
     {
-        m_CubeMapID = assets.CreateCubeMapFromEquirectangular(hdrPath, faceSize);
+        m_CubeMapID       = assets.CreateCubeMapFromEquirectangular(hdrPath, faceSize);
+        m_IrradianceMapID = assets.CreateIrradianceMap(m_CubeMapID, 32);
 
         ShaderID id = assets.LoadShaderFromPath("res/shader/builtin/Passes/Skybox.slang");
         PipelineDesc pipelineDesc;

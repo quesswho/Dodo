@@ -116,6 +116,26 @@ namespace Dodo::Platform {
         vkCreateImageView(m_Device, &viewCI, nullptr, &m_ImageView);
     }
 
+    VulkanCubeMap::VulkanCubeMap(VkImage image, VmaAllocation allocation, VkImageView imageView,
+                                 VkDevice device, VmaAllocator allocator)
+        : m_Device(device), m_Allocator(allocator), m_Image(image), m_Allocation(allocation),
+          m_ImageView(imageView), m_Ready(true)
+    {
+    }
+
+    VulkanCubeMap::VulkanCubeMap(VkDevice device, VmaAllocator allocator)
+        : m_Device(device), m_Allocator(allocator)
+    {
+    }
+
+    void VulkanCubeMap::Populate(VkImage image, VmaAllocation allocation, VkImageView imageView)
+    {
+        m_Image      = image;
+        m_Allocation = allocation;
+        m_ImageView  = imageView;
+        m_Ready      = true;
+    }
+
     void VulkanCubeMap::FinalizeUpload()
     {
         if (m_StagingBuffer != VK_NULL_HANDLE) {

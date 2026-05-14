@@ -13,6 +13,8 @@
 #include "Platform/GraphicAPI/Vulkan/VulkanDescriptorAllocator.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanDescriptorLayoutCache.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanFrameBufferedDescriptorSet.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanGpuPass.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanGpuPassQueue.h"
 
 #include "Platform/WindowAPI/NativeWindowHandle.h"
 #ifdef DD_API_WIN32
@@ -109,6 +111,11 @@ namespace Dodo::Platform {
         // the fence has signaled (or no batch is pending), at which point staging buffers are freed.
         void SubmitTextureBatch();
         bool PollTextureBatch();
+
+        // One-shot GPU computation passes. SubmitGpuPass records and queues a pass asynchronously.
+        // PollGpuPasses checks completion each frame and calls Finalize() on finished passes.
+        void SubmitGpuPass(std::unique_ptr<VulkanGpuPass> pass);
+        void PollGpuPasses();
 
         void BeginTimestamp(Dodo::GpuTimestampSlot slot);
         void EndTimestamp(Dodo::GpuTimestampSlot slot);
@@ -251,6 +258,9 @@ namespace Dodo::Platform {
         VulkanFrameBufferedDescriptorSet* m_BoundMaterialSet = nullptr;
         class VulkanFrameBuffer* m_BoundFrameBuffer = nullptr;
         bool m_IsRendering = false;
+
+        VulkanGpuPassContext MakeGpuPassContext();
+        std::unique_ptr<VulkanGpuPassQueue> m_GpuPassQueue;
 
         // Upload batch: one command buffer shared across all CreateTexture/CreateCubeMap calls per frame.
         // Submitted once at the end of FlushStagingQueue; fence polled next frame to free staging memory.

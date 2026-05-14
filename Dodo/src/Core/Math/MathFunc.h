@@ -11,7 +11,7 @@ namespace Dodo::Math {
 
     /**
      * Converts a 32-bit float to a 16-bit half-float (IEEE 754 binary16).
-     * Subnormals underflow to zero. Values beyond the half-float range saturate to infinity.
+     * Subnormals underflow to zero. Values beyond the half-float range are clamped to max value.
      */
     static inline uint16_t FloatToHalf(float value)
     {
@@ -21,7 +21,7 @@ namespace Dodo::Math {
         int32_t exp = ((bits >> 23) & 0xFF) - 127 + 15;
         uint32_t mantissa = bits & 0x7FFFFF;
         if (exp <= 0) return sign;
-        if (exp >= 31) return sign | 0x7C00;
+        if (exp >= 31) return sign | 0x7BFF;
         return sign | (uint16_t)(exp << 10) | (uint16_t)(mantissa >> 13);
     }
 

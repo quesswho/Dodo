@@ -4,9 +4,11 @@
 #include "VulkanBuffer.h"
 #include "VulkanCubeMap.h"
 #include "VulkanFrameBuffer.h"
+#include "VulkanGpuPassQueue.h"
 #include "VulkanPipeline.h"
 #include "VulkanSampler.h"
 #include "VulkanTexture.h"
+#include "Passes/VulkanEquirectangularPass.h"
 
 #include <backends/imgui_impl_vulkan.h>
 #include <unordered_set>
@@ -33,6 +35,9 @@ namespace Dodo::Platform {
         // TODO: I am unsure if we need to wait for both, but should be for good measure
         vkQueueWaitIdle(m_GraphicsQueue);
         vkQueueWaitIdle(m_PresentQueue);
+
+        // Finish all pending GPU passes before destroying the command pool they use.
+        m_GpuPassQueue.reset();
 
         for (const auto& semaphore : m_RenderFinishedSemaphores) {
             vkDestroySemaphore(m_Device, semaphore, nullptr);
@@ -126,6 +131,8 @@ namespace Dodo::Platform {
         if (Try(CreateSyncObjects())) return result;
         if (Try(InitDescriptors())) return result;
         if (Try(InitTimestampPools())) return result;
+
+        m_GpuPassQueue = std::make_unique<VulkanGpuPassQueue>(MakeGpuPassContext());
 
         if (winprop.m_Settings.imgui)
             if (Try(InitImGui())) return result;
@@ -1372,8 +1379,64 @@ namespace Dodo::Platform {
     Ref<CubeMap> VulkanRenderAPI::CreateCubeMapFromEquirectangular(Ref<Texture> equirect, uint faceSize,
                                                                    AssetManager& assets)
     {
-        DD_ERR("CreateCubeMapFromEquirectangular is not yet implemented for the Vulkan backend.");
-        return nullptr;
+        ShaderID shaderID =
+            assets.LoadShaderFromPath("res/shader/builtin/Passes/EquirectangularTransform.slang");
+        PipelineDesc pipelineDesc;
+        pipelineDesc.shaderID = shaderID;
+        pipelineDesc.culling  = CullMode::None;
+        auto pipeline =
+            std::static_pointer_cast<VulkanPipeline>(assets.GetPipeline(assets.CreatePipeline(pipelineDesc, *this)));
+        VkDescriptorSetLayout set1Layout = pipeline->m_SetLayouts[1];
+
+        static const float s_CubeVertices[] = {
+            -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+            1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f,
+            -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
+            -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,
+            1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f,
+            -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,
+            -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,
+            1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f,
+            -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f,
+            1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,
+        };
+        auto vbo = std::static_pointer_cast<VulkanVertexBuffer>(
+            CreateVertexBuffer(s_CubeVertices, sizeof(s_CubeVertices), BufferProperties({{"POSITION", 3}})));
+        auto sampler = std::static_pointer_cast<VulkanSampler>(CreateSampler(SamplerProperties(
+            SamplerFilter::MIN_MAG_LINEAR, SamplerWrapMode::WRAP_CLAMP_TO_EDGE,
+            SamplerWrapMode::WRAP_CLAMP_TO_EDGE)));
+
+        SubmitTextureBatch();
+        auto pass = std::make_unique<VulkanEquirectangularPass>(
+            equirect, faceSize, pipeline, set1Layout, vbo, sampler, MakeGpuPassContext());
+        Ref<CubeMap> result = pass->GetResult();
+        m_GpuPassQueue->Submit(std::move(pass));
+        return result;
+    }
+
+    VulkanGpuPassContext VulkanRenderAPI::MakeGpuPassContext()
+    {
+        return VulkanGpuPassContext{
+            m_Device,
+            m_VmaAllocator,
+            m_CommandPool,
+            m_GraphicsQueue,
+            m_DescriptorAllocator.get(),
+            m_GlobalSet0Layout,
+            m_GlobalSet2Layout,
+        };
+    }
+
+    void VulkanRenderAPI::SubmitGpuPass(std::unique_ptr<VulkanGpuPass> pass)
+    {
+        m_GpuPassQueue->Submit(std::move(pass));
+    }
+
+    void VulkanRenderAPI::PollGpuPasses()
+    {
+        m_GpuPassQueue->Poll();
     }
 
     Ref<FrameBuffer> VulkanRenderAPI::CreateFrameBuffer(const FrameBufferProperties& props)

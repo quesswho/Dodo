@@ -38,6 +38,7 @@ namespace Dodo {
 
         m_ThreadManager->WaitMain();
         m_AssetManager->FlushStagingQueue(*m_RenderAPI); // Upload assets loaded during Init()
+        m_RenderAPI->PollGpuPasses();                    // Finalize GPU passes submitted during Init()
         m_Initializing = false;
         while (!m_Closed) {
             timer.Start();
@@ -101,6 +102,7 @@ namespace Dodo {
         m_RenderAPI->End();
         m_Window->Update();
         m_AssetManager->FlushStagingQueue(*m_RenderAPI);
+        m_RenderAPI->PollGpuPasses();
     }
 
     void Application::OnEvent(const Event& event)

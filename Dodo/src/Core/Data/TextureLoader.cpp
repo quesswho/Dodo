@@ -26,6 +26,7 @@ namespace Dodo {
         int width, height, channels;
         int desiredChannels = GetDesiredChannels(path);
 
+        stbi_set_flip_vertically_on_load(true);
         float* data = stbi_loadf(path.c_str(), &width, &height, &channels, desiredChannels);
         if (!data) {
             DD_ERR("TextureLoader: could not load HDR '{}'", path);
@@ -34,7 +35,7 @@ namespace Dodo {
 
         result.props.m_Width = (uint)width;
         result.props.m_Height = (uint)height;
-
+        
         // The typical industry standard is half float precision.
         switch (desiredChannels) {
         case 4:

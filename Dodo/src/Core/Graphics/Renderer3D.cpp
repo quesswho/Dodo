@@ -27,11 +27,12 @@ namespace Dodo {
     }
 
     void Renderer3D::RenderEntities(World& world, const Math::FreeCamera& camera, LightSystem& lightSystem,
-                                    RenderAPI& renderAPI, AssetManager& assets)
+                                    RenderAPI& renderAPI, AssetManager& assets, Ref<CubeMap> irradianceMap)
     {
         auto drawMesh = [&](const ModelComponent& mc, Ref<Mesh> mesh) {
             Ref<Material> mat = mesh->GetMaterial();
             mat->Bind(renderAPI);
+            if (irradianceMap) renderAPI.BindCubeMap(7, irradianceMap);
             renderAPI.SetDrawData(MakeDrawData(mc.m_Transformation.m_Model));
             mesh->DrawGeometry(renderAPI);
         };
@@ -79,7 +80,10 @@ namespace Dodo {
         frameData.lightDir = scene->m_LightSystem.m_Directional.m_Direction;
         renderAPI.SetFrameData(frameData);
 
-        RenderEntities(scene->GetWorld(), camera, scene->m_LightSystem, renderAPI, assets);
+        Ref<CubeMap> irradianceMap = nullptr;
+        if (scene->m_SkyBox)
+            irradianceMap = assets.GetCubeMap(scene->m_SkyBox->GetIrradianceMapID());
+        RenderEntities(scene->GetWorld(), camera, scene->m_LightSystem, renderAPI, assets, irradianceMap);
         if (scene->m_SkyBox) scene->m_SkyBox->Draw(renderAPI);
     }
 

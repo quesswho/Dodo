@@ -72,11 +72,24 @@ float3 evaluateBRDFDirect(
     return (kD * albedo / PI + specular) * radiance * NdotL * (1.0f - shadow);
 }
 
-// Constant ambient term, placeholder until IBL irradiance map is available.
-// Called once per fragment, outside any per-light loop.
-//   albedo - linear-space surface color
-//   ao     - ambient occlusion [0, 1]
-float3 evaluateAmbient(float3 albedo, float ao)
+// Fresnel-Schlick with roughness bias for IBL ambient (avoids bright grazing on rough surfaces).
+float3 FresnelSchlickRoughness(float cosTheta, float3 F0, float roughness)
 {
-    return float3(0.1f) * albedo * ao;
+    return F0 + (max(float3(1.0f - roughness), F0) - F0) * pow(clamp(1.0f - cosTheta, 0.0f, 1.0f), 5.0f);
+}
+
+// IBL diffuse ambient: energy-conserving kD term weighted by pre-convolved irradiance map.
+//   albedo     - linear-space surface color
+//   ao         - ambient occlusion [0, 1]
+//   metallic   - metallic factor [0, 1]
+//   roughness  - perceptual roughness [0, 1]
+//   NdotV      - dot(N, V), clamped away from zero
+//   F0         - base reflectivity (0.04 for dielectrics, albedo-tinted for metals)
+//   irradiance - pre-sampled irradiance from convolved environment map
+float3 evaluateAmbient(float3 albedo, float ao, float metallic, float roughness,
+                       float NdotV, float3 F0, float3 irradiance)
+{
+    float3 F  = FresnelSchlickRoughness(NdotV, F0, roughness);
+    float3 kD = (float3(1.0f) - F) * (1.0f - metallic);
+    return kD * irradiance * albedo * ao;
 }

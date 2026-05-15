@@ -28,7 +28,7 @@ namespace Dodo {
                                AssetManager& assets);
 
         void RenderEntities(World& world, const Math::FreeCamera& camera, LightSystem& lightSystem,
-                            RenderAPI& renderApi, AssetManager& assets);
+                            RenderAPI& renderApi, AssetManager& assets, Ref<CubeMap> irradianceMap = nullptr);
         void RenderGeometry(World& world, RenderAPI& renderApi, AssetManager& assets);
 
         void SetPostEffect(PostEffect* fx) { m_PostEffect = fx; }

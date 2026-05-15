@@ -18,6 +18,7 @@
 
 [[vk::binding(5, 1)]] Texture2D<float4> u_MetallicMap; // sample .b (works for both ORM-packed and greyscale)
 [[vk::binding(6, 1)]] Texture2D<float4> u_AoMap;
+[[vk::binding(7, 1)]] TextureCube<float4> u_IrradianceMap;
 
 [shader("vertex")]
 VertexOutput vertexMain(VertexInput input)
@@ -66,9 +67,13 @@ float4 fragmentMain(VertexOutput input) : SV_Target
     // View-space depth for cascade selection
     float viewDepth = abs(mul(u_CameraView, float4(input.positionWS, 1.0f)).z);
     float shadow    = shadowCalculationCSMPCSS(input.positionWS, N, L, u_ShadowMap, u_LinearSampler, viewDepth, 5.0f);
-
     float3 Lo      = evaluateBRDFDirect(radiance, albedoSample.rgb, N, V, L, roughness, metallic, shadow);
-    float3 ambient = evaluateAmbient(albedoSample.rgb, ao);
+
+    float3 F0         = lerp(float3(0.04f, 0.04f, 0.04f), albedoSample.rgb, metallic);
+    float  NdotV      = max(dot(N, V), 0.001f);
+    float3 irradiance = u_IrradianceMap.SampleLevel(u_LinearSampler, N, 0).rgb;
+
+    float3 ambient = evaluateAmbient(albedoSample.rgb, ao, metallic, roughness, NdotV, F0, irradiance);
     
     return float4(Lo + ambient, albedoSample.a);
     //float3 shadowt    = debugCSMSample(input.positionWS, N, L, u_ShadowMap, u_LinearSampler, viewDepth, 5.0f);

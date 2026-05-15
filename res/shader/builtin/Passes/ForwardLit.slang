@@ -58,7 +58,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 
     // Light color hardcoded white until per-light color data is available
     DirectionalLight dl;
-    dl.m_Color     = float3(1.0f, 1.0f, 0.87f) * 10.0f; // Warm sun color with extra intensity
+    dl.m_Color     = float3(1.0f, 1.0f, 0.87f) * 5.0f;
     dl.m_Direction = u_LightDir;
 
     float3 radiance = dl.Irradiance(input.positionWS);

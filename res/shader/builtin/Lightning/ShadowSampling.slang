@@ -121,13 +121,12 @@ float shadowCalculationCSMPCSS(
 
     float4 lightFragPos = mul(u_LightSpaceMatrices[cascadeIndex], float4(positionWS, 1.0f));
     float3 projCoords = lightFragPos.xyz / lightFragPos.w;
-
+    
+    float currentDepth = projCoords.z;
     if (projCoords.z > 1.0f)
         return 0.0f;
-
-    projCoords.xy = projCoords.xy * 0.5f + 0.5f;
-    float currentDepth = projCoords.z;
-
+    
+    projCoords = projCoords * 0.5f + 0.5f;
     float bias = max(0.005f * (1.0f - dot(normal, lightDirection)), 0.001f);
     bias /= (u_CascadeSplitDepths[cascadeIndex] * 0.5f + 0.5f);
 

@@ -4,6 +4,14 @@
 
 namespace Dodo::Platform {
 
+    static VkFormat ToVkColorFormat(FrameBufferColorFormat fmt)
+    {
+        switch (fmt) {
+        case FrameBufferColorFormat::RGBA8: return VK_FORMAT_R8G8B8A8_UNORM;
+        default:                            return VK_FORMAT_R16G16B16A16_SFLOAT;
+        }
+    }
+
     static VkFilter ToVkFilter(SamplerFilter filter)
     {
         switch (filter) {
@@ -42,6 +50,7 @@ namespace Dodo::Platform {
         const uint32_t height = m_Properties.m_Height;
         const bool hasColor = HasColor();
         const bool isDepthArray = IsDepthArray();
+        m_ResolvedColorFormat = ToVkColorFormat(m_Properties.m_ColorFormat);
         const uint32_t layers = isDepthArray ? m_Properties.m_Layers : 1;
 
         VmaAllocationCreateInfo allocCI{};
@@ -52,7 +61,7 @@ namespace Dodo::Platform {
             VkImageCreateInfo colorCI{};
             colorCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
             colorCI.imageType = VK_IMAGE_TYPE_2D;
-            colorCI.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+            colorCI.format = m_ResolvedColorFormat;
             colorCI.extent = {width, height, 1};
             colorCI.mipLevels = 1;
             colorCI.arrayLayers = 1;
@@ -67,7 +76,7 @@ namespace Dodo::Platform {
             colorViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             colorViewCI.image = m_ColorImage;
             colorViewCI.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            colorViewCI.format = VK_FORMAT_R16G16B16A16_SFLOAT;
+            colorViewCI.format = m_ResolvedColorFormat;
             colorViewCI.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
             colorViewCI.subresourceRange.baseMipLevel = 0;
             colorViewCI.subresourceRange.levelCount = 1;

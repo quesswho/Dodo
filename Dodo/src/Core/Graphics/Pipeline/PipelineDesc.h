@@ -2,6 +2,7 @@
 
 #include "Core/Data/AssetTypes.h"
 #include "Core/Graphics/BufferLayout.h"
+#include "Core/Graphics/FrameBufferProperties.h"
 #include "Core/Graphics/RenderAPITypes.h"
 
 namespace Dodo {
@@ -45,6 +46,7 @@ namespace Dodo {
         bool renderToSwapchain =
             false;              // Outputs directly to the swapchain; most pipelines render to the HDR offscreen buffer
         bool depthClip = false; // Anything in front of the near plane will be clamped to Z=0
+        FrameBufferColorFormat colorFormat = FrameBufferColorFormat::RGBA16F;
 
         // When non-empty (m_Stride > 0), overrides stride and per-attribute offsets derived from
         // shader reflection. Location N maps to m_Elements[N]. Required when the shader uses a

@@ -158,7 +158,7 @@ namespace Dodo::Math {
 
         // Unary operations
 
-        const TVec3& operator-() const { return TVec3(-this->x, -this->y, -this->z); }
+        const TVec3 operator-() const { return TVec3(-this->x, -this->y, -this->z); }
 
         // Assignment //
 

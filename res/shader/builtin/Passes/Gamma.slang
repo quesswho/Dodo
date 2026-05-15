@@ -24,9 +24,10 @@ VertexOutput vertexMain(VertexInput input)
 }
 
 [shader("fragment")]
-float4 fragmentMain(VertexOutput input, uniform float gamma) : SV_Target
+float4 fragmentMain(VertexOutput input, uniform float gamma, uniform float exposure) : SV_Target
 {
     float3 color = textureMap.Sample(textureSampler, input.texCoord).rgb;
+    color *= exposure;
     float3 result = pow(color / (color + float3(1.0f, 1.0f, 1.0f)), float3(1.0f / gamma));
     return float4(result, 1.0f);
 }

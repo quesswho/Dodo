@@ -177,10 +177,10 @@ namespace Dodo::Platform {
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
 
         std::unordered_set<std::string> availableExtensions;
-        DD_INFO("Available vulkan extensions: ");
+        // DD_INFO("Available vulkan extensions: ");
         for (const auto& extension : extensions) {
             availableExtensions.insert(extension.extensionName);
-            DD_INFO("{}", extension.extensionName);
+            // DD_INFO("{}", extension.extensionName);
         }
 
         // Check if all required extensions are available
@@ -1262,7 +1262,12 @@ namespace Dodo::Platform {
         // buffer format (R16G16B16A16_SFLOAT) unless they explicitly target the swapchain.
         VkFormat colorFormat = VK_FORMAT_UNDEFINED;
         if (!desc.depthOnly)
-            colorFormat = desc.renderToSwapchain ? m_SwapChainImageFormat : VK_FORMAT_R16G16B16A16_SFLOAT;
+            if (desc.renderToSwapchain)
+                colorFormat = m_SwapChainImageFormat;
+            else if (desc.colorFormat == FrameBufferColorFormat::RGBA8)
+                colorFormat = VK_FORMAT_R8G8B8A8_UNORM;
+            else
+                colorFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
         return std::make_shared<VulkanPipeline>(m_Device, colorFormat, VK_FORMAT_D32_SFLOAT, shader, desc,
                                                 m_GlobalSet0Layout, m_GlobalSet2Layout, *m_LayoutCache,
                                                 *m_DescriptorAllocator);

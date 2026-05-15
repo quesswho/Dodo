@@ -3,6 +3,11 @@
 #include "Material/SamplerProperties.h"
 
 namespace Dodo {
+    enum class FrameBufferColorFormat {
+        RGBA16F,
+        RGBA8
+    };
+
     enum class FrameBufferType {
         FRAMEBUFFER_COLOR_DEPTH_STENCIL,
         FRAMEBUFFER_DEPTH,
@@ -29,5 +34,6 @@ namespace Dodo {
         FrameBufferType m_FrameBufferType;
         uint32_t m_Layers;
         SamplerProperties m_SamplerProperties;
+        FrameBufferColorFormat m_ColorFormat = FrameBufferColorFormat::RGBA16F;
     };
 } // namespace Dodo

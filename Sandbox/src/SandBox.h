@@ -6,7 +6,8 @@ using namespace Dodo;
 
 struct PostEffectData {
     float gamma;
-    float padding[3]; // Padding to ensure 16 byte alignment (std140)
+    float exposure;
+    float padding[2]; // Padding to ensure 16 byte alignment (std140)
 };
 
 class GameLayer : public Layer {

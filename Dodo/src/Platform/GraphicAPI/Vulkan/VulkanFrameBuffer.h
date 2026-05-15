@@ -28,7 +28,7 @@ namespace Dodo::Platform {
         }
         VkSampler GetSampler() const { return m_Sampler; }
         VkExtent2D GetExtent() const { return {m_Properties.m_Width, m_Properties.m_Height}; }
-        VkFormat GetColorFormat() const { return VK_FORMAT_R16G16B16A16_SFLOAT; }
+        VkFormat GetColorFormat() const { return m_ResolvedColorFormat; }
         bool HasColor() const
         {
             return m_Properties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL;
@@ -47,6 +47,8 @@ namespace Dodo::Platform {
         VkDevice m_Device;
         VmaAllocator m_Allocator;
         FrameBufferProperties m_Properties;
+
+        VkFormat m_ResolvedColorFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
 
         VkImage m_ColorImage = VK_NULL_HANDLE;
         VmaAllocation m_ColorAllocation = nullptr;

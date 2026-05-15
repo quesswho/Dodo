@@ -168,6 +168,7 @@ namespace Dodo::Platform {
         bool CheckDeviceExtensionSupport(VkPhysicalDevice device, const std::vector<const char*>& requiredExtensions);
         SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device);
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+        bool IsBetterSurfaceFormat(VkSurfaceFormatKHR candidate, VkSurfaceFormatKHR current) const;
         VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 

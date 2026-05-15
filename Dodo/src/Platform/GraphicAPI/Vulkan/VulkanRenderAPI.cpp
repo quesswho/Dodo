@@ -1749,20 +1749,33 @@ namespace Dodo::Platform {
         return details;
     }
 
+    bool VulkanRenderAPI::IsBetterSurfaceFormat(VkSurfaceFormatKHR candidate, VkSurfaceFormatKHR current) const
+    {
+        auto Score = [](VkSurfaceFormatKHR fmt) -> int {
+            int score = 0;
+            if (fmt.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) score += 10;
+            switch (fmt.format) {
+                case VK_FORMAT_B8G8R8A8_UNORM: score += 4; break;
+                case VK_FORMAT_R8G8B8A8_UNORM: score += 3; break;
+                case VK_FORMAT_B8G8R8A8_SRGB:  score += 2; break;
+                case VK_FORMAT_R8G8B8A8_SRGB:  score += 1; break;
+                default: break;
+            }
+            return score;
+        };
+        return Score(candidate) > Score(current);
+    }
+
     /**
      * Select the best surface format given available pixel formats
      */
     VkSurfaceFormatKHR VulkanRenderAPI::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
     {
-        for (const auto& availableFormat : availableFormats) {
-            if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
-                availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
-                return availableFormat;
-            }
-        }
-
-        // TODO: Add a IsBetterSurfaceFormat function to select the best available format
-        return availableFormats[0];
+        VkSurfaceFormatKHR best = availableFormats[0];
+        for (size_t i = 1; i < availableFormats.size(); i++)
+            if (IsBetterSurfaceFormat(availableFormats[i], best))
+                best = availableFormats[i];
+        return best;
     }
 
     /**

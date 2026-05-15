@@ -27,7 +27,7 @@ GameLayer::GameLayer(Application& app)
     frameprop.m_FrameBufferType = FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL;
 
     m_PostEffect = new PostEffect(frameprop, "res/shader/builtin/Passes/Gamma.slang", renderAPI, assets);
-    m_PostEffectData.gamma = 1.0f;
+    m_PostEffectData.gamma = 2.2f;
     m_PostEffect->SetEffectData(m_PostEffectData);
 
     m_LightLook = Vec3(0.0, 0.0f, 15.0f);
@@ -48,7 +48,7 @@ GameLayer::GameLayer(Application& app)
 
     //m_Scene->m_SkyBox = new Skybox(skyboxPath, assets, renderAPI);
 
-    m_Scene->m_SkyBox = new Skybox("res/sponza/textures/kloppenheim_05_4k.hdr", 512u, assets, renderAPI);
+    m_Scene->m_SkyBox = new Skybox("res/sponza/textures/kloppenheim_05_4k.hdr", 1024, assets, renderAPI);
     DD_INFO("Finished loading skybox");
     m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(Vec3(0.2f, -0.5f, -0.5f));
     m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;

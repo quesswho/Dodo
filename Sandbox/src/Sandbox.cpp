@@ -38,7 +38,8 @@ GameLayer::GameLayer(Application& app)
     m_Renderer = new Renderer3D(renderAPI, assets);
     m_Renderer->SetPostEffect(m_PostEffect);
 
-    m_Scene = m_File.Read("res/sponza/sponza.das");
+    //m_Scene = m_File.Read("res/sponza/sponza.das");
+    m_Scene = m_File.Read("res/emerald_square/emerald_square.das");
     // m_Scene = m_File.Read("res/san_miguel/san_miguel.das");
     //m_Scene = new Scene();
     

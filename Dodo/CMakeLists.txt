@@ -51,6 +51,8 @@ target_link_libraries(Dodo
         imgui
         assimp
         slang::slang
+    PRIVATE
+        tinyxml2
 )
 
 target_compile_definitions(Dodo

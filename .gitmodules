@@ -16,3 +16,6 @@
 [submodule "Dodo/lib/vma"]
 	path = Dodo/lib/vma
 	url = git@github.com:GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+[submodule "Dodo/lib/tinyxml2"]
+	path = Dodo/lib/tinyxml2
+	url = https://github.com/leethomason/tinyxml2.git

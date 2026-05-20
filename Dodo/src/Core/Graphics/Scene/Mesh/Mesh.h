@@ -21,6 +21,7 @@ namespace Dodo {
         ~Mesh();
 
         Ref<Material> GetMaterial() const { return m_Material; }
+        void SetMaterial(Ref<Material> mat) { m_Material = std::move(mat); }
 
         void Draw(RenderAPI& renderAPI) const;
         void DrawGeometry(RenderAPI& renderAPI) const;

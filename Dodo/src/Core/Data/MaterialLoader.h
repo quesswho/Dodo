@@ -18,6 +18,8 @@ namespace Dodo {
                                    RenderAPI& renderAPI);
 
       private:
+        Ref<Material> LoadMaterialFromMtlx(const std::string& mtlxPath, AssetManager& assets, RenderAPI& renderAPI);
+
         Ref<Texture> LoadTextureFromMaterial(aiMaterial* material, int type, MaterialFeatures& features,
                                              const std::filesystem::path& modelDir, AssetManager& assets);
     };

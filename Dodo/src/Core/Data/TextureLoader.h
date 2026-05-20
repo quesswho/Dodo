@@ -31,6 +31,10 @@ namespace Dodo {
          * This ensures the loader pads to RGBA for optimal memory tiling when needed
          */
         int GetDesiredChannels(const std::string& path);
+
+        static void FlipBC1Block(uint8_t* block);
+        static void FlipBC4Block(uint8_t* block);
+        static void FlipMipDDS(uint8_t* data, uint32_t width, uint32_t height, TextureFormat fmt);
     };
 
 } // namespace Dodo

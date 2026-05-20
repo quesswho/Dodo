@@ -8,17 +8,16 @@
 
 #include <cctype>
 #include <cstring>
+#include <filesystem>
 
 namespace Dodo {
 
     TextureData TextureLoader::Load(const std::string& path)
     {
-        if (path.size() >= 4) {
-            std::string ext = path.substr(path.size() - 4);
-            for (auto& c : ext) c = (char)std::tolower((unsigned char)c);
-            if (ext == ".dds")
-                return LoadDDS(path);
-        }
+        std::string ext = std::filesystem::path(path).extension().string();
+        for (auto& c : ext) c = (char)std::tolower((unsigned char)c);
+        if (ext == ".dds")
+            return LoadDDS(path);
         return stbi_is_hdr(path.c_str()) ? LoadHDR(path) : LoadLDR(path);
     }
 
@@ -26,7 +25,7 @@ namespace Dodo {
     {
         TextureData result;
 
-        gli::texture2d tex(gli::load_dds(path.c_str()));
+        gli::texture2d tex(gli::texture2d(gli::load_dds(path.c_str())));
         if (tex.empty()) {
             DD_ERR("TextureLoader: could not load DDS '{}'", path);
             return result;
@@ -66,11 +65,81 @@ namespace Dodo {
             result.mipOffsets[lvl] = offset;
             size_t mipBytes = tex.size(lvl);
             std::memcpy(result.pixels.data() + offset, tex.data(0, 0, lvl), mipBytes);
+            auto mipExt = tex.extent((int)lvl);
+            FlipMipDDS(result.pixels.data() + offset,
+                       (uint32_t)mipExt.x, (uint32_t)mipExt.y,
+                       result.props.m_Format);
             offset += mipBytes;
         }
 
         DD_INFO("TextureLoader: loaded DDS '{}' ({} mips)", path, tex.levels());
         return result;
+    }
+
+    void TextureLoader::FlipBC1Block(uint8_t* block)
+    {
+        // bytes 0-3: two RGB565 color endpoints, unchanged
+        // bytes 4-7: one byte per pixel-row (4 x 2-bit indices per row)
+        std::swap(block[4], block[7]);
+        std::swap(block[5], block[6]);
+    }
+
+    void TextureLoader::FlipBC4Block(uint8_t* block)
+    {
+        // bytes 0-1: endpoints, unchanged
+        // bytes 2-7: 48-bit field of 16 x 3-bit indices, 4 indices (12 bits) per row
+        uint64_t bits = 0;
+        for (int i = 0; i < 6; ++i)
+            bits |= (uint64_t)block[2 + i] << (i * 8);
+
+        const uint64_t row0 = (bits >>  0) & 0xFFF;
+        const uint64_t row1 = (bits >> 12) & 0xFFF;
+        const uint64_t row2 = (bits >> 24) & 0xFFF;
+        const uint64_t row3 = (bits >> 36) & 0xFFF;
+
+        bits = row3 | (row2 << 12) | (row1 << 24) | (row0 << 36);
+        for (int i = 0; i < 6; ++i)
+            block[2 + i] = (uint8_t)((bits >> (i * 8)) & 0xFF);
+    }
+
+    void TextureLoader::FlipMipDDS(uint8_t* data, uint32_t width, uint32_t height, TextureFormat fmt)
+    {
+        const uint32_t blockW     = (width  + 3) / 4;
+        const uint32_t blockH     = (height + 3) / 4;
+        const size_t   blockBytes = (fmt == TextureFormat::FORMAT_BC1_RGB_UNORM) ? 8u : 16u;
+        const size_t   rowStride  = blockW * blockBytes;
+
+        for (uint32_t r = 0; r < blockH / 2; ++r) {
+            uint8_t* rowA = data + r                * rowStride;
+            uint8_t* rowB = data + (blockH - 1 - r) * rowStride;
+            for (size_t i = 0; i < rowStride; ++i)
+                std::swap(rowA[i], rowB[i]);
+        }
+
+        for (uint32_t r = 0; r < blockH; ++r) {
+            uint8_t* row = data + r * rowStride;
+            for (uint32_t c = 0; c < blockW; ++c) {
+                uint8_t* blk = row + c * blockBytes;
+                switch (fmt) {
+                case TextureFormat::FORMAT_BC1_RGB_UNORM:
+                    FlipBC1Block(blk);
+                    break;
+                case TextureFormat::FORMAT_BC3_RGBA_UNORM:
+                    FlipBC4Block(blk);      // alpha sub-block (bytes 0-7)
+                    FlipBC1Block(blk + 8);  // color sub-block (bytes 8-15)
+                    break;
+                case TextureFormat::FORMAT_BC5_RG_UNORM:
+                    FlipBC4Block(blk);      // red channel (bytes 0-7)
+                    FlipBC4Block(blk + 8);  // green channel (bytes 8-15)
+                    break;
+                case TextureFormat::FORMAT_BC7_RGBA_UNORM:
+                    // BC7 has 8 variable-bit modes; within-block row flip is not implemented.
+                    // The block-row swap above corrects gross orientation.
+                    break;
+                default: break;
+                }
+            }
+        }
     }
 
     int TextureLoader::GetDesiredChannels(const std::string& path)

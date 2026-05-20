@@ -14,6 +14,7 @@ namespace Dodo {
 
     ModelLoader::ModelData ModelLoader::LoadModelData(const std::string& path)
     {
+        DD_INFO("ModelLoader: loading '{}'", path);
         ModelData result;
         Assimp::Importer imp;
         const aiScene* scene =
@@ -168,7 +169,7 @@ namespace Dodo {
 
             result.meshes.push_back(std::move(meshEntry));
         }
-
+        DD_INFO("ModelLoader: Finished loading '{}'", path);
         return result;
     }
 

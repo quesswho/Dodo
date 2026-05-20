@@ -51,7 +51,7 @@ GameLayer::GameLayer(Application& app)
 
     World& world = m_Scene->GetWorld();
     EntityID terrainEntity = world.CreateEntity();
-    world.AddComponent<ModelComponent>(terrainEntity, ModelComponent(terrainID));
+    world.AddComponent<ModelComponent>(terrainEntity, ModelComponent(terrainID, Math::Transformation(Math::Vec3(0.0f,-1.0f,0.0f), Math::Vec3(1.0f, 0.2f, 1.0f))));
 
     std::vector<std::string> skyboxPath = {
         "res/texture/skybox/right.jpg",  "res/texture/skybox/left.jpg",  "res/texture/skybox/top.jpg",

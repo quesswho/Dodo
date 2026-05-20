@@ -217,7 +217,7 @@ namespace Dodo::Platform {
         std::unordered_map<VulkanFrameBuffer*, ImGuiFrameBufferEntry> m_ImGuiFrameBufferEntries;
 
         // Pending texture/sampler state (bound before each draw)
-        static constexpr int maxTextureSlots = 8;
+        static constexpr int maxTextureSlots = 9;
         VkImageView m_PendingImageViews[maxTextureSlots] = {};
         bool m_PendingIsCubeMap[maxTextureSlots] = {};
         bool m_PendingIsDepth[maxTextureSlots] = {};

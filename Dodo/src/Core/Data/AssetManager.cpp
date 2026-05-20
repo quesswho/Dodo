@@ -407,7 +407,28 @@ namespace Dodo {
                 }
 
                 if (hasTextures || hasColorFallback) {
-                    ShaderID shaderID = LoadShaderFromPath("res/shader/builtin/Passes/ForwardLit.slang");
+                    bool hasSpecMap = HasFeature(matEntry.features, MaterialFeatures::SpecularMap)
+                                      && !HasFeature(matEntry.features, MaterialFeatures::RoughnessMap);
+                    bool isSpecGloss = false;
+                    if (hasSpecMap) {
+                        for (const auto& te : matEntry.textures) {
+                            if (te.slot == 8) {
+                                std::string lower = te.path;
+                                std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+                                isSpecGloss = lower.find("specgloss")  != std::string::npos
+                                           || lower.find("spec_gloss") != std::string::npos
+                                           || lower.find("_sg.")       != std::string::npos
+                                           || lower.find("-sg.")       != std::string::npos;
+                                break;
+                            }
+                        }
+                    }
+                    const char* shaderPath = !hasSpecMap
+                        ? "res/shader/builtin/Passes/ForwardLit.slang"
+                        : isSpecGloss
+                        ? "res/shader/builtin/Passes/ForwardLitSpecGloss.slang"
+                        : "res/shader/builtin/Passes/ForwardLitSpecSingle.slang";
+                    ShaderID shaderID = LoadShaderFromPath(shaderPath);
                     PipelineDesc desc;
                     desc.shaderID = shaderID;
                     desc.blendMode = matEntry.blendMode;

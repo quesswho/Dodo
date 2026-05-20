@@ -93,3 +93,39 @@ float3 evaluateAmbient(float3 albedo, float ao, float metallic, float roughness,
     float3 kD = (float3(1.0f) - F) * (1.0f - metallic);
     return kD * irradiance * albedo * ao;
 }
+
+// Direct Cook-Torrance for spec-gloss workflow.
+//   diffuse   - diffuse map color
+//   F0        - specular map RGB (base reflectivity at normal incidence)
+//   roughness - 1 - glossiness (glossiness from specular map alpha)
+//   shadow    - shadow factor (0 = fully lit, 1 = fully shadowed)
+float3 evaluateBRDFSpecGloss(
+    float3 radiance,
+    float3 diffuse, float3 N, float3 V, float3 L,
+    float roughness, float3 F0, float shadow)
+{
+    float3 H = normalize(V + L);
+
+    float NdotV = max(dot(N, V), 0.001f);
+    float NdotL = max(dot(N, L), 0.001f);
+    float HdotV = max(dot(H, V), 0.0f);
+
+    float  D = DistributionGGX(N, H, roughness);
+    float  G = GeometrySmith(NdotV, NdotL, roughness);
+    float3 F = FresnelSchlick(HdotV, F0);
+
+    float3 kD = float3(1.0f) - F;
+
+    float3 specular = (D * G * F) / max(4.0f * NdotV * NdotL, 0.001f);
+
+    return (kD * diffuse / PI + specular) * radiance * NdotL * (1.0f - shadow);
+}
+
+// IBL ambient for spec-gloss workflow. No metallic term.
+float3 evaluateAmbientSpecGloss(float3 diffuse, float ao, float roughness,
+                                float NdotV, float3 F0, float3 irradiance)
+{
+    float3 F  = FresnelSchlickRoughness(NdotV, F0, roughness);
+    float3 kD = float3(1.0f) - F;
+    return kD * irradiance * diffuse * ao;
+}

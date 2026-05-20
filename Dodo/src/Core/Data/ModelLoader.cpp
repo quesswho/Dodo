@@ -64,13 +64,7 @@ namespace Dodo {
                 matEntry.albedoColor = {color.r, color.g, color.b, color.a};
             }
 
-            // Roughness: prefer dedicated PBR slot, fall back to specular
-            aiString roughnessTmp;
-            aiTextureType roughnessType =
-                (aiMat->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessTmp) == AI_SUCCESS)
-                    ? aiTextureType_DIFFUSE_ROUGHNESS
-                    : aiTextureType_SPECULAR;
-            tryAddSlot(1, roughnessType, MaterialFeatures::RoughnessMap);
+            tryAddSlot(1, aiTextureType_DIFFUSE_ROUGHNESS, MaterialFeatures::RoughnessMap);
 
             // Normal map: NORMALS and DISPLACEMENT are the same thing
             aiString normalTmp;
@@ -78,6 +72,11 @@ namespace Dodo {
                                            ? aiTextureType_NORMALS
                                            : aiTextureType_DISPLACEMENT;
             tryAddSlot(2, normalType, MaterialFeatures::NormalMap);
+
+            // Spec-gloss workflow: only attempt when no dedicated roughness map was found,
+            // since metallic-roughness assets may also export an aiTextureType_SPECULAR slot.
+            if (!HasFeature(matEntry.features, MaterialFeatures::RoughnessMap))
+                tryAddSlot(8, aiTextureType_SPECULAR, MaterialFeatures::SpecularMap);
 
             tryAddSlot(5, aiTextureType_METALNESS, MaterialFeatures::MetallicMap);
 

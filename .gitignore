@@ -1,8 +1,7 @@
 # Assets (download via scripts/download_assets.py)
 res/sponza/*
 res/san_miguel/*
-DodoEditor/res/san_miguel/*
-!DodoEditor/res/san_miguel/README.txt
+res/emerald_square/*
 
 # Render doc
 *.rdc

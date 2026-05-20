@@ -19,3 +19,6 @@
 [submodule "Dodo/lib/tinyxml2"]
 	path = Dodo/lib/tinyxml2
 	url = https://github.com/leethomason/tinyxml2.git
+[submodule "Dodo/lib/gli"]
+	path = Dodo/lib/gli
+	url = https://github.com/g-truc/gli.git

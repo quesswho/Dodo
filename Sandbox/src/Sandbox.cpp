@@ -40,18 +40,19 @@ GameLayer::GameLayer(Application& app)
 
     m_Scene = m_File.Read("res/sponza/sponza.das");
     // m_Scene = m_File.Read("res/san_miguel/san_miguel.das");
-    DD_INFO("Finished loading scene");
+    //m_Scene = new Scene();
     
     MaterialID terrainMaterialID = assets.LoadMaterial("res/material/Grass004_1K-PNG/");
-
+    
     ModelID terrainID = assets.GetBuiltinModel(BuiltinModel::Terrain);
     Ref<Material> terrainMat = assets.GetMaterial(terrainMaterialID);
     for (auto& mesh : assets.GetModel(terrainID)->GetMeshes())
         mesh->SetMaterial(terrainMat);
-
+    
     World& world = m_Scene->GetWorld();
     EntityID terrainEntity = world.CreateEntity();
     world.AddComponent<ModelComponent>(terrainEntity, ModelComponent(terrainID, Math::Transformation(Math::Vec3(0.0f,-1.0f,0.0f), Math::Vec3(1.0f, 0.2f, 1.0f))));
+    DD_INFO("Finished loading scene");
 
     std::vector<std::string> skyboxPath = {
         "res/texture/skybox/right.jpg",  "res/texture/skybox/left.jpg",  "res/texture/skybox/top.jpg",
@@ -178,7 +179,7 @@ class Sandbox : public Application {
     void Init()
     {
         PushLayer(new GameLayer(*this));
-        // PushLayer(new DebugLayer());
+        PushLayer(new DebugLayer());
     }
 };
 

@@ -246,8 +246,8 @@ namespace Dodo::Platform {
 
         m_PhysicalDevice = VK_NULL_HANDLE;
 
-        PhyisicalDeviceInfo bestDevice;
-        bestDevice.device = VK_NULL_HANDLE;
+        PhyisicalDeviceInfo bestDeviceInfo;
+        bestDeviceInfo.device = VK_NULL_HANDLE;
         for (const auto& device : devices) {
             PhyisicalDeviceInfo deviceInfo;
             VkPhysicalDeviceProperties deviceProperties;
@@ -264,7 +264,8 @@ namespace Dodo::Platform {
                 DD_INFO("Device {} is not suitable", deviceProperties.deviceName);
                 continue;
             }
-            if (IsDeviceBetter(bestDevice, deviceInfo)) {
+            if (IsDeviceBetter(bestDeviceInfo, deviceInfo)) {
+                bestDeviceInfo = deviceInfo;
                 m_PhysicalDevice = device;
             }
         }
@@ -272,6 +273,8 @@ namespace Dodo::Platform {
         if (m_PhysicalDevice == VK_NULL_HANDLE) {
             return RenderInitError(RenderInitStatus::Failed, "failed to find a suitable GPU!");
         }
+
+        DD_INFO("Selected Device: {}", bestDeviceInfo.properties.deviceName);
 
         return RenderInitError(RenderInitStatus::Success);
     }
@@ -1702,13 +1705,13 @@ namespace Dodo::Platform {
         std::vector<VkExtensionProperties> availableExtensions(extensionCount);
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-        DD_INFO("Vulkan Device Extensions:");
+        //DD_INFO("Vulkan Device Extensions:");
         // Build a hash set of available extension names
         std::unordered_set<std::string> availableExtensionNames;
         availableExtensionNames.reserve(extensionCount);
         for (const auto& extension : availableExtensions) {
             availableExtensionNames.insert(extension.extensionName);
-            DD_INFO("{}", extension.extensionName);
+            //DD_INFO("{}", extension.extensionName);
         }
 
         // Store every missing extension for error reporting

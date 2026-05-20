@@ -79,7 +79,7 @@ namespace Dodo {
             prevSplit = splitFar;
 
             // Get the 8 world-space corners of this sub-frustum
-            std::vector<Math::Vec4> corners = GetFrustumCornersWorldSpace(proj, view);
+            std::vector<Math::Vec4> corners = GetFrustumCornersWorldSpace(subProj, view);
 
             // Centroid of the 8 corners is the anchor for the light view matrix
             Math::Vec3 centroid(0.0f, 0.0f, 0.0f);

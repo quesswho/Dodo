@@ -26,7 +26,11 @@ namespace Dodo {
             return result;
         }
 
-        std::filesystem::path modelDir = std::filesystem::path(path).parent_path();
+        std::filesystem::path fsPath(path);
+        std::filesystem::path modelDir = fsPath.parent_path();
+        std::string ext = fsPath.extension().string();
+        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+        const bool isFbx = (ext == ".fbx");
 
         // Collect material texture paths. Texture loading is done async in AssetManager
         for (uint i = 0; i < scene->mNumMaterials; i++) {
@@ -152,13 +156,15 @@ namespace Dodo {
                 Vertex v;
                 v.m_Position = {aiM->mVertices[j].x, aiM->mVertices[j].y, aiM->mVertices[j].z};
                 v.m_Texcoord = {aiM->mTextureCoords[0][j].x, aiM->mTextureCoords[0][j].y};
-                v.m_Normal = {aiM->mNormals[j].x, aiM->mNormals[j].y, aiM->mNormals[j].z};
+                float nFlip = isFbx ? -1.0f : 1.0f;
+                v.m_Normal = {nFlip * aiM->mNormals[j].x, nFlip * aiM->mNormals[j].y, nFlip * aiM->mNormals[j].z};
                 // Compute bitangent sign and store in tangent.w since we don't have a separate bitangent attribute.
                 // Assimp guarantees tangents and bitangents are orthogonal to normals, so we can use the cross product
                 // to determine handedness.
                 aiVector3D crossNT = aiM->mTangents[j] ^ aiM->mNormals[j];
                 float bitangentSign = (crossNT * aiM->mBitangents[j] < 0.0f) ? -1.0f : 1.0f;
-                v.m_Tangent = {aiM->mTangents[j].x, aiM->mTangents[j].y, aiM->mTangents[j].z, bitangentSign};
+                // FBX (UE Z-up): negate tangent.xyz along with normal to keep TBN frame right-handed.
+                v.m_Tangent = {nFlip * aiM->mTangents[j].x, nFlip * aiM->mTangents[j].y, nFlip * aiM->mTangents[j].z, bitangentSign};
 
                 meshEntry.vertices.push_back(v);
             }

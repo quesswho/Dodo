@@ -69,13 +69,13 @@ float4 fragmentMain(VertexOutput input) : SV_Target
     float shadow    = shadowCalculationCSMPCSS(input.positionWS, N, L, u_ShadowMap, u_LinearSampler, viewDepth, 5.0f);
     float3 Lo      = evaluateBRDFDirect(radiance, albedoSample.rgb, N, V, L, roughness, metallic, shadow);
 
-    float3 F0         = lerp(float3(0.04f, 0.04f, 0.04f), albedoSample.rgb, metallic);
+    float3 F0         = lerp(float3(0.01f, 0.01f, 0.01f), albedoSample.rgb, metallic);
     float  NdotV      = max(dot(N, V), 0.001f);
     float3 irradiance = u_IrradianceMap.SampleLevel(u_LinearSampler, N, 0).rgb;
 
     float3 ambient = evaluateAmbient(albedoSample.rgb, ao, metallic, roughness, NdotV, F0, irradiance);
     
-    return float4(Lo + ambient, albedoSample.a);
+    return float4(Lo + ambient * 0.1, albedoSample.a);
     //float3 shadowt    = debugCSMSample(input.positionWS, N, L, u_ShadowMap, u_LinearSampler, viewDepth, 5.0f);
     //return float4(shadowt, 1.0f);
 }

@@ -51,6 +51,7 @@ namespace Dodo::Platform {
         VkPhysicalDevice device;
         VkPhysicalDeviceProperties properties;
         VkPhysicalDeviceFeatures features;
+        VkPhysicalDeviceMemoryProperties memoryProperties;
         QueueFamilyIndices indices;
     };
 

@@ -258,6 +258,7 @@ namespace Dodo::Platform {
             deviceInfo.device = device;
             deviceInfo.properties = deviceProperties;
             deviceInfo.features = deviceFeatures;
+            vkGetPhysicalDeviceMemoryProperties(device, &deviceInfo.memoryProperties);
             deviceInfo.indices = FindQueueFamilies(device);
             if (!IsDeviceSuitable(deviceInfo)) {
                 DD_INFO("Device {} is not suitable", deviceProperties.deviceName);

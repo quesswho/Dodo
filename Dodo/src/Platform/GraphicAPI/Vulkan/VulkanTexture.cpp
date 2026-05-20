@@ -214,14 +214,14 @@ namespace Dodo::Platform {
         stagingCI.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
         stagingCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         VmaAllocationCreateInfo stagingAllocCI{};
-        stagingAllocCI.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+        stagingAllocCI.usage = VMA_MEMORY_USAGE_AUTO;
+        stagingAllocCI.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+                               VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-        vmaCreateBuffer(m_Allocator, &stagingCI, &stagingAllocCI, &m_StagingBuffer, &m_StagingAlloc, nullptr);
-
-        void* mapped;
-        vmaMapMemory(m_Allocator, m_StagingAlloc, &mapped);
-        memcpy(mapped, uploadData, (size_t)stagingSize);
-        vmaUnmapMemory(m_Allocator, m_StagingAlloc);
+        VmaAllocationInfo stagingAllocInfo;
+        vmaCreateBuffer(m_Allocator, &stagingCI, &stagingAllocCI, &m_StagingBuffer, &m_StagingAlloc,
+                        &stagingAllocInfo);
+        memcpy(stagingAllocInfo.pMappedData, uploadData, (size_t)stagingSize);
 
         // Create device-local VkImage via VMA
         VkImageCreateInfo imageInfo{};

@@ -51,42 +51,55 @@ namespace Dodo::Platform {
     {
         VkDeviceSize bufSize = (VkDeviceSize)size;
 
-        // Staging buffer (CPU)
-        VkBufferCreateInfo stagingCI{};
-        stagingCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        stagingCI.size = bufSize;
-        stagingCI.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        stagingCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        VmaAllocationCreateInfo stagingAllocCI{};
-        stagingAllocCI.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+        VkBufferCreateInfo bufCI{};
+        bufCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufCI.size = bufSize;
+        bufCI.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        bufCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        VkBuffer stagingBuf;
-        VmaAllocation stagingAlloc;
-        vmaCreateBuffer(allocator, &stagingCI, &stagingAllocCI, &stagingBuf, &stagingAlloc, nullptr);
+        // Prefer host-visible + device-local (optimal on integrated GPU, falls back to
+        // device-local only on discrete GPU where VMA will signal us via memory flags).
+        VmaAllocationCreateInfo allocCI{};
+        allocCI.usage = VMA_MEMORY_USAGE_AUTO;
+        allocCI.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+                        VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT;
+        vmaCreateBuffer(allocator, &bufCI, &allocCI, &m_Buffer, &m_Allocation, nullptr);
 
-        void* mapped;
-        vmaMapMemory(allocator, stagingAlloc, &mapped);
-        memcpy(mapped, vertices, (size_t)bufSize);
-        vmaUnmapMemory(allocator, stagingAlloc);
+        VkMemoryPropertyFlags memFlags;
+        vmaGetAllocationMemoryProperties(allocator, m_Allocation, &memFlags);
 
-        // Device-local buffer
-        VkBufferCreateInfo deviceCI{};
-        deviceCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        deviceCI.size = bufSize;
-        deviceCI.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        deviceCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        VmaAllocationCreateInfo deviceAllocCI{};
-        deviceAllocCI.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        if (memFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
+            // Integrated GPU: shared heap is both host-visible and device-local, map directly.
+            void* mapped;
+            vmaMapMemory(allocator, m_Allocation, &mapped);
+            memcpy(mapped, vertices, (size_t)bufSize);
+            vmaUnmapMemory(allocator, m_Allocation);
+        } else {
+            // Discrete GPU: upload via a temporary staging buffer.
+            VkBufferCreateInfo stagingCI{};
+            stagingCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            stagingCI.size = bufSize;
+            stagingCI.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+            stagingCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            VmaAllocationCreateInfo stagingAllocCI{};
+            stagingAllocCI.usage = VMA_MEMORY_USAGE_AUTO;
+            stagingAllocCI.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+                                   VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-        vmaCreateBuffer(allocator, &deviceCI, &deviceAllocCI, &m_Buffer, &m_Allocation, nullptr);
+            VkBuffer stagingBuf;
+            VmaAllocation stagingAlloc;
+            VmaAllocationInfo stagingInfo;
+            vmaCreateBuffer(allocator, &stagingCI, &stagingAllocCI, &stagingBuf, &stagingAlloc, &stagingInfo);
 
-        // Copy staging -> device-local
-        VkCommandBuffer cmd = BeginOneTimeCommands(commandPool);
-        VkBufferCopy region{0, 0, bufSize};
-        vkCmdCopyBuffer(cmd, stagingBuf, m_Buffer, 1, &region);
-        EndOneTimeCommands(cmd, commandPool, queue);
+            memcpy(stagingInfo.pMappedData, vertices, (size_t)bufSize);
 
-        vmaDestroyBuffer(allocator, stagingBuf, stagingAlloc);
+            VkCommandBuffer cmd = BeginOneTimeCommands(commandPool);
+            VkBufferCopy region{0, 0, bufSize};
+            vkCmdCopyBuffer(cmd, stagingBuf, m_Buffer, 1, &region);
+            EndOneTimeCommands(cmd, commandPool, queue);
+
+            vmaDestroyBuffer(allocator, stagingBuf, stagingAlloc);
+        }
     }
 
     VulkanVertexBuffer::~VulkanVertexBuffer()
@@ -139,42 +152,51 @@ namespace Dodo::Platform {
     {
         VkDeviceSize bufSize = (VkDeviceSize)count * sizeof(uint);
 
-        // Staging buffer (CPU-visible)
-        VkBufferCreateInfo stagingCI{};
-        stagingCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        stagingCI.size = bufSize;
-        stagingCI.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        stagingCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        VmaAllocationCreateInfo stagingAllocCI{};
-        stagingAllocCI.usage = VMA_MEMORY_USAGE_CPU_ONLY;
+        VkBufferCreateInfo bufCI{};
+        bufCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufCI.size = bufSize;
+        bufCI.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        bufCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        VkBuffer stagingBuf;
-        VmaAllocation stagingAlloc;
-        vmaCreateBuffer(allocator, &stagingCI, &stagingAllocCI, &stagingBuf, &stagingAlloc, nullptr);
+        VmaAllocationCreateInfo allocCI{};
+        allocCI.usage = VMA_MEMORY_USAGE_AUTO;
+        allocCI.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+                        VMA_ALLOCATION_CREATE_HOST_ACCESS_ALLOW_TRANSFER_INSTEAD_BIT;
+        vmaCreateBuffer(allocator, &bufCI, &allocCI, &m_Buffer, &m_Allocation, nullptr);
 
-        void* mapped;
-        vmaMapMemory(allocator, stagingAlloc, &mapped);
-        memcpy(mapped, indices, (size_t)bufSize);
-        vmaUnmapMemory(allocator, stagingAlloc);
+        VkMemoryPropertyFlags memFlags;
+        vmaGetAllocationMemoryProperties(allocator, m_Allocation, &memFlags);
 
-        // Device-local buffer
-        VkBufferCreateInfo deviceCI{};
-        deviceCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        deviceCI.size = bufSize;
-        deviceCI.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-        deviceCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        VmaAllocationCreateInfo deviceAllocCI{};
-        deviceAllocCI.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        if (memFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) {
+            void* mapped;
+            vmaMapMemory(allocator, m_Allocation, &mapped);
+            memcpy(mapped, indices, (size_t)bufSize);
+            vmaUnmapMemory(allocator, m_Allocation);
+        } else {
+            VkBufferCreateInfo stagingCI{};
+            stagingCI.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            stagingCI.size = bufSize;
+            stagingCI.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+            stagingCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            VmaAllocationCreateInfo stagingAllocCI{};
+            stagingAllocCI.usage = VMA_MEMORY_USAGE_AUTO;
+            stagingAllocCI.flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT |
+                                   VMA_ALLOCATION_CREATE_MAPPED_BIT;
 
-        vmaCreateBuffer(allocator, &deviceCI, &deviceAllocCI, &m_Buffer, &m_Allocation, nullptr);
+            VkBuffer stagingBuf;
+            VmaAllocation stagingAlloc;
+            VmaAllocationInfo stagingInfo;
+            vmaCreateBuffer(allocator, &stagingCI, &stagingAllocCI, &stagingBuf, &stagingAlloc, &stagingInfo);
 
-        // Copy staging -> device-local
-        VkCommandBuffer cmd = BeginOneTimeCommands(commandPool);
-        VkBufferCopy region{0, 0, bufSize};
-        vkCmdCopyBuffer(cmd, stagingBuf, m_Buffer, 1, &region);
-        EndOneTimeCommands(cmd, commandPool, queue);
+            memcpy(stagingInfo.pMappedData, indices, (size_t)bufSize);
 
-        vmaDestroyBuffer(allocator, stagingBuf, stagingAlloc);
+            VkCommandBuffer cmd = BeginOneTimeCommands(commandPool);
+            VkBufferCopy region{0, 0, bufSize};
+            vkCmdCopyBuffer(cmd, stagingBuf, m_Buffer, 1, &region);
+            EndOneTimeCommands(cmd, commandPool, queue);
+
+            vmaDestroyBuffer(allocator, stagingBuf, stagingAlloc);
+        }
     }
 
     VulkanIndexBuffer::~VulkanIndexBuffer()

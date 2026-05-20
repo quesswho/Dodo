@@ -8,8 +8,8 @@
 
 namespace Dodo::Platform {
 
-    VulkanTexture::VulkanTexture(uchar* data, const TextureProperties& prop, VkDevice device, VmaAllocator allocator,
-                                 VkCommandBuffer uploadCmdBuf)
+    VulkanTexture::VulkanTexture(const uchar* data, const TextureProperties& prop, VkDevice device,
+                                 VmaAllocator allocator, VkCommandBuffer uploadCmdBuf)
         : m_TextureProperties(prop), m_Device(device), m_Allocator(allocator)
     {
         Init(data, uploadCmdBuf);
@@ -26,7 +26,6 @@ namespace Dodo::Platform {
         case TextureFormat::FORMAT_RGB:
         case TextureFormat::FORMAT_RGBA:
             return VK_FORMAT_R8G8B8A8_UNORM;
-            return VK_FORMAT_R8G8B8A8_UNORM;
         // FORMAT_RGB16F/32F are expanded to RGBA: the 3-channel float formats have
         // poor GPU coverage, same rationale as the RGB8 case above
         case TextureFormat::FORMAT_RGB16F:
@@ -35,6 +34,10 @@ namespace Dodo::Platform {
         case TextureFormat::FORMAT_RGB32F:
         case TextureFormat::FORMAT_RGBA32F:
             return VK_FORMAT_R32G32B32A32_SFLOAT;
+        case TextureFormat::FORMAT_BC1_RGB_UNORM:  return VK_FORMAT_BC1_RGB_UNORM_BLOCK;
+        case TextureFormat::FORMAT_BC3_RGBA_UNORM: return VK_FORMAT_BC3_UNORM_BLOCK;
+        case TextureFormat::FORMAT_BC5_RG_UNORM:   return VK_FORMAT_BC5_UNORM_BLOCK;
+        case TextureFormat::FORMAT_BC7_RGBA_UNORM: return VK_FORMAT_BC7_UNORM_BLOCK;
         default:
             DD_ERR("VulkanTexture: unsupported texture format!");
             return VK_FORMAT_R8G8B8A8_UNORM;
@@ -49,6 +52,25 @@ namespace Dodo::Platform {
         case TextureFormat::FORMAT_RGBA16F: return 8;
         default:                            return 4;
         }
+    }
+
+    static bool IsCompressedFormat(TextureFormat fmt)
+    {
+        switch (fmt) {
+        case TextureFormat::FORMAT_BC1_RGB_UNORM:
+        case TextureFormat::FORMAT_BC3_RGBA_UNORM:
+        case TextureFormat::FORMAT_BC5_RG_UNORM:
+        case TextureFormat::FORMAT_BC7_RGBA_UNORM:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    static VkDeviceSize CompressedMipBytes(TextureFormat fmt, uint32_t w, uint32_t h)
+    {
+        uint32_t blockBytes = (fmt == TextureFormat::FORMAT_BC1_RGB_UNORM) ? 8u : 16u;
+        return (VkDeviceSize)((w + 3u) / 4u) * ((h + 3u) / 4u) * blockBytes;
     }
 
     void VulkanTexture::TransitionImageLayout(VkCommandBuffer cmd, VkImageLayout oldLayout, VkImageLayout newLayout,
@@ -110,7 +132,6 @@ namespace Dodo::Platform {
             return;
         }
 
-        uint32_t bpp = BytesPerPixel(m_TextureProperties.m_Format);
         std::vector<VkBufferImageCopy> regions(m_MipLevels);
         VkDeviceSize offset = 0;
         for (uint32_t i = 0; i < m_MipLevels; i++) {
@@ -121,34 +142,43 @@ namespace Dodo::Platform {
             regions[i].imageSubresource.mipLevel = i;
             regions[i].imageSubresource.layerCount = 1;
             regions[i].imageExtent = {w, h, 1};
-            offset += (VkDeviceSize)w * h * bpp;
+            if (IsCompressedFormat(m_TextureProperties.m_Format))
+                offset += CompressedMipBytes(m_TextureProperties.m_Format, w, h);
+            else
+                offset += (VkDeviceSize)w * h * BytesPerPixel(m_TextureProperties.m_Format);
         }
         vkCmdCopyBufferToImage(cmd, buffer, m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                m_MipLevels, regions.data());
     }
 
-    void VulkanTexture::Init(uchar* data, VkCommandBuffer uploadCmdBuf)
+    void VulkanTexture::Init(const uchar* data, VkCommandBuffer uploadCmdBuf)
     {
         VkFormat format = ToVkFormat(m_TextureProperties.m_Format);
         uint32_t pixelCount = m_TextureProperties.m_Width * m_TextureProperties.m_Height;
 
-        uchar* uploadData = data;
+        const uchar* uploadData = data;
         VkDeviceSize imageSize;
         std::vector<uchar> stagingStorage;
 
-        switch (m_TextureProperties.m_Format) {
-        case TextureFormat::FORMAT_RGBA16F:
-            imageSize = (VkDeviceSize)pixelCount * 4 * sizeof(uint16_t);
-            break;
-        case TextureFormat::FORMAT_RGBA:
-            imageSize = (VkDeviceSize)pixelCount * 4;
-            break;
-        case TextureFormat::FORMAT_RED:
-            imageSize = (VkDeviceSize)pixelCount;
-            break;
-        default:
-            DD_ERR("VulkanTexture: unsupported texture format!");
-            return;
+        if (IsCompressedFormat(m_TextureProperties.m_Format)) {
+            imageSize = CompressedMipBytes(m_TextureProperties.m_Format,
+                                          m_TextureProperties.m_Width,
+                                          m_TextureProperties.m_Height);
+        } else {
+            switch (m_TextureProperties.m_Format) {
+            case TextureFormat::FORMAT_RGBA16F:
+                imageSize = (VkDeviceSize)pixelCount * 4 * sizeof(uint16_t);
+                break;
+            case TextureFormat::FORMAT_RGBA:
+                imageSize = (VkDeviceSize)pixelCount * 4;
+                break;
+            case TextureFormat::FORMAT_RED:
+                imageSize = (VkDeviceSize)pixelCount;
+                break;
+            default:
+                DD_ERR("VulkanTexture: unsupported texture format!");
+                return;
+            }
         }
 
         switch (m_TextureProperties.m_MipmapMode) {
@@ -166,12 +196,14 @@ namespace Dodo::Platform {
 
         VkDeviceSize stagingSize = imageSize;
         if (m_TextureProperties.m_MipmapMode == MipmapMode::Preloaded) {
-            uint32_t bpp = BytesPerPixel(m_TextureProperties.m_Format);
             stagingSize = 0;
             for (uint32_t i = 0; i < m_MipLevels; i++) {
                 uint32_t w = (std::max)(1u, m_TextureProperties.m_Width  >> i);
                 uint32_t h = (std::max)(1u, m_TextureProperties.m_Height >> i);
-                stagingSize += (VkDeviceSize)w * h * bpp;
+                if (IsCompressedFormat(m_TextureProperties.m_Format))
+                    stagingSize += CompressedMipBytes(m_TextureProperties.m_Format, w, h);
+                else
+                    stagingSize += (VkDeviceSize)w * h * BytesPerPixel(m_TextureProperties.m_Format);
             }
         }
 

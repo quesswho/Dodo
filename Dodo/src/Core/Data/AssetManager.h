@@ -52,6 +52,7 @@ namespace Dodo {
 
         MaterialID LoadMaterial(const std::string& path);
         Ref<Material> GetMaterial(MaterialID id);
+        AssetState GetMaterialState(MaterialID id) const;
 
         ModelID LoadModel(const std::string& path);
         ModelID GetBuiltinModel(BuiltinModel type);
@@ -99,6 +100,7 @@ namespace Dodo {
 
         std::unordered_map<MaterialID, Ref<Material>> m_Materials;
         std::unordered_map<std::string, MaterialID> m_MaterialID;
+        std::unordered_map<MaterialID, AssetState> m_MaterialStates;
 
         std::unordered_map<ModelID, Ref<Model>> m_Models;     // Stores id as key and model pointer as value
         std::unordered_map<std::string, ModelID> m_ModelID;   // Stores path as key and id as value
@@ -147,6 +149,13 @@ namespace Dodo {
         std::vector<PendingModelUpload> m_StagingModels;
         std::vector<ModelID> m_FailedModels;
         std::vector<PendingModelAssembly> m_PendingModelAssemblies;
+
+        struct PendingMaterialAssembly {
+            MaterialID id;
+            Ref<Material> material;
+            std::vector<std::pair<uint, TextureID>> waitingFor;
+        };
+        std::vector<PendingMaterialAssembly> m_PendingMaterialAssemblies;
 
         ShaderID m_NextShaderID = 1;
         PipelineID m_NextPipelineID = 1;

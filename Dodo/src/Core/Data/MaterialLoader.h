@@ -2,25 +2,32 @@
 
 #include "Core/Graphics/Material/Material.h"
 #include "Core/Graphics/Material/MaterialFeatures.h"
+#include "Core/Graphics/Material/TextureSampler.h"
 
 #include <filesystem>
 
 struct aiMaterial;
-// enum aiTextureType : int; // Forward declarations of enums are weird. We cast int to aiTextureType in the .cpp.
 
 namespace Dodo {
-    class AssetManager;
 
     class MaterialLoader {
       public:
-        Ref<Material> LoadMaterial(const std::string& texture, AssetManager& assets, RenderAPI& renderAPI);
-        Ref<Material> LoadMaterial(const std::string& path, aiMaterial* material, AssetManager& assets,
-                                   RenderAPI& renderAPI);
+        struct MaterialData {
+            struct TextureEntry {
+                uint slot;
+                std::string path;
+            };
+            std::vector<TextureEntry> textures;
+            SamplerProperties samplerProps;
+            bool valid = false;
+        };
+
+        MaterialData LoadMaterialData(const std::string& path);
+        MaterialData LoadMaterialData(const std::string& modelDir, aiMaterial* material);
 
       private:
-        Ref<Material> LoadMaterialFromMtlx(const std::string& mtlxPath, AssetManager& assets, RenderAPI& renderAPI);
-
-        Ref<Texture> LoadTextureFromMaterial(aiMaterial* material, int type, MaterialFeatures& features,
-                                             const std::filesystem::path& modelDir, AssetManager& assets);
+        MaterialData LoadMaterialDataFromMtlx(const std::string& mtlxPath);
+        std::string GetTexturePath(aiMaterial* material, int type, MaterialFeatures& features,
+                                   const std::filesystem::path& modelDir);
     };
 } // namespace Dodo

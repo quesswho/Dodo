@@ -1,54 +1,48 @@
 #include "MaterialLoader.h"
 
-#include "AssetManager.h"
-
 #include <assimp/material.h>
 #include <tinyxml2.h>
 #include <unordered_map>
 
 namespace Dodo {
-    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, AssetManager& assets, RenderAPI& renderAPI)
+
+    MaterialLoader::MaterialData MaterialLoader::LoadMaterialData(const std::string& path)
     {
         if (!std::filesystem::is_directory(path)) {
             DD_ERR("{} is not a valid path!", path);
         }
-        
+
         for (const auto& entry : std::filesystem::directory_iterator(path)) {
             if (entry.path().extension() == ".mtlx") {
-                Ref<Material> mat = LoadMaterialFromMtlx(entry.path().string(), assets, renderAPI);
-                if (mat) return mat;
+                MaterialData data = LoadMaterialDataFromMtlx(entry.path().string());
+                if (data.valid) return data;
             }
         }
-        
-        ShaderID shaderID = assets.LoadShaderFromPath("res/shader/builtin/Passes/ForwardLit.slang");
-        PipelineDesc pipelineDesc;
-        pipelineDesc.shaderID = shaderID;
-        PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
-        return std::make_shared<Material>(
-            assets.GetPipeline(pipelineID), assets.GetTexture(assets.LoadTexture(path)),
-            renderAPI.CreateSampler(SamplerProperties(SamplerWrapMode::WRAP_CLAMP_TO_EDGE)));
+
+        MaterialData data;
+        data.textures.push_back({0, path});
+        data.samplerProps = SamplerProperties(SamplerWrapMode::WRAP_CLAMP_TO_EDGE);
+        data.valid = true;
+        return data;
     }
-            
-    Ref<Material> MaterialLoader::LoadMaterialFromMtlx(const std::string& mtlxPath, AssetManager& assets,
-                                                        RenderAPI& renderAPI)
+
+    MaterialLoader::MaterialData MaterialLoader::LoadMaterialDataFromMtlx(const std::string& mtlxPath)
     {
         tinyxml2::XMLDocument doc;
         if (doc.LoadFile(mtlxPath.c_str()) != tinyxml2::XML_SUCCESS) {
             DD_WARN("Failed to parse MTLX file: {}", mtlxPath);
-            return nullptr;
+            return {};
         }
 
         tinyxml2::XMLElement* root = doc.FirstChildElement("materialx");
-        if (!root) return nullptr;
+        if (!root) return {};
 
         std::filesystem::path dir = std::filesystem::path(mtlxPath).parent_path();
 
         const char* prefix = root->Attribute("fileprefix");
         std::string filePrefix = prefix ? prefix : "./";
 
-        // name -> relative filename from <tiledimage> nodes
         std::unordered_map<std::string, std::string> tiledImages;
-        // normalmap name -> tiledimage name (from <normalmap> <input name="in" nodename="..."/>)
         std::unordered_map<std::string, std::string> normalMapSources;
 
         for (tinyxml2::XMLElement* el = root->FirstChildElement(); el; el = el->NextSiblingElement()) {
@@ -75,7 +69,6 @@ namespace Dodo {
             }
         }
 
-        // Resolve a node name to an absolute texture path
         auto resolve = [&](const std::string& nodename) -> std::string {
             auto it = tiledImages.find(nodename);
             if (it != tiledImages.end())
@@ -89,21 +82,20 @@ namespace Dodo {
             return {};
         };
 
-        // Slot mapping for open_pbr_surface inputs
         static const std::unordered_map<std::string, uint> kSlotMap = {
             {"base_color", 0},
             {"specular_roughness", 1},
             {"geometry_normal", 2},
         };
 
-        Ref<Material> material = std::make_shared<Material>();
-        uint numTextures = 0;
-
         tinyxml2::XMLElement* pbr = root->FirstChildElement("open_pbr_surface");
         if (!pbr) {
             DD_WARN("MTLX file has no open_pbr_surface node: {}", mtlxPath);
-            return nullptr;
+            return {};
         }
+
+        MaterialData data;
+        data.samplerProps = SamplerProperties(SamplerFilter::MIN_MAG_MIP_LINEAR);
 
         for (tinyxml2::XMLElement* inp = pbr->FirstChildElement("input"); inp;
              inp = inp->NextSiblingElement("input")) {
@@ -121,157 +113,109 @@ namespace Dodo {
             }
 
             DD_INFO("MTLX texture slot {}: {}", slotIt->second, texPath);
-            TextureID id = assets.LoadTexture(texPath);
-            Ref<Texture> tex = assets.GetTexture(id);
-            if (tex) {
-                material->AddTexture(slotIt->second, tex);
-                numTextures++;
-            }
+            data.textures.push_back({slotIt->second, texPath});
         }
 
-        if (numTextures == 0) {
+        if (data.textures.empty()) {
             DD_WARN("MTLX material loaded no textures from: {}", mtlxPath);
-            return nullptr;
+            return {};
         }
 
-        ShaderID shaderID = assets.LoadShaderFromPath("res/shader/builtin/Passes/ForwardLit.slang");
-        PipelineDesc pipelineDesc;
-        pipelineDesc.shaderID = shaderID;
-        PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
-        material->SetShader(assets.GetPipeline(pipelineID));
-        material->SetSampler(renderAPI.CreateSampler(SamplerProperties(SamplerFilter::MIN_MAG_MIP_LINEAR)));
-
-        return material;
+        data.valid = true;
+        return data;
     }
 
-    Ref<Material> MaterialLoader::LoadMaterial(const std::string& path, aiMaterial* aiMat, AssetManager& assets,
-                                               RenderAPI& renderAPI)
+    MaterialLoader::MaterialData MaterialLoader::LoadMaterialData(const std::string& modelDir,
+                                                                   aiMaterial* aiMat)
     {
         MaterialFeatures flags = MaterialFeatures::None;
-        std::filesystem::path modelDir = std::filesystem::path(path).parent_path();
+        std::filesystem::path dir = modelDir;
 
-        Ref<Material> material = std::make_shared<Material>();
-        uint numTextures = 0;
+        MaterialData data;
+        data.samplerProps = SamplerProperties(SamplerFilter::MIN_MAG_MIP_LINEAR);
 
-        // Albedo / base colour
-        // Prefer aiTextureType_BASE_COLOR (glTF PBR), fall back to aiTextureType_DIFFUSE (OBJ/FBX)
-        Ref<Texture> tex = LoadTextureFromMaterial(aiMat, aiTextureType_BASE_COLOR, flags, modelDir, assets);
-        if (!tex) tex = LoadTextureFromMaterial(aiMat, aiTextureType_DIFFUSE, flags, modelDir, assets);
-        if (tex) {
-            material->AddTexture(0, tex);
-            numTextures++;
-        }
+        auto addSlot = [&](int type, uint slot) {
+            std::string path = GetTexturePath(aiMat, type, flags, dir);
+            if (!path.empty())
+                data.textures.push_back({slot, path});
+        };
 
-        // Roughness: slot 1, sample .g channel
-        // Prefer separate roughness map; packed ORM (aiTextureType_GLTF_METALLIC_ROUGHNESS) is handled below
-        tex = LoadTextureFromMaterial(aiMat, aiTextureType_DIFFUSE_ROUGHNESS, flags, modelDir, assets);
-        if (tex) {
-            material->AddTexture(1, tex);
-            numTextures++;
-        }
+        // Albedo: slot 0
+        addSlot(aiTextureType_BASE_COLOR, 0);
+        if (data.textures.empty() || data.textures.back().slot != 0)
+            addSlot(aiTextureType_DIFFUSE, 0);
 
-        // Normal map: slot 2
-        aiTextureType normalType = aiTextureType_NORMALS;
+        // Roughness: slot 1
+        addSlot(aiTextureType_DIFFUSE_ROUGHNESS, 1);
+
+        // Normal: slot 2
         {
+            aiTextureType normalType = aiTextureType_NORMALS;
             aiString str;
-            if (aiMat->GetTexture(normalType, 0, &str) != AI_SUCCESS) normalType = aiTextureType_DISPLACEMENT;
-        }
-        tex = LoadTextureFromMaterial(aiMat, normalType, flags, modelDir, assets);
-        if (tex) {
-            material->AddTexture(2, tex);
-            numTextures++;
+            if (aiMat->GetTexture(normalType, 0, &str) != AI_SUCCESS)
+                normalType = aiTextureType_DISPLACEMENT;
+            addSlot(normalType, 2);
         }
 
-        // Slot 3: shadow map (bound externally by Renderer3D, not the material)
+        // Metallic: slot 5
+        addSlot(aiTextureType_METALNESS, 5);
 
-        // Metallic: slot 5, sample .b channel
-        tex = LoadTextureFromMaterial(aiMat, aiTextureType_METALNESS, flags, modelDir, assets);
-        if (tex) {
-            material->AddTexture(5, tex);
-            numTextures++;
-        }
-
-        // Packed ORM / glTF metallic-roughness: G = roughness, B = metallic
-        // Only load if we don't already have separate maps
-        if (!HasFeature(flags, MaterialFeatures::RoughnessMap) && !HasFeature(flags, MaterialFeatures::MetallicMap)) {
-            tex = LoadTextureFromMaterial(aiMat, aiTextureType_GLTF_METALLIC_ROUGHNESS, flags, modelDir, assets);
-            if (tex) {
-                material->AddTexture(1, tex); // roughness: sample .g in shader
-                material->AddTexture(5, tex); // metallic: sample .b in shader
-                numTextures++;
+        // Packed ORM: slots 1 + 5 if no separate maps
+        if (!HasFeature(flags, MaterialFeatures::RoughnessMap) &&
+            !HasFeature(flags, MaterialFeatures::MetallicMap)) {
+            std::string path = GetTexturePath(aiMat, aiTextureType_GLTF_METALLIC_ROUGHNESS, flags, dir);
+            if (!path.empty()) {
+                data.textures.push_back({1, path});
+                data.textures.push_back({5, path});
             }
         }
 
-        // Ambient occlusion: slot 6
-        tex = LoadTextureFromMaterial(aiMat, aiTextureType_AMBIENT_OCCLUSION, flags, modelDir, assets);
-        if (!tex) tex = LoadTextureFromMaterial(aiMat, aiTextureType_LIGHTMAP, flags, modelDir, assets);
-        if (tex) {
-            material->AddTexture(6, tex);
-            numTextures++;
-        }
+        // AO: slot 6
+        addSlot(aiTextureType_AMBIENT_OCCLUSION, 6);
+        if (data.textures.empty() || data.textures.back().slot != 6)
+            addSlot(aiTextureType_LIGHTMAP, 6);
 
-        if (numTextures == 0) {
+        if (data.textures.empty()) {
             aiString name;
             if (aiMat->Get(AI_MATKEY_NAME, name) == AI_SUCCESS)
                 DD_WARN("Material {} has no textures!", name.C_Str());
             else
                 DD_WARN("Material (unnamed) has no textures!");
-            return std::make_shared<Material>(); // fallback
+            return data; // valid = false
         }
 
-        ShaderID shaderID = assets.LoadShaderFromPath("res/shader/builtin/Passes/ForwardLit.slang");
-        PipelineDesc pipelineDesc;
-        pipelineDesc.shaderID = shaderID;
-        PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
-        Ref<Pipeline> shader = assets.GetPipeline(pipelineID);
-        if (!shader) DD_WARN("Could not create shader");
-
-        material->SetShader(shader);
-        material->SetSampler(renderAPI.CreateSampler(SamplerProperties(SamplerFilter::MIN_MAG_MIP_LINEAR)));
-
-        return material;
+        data.valid = true;
+        return data;
     }
 
-    Ref<Texture> MaterialLoader::LoadTextureFromMaterial(aiMaterial* material, int type, MaterialFeatures& features,
-                                                         const std::filesystem::path& modelDir, AssetManager& assets)
+    std::string MaterialLoader::GetTexturePath(aiMaterial* material, int type, MaterialFeatures& features,
+                                                const std::filesystem::path& modelDir)
     {
         aiTextureType typeEnum = static_cast<aiTextureType>(type);
         aiString str;
-        if (!(material->GetTexture(typeEnum, 0, &str) == AI_SUCCESS && str.length > 0)) {
-            return nullptr;
-        }
+        if (!(material->GetTexture(typeEnum, 0, &str) == AI_SUCCESS && str.length > 0))
+            return {};
+
         switch (type) {
         case aiTextureType_DIFFUSE:
-        case aiTextureType_BASE_COLOR:
-            features |= MaterialFeatures::AlbedoMap;
-            break;
+        case aiTextureType_BASE_COLOR:          features |= MaterialFeatures::AlbedoMap; break;
         case aiTextureType_NORMALS:
-        case aiTextureType_DISPLACEMENT:
-            features |= MaterialFeatures::NormalMap;
-            break;
-        case aiTextureType_DIFFUSE_ROUGHNESS:
-            features |= MaterialFeatures::RoughnessMap;
-            break;
-        case aiTextureType_METALNESS:
-            features |= MaterialFeatures::MetallicMap;
-            break;
+        case aiTextureType_DISPLACEMENT:        features |= MaterialFeatures::NormalMap; break;
+        case aiTextureType_DIFFUSE_ROUGHNESS:   features |= MaterialFeatures::RoughnessMap; break;
+        case aiTextureType_METALNESS:           features |= MaterialFeatures::MetallicMap; break;
         case aiTextureType_GLTF_METALLIC_ROUGHNESS:
             features |= MaterialFeatures::MetallicMap | MaterialFeatures::RoughnessMap;
             break;
         case aiTextureType_AMBIENT_OCCLUSION:
-        case aiTextureType_LIGHTMAP:
-            features |= MaterialFeatures::AoMap;
-            break;
-        default:
-            break;
+        case aiTextureType_LIGHTMAP:            features |= MaterialFeatures::AoMap; break;
+        default: break;
         }
+
         std::string rawPath = str.C_Str();
-        std::replace(rawPath.begin(), rawPath.end(), '\\', '/'); // Fix windows generated paths
+        std::replace(rawPath.begin(), rawPath.end(), '\\', '/');
         std::filesystem::path texturePath = modelDir / rawPath;
-
         DD_INFO("Texture: {}", texturePath.string());
-
-        TextureID id = assets.LoadTexture(texturePath.string());
-        return assets.GetTexture(id);
+        return texturePath.string();
     }
+
 } // namespace Dodo

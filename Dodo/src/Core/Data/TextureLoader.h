@@ -8,7 +8,8 @@
 namespace Dodo {
 
     struct TextureData {
-        std::vector<uchar> pixels; // Empty on failure
+        std::vector<uchar> pixels;       // Empty on failure
+        std::vector<size_t> mipOffsets;  // Byte offset per mip into pixels (non-empty only for DDS/Preloaded)
         TextureProperties props;
     };
 
@@ -23,6 +24,7 @@ namespace Dodo {
       private:
         TextureData LoadHDR(const std::string& path);
         TextureData LoadLDR(const std::string& path);
+        TextureData LoadDDS(const std::string& path);
 
         /**
          * Returns 4 channels if the image has 3 or 4 channels, otherwise returns the original channel count.

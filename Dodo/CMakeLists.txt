@@ -39,6 +39,8 @@ target_include_directories(Dodo
     PUBLIC
         src
         lib/stb_image
+        lib/gli
+        lib/gli/external
         lib/spdlog/include
         lib/imgui/include
         lib/assimp/include

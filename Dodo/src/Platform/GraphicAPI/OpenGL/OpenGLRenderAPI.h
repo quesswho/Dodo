@@ -11,6 +11,7 @@
 #include "Core/Graphics/Pipeline/Pipeline.h"
 #include "Core/Graphics/Pipeline/PipelineDesc.h"
 #include "Core/Graphics/RenderAPITypes.h"
+#include "Core/Data/TextureLoader.h"
 
 #include <glad/gl.h>
 
@@ -101,6 +102,10 @@ namespace Dodo::Platform {
         inline Ref<Texture> CreateTexture(uchar* data, const TextureProperties& prop)
         {
             return std::make_shared<Texture>(data, prop);
+        }
+        inline Ref<Texture> CreateTexture(const TextureData& data)
+        {
+            return std::make_shared<Texture>(data.pixels.data(), data.mipOffsets, data.props);
         }
         inline Ref<TextureSampler> CreateSampler(const SamplerProperties& prop)
         {

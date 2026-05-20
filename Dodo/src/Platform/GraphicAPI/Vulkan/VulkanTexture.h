@@ -11,7 +11,7 @@ typedef struct VmaAllocation_T* VmaAllocation;
 namespace Dodo::Platform {
     class VulkanTexture {
       public:
-        VulkanTexture(uchar* data, const TextureProperties& prop, VkDevice device, VmaAllocator allocator,
+        VulkanTexture(const uchar* data, const TextureProperties& prop, VkDevice device, VmaAllocator allocator,
                       VkCommandBuffer uploadCmdBuf);
         ~VulkanTexture();
 
@@ -22,7 +22,7 @@ namespace Dodo::Platform {
         void FinalizeUpload();
 
       private:
-        void Init(uchar* data, VkCommandBuffer uploadCmdBuf);
+        void Init(const uchar* data, VkCommandBuffer uploadCmdBuf);
 
         void TransitionImageLayout(VkCommandBuffer cmd, VkImageLayout oldLayout, VkImageLayout newLayout,
                                    uint32_t baseMipLevel = 0, uint32_t levelCount = 1);

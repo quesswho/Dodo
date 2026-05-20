@@ -7,13 +7,72 @@
 
 namespace Dodo::Platform {
 
-    OpenGLTexture::OpenGLTexture(uchar* data, const TextureProperties& prop) : m_TextureProperties(prop), m_TextureID(0)
+    static bool IsCompressedFormat(TextureFormat fmt)
     {
-        Init(data);
+        switch (fmt) {
+        case TextureFormat::FORMAT_BC1_RGB_UNORM:
+        case TextureFormat::FORMAT_BC3_RGBA_UNORM:
+        case TextureFormat::FORMAT_BC5_RG_UNORM:
+        case TextureFormat::FORMAT_BC7_RGBA_UNORM:
+            return true;
+        default:
+            return false;
+        }
     }
 
-    void OpenGLTexture::Init(uchar* data)
+    static GLenum CompressedInternalFormat(TextureFormat fmt)
     {
+        switch (fmt) {
+        case TextureFormat::FORMAT_BC1_RGB_UNORM:  return 0x83F0; // GL_COMPRESSED_RGB_S3TC_DXT1_EXT
+        case TextureFormat::FORMAT_BC3_RGBA_UNORM: return 0x83F3; // GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+        case TextureFormat::FORMAT_BC5_RG_UNORM:   return 0x8DBD; // GL_COMPRESSED_RG_RGTC2
+        case TextureFormat::FORMAT_BC7_RGBA_UNORM: return 0x8E8C; // GL_COMPRESSED_RGBA_BPTC_UNORM
+        default:                                   return 0;
+        }
+    }
+
+    static size_t CompressedMipBytes(TextureFormat fmt, uint32_t w, uint32_t h)
+    {
+        uint32_t blockBytes = (fmt == TextureFormat::FORMAT_BC1_RGB_UNORM) ? 8u : 16u;
+        return ((w + 3u) / 4u) * ((h + 3u) / 4u) * blockBytes;
+    }
+
+    OpenGLTexture::OpenGLTexture(uchar* data, const TextureProperties& prop)
+        : m_TextureProperties(prop), m_TextureID(0)
+    {
+        Init(data, {});
+    }
+
+    OpenGLTexture::OpenGLTexture(const uchar* data, const std::vector<size_t>& mipOffsets,
+                                 const TextureProperties& prop)
+        : m_TextureProperties(prop), m_TextureID(0)
+    {
+        Init(data, mipOffsets);
+    }
+
+    void OpenGLTexture::Init(const uchar* data, const std::vector<size_t>& mipOffsets)
+    {
+        if (IsCompressedFormat(m_TextureProperties.m_Format)) {
+            GLenum fmt = CompressedInternalFormat(m_TextureProperties.m_Format);
+            uint32_t levels = m_TextureProperties.m_MipLevels;
+
+            glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
+            glTextureStorage2D(m_TextureID, (GLsizei)levels, fmt,
+                               (GLsizei)m_TextureProperties.m_Width,
+                               (GLsizei)m_TextureProperties.m_Height);
+
+            for (uint32_t i = 0; i < levels; ++i) {
+                uint32_t w = std::max(1u, m_TextureProperties.m_Width  >> i);
+                uint32_t h = std::max(1u, m_TextureProperties.m_Height >> i);
+                GLsizei mipBytes = (GLsizei)CompressedMipBytes(m_TextureProperties.m_Format, w, h);
+                glCompressedTextureSubImage2D(m_TextureID, (GLint)i, 0, 0,
+                                             (GLsizei)w, (GLsizei)h,
+                                             fmt, mipBytes,
+                                             data + mipOffsets[i]);
+            }
+            return;
+        }
+
         GLenum internalFormat, format, type = GL_UNSIGNED_BYTE;
         switch (m_TextureProperties.m_Format) {
         case TextureFormat::FORMAT_RED:
@@ -49,27 +108,6 @@ namespace Dodo::Platform {
 
         int mipLevels =
             1 + (int)floor(log2((double)std::max(m_TextureProperties.m_Width, m_TextureProperties.m_Height)));
-
-        size_t bpp = 0;
-        switch (m_TextureProperties.m_Format) {
-        case TextureFormat::FORMAT_RED:
-            bpp = 1;
-            break;
-        case TextureFormat::FORMAT_RGB:
-            bpp = 3;
-            break;
-        case TextureFormat::FORMAT_RGBA:
-            bpp = 4;
-            break;
-        case TextureFormat::FORMAT_RGB16F:
-            bpp = 12;
-            break;
-        case TextureFormat::FORMAT_RGB32F:
-            bpp = 12;
-            break;
-        default:
-            break;
-        }
 
         glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
         glTextureStorage2D(m_TextureID, mipLevels, internalFormat, m_TextureProperties.m_Width,

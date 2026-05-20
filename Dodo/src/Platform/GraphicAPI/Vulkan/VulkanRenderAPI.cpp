@@ -1324,7 +1324,7 @@ namespace Dodo::Platform {
         return false;
     }
 
-    Ref<Texture> VulkanRenderAPI::CreateTexture(uchar* data, const TextureProperties& prop)
+    Ref<Texture> VulkanRenderAPI::CreateTexture(const uchar* data, const TextureProperties& prop)
     {
         if (!m_UploadBatchActive) {
             // Start a new batch lazily (handles fallback textures created outside the main texture loop)

@@ -10,6 +10,7 @@
 #include "Core/Graphics/Material/TextureSampler.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
 #include "Core/Graphics/RenderAPITypes.h"
+#include "Core/Data/TextureLoader.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanDescriptorAllocator.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanDescriptorLayoutCache.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanFrameBufferedDescriptorSet.h"
@@ -102,7 +103,8 @@ namespace Dodo::Platform {
         Ref<Pipeline> CreatePipeline(const PipelineDesc& desc, AssetManager& assets);
         Ref<VertexBuffer> CreateVertexBuffer(const float* vertices, uint size, const BufferProperties& prop);
         Ref<IndexBuffer> CreateIndexBuffer(const uint* indices, uint count);
-        Ref<Texture> CreateTexture(uchar* data, const TextureProperties& prop);
+        Ref<Texture> CreateTexture(const uchar* data, const TextureProperties& prop);
+        Ref<Texture> CreateTexture(const TextureData& data) { return CreateTexture(data.pixels.data(), data.props); }
         Ref<TextureSampler> CreateSampler(const SamplerProperties& prop);
         Ref<CubeMap> CreateCubeMap(const CubeMapData& data);
         Ref<CubeMap> CreateCubeMapFromEquirectangular(Ref<Texture> equirect, uint faceSize, AssetManager& assets);

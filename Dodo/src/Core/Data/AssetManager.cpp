@@ -205,11 +205,33 @@ namespace Dodo {
             return it->second;
         }
 
-        Ref<Material> mat = m_MaterialLoader.LoadMaterial(path, *this, m_RenderAPI);
         MaterialID id = m_NextMaterialID++;
-
         m_MaterialID.emplace(path, id);
-        m_Materials.emplace(id, std::move(mat));
+
+        MaterialLoader::MaterialData data = m_MaterialLoader.LoadMaterialData(path);
+        if (!data.valid) {
+            m_Materials.emplace(id, std::make_shared<Material>());
+            m_MaterialStates.emplace(id, AssetState::Failed);
+            return id;
+        }
+
+        Ref<Material> material = std::make_shared<Material>();
+        ShaderID shaderID = LoadShaderFromPath("res/shader/builtin/Passes/ForwardLit.slang");
+        PipelineDesc desc;
+        desc.shaderID = shaderID;
+        material->SetShader(GetPipeline(CreatePipeline(desc, m_RenderAPI)));
+        material->SetSampler(m_RenderAPI.CreateSampler(data.samplerProps));
+        m_Materials.emplace(id, material);
+        m_MaterialStates.emplace(id, AssetState::Loading);
+
+        PendingMaterialAssembly assembly;
+        assembly.id = id;
+        assembly.material = material;
+        for (const auto& texEntry : data.textures) {
+            TextureID texID = LoadTexture(texEntry.path);
+            assembly.waitingFor.push_back({texEntry.slot, texID});
+        }
+        m_PendingMaterialAssemblies.push_back(std::move(assembly));
         return id;
     }
 
@@ -219,6 +241,13 @@ namespace Dodo {
         if (it != m_Materials.end()) return it->second;
         DD_ERR("Trying to get material that doesn't exist! ID: {0}", id);
         return nullptr;
+    }
+
+    AssetState AssetManager::GetMaterialState(MaterialID id) const
+    {
+        auto it = m_MaterialStates.find(id);
+        if (it != m_MaterialStates.end()) return it->second;
+        return AssetState::NotLoaded;
     }
 
     ModelID AssetManager::LoadModel(const std::string& path)
@@ -296,7 +325,7 @@ namespace Dodo {
         }
 
         for (auto& pending : textures) {
-            Ref<Texture> tex = renderAPI.CreateTexture(pending.data.pixels.data(), pending.data.props);
+            Ref<Texture> tex = renderAPI.CreateTexture(pending.data);
             m_PendingGPUTextures.push_back({pending.id, std::move(tex)});
             m_TextureStates[pending.id] = AssetState::Staging;
         }
@@ -396,6 +425,19 @@ namespace Dodo {
             m_Models.emplace(it->id, m_ModelLoader.BuildModel(modelData, materials, renderAPI));
             m_ModelStates[it->id] = AssetState::Loaded;
             it = m_PendingModelAssemblies.erase(it);
+        }
+
+        auto matIt = m_PendingMaterialAssemblies.begin();
+        while (matIt != m_PendingMaterialAssemblies.end()) {
+            bool ready = true;
+            for (const auto& [slot, texID] : matIt->waitingFor) {
+                if (!m_Textures.count(texID)) { ready = false; break; }
+            }
+            if (!ready) { ++matIt; continue; }
+            for (const auto& [slot, texID] : matIt->waitingFor)
+                matIt->material->AddTexture(slot, m_Textures.at(texID));
+            m_MaterialStates[matIt->id] = AssetState::Loaded;
+            matIt = m_PendingMaterialAssemblies.erase(matIt);
         }
 
         renderAPI.SubmitTextureBatch();

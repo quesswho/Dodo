@@ -13,7 +13,11 @@ namespace Dodo {
         FORMAT_RGB16F,  // 16-bit float RGB, half-precision HDR (not currently produced by loader)
         FORMAT_RGBA16F, // 16-bit float RGB, half-precision HDR
         FORMAT_RGB32F,  // 32-bit float RGB, full-precision HDR (not currently produced by loader)
-        FORMAT_RGBA32F  // 32-bit float RGBA, full-precision HDR (not currently produced by loader)
+        FORMAT_RGBA32F, // 32-bit float RGBA, full-precision HDR (not currently produced by loader)
+        FORMAT_BC1_RGB_UNORM,  // BC1/DXT1, 8 bytes/block, RGB (no alpha)
+        FORMAT_BC3_RGBA_UNORM, // BC3/DXT5, 16 bytes/block, RGBA
+        FORMAT_BC5_RG_UNORM,   // BC5/RGTC2, 16 bytes/block, RG (normal maps)
+        FORMAT_BC7_RGBA_UNORM  // BC7/BPTC, 16 bytes/block, high-quality RGBA
     };
 
     struct TextureProperties {

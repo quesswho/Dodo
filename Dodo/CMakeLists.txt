@@ -33,6 +33,7 @@ target_sources(Dodo PRIVATE
         ${DODO_CPP_SOURCES}
         ${DODO_H_SOURCES}
         lib/stb_image/stb_image.cpp
+        lib/tinyxml2/tinyxml2.cpp
 )
 
 target_include_directories(Dodo
@@ -46,6 +47,7 @@ target_include_directories(Dodo
         lib/assimp/include
         ${SLANG_INSTALL_DIR}/include
     PRIVATE
+        lib/tinyxml2
 )
 
 target_link_libraries(Dodo
@@ -54,7 +56,6 @@ target_link_libraries(Dodo
         assimp
         slang::slang
     PRIVATE
-        tinyxml2
 )
 
 target_compile_definitions(Dodo

@@ -38,7 +38,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 include(cmake/Slang.cmake)
-include(cmake/tinyxml2.cmake)
 
 # Dependencies
 if (DD_API_OPENGL)

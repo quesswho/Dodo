@@ -283,6 +283,7 @@ namespace Dodo::Platform {
         void RegisterTexture(class VulkanTexture& texture);
         void RegisterCubeMap(class VulkanCubeMap& cubeMap);
         uint32_t RegisterImageView(VkImageView view);
+        void BeginUploadBatch();
 
         VulkanGpuPassContext MakeGpuPassContext();
         std::unique_ptr<VulkanGpuPassQueue> m_GpuPassQueue;

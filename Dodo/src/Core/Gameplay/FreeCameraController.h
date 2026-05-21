@@ -13,7 +13,7 @@ namespace Dodo {
         void ResetMouse();
         void Resize(uint width, uint height);
 
-        const Math::FreeCamera& GetCamera() const { return m_Camera; }
+        Math::FreeCamera& GetCamera() { return m_Camera; }
 
       private:
         Math::FreeCamera m_Camera;

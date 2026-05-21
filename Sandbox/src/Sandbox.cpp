@@ -94,6 +94,10 @@ void GameLayer::Update(float elapsed)
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_0))
         m_Scene->m_LightSystem.m_Directional.m_Direction = Vec3(0.0f, -1.0f, 1.0f);
 
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_R)) {
+        m_Camera->GetCamera().SetPosition(Vec3(0.0f, 0.0f, 0.0f));
+    }
+
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_UP))
         m_LightLook += elapsed * Vec3(1.0f, 0.0f, 0.0f) * 10.0f;
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_DOWN))

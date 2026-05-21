@@ -65,11 +65,12 @@ namespace Dodo::Platform {
 
     VulkanPipeline::VulkanPipeline(VkDevice device, VkFormat colorFormat, VkFormat depthFormat,
                                    const ShaderAsset& shader, const PipelineDesc& desc,
-                                   VkDescriptorSetLayout globalSet0Layout, VkDescriptorSetLayout globalSet2Layout,
-                                   VulkanDescriptorLayoutCache& layoutCache, VulkanDescriptorAllocator& allocator)
+                                   VkDescriptorSetLayout globalSet0Layout, VkDescriptorSetLayout globalSet1Layout,
+                                   VkDescriptorSetLayout globalSet2Layout, VulkanDescriptorLayoutCache& layoutCache,
+                                   VulkanDescriptorAllocator& allocator)
         : m_Device(device), m_Desc(desc), m_LayoutCache(&layoutCache), m_Allocator(&allocator)
     {
-        // Determine which sets the shader declares via reflection (set 0 is handled globally)
+        // Determine which sets the shader declares via reflection (set 0 and set 2 are global)
         std::map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> setBindings;
         for (const auto& b : shader.descriptorBindings) {
             VkDescriptorSetLayoutBinding vkb{};
@@ -81,42 +82,42 @@ namespace Dodo::Platform {
         }
 
         m_ShaderBindings = shader.descriptorBindings;
-        m_HasSet1 = setBindings.count(1) > 0;
         m_HasSet2 = setBindings.count(2) > 0;
 
-        // Set 0 (FrameData + CsmData) is owned and bound globally by VulkanRenderAPI, not per-pipeline.
-        // All pipelines use the same global layout so the single bind at frame start is always compatible.
+        // Set 0 and Set 1 are handled globally by VulkanRenderAPI.
+        // All pipelines use the same global layouts so frame-start binds are always compatible.
         uint32_t highestSet = 0;
         for (const auto& [s, _] : setBindings)
             highestSet = std::max(highestSet, s);
-        m_SetLayouts.resize(std::max(highestSet + 1u, 1u), VK_NULL_HANDLE);
+        // Always include at least 3 sets (0, 1, 2) so the pipeline layout covers all global sets.
+        m_SetLayouts.resize(std::max(highestSet + 1u, 3u), VK_NULL_HANDLE);
         m_SetLayouts[0] = globalSet0Layout;
+        m_SetLayouts[1] = globalSet1Layout; // global bindless heap or pass-specific layout
+        m_SetLayouts[2] = globalSet2Layout;
 
         for (auto& [set, bindings] : setBindings) {
-            if (set == 0) continue;
+            if (set == 0 || set == 2) continue;
 
-            if (set == 2) {
-                // Use the shared global Set 2 layout (ModelData UBO, binding 0, UNIFORM_BUFFER_DYNAMIC).
-                // The descriptor set itself is owned by VulkanRenderAPI and bound via BindObjectSet.
-                m_SetLayouts[2] = globalSet2Layout;
+            if (set == 1 && !desc.useBindlessHeap) {
+                // GPU pass pipelines manage their own Set 1 from shader reflection.
+                m_SetLayouts[1] = m_LayoutCache->GetOrCreate(bindings);
                 continue;
             }
 
-            m_SetLayouts[set] = m_LayoutCache->GetOrCreate(bindings);
+            if (set > 2) {
+                m_SetLayouts[set] = m_LayoutCache->GetOrCreate(bindings);
+            }
         }
 
         // Vulkan requires all pSetLayouts entries to be valid handles.
-        // Gaps at slots 1+ get canonical layouts so all pipelines are compatible at those slots.
-        for (uint32_t i = 1; i < (uint32_t)m_SetLayouts.size(); i++) {
+        // Any gaps beyond set 2 get a canonical dummy layout.
+        for (uint32_t i = 3; i < (uint32_t)m_SetLayouts.size(); i++) {
             if (m_SetLayouts[i] != VK_NULL_HANDLE) continue;
-
             VkDescriptorSetLayoutBinding canonBinding{};
             canonBinding.binding = 0;
             canonBinding.descriptorCount = 1;
             canonBinding.stageFlags = VK_SHADER_STAGE_ALL_GRAPHICS;
-            canonBinding.descriptorType =
-                (i == 2) ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-
+            canonBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             m_SetLayouts[i] = m_LayoutCache->GetOrCreate({canonBinding});
         }
 
@@ -342,71 +343,4 @@ namespace Dodo::Platform {
         globalSet2.Bind(cmd, m_Layout, modelDynamicOffset);
     }
 
-    void VulkanPipeline::BindMaterialSet(VkCommandBuffer cmd, VulkanFrameBufferedDescriptorSet& matSet,
-                                         uint32_t frameIdx, uint32_t frameEpoch, const VkImageView* views,
-                                         const VkSampler* samplers, const bool* isCubeMap, const bool* isDepth,
-                                         int maxSlots, VkImageView dummyView, VkSampler dummySampler)
-    {
-        if (!m_HasSet1) return;
-        if (m_SetLayouts.size() <= 1 || m_SetLayouts[1] == VK_NULL_HANDLE) return;
-
-        // Allocate persistent sets from the shared allocator on first use
-        if (!matSet.IsAllocated()) {
-            for (int i = 0; i < 2; i++) {
-                matSet.Get(i) = m_Allocator->Allocate(m_SetLayouts[1], 1);
-                if (!matSet.Get(i).IsValid()) return;
-            }
-        }
-
-        if (matSet.IsDirtyForFrame(frameIdx) && !matSet.WasUpdatedThisEpoch(frameIdx, frameEpoch)) {
-            VkSampler firstSampler = VK_NULL_HANDLE;
-            for (int s = 0; s < maxSlots && firstSampler == VK_NULL_HANDLE; s++)
-                firstSampler = samplers[s];
-
-            VulkanDescriptorSet& s = matSet.Get(frameIdx);
-            for (const auto& b : m_ShaderBindings) {
-                if (b.set != 1) continue;
-
-                if (b.type == DescriptorType::SampledTexture) {
-                    // Only use the pending view if it is a 2D view (never bind a cube view to a Texture2D binding)
-                    bool hasPending = b.binding < (uint32_t)maxSlots && views[b.binding] && !isCubeMap[b.binding];
-                    VkImageView view = hasPending ? views[b.binding] : dummyView;
-                    if (!view) continue;
-                    VkImageLayout imgLayout = (hasPending && isDepth[b.binding])
-                                                  ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
-                                                  : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    s.Write(b.binding, view, imgLayout);
-                } else if (b.type == DescriptorType::SampledCubeMap) {
-                    // Only use the pending view if it is a cube view
-                    bool hasPending = b.binding < (uint32_t)maxSlots && views[b.binding] && isCubeMap[b.binding];
-                    VkImageView view = hasPending ? views[b.binding] : dummyView;
-                    if (!view) continue;
-                    s.Write(b.binding, view, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                } else if (b.type == DescriptorType::Sampler) {
-                    VkSampler sampler = (b.binding < (uint32_t)maxSlots && samplers[b.binding])
-                                            ? samplers[b.binding]
-                                            : (firstSampler ? firstSampler : dummySampler);
-                    if (!sampler) continue;
-                    s.Write(b.binding, sampler);
-                } else if (b.type == DescriptorType::CombinedImageSampler) {
-                    bool hasPendingView = b.binding < (uint32_t)maxSlots && views[b.binding];
-                    VkImageView view = hasPendingView ? views[b.binding] : dummyView;
-                    VkSampler sampler = (b.binding < (uint32_t)maxSlots && samplers[b.binding])
-                                            ? samplers[b.binding]
-                                            : (firstSampler ? firstSampler : dummySampler);
-                    if (!view || !sampler) continue;
-                    VkImageLayout imgLayout = (hasPendingView && isDepth[b.binding])
-                                                  ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
-                                                  : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    s.Write(b.binding, view, sampler, imgLayout);
-                }
-            }
-
-            s.Flush(m_Device);
-            matSet.SetUpdatedEpoch(frameIdx, frameEpoch);
-            matSet.ClearDirtyForFrame(frameIdx);
-        }
-
-        matSet.Get(frameIdx).Bind(cmd, m_Layout);
-    }
 } // namespace Dodo::Platform

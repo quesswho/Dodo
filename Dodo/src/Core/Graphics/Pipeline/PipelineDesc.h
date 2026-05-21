@@ -52,5 +52,10 @@ namespace Dodo {
         // shader reflection. Location N maps to m_Elements[N]. Required when the shader uses a
         // subset of attributes (e.g. shadow pass uses only position from a full mesh VBO).
         BufferProperties vertexLayout;
+
+        // When true (default), Set 1 is the global bindless texture heap shared across all pipelines.
+        // Set to false for GPU compute passes (equirect, convolution) that build their own Set 1 layout
+        // from shader reflection and manage their own per-pass descriptor sets.
+        bool useBindlessHeap = true;
     };
 } // namespace Dodo

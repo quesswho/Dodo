@@ -43,7 +43,7 @@ namespace Dodo {
 
         slang::TargetDesc targetDesc = {};
         targetDesc.format = SLANG_SPIRV;
-        targetDesc.profile = m_GlobalSession->findProfile("spirv_1_5");
+        targetDesc.profile = m_GlobalSession->findProfile("spirv_1_6");
         // TODO: Something is making spirv generation replace all main function names with "main"
         // targetDesc.flags = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
 

@@ -14,7 +14,7 @@ namespace Dodo::Platform {
      */
     class VulkanDescriptorAllocator {
       public:
-        explicit VulkanDescriptorAllocator(VkDevice device);
+        explicit VulkanDescriptorAllocator(VkDevice device, bool updateAfterBind = false);
         ~VulkanDescriptorAllocator();
 
         VulkanDescriptorAllocator(const VulkanDescriptorAllocator&) = delete;
@@ -28,11 +28,14 @@ namespace Dodo::Platform {
         VulkanDescriptorSet Allocate(VkDescriptorSetLayout layout, uint32_t setIndex);
 
       private:
-        static constexpr uint32_t k_SetsPerPool = 512;
+        static constexpr uint32_t k_SetsPerPool         = 512;
+        static constexpr uint32_t k_BindlessImageSlots   = 4096;
+        static constexpr uint32_t k_BindlessSamplerSlots = 32;
 
         VkDescriptorPool GrabPool();
         VkDescriptorPool CreatePool();
 
+        bool m_UpdateAfterBind = false;
         VkDevice m_Device;
         VkDescriptorPool m_CurrentPool = VK_NULL_HANDLE;
         std::vector<VkDescriptorPool> m_UsedPools;

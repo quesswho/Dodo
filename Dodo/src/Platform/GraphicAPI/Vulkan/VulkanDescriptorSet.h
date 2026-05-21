@@ -16,6 +16,7 @@ namespace Dodo::Platform {
       public:
         bool IsValid() const { return m_Handle != VK_NULL_HANDLE; }
         void Invalidate() { m_Handle = VK_NULL_HANDLE; }
+        VkDescriptorSet GetHandle() const { return m_Handle; }
 
         void Write(uint32_t binding, VkDescriptorType type, VkBuffer buffer, VkDeviceSize offset, VkDeviceSize range);
 

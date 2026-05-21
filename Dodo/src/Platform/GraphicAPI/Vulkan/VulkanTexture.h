@@ -10,6 +10,7 @@ typedef struct VmaAllocation_T* VmaAllocation;
 
 namespace Dodo::Platform {
     class VulkanTexture {
+        friend class VulkanRenderAPI;
       public:
         VulkanTexture(const uchar* data, const TextureProperties& prop, VkDevice device, VmaAllocator allocator,
                       VkCommandBuffer uploadCmdBuf);
@@ -17,6 +18,7 @@ namespace Dodo::Platform {
 
         VkImageView GetImageView() const { return m_ImageView; }
         const TextureProperties& GetTextureProperties() const { return m_TextureProperties; }
+        uint32_t GetBindlessHandle() const { return m_BindlessHandle; }
 
         // Destroys the staging buffer once the upload fence has signaled.
         void FinalizeUpload();
@@ -36,6 +38,7 @@ namespace Dodo::Platform {
         VmaAllocation m_Allocation = nullptr;
         VkImageView m_ImageView = VK_NULL_HANDLE;
         uint32_t m_MipLevels = 1;
+        uint32_t m_BindlessHandle = 0;
         VkBuffer m_StagingBuffer = VK_NULL_HANDLE;
         VmaAllocation m_StagingAlloc = nullptr;
     };

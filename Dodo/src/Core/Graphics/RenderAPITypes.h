@@ -36,5 +36,9 @@ namespace Dodo {
     struct DrawData {
         Math::Mat4 model;
         Math::Mat3 normalMatrix;
+        // Bindless texture handles (Vulkan only): indices into g_Textures[].
+        // Slot mapping: [0]=albedo, [1]=roughness, [2]=normal, [3]=metallic,
+        //               [4]=ao, [5]=spec, [6]=samplerIdx, [7]=unused
+        uint32_t textureHandles[8] = {};
     };
 } // namespace Dodo

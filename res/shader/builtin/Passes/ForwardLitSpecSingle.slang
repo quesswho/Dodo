@@ -1,19 +1,11 @@
 // ForwardLitSpecSingle.slang
 #include "../Common/Uniforms.slang"
+#include "../Common/BindlessUniforms.slang"
 #include "../Common/VertexInterface.slang"
 #include "../Common/TangentSpace.slang"
 #include "../Lightning/ShadowSampling.slang"
 #include "../Lightning/CookTorrance.slang"
 #include "../Lightning/Lights.slang"
-
-// Single-channel specular texture set (set 1)
-[[vk::binding(0, 1)]] Texture2D<float4> u_DiffuseMap;
-[[vk::binding(2, 1)]] Texture2D<float4> u_NormalMap;
-[[vk::binding(3, 1)]] Texture2DArray<float> u_ShadowMap;
-[[vk::binding(4, 1)]] SamplerState u_LinearSampler;
-[[vk::binding(6, 1)]] Texture2D<float4> u_AoMap;
-[[vk::binding(7, 1)]] TextureCube<float4> u_IrradianceMap;
-[[vk::binding(8, 1)]] Texture2D<float4> u_SpecularMap; // R = specular intensity (no gloss channel)
 
 [shader("vertex")]
 VertexOutput vertexMain(VertexInput input)
@@ -30,19 +22,22 @@ VertexOutput vertexMain(VertexInput input)
 [shader("fragment")]
 float4 fragmentMain(VertexOutput input) : SV_Target
 {
-    float4 diffuseSample = u_DiffuseMap.Sample(u_LinearSampler, input.texCoord);
+    SamplerState samp = g_Samplers[u_SamplerIdx];
+
+    float4 diffuseSample = g_Textures[NonUniformResourceIndex(u_AlbedoIdx)].Sample(samp, input.texCoord);
 
     if (diffuseSample.a < 0.001f) discard;
 
     float3x3 TBN = buildTBN(input.normalWS, input.tangentWS);
-    float3 normalTS = u_NormalMap.Sample(u_LinearSampler, input.texCoord).rgb * 2.0f - 1.0f;
+    float3 normalTS = g_Textures[NonUniformResourceIndex(u_NormalIdx)].Sample(samp, input.texCoord).rgb * 2.0f - 1.0f;
     float3 N = normalize(mul(normalTS, TBN));
 
-    float spec      = u_SpecularMap.Sample(u_LinearSampler, input.texCoord).b;
+    // u_SpecIdx carries the single-channel specular map (R = intensity, no gloss)
+    float spec      = g_Textures[NonUniformResourceIndex(u_SpecIdx)].Sample(samp, input.texCoord).b;
     float3 F0        = float3(spec, spec, spec);
     float  roughness = 0.5f;
 
-    float aoSample = u_AoMap.Sample(u_LinearSampler, input.texCoord).r;
+    float aoSample = g_Textures[NonUniformResourceIndex(u_AoIdx)].Sample(samp, input.texCoord).r;
     float ao       = (aoSample > 0.0f) ? aoSample : 1.0f;
 
     float3 V = normalize(u_CameraPos - input.positionWS);
@@ -55,11 +50,12 @@ float4 fragmentMain(VertexOutput input) : SV_Target
     float3 L        = normalize(-dl.m_Direction);
 
     float viewDepth = abs(mul(u_CameraView, float4(input.positionWS, 1.0f)).z);
-    float shadow    = shadowCalculationCSMPCSS(input.positionWS, N, L, u_ShadowMap, u_LinearSampler, viewDepth, 5.0f);
+    float shadow    = shadowCalculationCSMPCSS(input.positionWS, N, L, g_ShadowMap,
+                                               g_Samplers[SAMPLER_SHADOW], viewDepth, 5.0f);
     float3 Lo       = evaluateBRDFSpecGloss(radiance, diffuseSample.rgb, N, V, L, roughness, F0, shadow);
 
     float  NdotV      = max(dot(N, V), 0.001f);
-    float3 irradiance = u_IrradianceMap.SampleLevel(u_LinearSampler, N, 0).rgb;
+    float3 irradiance = g_IrradianceMap.SampleLevel(g_Samplers[SAMPLER_LINEAR_CLAMP], N, 0).rgb;
     float3 ambient    = evaluateAmbientSpecGloss(diffuseSample.rgb, ao, roughness, NdotV, F0, irradiance);
 
     return float4(Lo + ambient * 0.03f, diffuseSample.a);

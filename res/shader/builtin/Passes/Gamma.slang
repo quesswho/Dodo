@@ -1,6 +1,6 @@
 // Gamma.slang
-[[vk::binding(0, 1)]] Texture2D<float4> textureMap : register(t0);
-[[vk::binding(1, 1)]] SamplerState textureSampler : register(s0);
+#include "../Common/Uniforms.slang"
+#include "../Common/BindlessUniforms.slang"
 
 struct VertexInput
 {
@@ -26,7 +26,8 @@ VertexOutput vertexMain(VertexInput input)
 [shader("fragment")]
 float4 fragmentMain(VertexOutput input, uniform float gamma, uniform float exposure) : SV_Target
 {
-    float3 color = textureMap.Sample(textureSampler, input.texCoord).rgb;
+    SamplerState samp = g_Samplers[u_SamplerIdx];
+    float3 color = g_Textures[NonUniformResourceIndex(u_AlbedoIdx)].Sample(samp, input.texCoord).rgb;
     color *= exposure;
     float3 result = pow(color / (color + float3(1.0f, 1.0f, 1.0f)), float3(1.0f / gamma));
     return float4(result, 1.0f);

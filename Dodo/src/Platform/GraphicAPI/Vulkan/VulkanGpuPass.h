@@ -21,6 +21,7 @@ namespace Dodo::Platform {
         VkCommandPool commandPool;
         VkQueue graphicsQueue;
         VulkanDescriptorAllocator* descriptorAllocator;
+        VulkanDescriptorAllocator* bindlessAllocator;
         VkDescriptorSetLayout globalSet0Layout;
         VkDescriptorSetLayout globalSet2Layout;
     };

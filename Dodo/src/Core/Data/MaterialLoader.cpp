@@ -157,23 +157,23 @@ namespace Dodo {
             addSlot(normalType, 2);
         }
 
-        // Metallic: slot 5
-        addSlot(aiTextureType_METALNESS, 5);
+        // Metallic: slot 3
+        addSlot(aiTextureType_METALNESS, 3);
 
-        // Packed ORM: slots 1 + 5 if no separate maps
+        // Packed ORM: slots 1 + 3 if no separate maps
         if (!HasFeature(flags, MaterialFeatures::RoughnessMap) &&
             !HasFeature(flags, MaterialFeatures::MetallicMap)) {
             std::string path = GetTexturePath(aiMat, aiTextureType_GLTF_METALLIC_ROUGHNESS, flags, dir);
             if (!path.empty()) {
                 data.textures.push_back({1, path});
-                data.textures.push_back({5, path});
+                data.textures.push_back({3, path});
             }
         }
 
-        // AO: slot 6
-        addSlot(aiTextureType_AMBIENT_OCCLUSION, 6);
-        if (data.textures.empty() || data.textures.back().slot != 6)
-            addSlot(aiTextureType_LIGHTMAP, 6);
+        // AO: slot 4
+        addSlot(aiTextureType_AMBIENT_OCCLUSION, 4);
+        if (data.textures.empty() || data.textures.back().slot != 4)
+            addSlot(aiTextureType_LIGHTMAP, 4);
 
         if (data.textures.empty()) {
             aiString name;

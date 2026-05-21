@@ -67,10 +67,8 @@ namespace Dodo {
         if (!cubeMap) return; // Still loading
 
         renderAPI.BindPipeline(m_Shader);
-        renderAPI.SetDrawData({.model = Math::Mat4(1.0f), .normalMatrix = Math::Mat3(1.0f)});
-        renderAPI.BindTextureSampler(0, m_Sampler);
         renderAPI.BindCubeMap(0, cubeMap);
-        renderAPI.SetMaterialDescriptorSet(m_MaterialSet);
+        renderAPI.SetDrawData({.model = Math::Mat4(1.0f), .normalMatrix = Math::Mat3(1.0f)});
         renderAPI.BindVertexBuffer(m_VertexBuffer);
         renderAPI.DrawArray(36);
     }

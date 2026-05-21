@@ -4,7 +4,10 @@
 
 namespace Dodo::Platform {
 
-    VulkanDescriptorAllocator::VulkanDescriptorAllocator(VkDevice device) : m_Device(device) {}
+    VulkanDescriptorAllocator::VulkanDescriptorAllocator(VkDevice device, bool updateAfterBind)
+        : m_Device(device), m_UpdateAfterBind(updateAfterBind)
+    {
+    }
 
     VulkanDescriptorAllocator::~VulkanDescriptorAllocator()
     {
@@ -59,19 +62,32 @@ namespace Dodo::Platform {
 
     VkDescriptorPool VulkanDescriptorAllocator::CreatePool()
     {
-        VkDescriptorPoolSize sizes[] = {
-            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, k_SetsPerPool * 2},
-            {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, k_SetsPerPool},
-            {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, k_SetsPerPool * 8},
-            {VK_DESCRIPTOR_TYPE_SAMPLER, k_SetsPerPool * 8},
-            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, k_SetsPerPool * 4},
-        };
-
         VkDescriptorPoolCreateInfo poolCI{};
         poolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        poolCI.maxSets = k_SetsPerPool;
-        poolCI.poolSizeCount = (uint32_t)std::size(sizes);
-        poolCI.pPoolSizes = sizes;
+
+        if (m_UpdateAfterBind) {
+            // Dedicated pool for the bindless heap: one large SAMPLED_IMAGE array + sampler table.
+            VkDescriptorPoolSize sizes[] = {
+                {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, k_BindlessImageSlots},
+                {VK_DESCRIPTOR_TYPE_SAMPLER,       k_BindlessSamplerSlots},
+                {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 16},
+            };
+            poolCI.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+            poolCI.maxSets = 64;
+            poolCI.poolSizeCount = (uint32_t)std::size(sizes);
+            poolCI.pPoolSizes = sizes;
+        } else {
+            VkDescriptorPoolSize sizes[] = {
+                {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, k_SetsPerPool * 2},
+                {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, k_SetsPerPool},
+                {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, k_SetsPerPool * 8},
+                {VK_DESCRIPTOR_TYPE_SAMPLER, k_SetsPerPool * 8},
+                {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, k_SetsPerPool * 4},
+            };
+            poolCI.maxSets = k_SetsPerPool;
+            poolCI.poolSizeCount = (uint32_t)std::size(sizes);
+            poolCI.pPoolSizes = sizes;
+        }
 
         VkDescriptorPool pool = VK_NULL_HANDLE;
         vkCreateDescriptorPool(m_Device, &poolCI, nullptr, &pool);

@@ -18,4 +18,12 @@
 {
     float4x4 u_Model;
     float4x4 u_NormalMatrix;
+    uint u_AlbedoIdx;    // index into g_Textures[] (slot 0 = 1x1 white fallback)
+    uint u_RoughIdx;
+    uint u_NormalIdx;
+    uint u_MetallicIdx;
+    uint u_AoIdx;
+    uint u_SpecIdx;
+    uint u_SamplerIdx;   // index into g_Samplers[]
+    uint u_ModelPad;
 };

@@ -16,6 +16,7 @@
 #include "Platform/GraphicAPI/Vulkan/VulkanFrameBufferedDescriptorSet.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanGpuPass.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanGpuPassQueue.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanModelData.h"
 
 #include "Platform/WindowAPI/NativeWindowHandle.h"
 #ifdef DD_API_WIN32
@@ -83,11 +84,11 @@ namespace Dodo::Platform {
         void BindTexture(uint slot, Ref<Texture> texture);
         void BindTextureSampler(uint slot, Ref<TextureSampler> sampler);
         void BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer);
+        uint32_t RegisterSampler(VkSampler sampler);
         void* GetFrameBufferImGuiTextureID(Ref<FrameBuffer> framebuffer);
         void BindVertexBuffer(const Ref<VertexBuffer>& vb);
         void BindIndexBuffer(const Ref<IndexBuffer>& ib);
         void BindPipeline(Ref<Pipeline> pipeline);
-        void SetMaterialDescriptorSet(VulkanFrameBufferedDescriptorSet& matSet) { m_BoundMaterialSet = &matSet; }
         void PushConstants(const void* data, size_t size);
         void SetFrameData(const Dodo::FrameData& data);
         void SetDrawData(const DrawData& data);
@@ -216,12 +217,11 @@ namespace Dodo::Platform {
         };
         std::unordered_map<VulkanFrameBuffer*, ImGuiFrameBufferEntry> m_ImGuiFrameBufferEntries;
 
-        // Pending texture/sampler state (bound before each draw)
-        static constexpr int maxTextureSlots = 9;
-        VkImageView m_PendingImageViews[maxTextureSlots] = {};
-        bool m_PendingIsCubeMap[maxTextureSlots] = {};
-        bool m_PendingIsDepth[maxTextureSlots] = {};
-        VkSampler m_PendingSamplers[maxTextureSlots] = {};
+        // Per-draw pending texture handles: filled by BindTexture/BindTextureSampler, consumed by SetDrawData.
+        // Slot mapping mirrors DrawData::textureHandles: [0]=albedo, [1]=roughness, [2]=normal, [3]=metallic,
+        // [4]=ao, [5]=spec, [6]=samplerIdx, [7]=unused
+        uint32_t m_PendingTextureHandles[8] = {};
+        uint32_t m_PendingSamplerHandle = 0;
 
         // Fallback 1x1 resources used for set-1 bindings with no pending image
         VkImage m_DummyImage = VK_NULL_HANDLE;
@@ -233,24 +233,31 @@ namespace Dodo::Platform {
         static constexpr int maxFramesInFlight = 2;
         std::unique_ptr<VulkanDescriptorLayoutCache> m_LayoutCache;
         std::unique_ptr<VulkanDescriptorAllocator> m_DescriptorAllocator;
+        std::unique_ptr<VulkanDescriptorAllocator> m_BindlessAllocator;
 
-        // Global set 0 (FrameData + CsmData): single descriptor set per frame, bound once at
-        // the start of each command buffer. All pipeline layouts use the same set 0 layout so
-        // the binding is never invalidated by pipeline switches within a frame.
+        // Global set 0 (FrameData + CsmData + samplers + shadow + irradiance): bound once per frame.
         VkDescriptorSetLayout m_GlobalSet0Layout = VK_NULL_HANDLE;
         VkPipelineLayout m_GlobalFrameLayout = VK_NULL_HANDLE;
         std::array<VulkanDescriptorSet, maxFramesInFlight> m_GlobalSet0{};
 
-        // Global set 2 (ModelData dynamic UBO): shared across all pipelines. All pipelines that
-        // declare set 2 point to the same UBO buffers, so one descriptor set per frame suffices.
+        // Global set 1 (bindless 2D texture heap, update-after-bind, single shared set).
+        static constexpr uint32_t k_BindlessMaxTextures = 4096;
+        static constexpr uint32_t k_BindlessMaxSamplers = 32;
+        VkDescriptorSetLayout m_GlobalSet1Layout = VK_NULL_HANDLE;
+        VkDescriptorSet m_BindlessSet = VK_NULL_HANDLE;
+        uint32_t m_BindlessNextSlot = 1;
+        std::vector<uint32_t> m_BindlessFreeList;
+        std::unordered_map<VkImageView, uint32_t> m_BindlessHandleMap;
+
+        // Sampler table (indices 0-5 are named defaults, 6+ are user-registered).
+        std::vector<VkSampler> m_RegisteredSamplers;
+        std::unordered_map<VkSampler, uint32_t> m_SamplerIndexMap;
+        std::unordered_map<uint32_t, Ref<TextureSampler>> m_SamplerCache;
+        uint32_t m_ActiveSamplerCount = 0;
+
+        // Global set 2 (ModelData dynamic UBO): shared across all pipelines.
         VkDescriptorSetLayout m_GlobalSet2Layout = VK_NULL_HANDLE;
         std::array<VulkanDescriptorSet, maxFramesInFlight> m_GlobalSet2{};
-
-        // GPU-side layout for ModelData cbuffer (float4x4 model + float4x4 normal = 128 bytes)
-        struct GPUModelData {
-            float model[16];  // Mat4
-            float normal[16]; // Mat4 (Mat3 zero-padded into 4th column)
-        };
 
         // Persistently-mapped UBOs for FrameData (one per frame)
         struct MappedBuffer {
@@ -268,11 +275,14 @@ namespace Dodo::Platform {
         uint32_t m_ModelUBOCursor = 0;   // next free slot index within the current frame
         uint32_t m_LastModelOffset = 0;  // byte offset written by the most recent SetDrawData
 
-        // Current pipeline reference (needed for set-1 layout when binding textures)
+        // Current pipeline reference
         class VulkanPipeline* m_BoundPipelinePtr = nullptr;
-        VulkanFrameBufferedDescriptorSet* m_BoundMaterialSet = nullptr;
         class VulkanFrameBuffer* m_BoundFrameBuffer = nullptr;
         bool m_IsRendering = false;
+
+        void RegisterTexture(class VulkanTexture& texture);
+        void RegisterCubeMap(class VulkanCubeMap& cubeMap);
+        uint32_t RegisterImageView(VkImageView view);
 
         VulkanGpuPassContext MakeGpuPassContext();
         std::unique_ptr<VulkanGpuPassQueue> m_GpuPassQueue;

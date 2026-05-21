@@ -12,6 +12,8 @@ namespace Dodo::Platform {
     bool VulkanDescriptorLayoutCache::LayoutKey::operator==(const LayoutKey& other) const
     {
         if (m_Bindings.size() != other.m_Bindings.size()) return false;
+        if (m_LayoutFlags != other.m_LayoutFlags) return false;
+        if (m_BindingFlags != other.m_BindingFlags) return false;
         for (size_t i = 0; i < m_Bindings.size(); i++) {
             const auto& a = m_Bindings[i];
             const auto& b = other.m_Bindings[i];
@@ -31,6 +33,9 @@ namespace Dodo::Platform {
             seed = HashCombine(seed, b.descriptorCount);
             seed = HashCombine(seed, b.stageFlags);
         }
+        seed = HashCombine(seed, key.m_LayoutFlags);
+        for (auto f : key.m_BindingFlags)
+            seed = HashCombine(seed, f);
         return seed;
     }
 
@@ -44,17 +49,32 @@ namespace Dodo::Platform {
 
     VkDescriptorSetLayout VulkanDescriptorLayoutCache::GetOrCreate(std::vector<VkDescriptorSetLayoutBinding> bindings)
     {
+        return GetOrCreate(std::move(bindings), 0, {});
+    }
+
+    VkDescriptorSetLayout VulkanDescriptorLayoutCache::GetOrCreate(
+        std::vector<VkDescriptorSetLayoutBinding> bindings,
+        VkDescriptorSetLayoutCreateFlags layoutFlags,
+        std::vector<VkDescriptorBindingFlags> bindingFlags)
+    {
         std::sort(bindings.begin(), bindings.end(),
                   [](const VkDescriptorSetLayoutBinding& a, const VkDescriptorSetLayoutBinding& b) {
                       return a.binding < b.binding;
                   });
 
-        LayoutKey key{std::move(bindings)};
+        LayoutKey key{std::move(bindings), layoutFlags, std::move(bindingFlags)};
         auto it = m_Cache.find(key);
         if (it != m_Cache.end()) return it->second;
 
+        VkDescriptorSetLayoutBindingFlagsCreateInfo flagsCI{};
+        flagsCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+        flagsCI.bindingCount = (uint32_t)key.m_BindingFlags.size();
+        flagsCI.pBindingFlags = key.m_BindingFlags.empty() ? nullptr : key.m_BindingFlags.data();
+
         VkDescriptorSetLayoutCreateInfo info{};
         info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        info.pNext = key.m_BindingFlags.empty() ? nullptr : &flagsCI;
+        info.flags = key.m_LayoutFlags;
         info.bindingCount = (uint32_t)key.m_Bindings.size();
         info.pBindings = key.m_Bindings.data();
 

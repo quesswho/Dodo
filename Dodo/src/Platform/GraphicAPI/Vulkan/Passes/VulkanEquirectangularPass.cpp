@@ -2,6 +2,7 @@
 
 #include "Platform/GraphicAPI/Vulkan/VulkanBuffer.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanDescriptorAllocator.h"
+#include "Platform/GraphicAPI/Vulkan/VulkanModelData.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanPipeline.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanSampler.h"
 #include "Platform/GraphicAPI/Vulkan/VulkanTexture.h"
@@ -13,12 +14,6 @@
 #include <cmath>
 
 namespace Dodo::Platform {
-
-    // Layout for the per-draw model matrix UBO (mirrors GPUModelData in VulkanRenderAPI).
-    struct EquirectGPUModelData {
-        float model[16];
-        float normal[16];
-    };
 
     VulkanEquirectangularPass::VulkanEquirectangularPass(
         Ref<Texture> equirect, uint faceSize,
@@ -145,18 +140,18 @@ namespace Dodo::Platform {
         }
 
         m_CsmUBO   = makeMappedUBO(sizeof(Dodo::CsmData));
-        m_ModelUBO = makeMappedUBO(sizeof(EquirectGPUModelData));
+        m_ModelUBO = makeMappedUBO(sizeof(GPUModelData));
         {
-            EquirectGPUModelData gmd{};
+            GPUModelData gmd{};
             gmd.model[0]  = gmd.model[5]  = gmd.model[10]  = gmd.model[15]  = 1.0f;
             gmd.normal[0] = gmd.normal[5] = gmd.normal[10] = gmd.normal[15] = 1.0f;
-            memcpy(m_ModelUBO.mapped, &gmd, sizeof(EquirectGPUModelData));
+            memcpy(m_ModelUBO.mapped, &gmd, sizeof(GPUModelData));
         }
 
         // Allocate descriptor sets.
         // set0: one per face so each draw gets its own view-projection matrix.
         for (int i = 0; i < 6; i++) {
-            m_FaceSet0[i] = ctx.descriptorAllocator->Allocate(ctx.globalSet0Layout, 0);
+            m_FaceSet0[i] = ctx.bindlessAllocator->Allocate(ctx.globalSet0Layout, 0);
             m_FaceSet0[i].Write(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
                                 m_FaceUBOs[i].buffer, 0, sizeof(Dodo::FrameData));
             m_FaceSet0[i].Write(3, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -175,7 +170,7 @@ namespace Dodo::Platform {
         // set2: identity model matrix (dynamic UBO, offset 0).
         m_Set2 = ctx.descriptorAllocator->Allocate(ctx.globalSet2Layout, 2);
         m_Set2.Write(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-                     m_ModelUBO.buffer, 0, sizeof(EquirectGPUModelData));
+                     m_ModelUBO.buffer, 0, sizeof(GPUModelData));
         m_Set2.Flush(ctx.device);
 
         // Transition cube mip 0 (all 6 layers): UNDEFINED -> COLOR_ATTACHMENT_OPTIMAL

@@ -29,7 +29,7 @@ namespace Dodo {
         renderAPI.BindVertexBuffer(m_Vertexbuffer);
         renderAPI.BindTextureSampler(0, m_Sampler);
         renderAPI.BindFrameBufferTexture(0, m_Framebuffer);
-        renderAPI.SetMaterialDescriptorSet(m_MaterialSet);
+        renderAPI.SetDrawData({.model = Math::Mat4(1.0f), .normalMatrix = Math::Mat3(1.0f)});
         renderAPI.DrawArray(6);
     }
 

@@ -7,6 +7,7 @@
 #define DD_WARN(...)
 #define DD_ERR(...)
 #define DD_FATAL(...)
+#define DD_ASSERT(cond, ...)
 #else
 
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -45,5 +46,13 @@ namespace Dodo {
 #define DD_FATAL(...)                                                                                                  \
     Dodo::Logger::ErrorHandler(__FILE__, __LINE__, __VA_ARGS__);                                                       \
     DD_BREAK()
+
+#define DD_ASSERT(cond, ...)                                                                                           \
+    do {                                                                                                               \
+        if (!(cond)) {                                                                                                 \
+            Dodo::Logger::ErrorHandler(__FILE__, __LINE__, "Assertion failed: " #cond ". " __VA_ARGS__);              \
+            DD_BREAK();                                                                                                \
+        }                                                                                                             \
+    } while (0)
 
 #endif

@@ -147,6 +147,9 @@ namespace Dodo::Platform {
         case BlendMode::Opaque:
             glDisable(GL_BLEND);
             break;
+        case BlendMode::AlphaCutout:
+            glDisable(GL_BLEND);
+            break;
         case BlendMode::AlphaBlend:
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

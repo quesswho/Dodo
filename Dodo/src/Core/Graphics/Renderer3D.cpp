@@ -19,6 +19,17 @@ namespace Dodo {
         PipelineID shadowPipelineID = assets.CreatePipeline(shadowPipelineDesc, renderAPI);
         m_ShadowMapMaterial = std::make_shared<Material>(assets.GetPipeline(shadowPipelineID));
 
+        ShaderID alphaTestId = assets.LoadShaderFromPath("res/shader/builtin/Passes/ShadowAlphaTest.slang");
+        PipelineDesc shadowAlphaTestDesc;
+        shadowAlphaTestDesc.shaderID    = alphaTestId;
+        shadowAlphaTestDesc.culling     = CullMode::None; // two-sided: cutout quads have no back faces
+        shadowAlphaTestDesc.depthOnly   = true;
+        shadowAlphaTestDesc.depthClip   = true;
+        shadowAlphaTestDesc.vertexLayout =
+            BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 4}});
+        PipelineID alphaTestPipelineID = assets.CreatePipeline(shadowAlphaTestDesc, renderAPI);
+        m_ShadowAlphaTestMaterial = std::make_shared<Material>(assets.GetPipeline(alphaTestPipelineID));
+
         FrameBufferProperties frameprop;
         frameprop.m_Width = renderAPI.m_ViewportWidth;
         frameprop.m_Height = renderAPI.m_ViewportHeight;
@@ -107,17 +118,26 @@ namespace Dodo {
         shadowFrameData.lightDir = scene->m_LightSystem.m_Directional.m_Direction;
         renderAPI.SetFrameData(shadowFrameData);
         m_CascadedShadowMap->Bind(renderAPI);
-        renderAPI.BindPipeline(m_ShadowMapMaterial->GetShader());
         World& world = scene->GetWorld();
         const auto& shadowModelPool = world.GetPool<ModelComponent>();
         for (const auto& modelComponent : shadowModelPool.GetComponents()) {
-            renderAPI.SetDrawData(MakeDrawData(modelComponent.m_Transformation.m_Model));
             auto model = assets.GetModel(modelComponent.m_ModelID);
-
-            // Skip transparent meshes in the shadow pass
             for (auto mesh : model->GetMeshes()) {
-                auto shader = mesh->GetMaterial()->GetShader();
-                if (shader && shader->GetDesc().blendMode == BlendMode::AlphaBlend) continue;
+                auto mat      = mesh->GetMaterial();
+                auto blendMode = mat->GetShader() ? mat->GetShader()->GetDesc().blendMode : BlendMode::Opaque;
+                if (blendMode == BlendMode::AlphaBlend) continue;
+
+                if (blendMode == BlendMode::AlphaCutout) {
+                    renderAPI.BindPipeline(m_ShadowAlphaTestMaterial->GetShader());
+                    const auto& textures = mat->GetTextures();
+                    auto it = textures.find(0);
+                    if (it != textures.end())
+                        renderAPI.BindTexture(0, it->second);
+                    renderAPI.BindTextureSampler(0, mat->GetSampler());
+                } else {
+                    renderAPI.BindPipeline(m_ShadowMapMaterial->GetShader());
+                }
+                renderAPI.SetDrawData(MakeDrawData(modelComponent.m_Transformation.m_Model));
                 mesh->DrawGeometryInstanced(renderAPI, csmData.numCascades);
             }
         }

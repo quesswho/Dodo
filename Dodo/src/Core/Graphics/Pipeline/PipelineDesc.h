@@ -11,6 +11,7 @@ namespace Dodo {
         None,
         Opaque,
         AlphaBlend,
+        AlphaCutout, // alpha test via discard, no GPU blending, depth write on
         Additive,
         Multiply
     };

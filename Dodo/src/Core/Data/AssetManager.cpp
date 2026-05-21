@@ -387,9 +387,13 @@ namespace Dodo {
             size_t matIdx = 0;
             for (const auto& matEntry : modelData.materials) {
                 Ref<Material> material = std::make_shared<Material>();
+                BlendMode blendMode = matEntry.blendMode;
                 for (const auto& texEntry : matEntry.textures) {
                     TextureID texID = it->waitingFor[texIdx++];
-                    material->AddTexture(texEntry.slot, m_Textures.at(texID));
+                    Ref<Texture> tex = m_Textures.at(texID);
+                    material->AddTexture(texEntry.slot, tex);
+                    if (texEntry.slot == 0 && tex->GetTextureProperties().HasAlpha())
+                        blendMode = BlendMode::AlphaCutout;
                 }
                 bool hasTextures = !matEntry.textures.empty();
                 bool hasColorFallback = !hasTextures && matEntry.albedoColor.has_value();
@@ -431,8 +435,8 @@ namespace Dodo {
                     ShaderID shaderID = LoadShaderFromPath(shaderPath);
                     PipelineDesc desc;
                     desc.shaderID = shaderID;
-                    desc.blendMode = matEntry.blendMode;
-                    desc.depthWrite = (matEntry.blendMode != BlendMode::AlphaBlend);
+                    desc.blendMode = blendMode;
+                    desc.depthWrite = (blendMode != BlendMode::AlphaBlend);
                     material->SetShader(GetPipeline(CreatePipeline(desc, renderAPI)));
                     material->SetSampler(renderAPI.CreateSampler(SamplerProperties()));
                 } else {

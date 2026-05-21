@@ -36,6 +36,14 @@ namespace Dodo {
               m_MipmapMode(MipmapMode::Generated), m_MipLevels(0)
         {}
 
+        bool HasAlpha() const {
+            return m_Format == TextureFormat::FORMAT_RGBA
+                || m_Format == TextureFormat::FORMAT_RGBA16F
+                || m_Format == TextureFormat::FORMAT_RGBA32F
+                || m_Format == TextureFormat::FORMAT_BC3_RGBA_UNORM
+                || m_Format == TextureFormat::FORMAT_BC7_RGBA_UNORM;
+        }
+
         uint m_Width;
         uint m_Height;
         TextureFormat m_Format;

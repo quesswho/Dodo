@@ -17,6 +17,7 @@ namespace Dodo {
 
         CascadedShadowMap* m_CascadedShadowMap;
         Ref<Material> m_ShadowMapMaterial;
+        Ref<Material> m_ShadowAlphaTestMaterial;
 
       public:
         Renderer3D(RenderAPI& renderAPI, AssetManager& assets);

@@ -168,7 +168,7 @@ float shadowCalculationCSMPCSS(
     float filterRadiusUV = penumbraWidth * texelSize.x;
 
     // Stage 3: Variable-radius PCF using the estimated penumbra width
-    const int pcfSamples = 32;
+    const int pcfSamples = 64;
     float shadow = 0.0f;
     for (int i = 0; i < pcfSamples; i++)
     {

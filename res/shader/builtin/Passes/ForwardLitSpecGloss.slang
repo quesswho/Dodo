@@ -34,8 +34,8 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 
     // u_SpecIdx carries the spec-gloss map (RGB=F0, A=glossiness)
     float4 specGloss = g_Textures[NonUniformResourceIndex(u_SpecIdx)].Sample(samp, input.texCoord);
-    float3 F0        = specGloss.rgb;
-    float  roughness = 1.0f - specGloss.a;
+    float3 F0        = specGloss.bbb;
+    float  roughness = 1.0f - specGloss.g;
 
     float aoSample = g_Textures[NonUniformResourceIndex(u_AoIdx)].Sample(samp, input.texCoord).r;
     float ao       = (aoSample > 0.0f) ? aoSample : 1.0f;
@@ -43,7 +43,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target
     float3 V = normalize(u_CameraPos - input.positionWS);
 
     DirectionalLight dl;
-    dl.m_Color     = float3(1.0f, 1.0f, 0.87f) * 1.0f;
+    dl.m_Color     = float3(1.0f, 1.0f, 0.87f) * 1.2f;
     dl.m_Direction = u_LightDir;
 
     float3 radiance = dl.Irradiance(input.positionWS);
@@ -51,12 +51,11 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 
     float viewDepth = abs(mul(u_CameraView, float4(input.positionWS, 1.0f)).z);
     float shadow    = shadowCalculationCSMPCSS(input.positionWS, N, L, g_ShadowMap,
-                                               g_Samplers[SAMPLER_SHADOW], viewDepth, 5.0f);
+                                               g_Samplers[SAMPLER_SHADOW], viewDepth, 10.0f);
     float3 Lo       = evaluateBRDFSpecGloss(radiance, diffuseSample.rgb, N, V, L, roughness, F0, shadow);
 
     float  NdotV      = max(dot(N, V), 0.001f);
     float3 irradiance = g_IrradianceMap.SampleLevel(g_Samplers[SAMPLER_LINEAR_CLAMP], N, 0).rgb;
     float3 ambient    = evaluateAmbientSpecGloss(diffuseSample.rgb, ao, roughness, NdotV, F0, irradiance);
-
-    return float4(Lo + ambient * 0.03f, diffuseSample.a);
+    return float4(Lo + ambient * 0.1f, diffuseSample.a);
 }

@@ -1232,7 +1232,7 @@ namespace Dodo::Platform {
 
     void VulkanRenderAPI::BindTexture(uint slot, Ref<Texture> texture)
     {
-        if (slot >= 8 || !texture) return;
+        if (slot >= (uint)TextureSlot::Count || !texture) return;
         m_PendingTextureHandles[slot] = texture->GetBindlessHandle();
     }
 
@@ -1317,13 +1317,12 @@ namespace Dodo::Platform {
             gpu.normal[c * 4 + 2] = data.normalMatrix.m_Columns[c].z;
         }
 
-        // Slot mapping: [0]=albedo, [1]=roughness, [2]=normal, [3]=metallic, [4]=ao, [5]=spec, [6]=sampler
-        gpu.albedoIdx   = m_PendingTextureHandles[0];
-        gpu.roughIdx    = m_PendingTextureHandles[1];
-        gpu.normalIdx   = m_PendingTextureHandles[2];
-        gpu.metallicIdx = m_PendingTextureHandles[3];
-        gpu.aoIdx       = m_PendingTextureHandles[4];
-        gpu.specIdx     = m_PendingTextureHandles[5];
+        gpu.albedoIdx   = m_PendingTextureHandles[(uint)TextureSlot::Albedo];
+        gpu.roughIdx    = m_PendingTextureHandles[(uint)TextureSlot::Roughness];
+        gpu.normalIdx   = m_PendingTextureHandles[(uint)TextureSlot::Normal];
+        gpu.metallicIdx = m_PendingTextureHandles[(uint)TextureSlot::Metallic];
+        gpu.aoIdx       = m_PendingTextureHandles[(uint)TextureSlot::Ao];
+        gpu.specIdx     = m_PendingTextureHandles[(uint)TextureSlot::Spec];
         gpu.samplerIdx  = m_PendingSamplerHandle;
 
         uint32_t slot = m_ModelUBOCursor < maxDrawsPerFrame ? m_ModelUBOCursor++ : maxDrawsPerFrame - 1;

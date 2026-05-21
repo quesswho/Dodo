@@ -55,7 +55,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target
     float3 Lo       = evaluateBRDFSpecGloss(radiance, diffuseSample.rgb, N, V, L, roughness, F0, shadow);
 
     float  NdotV      = max(dot(N, V), 0.001f);
-    float3 irradiance = g_IrradianceMap.SampleLevel(g_Samplers[SAMPLER_LINEAR_CLAMP], N, 0).rgb;
+    float3 irradiance = g_EnvironmentMap.SampleLevel(g_Samplers[SAMPLER_LINEAR_CLAMP], N, 0).rgb;
     float3 ambient    = evaluateAmbientSpecGloss(diffuseSample.rgb, ao, roughness, NdotV, F0, irradiance);
 
     return float4(Lo + ambient * 0.03f, diffuseSample.a);

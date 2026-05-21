@@ -1,6 +1,7 @@
 #include "ModelLoader.h"
 
 #include "AssetManager.h"
+#include "Core/Graphics/Material/TextureSlot.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -53,7 +54,7 @@ namespace Dodo {
                     (aiMat->GetTexture(aiTextureType_BASE_COLOR, 0, &str) == AI_SUCCESS && str.length > 0)
                         ? aiTextureType_BASE_COLOR
                         : aiTextureType_DIFFUSE;
-                tryAddSlot(0, albedoType, MaterialFeatures::AlbedoMap);
+                tryAddSlot((uint)TextureSlot::Albedo, albedoType, MaterialFeatures::AlbedoMap);
             }
 
             // If no albedo texture was found, fall back to a solid color from the material
@@ -63,21 +64,21 @@ namespace Dodo {
                 matEntry.albedoColor = {color.r, color.g, color.b, color.a};
             }
 
-            tryAddSlot(1, aiTextureType_DIFFUSE_ROUGHNESS, MaterialFeatures::RoughnessMap);
+            tryAddSlot((uint)TextureSlot::Roughness, aiTextureType_DIFFUSE_ROUGHNESS, MaterialFeatures::RoughnessMap);
 
             // Normal map: NORMALS and DISPLACEMENT are the same thing
             aiString normalTmp;
             aiTextureType normalType = (aiMat->GetTexture(aiTextureType_NORMALS, 0, &normalTmp) == AI_SUCCESS)
                                            ? aiTextureType_NORMALS
                                            : aiTextureType_DISPLACEMENT;
-            tryAddSlot(2, normalType, MaterialFeatures::NormalMap);
+            tryAddSlot((uint)TextureSlot::Normal, normalType, MaterialFeatures::NormalMap);
 
             // Spec-gloss workflow: only attempt when no dedicated roughness map was found,
             // since metallic-roughness assets may also export an aiTextureType_SPECULAR slot.
             if (!HasFeature(matEntry.features, MaterialFeatures::RoughnessMap))
-                tryAddSlot(8, aiTextureType_SPECULAR, MaterialFeatures::SpecularMap);
+                tryAddSlot((uint)TextureSlot::Spec, aiTextureType_SPECULAR, MaterialFeatures::SpecularMap);
 
-            tryAddSlot(5, aiTextureType_METALNESS, MaterialFeatures::MetallicMap);
+            tryAddSlot((uint)TextureSlot::Metallic, aiTextureType_METALNESS, MaterialFeatures::MetallicMap);
 
             // Packed ORM (glTF metallic-roughness): G = roughness, B = metallic. Only use if
             // separate maps were not found, to avoid double-loading.
@@ -90,8 +91,8 @@ namespace Dodo {
                     std::replace(rawPath.begin(), rawPath.end(), '\\', '/');
                     std::string fullPath = (modelDir / rawPath).string();
                     matEntry.features |= MaterialFeatures::RoughnessMap | MaterialFeatures::MetallicMap;
-                    matEntry.textures.push_back({1, fullPath});
-                    matEntry.textures.push_back({5, std::move(fullPath)});
+                    matEntry.textures.push_back({(uint)TextureSlot::Roughness, fullPath});
+                    matEntry.textures.push_back({(uint)TextureSlot::Metallic, std::move(fullPath)});
                 }
             }
 
@@ -102,7 +103,7 @@ namespace Dodo {
                     (aiMat->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aoTmp) == AI_SUCCESS && aoTmp.length > 0)
                         ? aiTextureType_AMBIENT_OCCLUSION
                         : aiTextureType_LIGHTMAP;
-                tryAddSlot(6, aoType, MaterialFeatures::AoMap);
+                tryAddSlot((uint)TextureSlot::Ao, aoType, MaterialFeatures::AoMap);
             }
 
             // Warn about any texture types present in the material that we do not handle

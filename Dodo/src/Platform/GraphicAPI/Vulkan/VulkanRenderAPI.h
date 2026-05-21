@@ -8,6 +8,7 @@
 #include "Core/Graphics/GpuTimings.h"
 #include "Core/Graphics/Material/Texture.h"
 #include "Core/Graphics/Material/TextureSampler.h"
+#include "Core/Graphics/Material/TextureSlot.h"
 #include "Core/Graphics/Pipeline/Pipeline.h"
 #include "Core/Graphics/RenderAPITypes.h"
 #include "Core/Data/TextureLoader.h"
@@ -218,9 +219,8 @@ namespace Dodo::Platform {
         std::unordered_map<VulkanFrameBuffer*, ImGuiFrameBufferEntry> m_ImGuiFrameBufferEntries;
 
         // Per-draw pending texture handles: filled by BindTexture/BindTextureSampler, consumed by SetDrawData.
-        // Slot mapping mirrors DrawData::textureHandles: [0]=albedo, [1]=roughness, [2]=normal, [3]=metallic,
-        // [4]=ao, [5]=spec, [6]=samplerIdx, [7]=unused
-        uint32_t m_PendingTextureHandles[8] = {};
+        // Indexed by TextureSlot: [0]=albedo, [1]=roughness, [2]=normal, [3]=metallic, [4]=ao, [5]=spec
+        uint32_t m_PendingTextureHandles[(uint)TextureSlot::Count] = {};
         uint32_t m_PendingSamplerHandle = 0;
 
         // Fallback 1x1 resources used for set-1 bindings with no pending image

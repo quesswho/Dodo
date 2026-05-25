@@ -18,6 +18,10 @@ float left_verts[] = {-0.5, -0.5, -0.5, 0.0, 1.0, -1.0, 0.0, 0.0, -0.5, -0.5, 0.
 float right_verts[] = {0.5, -0.5, 0.5,  0.0, 1.0, 1.0, 0.0, 0.0, 0.5, -0.5, -0.5, 1.0, 1.0, 1.0, 0.0, 0.0,
                        0.5, 0.5,  -0.5, 1.0, 0.0, 1.0, 0.0, 0.0, 0.5, 0.5,  0.5,  0.0, 0.0, 1.0, 0.0, 0.0};
 
+static constexpr float kAtlasTiles         = 16.0f;
+static constexpr float kTileUVScale        = 1.0f - 1.0f / kAtlasTiles;
+static constexpr float kHalfTexelTileSpace = 0.5f / kAtlasTiles;
+
 ResourceManager::ResourceManager(Dodo::AssetManager& assetManager, Dodo::RenderAPI& renderAPI)
 {
     m_BlocksTexID = assetManager.LoadTexture("res/texture/blocks.png");
@@ -51,18 +55,12 @@ bool ResourceManager::TryFinalize(Dodo::AssetManager& assets, Dodo::RenderAPI& r
 void ResourceManager::RegisterBlock(BlockType type, ChunkPos top, ChunkPos bottom, ChunkPos front, ChunkPos back,
                                     ChunkPos left, ChunkPos right)
 {
-    m_Blocks.emplace(type, std::make_shared<Block>(type));
     m_TopTexture.emplace(type, top);
     m_BottomTexture.emplace(type, bottom);
     m_FrontTexture.emplace(type, front);
     m_BackTexture.emplace(type, back);
     m_LeftTexture.emplace(type, left);
     m_RightTexture.emplace(type, right);
-}
-
-Ref<Block> ResourceManager::GetBlock(BlockType type)
-{
-    return m_Blocks.find(type)->second;
 }
 
 FaceData ResourceManager::GetTopFace(BlockType type, BlockPos pos) {

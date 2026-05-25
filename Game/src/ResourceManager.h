@@ -6,9 +6,7 @@
 
 class ResourceManager {
   private:
-    std::unordered_map<BlockType, Ref<Block>> m_Blocks;
-
-    // VhunkPos container works for texture coordinates
+    // ChunkPos container works for texture coordinates
     std::unordered_map<BlockType, ChunkPos> m_TopTexture;
     std::unordered_map<BlockType, ChunkPos> m_BottomTexture;
     std::unordered_map<BlockType, ChunkPos> m_FrontTexture;
@@ -49,5 +47,4 @@ class ResourceManager {
 
     void RegisterBlock(BlockType type, ChunkPos top, ChunkPos bottom, ChunkPos front, ChunkPos back, ChunkPos left,
                        ChunkPos right);
-    Ref<Block> GetBlock(BlockType type);
 };

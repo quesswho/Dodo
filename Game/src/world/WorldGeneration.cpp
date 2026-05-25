@@ -3,8 +3,7 @@
 
 Ref<Chunk> WorldGeneration::GenerateChunk(ChunkPos chunkpos)
 {
-    std::unordered_map<int, std::array<Ref<Block>, 4096>> m_Blocks;
-    std::array<Ref<Block>, 4096> m_Subchunk;
+    Ref<Chunk> chunk = std::make_shared<Chunk>(chunkpos);
     for (int x = 0; x < 16; x++) {
         for (int z = 0; z < 16; z++) {
             const float scale = 1.0f;
@@ -12,35 +11,33 @@ Ref<Chunk> WorldGeneration::GenerateChunk(ChunkPos chunkpos)
             const float sandscale = 3.0f;
 
             float noise = Dodo::Math::Noise::SumSimplex(((chunkpos.x << 4) + x) * scale,
-                                                        ((chunkpos.y << 4) + z) * scale, 25, 0.35, 0.007) *
+                                                        ((chunkpos.y << 4) + z) * scale, 8, 0.35, 0.007) *
                               0.5 +
                           0.5;
             float height_power =
                 Dodo::Math::Noise::SumSimplex(((chunkpos.x << 4) + x + 10000000) * biomescale,
-                                              ((chunkpos.y << 4) + z + 10000000) * biomescale, 25, 0.35, 0.007) +
+                                              ((chunkpos.y << 4) + z + 10000000) * biomescale, 8, 0.35, 0.007) +
                 2.5;
             const float sand_dunes =
-                Dodo::Math::Noise::SumSimplex(((chunkpos.x << 4) + x) * sandscale, ((chunkpos.y << 4) + z) * sandscale,
-                                              25, 0.35, 0.007) *
+                Dodo::Math::Noise::SumSimplex(((chunkpos.x << 4) + x) * sandscale,
+                                              ((chunkpos.y << 4) + z) * sandscale, 8, 0.35, 0.007) *
                     0.5 +
                 0.5;
-            // height_power [1,2]
             float pow_noise = pow(noise, height_power);
             for (int y = 0; y < 16; y++) {
+                BlockType type;
                 if (pow_noise < y / 16.0) {
-                    m_Subchunk[(x << 8) + (y << 4) + z] = m_ResourceManager->GetBlock(AIR);
+                    type = AIR;
                 } else if (y - sand_dunes * 3 < 2) {
-                    m_Subchunk[(x << 8) + (y << 4) + z] = m_ResourceManager->GetBlock(SAND);
+                    type = SAND;
+                } else if (pow_noise >= (y + 1) / 16.0) {
+                    type = DIRT;
                 } else {
-                    if (pow_noise >= (y + 1) / 16.0) {
-                        m_Subchunk[(x << 8) + (y << 4) + z] = m_ResourceManager->GetBlock(DIRT);
-                    } else {
-                        m_Subchunk[(x << 8) + (y << 4) + z] = m_ResourceManager->GetBlock(GRASS);
-                    }
+                    type = GRASS;
                 }
+                chunk->SetBlockType(x, y, z, type);
             }
         }
     }
-    m_Blocks.emplace(0, m_Subchunk);
-    return std::make_shared<Chunk>(chunkpos, std::move(m_Blocks));
+    return chunk;
 }

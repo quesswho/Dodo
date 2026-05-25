@@ -5,19 +5,14 @@
 #include "Block.h"
 
 class Chunk {
-  private:
-    void SetBlockType(int x, int y, int z, BlockType type);
-
   public:
-    BlockType GetBlockType(int x, int y, int z);
-
     Chunk(ChunkPos chunkpos);
-    Chunk(ChunkPos chunkpos, const std::unordered_map<int, std::array<Ref<Block>, 4096>>& blocks);
+
+    inline BlockType GetBlockType(int x, int y, int z) const { return m_Blocks[(x << 8) | (y << 4) | z]; }
+    inline void SetBlockType(int x, int y, int z, BlockType t) { m_Blocks[(x << 8) | (y << 4) | z] = t; }
 
     ChunkPos m_ChunkPos;
-
-    // 16x16x16 blocks
-    std::unordered_map<int, std::array<Ref<Block>, 4096>> m_Blocks;
+    std::array<BlockType, 4096> m_Blocks;
     Ref<Dodo::VertexBuffer> m_Vertbuffer;
     Ref<Dodo::IndexBuffer> m_Indexbuffer;
 };

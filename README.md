@@ -100,4 +100,4 @@ cmake --preset default -DDD_API_OPENGL=OFF -DDD_API_VULKAN=ON
 - Percentage-Closer Soft Shadows using Poisson disc sampling
 ![PCSS and Poisson disc sampling](https://i.imgur.com/aIfWOVk.png)
 - Alpha test in shadow pass through bindless textures
-![Alpha test](blob:https://imgur.com/70e56b74-1031-4171-8f6b-d527fefe276c)
+![Alpha test](https://i.imgur.com/5idSnW7.png)

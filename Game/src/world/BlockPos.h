@@ -9,19 +9,20 @@ struct BlockPos {
 };
 
 struct ChunkPos {
-    int x, y;
-    ChunkPos() : x(0), y(0) {}
-    ChunkPos(int x, int y) : x(x), y(y) {}
+    int x, y, z;  // x=grid X (horizontal), y=grid Y (depth), z=grid Z (vertical, up)
+    ChunkPos() : x(0), y(0), z(0) {}
+    ChunkPos(int x, int y, int z = 0) : x(x), y(y), z(z) {}
 
-    // Allow hashing of ChunkPos
-    bool operator==(const ChunkPos& otherPos) const { return (this->x == otherPos.x && this->y == otherPos.y); }
+    bool operator==(const ChunkPos& o) const { return x == o.x && y == o.y && z == o.z; }
 
     struct HashFunction {
         size_t operator()(const ChunkPos& pos) const
         {
-            size_t xHash = std::hash<int>()(pos.x);
-            size_t yHash = std::hash<int>()(pos.y) << 1;
-            return xHash ^ yHash;
+            size_t seed = 0x75e2e1e735d9a5c7ULL;
+            seed ^= std::hash<int>()(pos.x) + 0x9e3779b97f4a7c15ULL + (seed << 12) + (seed >> 4);
+            seed ^= std::hash<int>()(pos.y) + 0x9e3779b97f4a7c15ULL + (seed << 12) + (seed >> 4);
+            seed ^= std::hash<int>()(pos.z) + 0x9e3779b97f4a7c15ULL + (seed << 12) + (seed >> 4);
+            return seed;
         }
     };
 };

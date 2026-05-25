@@ -4,6 +4,8 @@
 
 #include "Block.h"
 
+constexpr int VERTICAL_CHUNKS = 2;
+
 class Chunk {
   public:
     Chunk(ChunkPos chunkpos);

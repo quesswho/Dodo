@@ -269,7 +269,7 @@ namespace Dodo::Platform {
         std::array<MappedBuffer, maxFramesInFlight> m_CsmDataUBOs{};
 
         // Dynamic UBO ring buffer for per-draw ModelData (one large buffer per frame)
-        static constexpr uint32_t maxDrawsPerFrame = 1024;
+        static constexpr uint32_t maxDrawsPerFrame = 8196;
         std::array<MappedBuffer, maxFramesInFlight> m_ModelDataUBOs{};
         uint32_t m_ModelUBOSlotSize = 0; // sizeof(GPUModelData) aligned to minUniformBufferOffsetAlignment
         uint32_t m_ModelUBOCursor = 0;   // next free slot index within the current frame

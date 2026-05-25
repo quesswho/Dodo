@@ -6,17 +6,21 @@
 
 class ResourceManager {
   private:
-    // ChunkPos container works for texture coordinates
-    std::unordered_map<BlockType, ChunkPos> m_TopTexture;
-    std::unordered_map<BlockType, ChunkPos> m_BottomTexture;
-    std::unordered_map<BlockType, ChunkPos> m_FrontTexture;
-    std::unordered_map<BlockType, ChunkPos> m_BackTexture;
-    std::unordered_map<BlockType, ChunkPos> m_LeftTexture;
-    std::unordered_map<BlockType, ChunkPos> m_RightTexture;
+    std::unordered_map<BlockType, Dodo::TextureID> m_TopTexture;
+    std::unordered_map<BlockType, Dodo::TextureID> m_BottomTexture;
+    std::unordered_map<BlockType, Dodo::TextureID> m_FrontTexture;
+    std::unordered_map<BlockType, Dodo::TextureID> m_BackTexture;
+    std::unordered_map<BlockType, Dodo::TextureID> m_LeftTexture;
+    std::unordered_map<BlockType, Dodo::TextureID> m_RightTexture;
 
-    Dodo::TextureID m_BlocksTexID;
-    Ref<Dodo::Pipeline> m_Pipeline;
-    Ref<Dodo::TextureSampler> m_Sampler;
+    std::unordered_map<BlockType, uint32_t> m_TopHandle;
+    std::unordered_map<BlockType, uint32_t> m_BottomHandle;
+    std::unordered_map<BlockType, uint32_t> m_FrontHandle;
+    std::unordered_map<BlockType, uint32_t> m_BackHandle;
+    std::unordered_map<BlockType, uint32_t> m_LeftHandle;
+    std::unordered_map<BlockType, uint32_t> m_RightHandle;
+
+    bool m_Finalized = false;
 
   public:
     ResourceManager(Dodo::AssetManager& assetManager, Dodo::RenderAPI& renderAPI);
@@ -24,12 +28,8 @@ class ResourceManager {
     bool TryFinalize(Dodo::AssetManager& assets, Dodo::RenderAPI& renderAPI);
 
     Ref<Dodo::IndexBuffer> m_FaceIBuffer;
-
-    // Texture atlas (null until TryFinalize succeeds)
-    Ref<Dodo::Material> m_TextureAtlas;
-
-    uint m_SizeX;
-    uint m_SizeY;
+    Ref<Dodo::Pipeline>    m_Pipeline;
+    Ref<Dodo::TextureSampler> m_Sampler;
 
     FaceData GetTopFace(BlockType type, BlockPos pos);
     FaceData GetBottomFace(BlockType type, BlockPos pos);
@@ -38,13 +38,16 @@ class ResourceManager {
     FaceData GetLeftFace(BlockType type, BlockPos pos);
     FaceData GetRightFace(BlockType type, BlockPos pos);
 
-    inline void RegisterBlock(BlockType type, ChunkPos pos) { RegisterBlock(type, pos, pos, pos); }
+    inline void RegisterBlock(BlockType type, Dodo::TextureID tex)
+    {
+        RegisterBlock(type, tex, tex, tex);
+    }
 
-    inline void RegisterBlock(BlockType type, ChunkPos top, ChunkPos bottom, ChunkPos side)
+    inline void RegisterBlock(BlockType type, Dodo::TextureID top, Dodo::TextureID bottom, Dodo::TextureID side)
     {
         RegisterBlock(type, top, bottom, side, side, side, side);
     }
 
-    void RegisterBlock(BlockType type, ChunkPos top, ChunkPos bottom, ChunkPos front, ChunkPos back, ChunkPos left,
-                       ChunkPos right);
+    void RegisterBlock(BlockType type, Dodo::TextureID top, Dodo::TextureID bottom, Dodo::TextureID front,
+                       Dodo::TextureID back, Dodo::TextureID left, Dodo::TextureID right);
 };

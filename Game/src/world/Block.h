@@ -23,7 +23,7 @@ struct VertexData {
 };
 
 struct FaceData {
-    float verts[32];
+    float verts[36]; // 4 vertices x 9 floats: pos(3) + uv(2) + normal(3) + texIdx(1)
 };
 
 struct RenderBlock {

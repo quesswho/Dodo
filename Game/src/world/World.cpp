@@ -1,6 +1,6 @@
 #include "World.h"
 
-World::World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRenderer, Dodo::RenderAPI& renderAPI)
+World::World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRenderer, Dodo::RenderAPI& /*renderAPI*/)
     : m_WorldRenderer(worldRenderer), m_ResourceManager(resourceManager)
 {
     m_WorldGen = std::make_shared<WorldGeneration>(0, resourceManager);
@@ -13,12 +13,12 @@ World::World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRende
         }
     }
 
-    // Update chunks
-    for (int x = -radius; x <= radius; x++) {
-        for (int y = -radius; y <= radius; y++) {
-            UpdateChunk(ChunkPos(x, y), renderAPI);
-        }
-    }
+}
+
+void World::BuildMeshes(Dodo::RenderAPI& renderAPI)
+{
+    for (auto& [pos, chunk] : m_Chunks)
+        UpdateChunk(pos, renderAPI);
 }
 
 void World::UpdateChunk(ChunkPos cp, Dodo::RenderAPI& renderAPI)
@@ -78,7 +78,7 @@ void World::UpdateChunk(ChunkPos cp, Dodo::RenderAPI& renderAPI)
     }
     chunk->m_Vertbuffer =
         renderAPI.CreateVertexBuffer((float*)faces.data(), faces.size() * sizeof(FaceData),
-                                     Dodo::BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}}));
+                                     Dodo::BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TEXINDEX", 1}}));
     chunk->m_Indexbuffer = renderAPI.CreateIndexBuffer(indices.data(), indices.size());
 }
 

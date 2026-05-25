@@ -23,7 +23,7 @@ Ref<Chunk> WorldGeneration::GenerateChunk(ChunkPos chunkpos)
                                               ((chunkpos.y << 4) + z) * sandscale, 8, 0.35, 0.007) *
                     0.5 +
                 0.5;
-            float pow_noise = pow(noise, height_power);
+            float pow_noise = pow(noise, 2);
             for (int y = 0; y < 16; y++) {
                 BlockType type;
                 if (pow_noise < y / 16.0) {

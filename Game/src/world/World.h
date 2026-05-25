@@ -19,8 +19,10 @@ class World {
     World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRenderer, Dodo::RenderAPI& renderAPI);
 
     std::unordered_map<ChunkPos, Ref<Chunk>, ChunkPos::HashFunction> m_Chunks;
+    bool m_MeshBuilt = false;
 
     void UpdateChunk(ChunkPos chunkpos, Dodo::RenderAPI& renderAPI);
+    void BuildMeshes(Dodo::RenderAPI& renderAPI);
     void Draw();
 
     BlockType GetBlockType(int x, int y, int z);

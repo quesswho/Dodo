@@ -10,7 +10,12 @@ WorldManager::WorldManager(Ref<ResourceManager> resourceManager, Dodo::RenderAPI
 void WorldManager::Draw(Dodo::RenderAPI& renderAPI, Dodo::AssetManager& assets)
 {
     if (!m_ResourceManager->TryFinalize(assets, renderAPI)) return;
-    m_ResourceManager->m_TextureAtlas->Bind(renderAPI);
+    if (!m_World->m_MeshBuilt) {
+        m_World->BuildMeshes(renderAPI);
+        m_World->m_MeshBuilt = true;
+    }
+    renderAPI.BindPipeline(m_ResourceManager->m_Pipeline);
+    renderAPI.BindTextureSampler(0, m_ResourceManager->m_Sampler);
     for (auto& chunk : m_World->m_Chunks)
         m_WorldRenderer->RenderChunk(chunk.second, renderAPI);
 }

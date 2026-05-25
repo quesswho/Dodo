@@ -93,6 +93,8 @@ cmake --preset default -DDD_API_OPENGL=OFF -DDD_API_VULKAN=ON
 
 
 ### Graphics
+- PBR: Cook-Torrance BRDF
+![Cook-Torrance BRDF](https://i.imgur.com/qfpEHyE.png)
 - We use cascaded shadow maps for directional lights:
 ![Cascaded Shadow Maps](https://i.imgur.com/fBgjl41.png)
 - Percentage-Closer Soft Shadows using Poisson disc sampling

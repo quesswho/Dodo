@@ -16,12 +16,18 @@ class ResourceManager {
     std::unordered_map<BlockType, ChunkPos> m_LeftTexture;
     std::unordered_map<BlockType, ChunkPos> m_RightTexture;
 
+    Dodo::TextureID m_BlocksTexID;
+    Ref<Dodo::Pipeline> m_Pipeline;
+    Ref<Dodo::TextureSampler> m_Sampler;
+
   public:
     ResourceManager(Dodo::AssetManager& assetManager, Dodo::RenderAPI& renderAPI);
 
+    bool TryFinalize(Dodo::AssetManager& assets, Dodo::RenderAPI& renderAPI);
+
     Ref<Dodo::IndexBuffer> m_FaceIBuffer;
 
-    // Texture atlas
+    // Texture atlas (null until TryFinalize succeeds)
     Ref<Dodo::Material> m_TextureAtlas;
 
     uint m_SizeX;

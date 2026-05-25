@@ -20,24 +20,32 @@ float right_verts[] = {0.5, -0.5, 0.5,  0.0, 1.0, 1.0, 0.0, 0.0, 0.5, -0.5, -0.5
 
 ResourceManager::ResourceManager(Dodo::AssetManager& assetManager, Dodo::RenderAPI& renderAPI)
 {
-    Dodo::TextureID blocks = assetManager.LoadTexture("res/texture/blocks.png");
-    Ref<Dodo::Texture> atlas = assetManager.GetTexture(blocks);
-    Ref<Dodo::TextureSampler> sampler = renderAPI.CreateSampler(Dodo::SamplerProperties(
+    m_BlocksTexID = assetManager.LoadTexture("res/texture/blocks.png");
+    m_Sampler = renderAPI.CreateSampler(Dodo::SamplerProperties(
         Dodo::SamplerFilter::MIN_MAG_NEAREST, Dodo::SamplerWrapMode::WRAP_REPEAT, Dodo::SamplerWrapMode::WRAP_REPEAT));
 
     Dodo::ShaderID id = assetManager.LoadShaderFromPath("res/shader/game/block.slang");
     Dodo::PipelineDesc desc;
     desc.shaderID = id;
+    desc.vertexLayout = Dodo::BufferProperties({{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}});
 
     Dodo::PipelineID pipeId = assetManager.CreatePipeline(desc, renderAPI);
-    Ref<Dodo::Pipeline> shader = assetManager.GetPipeline(pipeId);
-    m_TextureAtlas = std::make_shared<Dodo::Material>(shader, atlas, sampler);
+    m_Pipeline = assetManager.GetPipeline(pipeId);
 
     RegisterBlock(AIR, ChunkPos(0, 0));
     RegisterBlock(DIRT, ChunkPos(0, 0));
     RegisterBlock(GRASS, ChunkPos(1, 0), ChunkPos(0, 0), ChunkPos(2, 0));
     RegisterBlock(STONE, ChunkPos(3, 0));
     RegisterBlock(SAND, ChunkPos(4, 0));
+}
+
+bool ResourceManager::TryFinalize(Dodo::AssetManager& assets, Dodo::RenderAPI& renderAPI)
+{
+    if (m_TextureAtlas) return true;
+    if (assets.GetTextureState(m_BlocksTexID) != Dodo::AssetState::Loaded) return false;
+    Ref<Dodo::Texture> atlas = assets.GetTexture(m_BlocksTexID);
+    m_TextureAtlas = std::make_shared<Dodo::Material>(m_Pipeline, atlas, m_Sampler);
+    return true;
 }
 
 void ResourceManager::RegisterBlock(BlockType type, ChunkPos top, ChunkPos bottom, ChunkPos front, ChunkPos back,
@@ -57,8 +65,7 @@ Ref<Block> ResourceManager::GetBlock(BlockType type)
     return m_Blocks.find(type)->second;
 }
 
-FaceData ResourceManager::GetTopFace(BlockType type, BlockPos pos)
-{
+FaceData ResourceManager::GetTopFace(BlockType type, BlockPos pos) {
     ChunkPos texcoord = m_TopTexture.find(type)->second;
 
     FaceData result;
@@ -75,8 +82,7 @@ FaceData ResourceManager::GetTopFace(BlockType type, BlockPos pos)
     return result;
 }
 
-FaceData ResourceManager::GetBottomFace(BlockType type, BlockPos pos)
-{
+FaceData ResourceManager::GetBottomFace(BlockType type, BlockPos pos) {
     ChunkPos texcoord = m_BottomTexture.find(type)->second;
 
     FaceData result;
@@ -93,26 +99,24 @@ FaceData ResourceManager::GetBottomFace(BlockType type, BlockPos pos)
     return result;
 }
 
-FaceData ResourceManager::GetFrontFace(BlockType type, BlockPos pos)
-{
+FaceData ResourceManager::GetFrontFace(BlockType type, BlockPos pos) {
     ChunkPos texcoord = m_FrontTexture.find(type)->second;
 
     FaceData result;
     for (int i = 0; i < 4; i++) {
-        result.verts[i * 8] = pos.x + front_verts[i * 8];
-        result.verts[i * 8 + 1] = pos.y + front_verts[i * 8 + 1];
-        result.verts[i * 8 + 2] = pos.z + front_verts[i * 8 + 2];
+        result.verts[i*8] = pos.x + front_verts[i * 8];
+        result.verts[i*8+1] = pos.y + front_verts[i * 8 + 1];
+        result.verts[i*8+2] = pos.z + front_verts[i * 8 + 2];
         result.verts[i * 8 + 3] = (texcoord.x + bottom_verts[i * 8 + 3]) / 16.0f;
         result.verts[i * 8 + 4] = 1.0f - (texcoord.y + bottom_verts[i * 8 + 4]) / 16.0f;
-        result.verts[i * 8 + 5] = 0.0f;
-        result.verts[i * 8 + 6] = 0.0f;
-        result.verts[i * 8 + 7] = 1.0f;
+        result.verts[i*8+5] = 0.0f;
+        result.verts[i*8+6] = 0.0f;
+        result.verts[i*8+7] = 1.0f;
     }
     return result;
 }
 
-FaceData ResourceManager::GetBackFace(BlockType type, BlockPos pos)
-{
+FaceData ResourceManager::GetBackFace(BlockType type, BlockPos pos) {
     ChunkPos texcoord = m_BackTexture.find(type)->second;
 
     FaceData result;
@@ -129,8 +133,8 @@ FaceData ResourceManager::GetBackFace(BlockType type, BlockPos pos)
     return result;
 }
 
-FaceData ResourceManager::GetLeftFace(BlockType type, BlockPos pos)
-{
+
+FaceData ResourceManager::GetLeftFace(BlockType type, BlockPos pos) {
     ChunkPos texcoord = m_LeftTexture.find(type)->second;
 
     FaceData result;
@@ -147,8 +151,7 @@ FaceData ResourceManager::GetLeftFace(BlockType type, BlockPos pos)
     return result;
 }
 
-FaceData ResourceManager::GetRightFace(BlockType type, BlockPos pos)
-{
+FaceData ResourceManager::GetRightFace(BlockType type, BlockPos pos) {
     ChunkPos texcoord = m_RightTexture.find(type)->second;
 
     FaceData result;

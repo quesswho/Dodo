@@ -143,6 +143,13 @@ namespace Dodo {
         return nullptr;
     }
 
+    AssetState AssetManager::GetTextureState(TextureID id) const
+    {
+        auto it = m_TextureStates.find(id);
+        if (it != m_TextureStates.end()) return it->second;
+        return AssetState::NotLoaded;
+    }
+
     CubeMapID AssetManager::LoadCubeMap(const std::vector<std::string>& paths)
     {
         CubeMapID id = m_NextCubeMapID++;

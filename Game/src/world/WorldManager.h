@@ -13,5 +13,5 @@ class WorldManager {
     Ref<World> m_World;
     Ref<WorldRenderer> m_WorldRenderer;
 
-    void Draw(const Dodo::Math::FreeCamera& camera, Dodo::RenderAPI& renderAPI);
+    void Draw(Dodo::RenderAPI& renderAPI, Dodo::AssetManager& assets);
 };

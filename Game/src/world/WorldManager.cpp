@@ -7,13 +7,9 @@ WorldManager::WorldManager(Ref<ResourceManager> resourceManager, Dodo::RenderAPI
     m_World = std::make_shared<World>(m_ResourceManager, m_WorldRenderer, renderAPI);
 }
 
-void WorldManager::Draw(const Dodo::Math::FreeCamera& camera, Dodo::RenderAPI& renderAPI)
+void WorldManager::Draw(Dodo::RenderAPI& renderAPI, Dodo::AssetManager& assets)
 {
-    Dodo::FrameData data;
-    data.camera = camera.GetCameraMatrix();
-    renderAPI.SetFrameData(data);
-
-    for (auto& chunk : m_World->m_Chunks) {
+    if (!m_ResourceManager->TryFinalize(assets, renderAPI)) return;
+    for (auto& chunk : m_World->m_Chunks)
         m_WorldRenderer->RenderChunk(chunk.second, renderAPI);
-    }
 }

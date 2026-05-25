@@ -21,19 +21,17 @@ GameLayer::GameLayer(Application& app)
 
     // Framebuffer initialization data
     FrameBufferProperties frameprop;
-    frameprop.m_Width = app.GetWindowProperties().m_Width;
-    frameprop.m_Height = app.GetWindowProperties().m_Height;
+    frameprop.m_Width  = Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferWidth;
+    frameprop.m_Height = Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferHeight;
 
-    m_PostEffect = new PostEffect(frameprop, "res/shader/game/gamma.slang", renderAPI, assets);
+    m_PostEffect = new PostEffect(frameprop, "res/shader/builtin/Passes/Gamma.slang", renderAPI, assets);
     m_PostEffectData.gamma = 1.0f;
+    m_PostEffectData.exposure = 5.0f;
     m_PostEffect->SetEffectData(m_PostEffectData);
 
     m_LightLook = Vec3(0.0, 0.0f, 15.0f);
     m_LightProjection = Mat4::Orthographic(-50.0f, 50.0f, -50.0f, 50.0f, 1.0f, 100.0f);
     m_LightView = Mat4::LookAt(Vec3(0.0f, 35.0f, 23.0f), m_LightLook, Vec3(0.0, 1.0, 0.0));
-
-    m_Renderer = new Renderer3D(renderAPI, assets);
-    m_Renderer->SetPostEffect(m_PostEffect);
 
     m_Scene = new Scene();
 
@@ -62,26 +60,20 @@ void GameLayer::Update(float elapsed)
     double gammaChangeSpeed = 0.0f;
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_9)) gammaChangeSpeed += 1.0f * elapsed;
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_8)) gammaChangeSpeed -= 1.0f * elapsed;
+    double exposureChange = 0.0f;
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_7)) exposureChange += 1.0f * elapsed;
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_6)) exposureChange -= 1.0f * elapsed;
 
-    // Change directional light
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_1))
-        m_Scene->m_LightSystem.m_Directional.m_Direction += elapsed * Vec3(1.0f, 0, 0);
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_2))
-        m_Scene->m_LightSystem.m_Directional.m_Direction -= elapsed * Vec3(1.0f, 0, 0);
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_3))
-        m_Scene->m_LightSystem.m_Directional.m_Direction += elapsed * Vec3(0, 1.0f, 0);
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_4))
-        m_Scene->m_LightSystem.m_Directional.m_Direction -= elapsed * Vec3(0, 1.0f, 0);
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_5))
-        m_Scene->m_LightSystem.m_Directional.m_Direction += elapsed * Vec3(0, 0, 1.0f);
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_6))
-        m_Scene->m_LightSystem.m_Directional.m_Direction -= elapsed * Vec3(0, 0, 1.0f);
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_0))
-        m_Scene->m_LightSystem.m_Directional.m_Direction = Vec3(0.0f, -1.0f, 1.0f);
+        m_LightLook = Vec3(0.0f, -1.0f, 1.0f);
     m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(m_Scene->m_LightSystem.m_Directional.m_Direction);
 
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_0))
         m_Scene->m_LightSystem.m_Directional.m_Direction = Vec3(0.0f, -1.0f, 1.0f);
+
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_R)) {
+        m_Camera->GetCamera().SetPosition(Vec3(0.0f, 0.0f, 0.0f));
+    }
 
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_UP))
         m_LightLook += elapsed * Vec3(1.0f, 0.0f, 0.0f) * 10.0f;
@@ -91,13 +83,19 @@ void GameLayer::Update(float elapsed)
         m_LightLook += elapsed * Vec3(0.0f, 0.0f, 1.0f) * 10.0f;
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_LEFT))
         m_LightLook -= elapsed * Vec3(0.0f, 0.0f, 1.0f) * 10.0f;
-    m_LightView = Mat4::LookAt(Vec3(-8.0f, 35.0f, 23.0f), m_LightLook, Vec3(0.0, 1.0, 0.0));
 
+    Vec3 lightPos = Vec3(-8.0f, 35.0f, 23.0f);
+    m_LightView = Mat4::LookAt(lightPos, m_LightLook, Vec3(0.0, 1.0, 0.0));
+
+    m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(m_LightLook - lightPos);
     m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
 
-    if (gammaChangeSpeed != 0.0f) {
+    if (gammaChangeSpeed != 0.0f || exposureChange != 0.0f) {
         m_PostEffectData.gamma += gammaChangeSpeed;
-        m_PostEffectData.gamma = std::max(0.1f, std::min(m_PostEffectData.gamma, 5.0f));
+        m_PostEffectData.gamma = (std::max)(0.1f, (std::min)(m_PostEffectData.gamma, 5.0f));
+        m_PostEffectData.exposure += exposureChange;
+        m_PostEffectData.exposure = (std::max)(0.1f, (std::min)(m_PostEffectData.exposure, 10.0f));
+
         m_PostEffect->SetEffectData(m_PostEffectData);
     }
 
@@ -112,9 +110,19 @@ void GameLayer::Update(float elapsed)
 
 void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
 {
+    FrameData frameData;
+    const Math::FreeCamera& cam = m_Camera->GetCamera();
+    frameData.camera       = cam.GetCameraMatrix();
+    frameData.cameraView   = cam.GetViewMatrix();
+    frameData.skyboxCamera = cam.GetProjectionMatrix() * Math::Mat4::RelinquishToMat3(cam.GetViewMatrix());
+    frameData.cameraPos    = cam.GetPosition();
+    frameData.lightCamera  = m_Scene->m_LightSystem.m_Directional.m_LightCamera;
+    frameData.lightDir     = m_Scene->m_LightSystem.m_Directional.m_Direction;
+    renderAPI.SetFrameData(frameData);
+
     m_PostEffect->Bind(renderAPI);
-    m_WorldManager->Draw(m_Camera->GetCamera(), renderAPI);
-    m_Scene->m_SkyBox->Draw(m_Camera->GetCamera(), renderAPI);
+    m_WorldManager->Draw(renderAPI, assets);
+    m_Scene->m_SkyBox->Draw(renderAPI);
     m_PostEffect->Draw(renderAPI);
 }
 
@@ -142,6 +150,7 @@ void GameLayer::OnEvent(const Event& event)
     case EventType::WINDOW_RESIZE:
         TVec2<int> screen = static_cast<const WindowResizeEvent&>(event).m_ScreenSize;
         m_Camera->Resize(screen.x, screen.y);
+        m_PostEffect->Resize(screen.x, screen.y);
         break;
     }
 }

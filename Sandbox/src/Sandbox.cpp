@@ -38,8 +38,8 @@ GameLayer::GameLayer(Application& app)
     m_Renderer = new Renderer3D(renderAPI, assets);
     m_Renderer->SetPostEffect(m_PostEffect);
 
-    //m_Scene = m_File.Read("res/sponza/sponza.das");
-    m_Scene = m_File.Read("res/emerald_square/emerald_square.das");
+    m_Scene = m_File.Read("res/sponza/sponza.das");
+    //m_Scene = m_File.Read("res/emerald_square/emerald_square.das");
     // m_Scene = m_File.Read("res/san_miguel/san_miguel.das");
     //m_Scene = new Scene();
     
@@ -52,7 +52,7 @@ GameLayer::GameLayer(Application& app)
     
     World& world = m_Scene->GetWorld();
     EntityID terrainEntity = world.CreateEntity();
-    world.AddComponent<ModelComponent>(terrainEntity, ModelComponent(terrainID, Math::Transformation(Math::Vec3(0.0f,-1.0f,0.0f), Math::Vec3(1.0f, 0.2f, 1.0f))));
+    //world.AddComponent<ModelComponent>(terrainEntity, ModelComponent(terrainID, Math::Transformation(Math::Vec3(0.0f,-1.0f,0.0f), Math::Vec3(1.0f, 0.2f, 1.0f))));
     DD_INFO("Finished loading scene");
 
     std::vector<std::string> skyboxPath = {

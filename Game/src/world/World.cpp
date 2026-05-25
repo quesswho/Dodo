@@ -21,6 +21,9 @@ void World::BuildMeshes(Dodo::RenderAPI& renderAPI)
         UpdateChunk(pos, renderAPI);
 }
 
+/**
+ * Constructs vertex and index buffers for the chunk at the given position, based on its block data and neighboring chunks.
+ */
 void World::UpdateChunk(ChunkPos cp, Dodo::RenderAPI& renderAPI)
 {
     Ref<Chunk>& chunk = m_Chunks.at(cp);

@@ -16,7 +16,7 @@ The engine features an Entity Component System (ECS), model loading, PBR materia
 ![Level editor](https://i.imgur.com/6pS0l5n.png)
 
 ### Voxel Game
-![Voxel Game](https://i.imgur.com/eSYjuAw.png)
+![Voxel Game](https://i.imgur.com/VqE9Zm5.png)
 
 ---
 
@@ -97,3 +97,5 @@ cmake --preset default -DDD_API_OPENGL=OFF -DDD_API_VULKAN=ON
 ![Cascaded Shadow Maps](https://i.imgur.com/fBgjl41.png)
 - Percentage-Closer Soft Shadows using Poisson disc sampling
 ![PCSS and Poisson disc sampling](https://i.imgur.com/aIfWOVk.png)
+- Alpha test in shadow pass through bindless textures
+![Alpha test](blob:https://imgur.com/70e56b74-1031-4171-8f6b-d527fefe276c)

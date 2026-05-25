@@ -4,7 +4,7 @@
 
 #include "Block.h"
 
-constexpr int VERTICAL_CHUNKS = 2;
+constexpr int VERTICAL_CHUNKS = 8;
 
 class Chunk {
   public:

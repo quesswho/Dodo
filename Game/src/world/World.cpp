@@ -13,7 +13,6 @@ World::World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRende
             }
         }
     }
-
 }
 
 void World::BuildMeshes(Dodo::RenderAPI& renderAPI)

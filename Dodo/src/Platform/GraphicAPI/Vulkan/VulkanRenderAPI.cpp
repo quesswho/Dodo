@@ -346,13 +346,6 @@ namespace Dodo::Platform {
         createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
         createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-        if (m_EnableValidationLayers) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(m_ValidationLayers.size());
-            createInfo.ppEnabledLayerNames = m_ValidationLayers.data();
-        } else {
-            createInfo.enabledLayerCount = 0;
-        }
-
         if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS) {
             return RenderInitError(RenderInitStatus::Failed, "failed to create logical device!");
         }

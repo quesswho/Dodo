@@ -4,8 +4,9 @@ World::World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRende
     : m_WorldRenderer(worldRenderer), m_ResourceManager(resourceManager)
 {
     m_WorldGen = std::make_shared<WorldGeneration>(0, resourceManager);
-    for (int x = -20; x <= 20; x++) {
-        for (int y = -20; y <= 20; y++) {
+    int radius = 10;
+    for (int x = -radius; x <= radius; x++) {
+        for (int y = -radius; y <= radius; y++) {
             ChunkPos pos = ChunkPos(x, y);
             Ref<Chunk> chunk = m_WorldGen->GenerateChunk(pos);
             m_Chunks.emplace(pos, chunk);
@@ -13,8 +14,8 @@ World::World(Ref<ResourceManager> resourceManager, Ref<WorldRenderer> worldRende
     }
 
     // Update chunks
-    for (int x = -20; x <= 20; x++) {
-        for (int y = -20; y <= 20; y++) {
+    for (int x = -radius; x <= radius; x++) {
+        for (int y = -radius; y <= radius; y++) {
             UpdateChunk(ChunkPos(x, y), renderAPI);
         }
     }

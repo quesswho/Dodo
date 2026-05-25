@@ -10,6 +10,7 @@ WorldManager::WorldManager(Ref<ResourceManager> resourceManager, Dodo::RenderAPI
 void WorldManager::Draw(Dodo::RenderAPI& renderAPI, Dodo::AssetManager& assets)
 {
     if (!m_ResourceManager->TryFinalize(assets, renderAPI)) return;
+    m_ResourceManager->m_TextureAtlas->Bind(renderAPI);
     for (auto& chunk : m_World->m_Chunks)
         m_WorldRenderer->RenderChunk(chunk.second, renderAPI);
 }

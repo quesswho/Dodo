@@ -258,6 +258,17 @@ namespace Dodo::Math {
             return result;
         }
 
+        static const Mat3x3 Translate(const Math::TVec3<T>& translation)
+        {
+            Mat3x3 result;
+            result.m_Elements[GetIndex(0, 0)] = (T)1;
+            result.m_Elements[GetIndex(1, 1)] = (T)1;
+            result.m_Elements[GetIndex(2, 0)] = translation.x;
+            result.m_Elements[GetIndex(2, 1)] = translation.y;
+            result.m_Elements[GetIndex(2, 2)] = translation.z;
+            return result;
+        }
+
         static const Mat3x3 Scale(const Math::TVec2<T>& scale)
         {
             Mat3x3 result;

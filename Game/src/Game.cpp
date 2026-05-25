@@ -40,9 +40,12 @@ GameLayer::GameLayer(Application& app)
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    m_Scene->m_SkyBox = new Skybox(skyboxPath, assets, renderAPI);
+    //m_Scene->m_SkyBox = new Skybox(skyboxPath, assets, renderAPI);
+    m_Scene->m_SkyBox = new Skybox("res/sponza/textures/kloppenheim_05_4k.hdr", 1024, assets, renderAPI);
+
     m_Scene->m_LightSystem.m_Directional.m_Direction = Normalize(Vec3(0.2f, -0.5f, -0.5f));
     m_Scene->m_LightSystem.m_Directional.m_LightCamera = m_LightProjection * m_LightView;
+    
     app.m_Window->SetCursorVisible(false);
     m_Camera->ResetMouse();
     m_ResourceManager = std::make_shared<ResourceManager>(assets, renderAPI);

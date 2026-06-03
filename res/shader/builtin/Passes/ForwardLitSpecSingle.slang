@@ -26,7 +26,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 
     float4 diffuseSample = g_Textures[NonUniformResourceIndex(u_AlbedoIdx)].Sample(samp, input.texCoord);
 
-    if (diffuseSample.a < 0.001f) discard;
+    if (diffuseSample.a < 0.5f) discard;
 
     float3x3 TBN = buildTBN(input.normalWS, input.tangentWS);
     float3 normalTS = g_Textures[NonUniformResourceIndex(u_NormalIdx)].Sample(samp, input.texCoord).rgb * 2.0f - 1.0f;

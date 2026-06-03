@@ -54,7 +54,7 @@ namespace Dodo {
     void CascadedShadowMap::UpdateCamera(const Math::Mat4& proj, const Math::Mat4& view, const Math::Vec3& lightDir,
                                          float nearPlane, float farPlane, float fov, float aspectRatio)
     {
-        constexpr float lambda = 0.5f; // blend between log and uniform split distributions
+        constexpr float lambda = 0.75f; // blend between log and uniform split distributions
 
         // Compute cascade far-plane depths with a logarithmic-linear split scheme
         // https://dl.acm.org/doi/pdf/10.1145/1128923.1128975
@@ -81,6 +81,7 @@ namespace Dodo {
             // Get the 8 world-space corners of this sub-frustum
             std::vector<Math::Vec4> corners = GetFrustumCornersWorldSpace(subProj, view);
 
+            // TODO: We can potentially improve aliasing quality by using a bounding sphere: https://stackoverflow.com/a/33747446
             // Centroid of the 8 corners is the anchor for the light view matrix
             Math::Vec3 centroid(0.0f, 0.0f, 0.0f);
             for (const auto& c : corners)
@@ -106,6 +107,14 @@ namespace Dodo {
                 minZ = std::min(minZ, inLight.z);
                 maxZ = std::max(maxZ, inLight.z);
             }
+
+            // Snap the projection to texel boundaries to eliminate sub-texel shadow crawl.
+            float texelSizeX = (maxX - minX) / (float)m_ShadowMapResolution;
+            float texelSizeY = (maxY - minY) / (float)m_ShadowMapResolution;
+            minX = std::floor(minX / texelSizeX) * texelSizeX;
+            maxX = minX + std::ceil((maxX - minX) / texelSizeX) * texelSizeX;
+            minY = std::floor(minY / texelSizeY) * texelSizeY;
+            maxY = minY + std::ceil((maxY - minY) / texelSizeY) * texelSizeY;
 
             // Pull the near plane back to capture shadow casters behind the frustum
             constexpr float zMult = 3.0f;

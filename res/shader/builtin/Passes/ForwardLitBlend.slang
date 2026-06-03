@@ -1,4 +1,4 @@
-// ForwardLit.slang
+// ForwardLitBlend.slang
 #include "../Common/Uniforms.slang"
 #include "../Common/BindlessUniforms.slang"
 #include "../Common/Material.slang"
@@ -27,7 +27,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 
     float4 albedoSample = g_Textures[NonUniformResourceIndex(u_AlbedoIdx)].Sample(samp, input.texCoord);
 
-    if (albedoSample.a < 0.5f) discard;
+    if (albedoSample.a < 0.1f) discard;
 
     // Reconstruct world-space TBN for normal mapping
     float3x3 TBN = buildTBN(input.normalWS, input.tangentWS);

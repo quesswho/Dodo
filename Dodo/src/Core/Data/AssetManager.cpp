@@ -399,7 +399,7 @@ namespace Dodo {
                     TextureID texID = it->waitingFor[texIdx++];
                     Ref<Texture> tex = m_Textures.at(texID);
                     material->AddTexture(texEntry.slot, tex);
-                    if (texEntry.slot == 0 && tex->GetTextureProperties().HasAlpha())
+                    if (texEntry.slot == 0 && tex->GetTextureProperties().HasAlpha() && blendMode == BlendMode::None)
                         blendMode = BlendMode::AlphaCutout;
                 }
                 bool hasTextures = !matEntry.textures.empty();
@@ -421,11 +421,18 @@ namespace Dodo {
                     bool hasSpecMap = HasFeature(matEntry.features, MaterialFeatures::SpecularMap)
                                       && !HasFeature(matEntry.features, MaterialFeatures::RoughnessMap);
                     bool isSpecGloss = true;
-                    const char* shaderPath = !hasSpecMap
-                        ? "res/shader/builtin/Passes/ForwardLit.slang"
-                        : isSpecGloss
-                        ? "res/shader/builtin/Passes/ForwardLitSpecGloss.slang"
-                        : "res/shader/builtin/Passes/ForwardLitSpecSingle.slang";
+                    // TODO: replace per-variant files with Slang link-time specialization constants
+                    //       so blend mode and workflow are variants of one shader, not separate files.
+                    const char* shaderPath;
+                    if (blendMode == BlendMode::AlphaBlend) {
+                        shaderPath = "res/shader/builtin/Passes/ForwardLitBlend.slang";
+                    } else if (!hasSpecMap) {
+                        shaderPath = "res/shader/builtin/Passes/ForwardLit.slang";
+                    } else if (isSpecGloss) {
+                        shaderPath = "res/shader/builtin/Passes/ForwardLitSpecGloss.slang";
+                    } else {
+                        shaderPath = "res/shader/builtin/Passes/ForwardLitSpecSingle.slang";
+                    }
                     ShaderID shaderID = LoadShaderFromPath(shaderPath);
                     PipelineDesc desc;
                     desc.shaderID = shaderID;

@@ -42,6 +42,15 @@ namespace Dodo {
         }
         Ref<TextureSampler> GetSampler() const { return m_Sampler; }
 
+        bool NeedsTransparentPass() const
+        {
+            if (!m_Shader) return false;
+            auto mode = m_Shader->GetDesc().blendMode;
+            return mode == BlendMode::AlphaBlend
+                || mode == BlendMode::Additive
+                || mode == BlendMode::Multiply;
+        }
+
         FrameBufferedDescriptorSet& GetDescriptorSet() const { return m_DescriptorSet; }
 
         void Bind(RenderAPI& renderAPI) const;

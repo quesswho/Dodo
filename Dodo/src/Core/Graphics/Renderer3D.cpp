@@ -48,23 +48,19 @@ namespace Dodo {
             mesh->DrawGeometry(renderAPI);
         };
 
-        auto isTransparent = [](Ref<Mesh> mesh) {
-            auto shader = mesh->GetMaterial()->GetShader();
-            return shader && shader->GetDesc().blendMode == BlendMode::AlphaBlend;
-        };
-
         const auto& modelPool = world.GetPool<ModelComponent>();
 
         // Pass 1: opaque and alpha-masked geometry (depth write ON)
         for (const auto& mc : modelPool.GetComponents()) {
             for (auto mesh : assets.GetModel(mc.m_ModelID)->GetMeshes())
-                if (!isTransparent(mesh)) drawMesh(mc, mesh);
+                if (!mesh->GetMaterial()->NeedsTransparentPass()) drawMesh(mc, mesh);
         }
 
-        // Pass 2: alpha-blended geometry (depth write OFF, reads depth populated by pass 1)
+        // Pass 2: blended geometry (depth write OFF, reads depth populated by pass 1)
         for (const auto& mc : modelPool.GetComponents()) {
-            for (auto mesh : assets.GetModel(mc.m_ModelID)->GetMeshes())
-                if (isTransparent(mesh)) drawMesh(mc, mesh);
+            for (auto mesh : assets.GetModel(mc.m_ModelID)->GetMeshes()) {
+                if (mesh->GetMaterial()->NeedsTransparentPass()) drawMesh(mc, mesh);
+            }
         }
     }
 
@@ -125,8 +121,7 @@ namespace Dodo {
             for (auto mesh : model->GetMeshes()) {
                 auto mat      = mesh->GetMaterial();
                 auto blendMode = mat->GetShader() ? mat->GetShader()->GetDesc().blendMode : BlendMode::Opaque;
-                if (blendMode == BlendMode::AlphaBlend) continue;
-
+                if (mat->NeedsTransparentPass()) continue;
                 if (blendMode == BlendMode::AlphaCutout) {
                     renderAPI.BindPipeline(m_ShadowAlphaTestMaterial->GetShader());
                     const auto& textures = mat->GetTextures();

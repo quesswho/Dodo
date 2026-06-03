@@ -38,8 +38,8 @@ GameLayer::GameLayer(Application& app)
     m_Renderer = new Renderer3D(renderAPI, assets);
     m_Renderer->SetPostEffect(m_PostEffect);
 
-    m_Scene = m_File.Read("res/sponza/sponza.das");
-    //m_Scene = m_File.Read("res/emerald_square/emerald_square.das");
+    //m_Scene = m_File.Read("res/sponza/sponza.das");
+    m_Scene = m_File.Read("res/emerald_square/emerald_square.das");
     // m_Scene = m_File.Read("res/san_miguel/san_miguel.das");
     //m_Scene = new Scene();
     
@@ -84,8 +84,8 @@ void GameLayer::Update(float elapsed)
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_9)) gammaChangeSpeed += 1.0f * elapsed;
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_8)) gammaChangeSpeed -= 1.0f * elapsed;
     double exposureChange = 0.0f;
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_7)) exposureChange += 1.0f * elapsed;
-    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_6)) exposureChange -= 1.0f * elapsed;
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_7)) exposureChange += 2.0f * elapsed;
+    if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_6)) exposureChange -= 2.0f * elapsed;
 
     if (Application::s_Application->GetInput().IsKeyPressed(DODO_KEY_0))
         m_LightLook = Vec3(0.0f, -1.0f, 1.0f);
@@ -117,7 +117,7 @@ void GameLayer::Update(float elapsed)
         m_PostEffectData.gamma += gammaChangeSpeed;
         m_PostEffectData.gamma = (std::max)(0.1f, (std::min)(m_PostEffectData.gamma, 5.0f));
         m_PostEffectData.exposure += exposureChange;
-        m_PostEffectData.exposure = (std::max)(0.1f, (std::min)(m_PostEffectData.exposure, 10.0f));
+        m_PostEffectData.exposure = (std::max)(0.1f, (std::min)(m_PostEffectData.exposure, 20.0f));
 
         m_PostEffect->SetEffectData(m_PostEffectData);
     }

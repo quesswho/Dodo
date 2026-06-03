@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <filesystem>
 
+#include <assimp/GltfMaterial.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -130,6 +131,17 @@ namespace Dodo {
                                 matName, count, aiTextureTypeToString(static_cast<aiTextureType>(t)), t);
                     }
                 }
+            }
+
+            aiString alphaModeStr;
+            if (aiMat->Get(AI_MATKEY_GLTF_ALPHAMODE, alphaModeStr) == AI_SUCCESS) {
+                std::string_view mode = alphaModeStr.C_Str();
+                if (mode == "BLEND")
+                    matEntry.blendMode = BlendMode::AlphaBlend;
+                else if (mode == "MASK")
+                    matEntry.blendMode = BlendMode::AlphaCutout;
+                else
+                    matEntry.blendMode = BlendMode::Opaque;
             }
 
             result.materials.push_back(std::move(matEntry));

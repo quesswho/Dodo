@@ -4,8 +4,7 @@
 
 #include "../Common/CsmUniforms.slang"
 
-// Distributes sampleIndex across a unit disk using the golden angle, rotated by phi.
-// phi is a per-fragment angle (radians) used to break up banding.
+// Distributes sampleIndex across a unit disk with repulsive point process
 float2 vogelDiskSample(int sampleIndex, int sampleCount, float phi)
 {
     const float goldenAngle = 2.399963f;
@@ -97,9 +96,9 @@ float shadowCalculationCSM(
     return shadow / (pcfSamples);
 }
 
-// PCSS: contact-hardening shadows via blocker search + variable-radius PCF.
+// PCSS: Soft shadows via blocker search + variable-radius PCF.
 // lightSize controls the apparent angular size of the light in light-space texel units.
-// Larger values produce wider, softer penumbras. A value of 5.0 is a reasonable starting point.
+// Larger lightSize values produce wider, softer penumbras.
 float shadowCalculationCSMPCSS(
     float3 positionWS,
     float3 normal,
@@ -140,7 +139,7 @@ float shadowCalculationCSMPCSS(
     // Per-fragment rotation angle to decorrelate the Vogel disk pattern across pixels
     float phi = frac(sin(dot(projCoords.xy, float2(127.1f, 311.7f))) * 43758.5453f) * 6.28318f;
 
-    // Stage 1: Blocker search - find average depth of occluding samples
+    // Stage 1: Blocker search: find average depth of occluding samples
     const int blockerSamples = 16;
     float searchRadiusUV = lightSize * texelSize.x;
     float avgBlockerDepth = 0.0f;

@@ -78,7 +78,6 @@ namespace Dodo {
      */
     struct ShaderAsset {
         std::string path;
-        std::string slangSource;
 
         std::vector<ShaderStageBinary> stages;
         std::vector<DescriptorBindingReflection> descriptorBindings;

@@ -19,7 +19,7 @@ namespace Dodo {
         ShaderAsset CompileFromString(const std::string& source, const std::string& name);
 
       private:
-        ShaderAsset CompileModule(slang::IModule* module, const std::string& path, std::string slangSource);
+        ShaderAsset CompileModule(slang::IModule* module, const std::string& path);
         ShaderStageBinary CompileEntryPoint(slang::IModule* module, slang::IEntryPoint* entryPoint);
         static ShaderStage GetShaderStage(SlangStage stage);
         static std::vector<uint32_t> BlobToSPIRV(slang::IBlob* code);

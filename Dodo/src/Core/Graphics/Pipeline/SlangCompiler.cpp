@@ -65,16 +65,9 @@ namespace Dodo {
 
     ShaderAsset SlangCompiler::CompileFile(const std::string& path)
     {
-        std::string slangSource = FileUtils::ReadTextFile(path.c_str());
-        if (slangSource == "-1") {
-            DD_ERR("Failed to read slang source file: {}", path);
-            return {};
-        }
-
         Slang::ComPtr<slang::IBlob> diagnostics;
 
         slang::IModule* module = m_Session->loadModule(path.c_str(), diagnostics.writeRef());
-        
         if (diagnostics) {
             DD_WARN("Slang: {}", static_cast<const char*>(diagnostics->getBufferPointer()));
         }
@@ -83,7 +76,7 @@ namespace Dodo {
             return {};
         }
 
-        return CompileModule(module, path, std::move(slangSource));
+        return CompileModule(module, path);
     }
 
     ShaderAsset SlangCompiler::CompileFromString(const std::string& source, const std::string& name)
@@ -100,14 +93,13 @@ namespace Dodo {
             return {};
         }
 
-        return CompileModule(module, name, source);
+        return CompileModule(module, name);
     }
 
-    ShaderAsset SlangCompiler::CompileModule(slang::IModule* module, const std::string& path, std::string slangSource)
+    ShaderAsset SlangCompiler::CompileModule(slang::IModule* module, const std::string& path)
     {
         ShaderAsset result;
         result.path = path;
-        result.slangSource = std::move(slangSource);
 
         const int entryPointCount = module->getDefinedEntryPointCount();
 

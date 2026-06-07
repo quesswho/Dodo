@@ -86,4 +86,10 @@ namespace Dodo {
 
         WindowCloseEvent() : Event(EventType::WINDOW_CLOSE) {}
     };
+
+    class IEventListener {
+      public:
+        virtual ~IEventListener() = default;
+        virtual void OnEvent(const Event& e) = 0;
+    };
 } // namespace Dodo

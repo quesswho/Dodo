@@ -1,7 +1,5 @@
 #pragma once
 
-#include <functional>
-
 #include "Input.h"
 
 #include <Core/Application/Event.h>
@@ -43,15 +41,15 @@ namespace Dodo {
 
         const Input& GetInput() const { return m_Input; }
 
-        void SetEventCallback(std::function<void(const Event&)> cb) { m_EventCallback = cb; }
+        void SetEventListener(IEventListener* listener) { m_EventListener = listener; }
 
       private:
         void FireEvent(const Event& e)
         {
-            if (m_EventCallback) m_EventCallback(e);
+            if (m_EventListener) m_EventListener->OnEvent(e);
         }
 
         Input m_Input;
-        std::function<void(const Event&)> m_EventCallback;
+        IEventListener* m_EventListener = nullptr;
     };
 } // namespace Dodo

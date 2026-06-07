@@ -6,6 +6,7 @@
 
 #include "GLFWImGuiBackend.h"
 
+#include <Core/Application/Event.h>
 #include <Core/Application/WindowProperties.h>
 #include <Platform/WindowAPI/NativeWindowHandle.h>
 
@@ -15,12 +16,19 @@
 
 #include <string>
 
+namespace Dodo {
+    class InputManager;
+}
+
 namespace Dodo::Platform {
     class GLFWWindow {
       private:
         WindowProperties m_WindowProperties;
 
         GLFWwindow* m_Handle;
+
+        InputManager* m_InputManager = nullptr;
+        IEventListener* m_EventListener = nullptr;
 
       public:
         PCSpecifications m_Pcspecs;
@@ -38,6 +46,9 @@ namespace Dodo::Platform {
         void ImGuiNewFrame() const;
         void ImGuiEndFrame() const;
         bool m_Focused;
+
+        void SetInputManager(InputManager* im) { m_InputManager = im; }
+        void SetEventListener(IEventListener* listener) { m_EventListener = listener; }
 
         const WindowProperties& GetWindowProperties() { return m_WindowProperties; }
         void SetWindowProperties(const WindowProperties& winprop);

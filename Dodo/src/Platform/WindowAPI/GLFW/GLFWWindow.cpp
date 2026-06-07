@@ -2,10 +2,7 @@
 #include "GLFWWindow.h"
 #include "GLFWImGuiBackend.h"
 
-// TODO: Remove this when we change the callbacks and viewport handling. This needs to be before the GLFW include
-// because it indirectly includes opengl headers
-#include "Core/Application/Application.h"
-
+#include "Core/Application/Input/InputManager.h"
 #include "Core/System/FileUtils.h"
 
 namespace Dodo::Platform {
@@ -150,33 +147,39 @@ namespace Dodo::Platform {
 
     void GLFWWindow::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
+        GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+        if (!self || !self->m_InputManager) return;
         switch (action) {
         case GLFW_PRESS:
         case GLFW_REPEAT:
-            Application::s_Application->m_InputManager.KeyPressed(key);
+            self->m_InputManager->KeyPressed(key);
             break;
         case GLFW_RELEASE:
-            Application::s_Application->m_InputManager.KeyReleased(key);
+            self->m_InputManager->KeyReleased(key);
             break;
         }
     }
 
     void GLFWWindow::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
     {
+        GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+        if (!self || !self->m_InputManager) return;
         switch (action) {
         case GLFW_PRESS:
-            Application::s_Application->m_InputManager.MousePressed(button);
+            self->m_InputManager->MousePressed(button);
             break;
         case GLFW_RELEASE:
-            Application::s_Application->m_InputManager.MouseReleased(button);
+            self->m_InputManager->MouseReleased(button);
             break;
         }
     }
 
     void GLFWWindow::MouseMovedCallback(GLFWwindow* window, double xpos, double ypos)
     {
-        // TODO: support subpixel mouse
-        Application::s_Application->m_InputManager.MouseMoved(Math::TVec2<double>(xpos, ypos));
+        GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+        
+        if (!self || !self->m_InputManager) return;
+        self->m_InputManager->MouseMoved(Math::TVec2<double>(xpos, ypos));
     }
 
     void GLFWWindow::WindowResizeCallback(GLFWwindow* window, int width, int height)
@@ -187,7 +190,6 @@ namespace Dodo::Platform {
         self->m_WindowProperties.m_Width = width;
         self->m_WindowProperties.m_Height = height;
         DD_INFO("Window resize: {0}x{1}", width, height);
-        // Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
     }
 
     void GLFWWindow::WindowMovedCallback(GLFWwindow* window, int xpos, int ypos)
@@ -198,7 +200,6 @@ namespace Dodo::Platform {
         self->m_WindowProperties.m_PosX = xpos;
         self->m_WindowProperties.m_PosY = ypos;
         DD_INFO("Window moved to: ({0}, {1})", xpos, ypos);
-        // Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
     }
 
     void GLFWWindow::FramebufferResizeCallback(GLFWwindow* window, int width, int height)
@@ -209,8 +210,7 @@ namespace Dodo::Platform {
         self->m_WindowProperties.m_FrameBufferWidth = width;
         self->m_WindowProperties.m_FrameBufferHeight = height;
         DD_INFO("Framebuffer resize: {0}x{1}", width, height);
-        Application::s_Application->m_RenderAPI->SetViewport(width, height);
-        Application::s_Application->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
+        if (self->m_EventListener) self->m_EventListener->OnEvent(WindowResizeEvent(Math::TVec2<int>(width, height)));
     }
 
     void GLFWWindow::WindowFocusCallback(GLFWwindow* window, int focus)
@@ -218,13 +218,14 @@ namespace Dodo::Platform {
         GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
         if (!self) return;
         self->m_Focused = focus > 0;
-        Application::s_Application->OnEvent(WindowFocusEvent(self->m_Focused));
+        if (self->m_EventListener) self->m_EventListener->OnEvent(WindowFocusEvent(self->m_Focused));
     }
 
     void GLFWWindow::WindowCloseCallback(GLFWwindow* window)
     {
-        Application::s_Application->Shutdown();
-        Application::s_Application->OnEvent(WindowCloseEvent());
+        GLFWWindow* self = static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
+        if (!self) return;
+        if (self->m_EventListener) self->m_EventListener->OnEvent(WindowCloseEvent());
     }
 
     void GLFWWindow::SetWindowProperties(const WindowProperties& winprop)

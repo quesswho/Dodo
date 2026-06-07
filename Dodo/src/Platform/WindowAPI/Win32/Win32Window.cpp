@@ -1,9 +1,8 @@
 #include "Win32Window.h"
 #include "Win32ImGuiBackend.h"
 
+#include "Core/Application/Input/InputManager.h"
 #include "Core/System/FileUtils.h"
-
-#include "Core/Application/Application.h"
 
 #include <cpuid.h>
 #include <filesystem>
@@ -136,7 +135,7 @@ namespace Dodo::Platform {
 
         POINT p;
         GetCursorPos(&p);
-        Application::s_Application->m_InputManager.MouseMoved(Math::TVec2<double>(p.x, p.y));
+        if (m_InputManager) m_InputManager->MouseMoved(Math::TVec2<double>(p.x, p.y));
 
         if (m_WindowProperties.m_Settings.imgui || m_WindowProperties.m_Settings.imguiDocking) {
             m_WindowProperties.m_Settings.imgui = true;
@@ -149,7 +148,7 @@ namespace Dodo::Platform {
         MSG message;
         while (PeekMessage(&message, NULL, NULL, NULL, PM_REMOVE) > 0) {
             if (message.message == WM_QUIT) {
-                Application::s_Application->m_Window->WindowCloseCallback(); // Keep update function const
+                s_WindowClass->WindowCloseCallback();
                 return;
             }
             TranslateMessage(&message);
@@ -197,24 +196,22 @@ namespace Dodo::Platform {
             result = DefWindowProc(hwnd, msg, wParam, lParam);
         } break;
         case WM_SETFOCUS:
-            if (!Application::s_Application->m_Initializing)
-                Application::s_Application->m_Window->WindowFocusCallback(true);
+            s_WindowClass->WindowFocusCallback(true);
             break;
         case WM_KILLFOCUS:
-            if (!Application::s_Application->m_Initializing)
-                Application::s_Application->m_Window->WindowFocusCallback(false);
+            s_WindowClass->WindowFocusCallback(false);
             break;
         case WM_CLOSE:
         case WM_DESTROY:
-            Application::s_Application->m_Window->WindowCloseCallback();
+            s_WindowClass->WindowCloseCallback();
             break;
         case WM_SYSKEYDOWN:
         case WM_KEYDOWN:
-            Application::s_Application->m_InputManager.KeyPressed((uint)wParam);
+            s_WindowClass->OnKeyPressed((uint)wParam);
             break;
         case WM_SYSKEYUP:
         case WM_KEYUP:
-            Application::s_Application->m_InputManager.KeyReleased((uint)wParam);
+            s_WindowClass->OnKeyReleased((uint)wParam);
             break;
         case WM_MOUSEMOVE:
             break;
@@ -231,8 +228,7 @@ namespace Dodo::Platform {
             RAWINPUT* raw = (RAWINPUT*)lpb;
 
             if (raw->header.dwType == RIM_TYPEMOUSE) {
-                Application::s_Application->m_InputManager.MouseMoved(
-                    Math::TVec2<double>(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
+                s_WindowClass->OnMouseMoved(Math::TVec2<double>(raw->data.mouse.lLastX, raw->data.mouse.lLastY));
             }
             delete raw;
             break;
@@ -240,18 +236,15 @@ namespace Dodo::Platform {
         case WM_LBUTTONDOWN:
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
-            Application::s_Application->m_InputManager.MousePressed((uint)wParam);
+            s_WindowClass->OnMousePressed((uint)wParam);
             break;
         case WM_LBUTTONUP:
         case WM_RBUTTONUP:
         case WM_MBUTTONUP:
-            Application::s_Application->m_InputManager.MouseReleased((uint)wParam);
+            s_WindowClass->OnMouseReleased((uint)wParam);
             break;
         case WM_SIZE:
-            if (!Application::s_Application->m_Initializing) {
-                Application::s_Application->m_Window->WindowResizeCallback(
-                    Math::TVec2<int>(LOWORD(lParam), HIWORD(lParam)));
-            }
+            s_WindowClass->WindowResizeCallback(Math::TVec2<int>(LOWORD(lParam), HIWORD(lParam)));
             break;
         default:
             result = DefWindowProc(hwnd, msg, wParam, lParam);
@@ -292,8 +285,8 @@ namespace Dodo::Platform {
             m_WindowProperties.m_Width = GetSystemMetrics(SM_CXSCREEN);
             m_WindowProperties.m_Height = GetSystemMetrics(SM_CYSCREEN);
 
-            Application::s_Application->m_RenderAPI->SetViewport(m_WindowProperties.m_Width,
-                                                                 m_WindowProperties.m_Height);
+            if (m_EventCallback)
+                m_EventCallback(WindowResizeEvent({(int)m_WindowProperties.m_Width, (int)m_WindowProperties.m_Height}));
             DD_INFO("{0}, {1}", GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 
             m_WindowProperties.m_Settings.fullscreen = true;
@@ -323,8 +316,8 @@ namespace Dodo::Platform {
                                           GetSystemMetrics(SM_CYSMSIZE) - GetSystemMetrics(SM_CYEDGE) -
                                           GetSystemMetrics(SM_CYFRAME);
 
-            Application::s_Application->m_RenderAPI->SetViewport(m_WindowProperties.m_Width,
-                                                                 m_WindowProperties.m_Height);
+            if (m_EventCallback)
+                m_EventCallback(WindowResizeEvent({(int)m_WindowProperties.m_Width, (int)m_WindowProperties.m_Height}));
 
             m_WindowProperties.m_Settings.fullscreen = false;
         }
@@ -343,22 +336,26 @@ namespace Dodo::Platform {
 
     void Win32Window::WindowResizeCallback(Math::TVec2<int> size)
     {
-        Application::s_Application->m_RenderAPI->Viewport(size.x, size.y);
-        Application::s_Application->OnEvent(WindowResizeEvent(size));
+        if (m_EventListener) m_EventListener->OnEvent(WindowResizeEvent(size));
     }
 
     void Win32Window::WindowFocusCallback(bool focus)
     {
         m_Focused = focus;
-        Application::s_Application->OnEvent(WindowFocusEvent(focus));
+        if (m_EventListener) m_EventListener->OnEvent(WindowFocusEvent(focus));
     }
 
     void Win32Window::WindowCloseCallback()
     {
-        Application::s_Application->Shutdown();
         PostQuitMessage(0);
-        Application::s_Application->OnEvent(WindowCloseEvent());
+        if (m_EventListener) m_EventListener->OnEvent(WindowCloseEvent());
     }
+
+    void Win32Window::OnKeyPressed(uint key) { if (m_InputManager) m_InputManager->KeyPressed(key); }
+    void Win32Window::OnKeyReleased(uint key) { if (m_InputManager) m_InputManager->KeyReleased(key); }
+    void Win32Window::OnMousePressed(uint button) { if (m_InputManager) m_InputManager->MousePressed(button); }
+    void Win32Window::OnMouseReleased(uint button) { if (m_InputManager) m_InputManager->MouseReleased(button); }
+    void Win32Window::OnMouseMoved(Math::TVec2<double> pos) { if (m_InputManager) m_InputManager->MouseMoved(pos); }
 
     void Win32Window::SetWindowProperties(const WindowProperties& winprop)
     {

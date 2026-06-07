@@ -4,6 +4,7 @@
 
 #include "Win32ImGuiBackend.h"
 
+#include <Core/Application/Event.h>
 #include <Core/Application/WindowProperties.h>
 #include <Platform/WindowAPI/NativeWindowHandle.h>
 
@@ -20,6 +21,10 @@
 #define NOGDI
 EXTERN_C IMAGE_DOS_HEADER __ImageBase;
 
+namespace Dodo {
+    class InputManager;
+}
+
 namespace Dodo::Platform {
     class Win32Window {
       private:
@@ -28,6 +33,9 @@ namespace Dodo::Platform {
         HINSTANCE m_HInstance;
         HWND m_Hwnd;
         HDC m_Hdc;
+
+        InputManager* m_InputManager = nullptr;
+        IEventListener* m_EventListener = nullptr;
 
       public:
         PCSpecifications m_Pcspecs;
@@ -45,10 +53,18 @@ namespace Dodo::Platform {
         void ImGuiNewFrame() const;
         void ImGuiEndFrame() const;
 
+        void SetInputManager(InputManager* im) { m_InputManager = im; }
+        void SetEventListener(IEventListener* listener) { m_EventListener = listener; }
+
         bool m_Focused;
         void WindowResizeCallback(Math::TVec2<int> size);
         void WindowFocusCallback(bool focused);
         void WindowCloseCallback();
+        void OnKeyPressed(uint key);
+        void OnKeyReleased(uint key);
+        void OnMousePressed(uint button);
+        void OnMouseReleased(uint button);
+        void OnMouseMoved(Math::TVec2<double> pos);
 
         const WindowProperties& GetWindowProperties() { return m_WindowProperties; }
         void SetWindowProperties(const WindowProperties& winprop);

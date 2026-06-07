@@ -75,8 +75,8 @@ namespace Dodo {
         DD_INFO("Allocating {} worker threads ({} logical processors detected)", numWorkerThreads,
                 m_NumLogicalProcessors);
 
-        // Set event callback in input manager
-        m_InputManager.SetEventCallback([this](const Event& e) { OnEvent(e); });
+        m_Window->SetInputManager(&m_InputManager);
+        m_InputManager.SetEventListener(this);
 
         m_RenderAPI = ddnew RenderAPI(m_Window->GetHandle());
         RenderInitError res = m_RenderAPI->Init(m_Window->GetWindowProperties());
@@ -86,6 +86,8 @@ namespace Dodo {
         }
 
         m_AssetManager = ddnew AssetManager(*m_RenderAPI, *m_ThreadManager);
+
+        m_Window->SetEventListener(this);
     }
 
     void Application::Init() {}
@@ -107,9 +109,21 @@ namespace Dodo {
 
     void Application::OnEvent(const Event& event)
     {
+        switch (event.GetType()) {
+        case EventType::WINDOW_CLOSE:
+            Shutdown();
+            break;
+        case EventType::WINDOW_RESIZE:
+            if (!m_Initializing)
+                m_RenderAPI->SetViewport(static_cast<const WindowResizeEvent&>(event).m_ScreenSize.x,
+                                         static_cast<const WindowResizeEvent&>(event).m_ScreenSize.y);
+            break;
+        default:
+            break;
+        }
+
         for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it) {
             if (event.m_Handled) break;
-
             (*it)->OnEvent(event);
         }
     }

@@ -16,7 +16,7 @@ namespace Dodo {
         WindowProperties m_WindowProperties;
     };
 
-    class Application {
+    class Application : public IEventListener {
       public:
         static Application* s_Application;
 
@@ -30,7 +30,7 @@ namespace Dodo {
         void PushLayer(Layer* layer);
         void PopLayer(Layer* layer);
 
-        void OnEvent(const Event& event);
+        void OnEvent(const Event& event) override;
 
         void ImGuiNewFrame();
         void ImGuiEndFrame();

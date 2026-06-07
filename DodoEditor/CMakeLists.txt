@@ -49,12 +49,15 @@ target_sources(DodoEditor
         lib/tinyfiledialogs/tinyfiledialogs.cpp
 )
 
-target_link_libraries(DodoEditor PRIVATE Dodo)
+add_subdirectory(lib/nanosvg)
+
+target_link_libraries(DodoEditor PRIVATE Dodo nanosvg nanosvgrast)
 
 target_include_directories(DodoEditor
     PRIVATE
         src
         lib/tinyfiledialogs
+        lib/nanosvg/src
 )
 
 target_compile_definitions(DodoEditor

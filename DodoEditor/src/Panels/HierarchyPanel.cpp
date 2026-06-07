@@ -4,7 +4,17 @@
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
 
-void HierarchyPanel::Draw(EditorState& editorState, InspectorState& inspectorState, HierarchyState& state)
+void HierarchyPanel::DrawIcon(void* texID, float sz)
+{
+    if (texID)
+        ImGui::Image((ImTextureID)texID, ImVec2(sz, sz));
+    else
+        ImGui::Dummy(ImVec2(sz, sz));
+    ImGui::SameLine();
+}
+
+void HierarchyPanel::Draw(EditorState& editorState, InspectorState& inspectorState, HierarchyState& state,
+                          const EditorIconSet& icons)
 {
     if (!ImGui::Begin(state.name.c_str(), &state.visible)) {
         ImGui::End();
@@ -30,8 +40,8 @@ void HierarchyPanel::Draw(EditorState& editorState, InspectorState& inspectorSta
         ImGui::EndPopup();
     }
 
-    ImGui::ColorButton("##EntitiesIcon", ImColor(226, 189, 0), ImGuiColorEditFlags_NoTooltip);
-    ImGui::SameLine();
+    float iconSz = ImGui::GetTextLineHeight();
+    DrawIcon(icons.entityRoot, iconSz);
 
     if (ImGui::TreeNodeEx("Entities", ImGuiTreeNodeFlags_DefaultOpen)) {
         auto& world = editorState.scene->GetWorld();
@@ -41,7 +51,7 @@ void HierarchyPanel::Draw(EditorState& editorState, InspectorState& inspectorSta
         }
 
         for (EntityID entityId : world.GetAliveEntities()) {
-            if (entityId == editorState.renameState.entityId) { // Currently renaming this entity
+            if (entityId == editorState.renameState.entityId) {
                 ImGui::SetKeyboardFocusHere();
                 ImGui::Indent();
 
@@ -56,19 +66,19 @@ void HierarchyPanel::Draw(EditorState& editorState, InspectorState& inspectorSta
             }
 
             if (entityId != editorState.renameState.entityId) {
-                std::string colorButtonId = "##EntityIcon" + std::to_string(entityId);
-                ImGui::ColorButton(colorButtonId.c_str(), ImColor(120, 50, 0), ImGuiColorEditFlags_NoTooltip);
-                ImGui::SameLine();
+                bool selected = editorState.selection.Contains(entityId);
+                DrawIcon(selected ? icons.entitySel : icons.entity, iconSz);
+
                 ImGui::PushID((int)entityId);
                 std::string entityName = world.HasComponent<NameComponent>(entityId)
                                              ? world.GetComponent<NameComponent>(entityId).name
                                              : "Entity_" + std::to_string(entityId);
                 bool open = ImGui::TreeNodeEx(
-                    entityName.c_str(), (editorState.selection.Contains(entityId) ? ImGuiTreeNodeFlags_Selected : 0) |
+                    entityName.c_str(), (selected ? ImGuiTreeNodeFlags_Selected : 0) |
                                             ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_OpenOnArrow);
                 ImGui::PopID();
-                if (editorState.selection.Contains(entityId)) {
-                    ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 40); // Move text to right side
+                if (selected) {
+                    ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 40);
                     ImGui::Text("%i", entityId);
                 }
                 if (ImGui::IsItemClicked()) {
@@ -86,7 +96,6 @@ void HierarchyPanel::Draw(EditorState& editorState, InspectorState& inspectorSta
                 if (open) {
                     ImGui::Separator();
 
-                    // Check what components this entity has
                     bool hasComponents = world.HasAnyComponent(entityId);
                     if (hasComponents) {
                         ImGui::Text("Components:");

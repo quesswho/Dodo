@@ -5,7 +5,6 @@
 
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <tinyfiledialogs.h>
 
 using namespace Dodo;
 using namespace Math;
@@ -82,6 +81,8 @@ void Interface::InitInterface()
     // Asset Browser
     m_AssetBrowserState.name = "Asset Browser";
     m_AssetBrowserState.visible = true;
+
+    m_Icons.Load(*Application::s_Application->m_RenderAPI);
 }
 
 bool Interface::BeginDraw()
@@ -121,15 +122,11 @@ bool Interface::BeginDraw()
         if (ImGui::BeginMenu("File")) {
             if (ImGui::BeginMenu("New")) {
                 if (ImGui::MenuItem("Project")) {
-                    std::filesystem::path parentDir = FileDialog::SelectDirectory("Select Project Location");
-                    if (!parentDir.empty()) {
-                        const char* input = tinyfd_inputBox("New Project", "Project name:", "MyGame");
-                        if (input && input[0] != '\0') {
-                            auto project = Dodo::Project::New(parentDir, input);
-                            if (project)
-                                SetActiveProject(std::move(project));
-                        }
-                    }
+                    memset(m_NewProjectNameBuf, 0, sizeof(m_NewProjectNameBuf));
+                    strncpy(m_NewProjectNameBuf, "MyGame", sizeof(m_NewProjectNameBuf) - 1);
+                    m_NewProjectDir.clear();
+                    m_NewProjectError.clear();
+                    ImGui::OpenPopup("New Project##modal");
                 }
                 if (ImGui::MenuItem("Scene")) {
                     EditorScene* scene = new EditorScene();
@@ -203,9 +200,12 @@ bool Interface::BeginDraw()
         ImGui::PopStyleColor();
         ImGui::EndMenuBar();
     }
+
+    DrawNewProjectModal();
+
     ImGui::End();
 
-    m_HierarchyPanel.Draw(m_EditorState, m_InspectorState, m_HierarchyState);
+    m_HierarchyPanel.Draw(m_EditorState, m_InspectorState, m_HierarchyState, m_Icons.Get());
     m_InspectorPanel.Draw(m_EditorState, m_InspectorState);
     m_AssetBrowserPanel.Draw(m_AssetBrowserState);
 
@@ -241,6 +241,130 @@ void Interface::ResetDockspace(uint dockspace_id)
     ImGui::DockBuilderDockWindow(m_AssetBrowserState.name.c_str(), dock_bottom);
 
     ImGui::DockBuilderFinish(dockspace_id);
+}
+
+//////////////////////
+// New Project Modal //
+//////////////////////
+
+void Interface::DrawNewProjectModal()
+{
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(500.0f, 0.0f), ImVec2(500.0f, FLT_MAX));
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    bool opened = ImGui::BeginPopupModal("New Project##modal", nullptr,
+        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar);
+    ImGui::PopStyleVar();
+
+    if (!opened)
+        return;
+
+    // Blue accent header band
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.0f, 0.45f, 0.78f, 1.0f));
+    if (ImGui::BeginChild("##NPHdr", ImVec2(0.0f, 52.0f), false, ImGuiWindowFlags_NoScrollbar)) {
+        ImGui::SetCursorPos(ImVec2(18.0f, 16.0f));
+        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Create New Project");
+    }
+    ImGui::EndChild();
+    ImGui::PopStyleColor();
+
+    const float pad = 18.0f;
+    const float contentW = 500.0f - pad * 2.0f;
+    ImGuiStyle& sty = ImGui::GetStyle();
+
+    // Project name
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 14.0f);
+    ImGui::SetCursorPosX(pad);
+    ImGui::Text("Project Name");
+    ImGui::SetCursorPosX(pad);
+    ImGui::SetNextItemWidth(contentW);
+    ImGui::InputText("##NPName", m_NewProjectNameBuf, sizeof(m_NewProjectNameBuf));
+
+    // Location
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 10.0f);
+    ImGui::SetCursorPosX(pad);
+    ImGui::Text("Location");
+    ImGui::SetCursorPosX(pad);
+    const float browseW = 80.0f;
+    char locBuf[1024] = {};
+    snprintf(locBuf, sizeof(locBuf), "%s",
+             m_NewProjectDir.empty() ? "(not set)" : m_NewProjectDir.generic_string().c_str());
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.13f, 0.13f, 0.13f, 1.0f));
+    ImGui::SetNextItemWidth(contentW - browseW - sty.ItemSpacing.x);
+    ImGui::InputText("##NPLoc", locBuf, sizeof(locBuf), ImGuiInputTextFlags_ReadOnly);
+    ImGui::PopStyleColor();
+    ImGui::SameLine();
+    if (ImGui::Button("Browse", ImVec2(browseW, 0.0f))) {
+        std::filesystem::path chosen = FileDialog::SelectDirectory("Select Project Location");
+        if (!chosen.empty())
+            m_NewProjectDir = chosen;
+    }
+
+    // Path preview
+    if (!m_NewProjectDir.empty() && m_NewProjectNameBuf[0] != '\0') {
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4.0f);
+        ImGui::SetCursorPosX(pad);
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.50f, 0.50f, 0.50f, 1.0f));
+        auto preview = m_NewProjectDir / m_NewProjectNameBuf;
+        ImGui::TextWrapped("Will be created at: %s", preview.generic_string().c_str());
+        ImGui::PopStyleColor();
+    }
+
+    // Error message
+    if (!m_NewProjectError.empty()) {
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6.0f);
+        ImGui::SetCursorPosX(pad);
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.30f, 0.30f, 1.0f));
+        ImGui::TextWrapped("%s", m_NewProjectError.c_str());
+        ImGui::PopStyleColor();
+    }
+
+    // Separator
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 12.0f);
+    ImGui::SetCursorPosX(pad);
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+    ImGui::Dummy(ImVec2(contentW, 1.0f));
+    ImGui::GetWindowDrawList()->AddLine(
+        ImGui::GetItemRectMin(), ImGui::GetItemRectMax(),
+        IM_COL32(60, 60, 60, 255));
+    ImGui::PopStyleVar();
+
+    // Buttons (right-aligned)
+    const float btnW = 88.0f;
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8.0f);
+    ImGui::SetCursorPosX(pad + contentW - (btnW * 2.0f + sty.ItemSpacing.x));
+
+    if (ImGui::Button("Cancel", ImVec2(btnW, 0.0f))) {
+        m_NewProjectError.clear();
+        ImGui::CloseCurrentPopup();
+    }
+    ImGui::SameLine();
+    ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.0f, 0.45f, 0.78f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.1f, 0.55f, 0.88f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.0f, 0.35f, 0.68f, 1.0f));
+    if (ImGui::Button("Create", ImVec2(btnW, 0.0f))) {
+        if (m_NewProjectNameBuf[0] == '\0') {
+            m_NewProjectError = "Project name cannot be empty.";
+        } else if (m_NewProjectDir.empty()) {
+            m_NewProjectError = "Please select a location.";
+        } else {
+            auto proj = Dodo::Project::New(m_NewProjectDir, m_NewProjectNameBuf);
+            if (proj) {
+                SetActiveProject(std::move(proj));
+                m_NewProjectError.clear();
+                ImGui::CloseCurrentPopup();
+            } else {
+                m_NewProjectError = "Failed to create project. Check if the path is accessible.";
+            }
+        }
+    }
+    ImGui::PopStyleColor(3);
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 14.0f);
+    ImGui::EndPopup();
 }
 
 //////////////

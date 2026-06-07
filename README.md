@@ -88,7 +88,7 @@ make run
 ![Cook-Torrance BRDF](https://i.imgur.com/qfpEHyE.png)
 - We use cascaded shadow maps for directional lights:
 ![Cascaded Shadow Maps](https://i.imgur.com/fBgjl41.png)
-- Percentage-Closer Soft Shadows using Poisson disc sampling
+- Percentage-Closer Soft Shadows using Vogel disc sampling
 ![PCSS and Poisson disc sampling](https://i.imgur.com/aIfWOVk.png)
 - Alpha test in shadow pass through bindless textures
 ![Alpha test](https://i.imgur.com/5idSnW7.png)

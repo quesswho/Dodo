@@ -22,3 +22,6 @@
 [submodule "Dodo/lib/gli"]
 	path = Dodo/lib/gli
 	url = https://github.com/g-truc/gli.git
+[submodule "DodoEditor/lib/nanosvg"]
+	path = DodoEditor/lib/nanosvg
+	url = https://github.com/memononen/nanosvg

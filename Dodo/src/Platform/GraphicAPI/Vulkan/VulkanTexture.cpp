@@ -76,8 +76,8 @@ namespace Dodo::Platform {
     void VulkanTexture::TransitionImageLayout(VkCommandBuffer cmd, VkImageLayout oldLayout, VkImageLayout newLayout,
                                               uint32_t baseMipLevel, uint32_t levelCount)
     {
-        VkImageMemoryBarrier barrier{};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        VkImageMemoryBarrier2 barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
         barrier.oldLayout = oldLayout;
         barrier.newLayout = newLayout;
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -89,36 +89,45 @@ namespace Dodo::Platform {
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
 
-        VkPipelineStageFlags srcStage, dstStage;
+        VkPipelineStageFlags2 srcStage, dstStage;
+        VkAccessFlags2 srcAccess, dstAccess;
         if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-            barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            srcStage = VK_PIPELINE_STAGE_2_NONE;
+            srcAccess = 0;
+            dstStage = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
+            dstAccess = VK_ACCESS_2_TRANSFER_WRITE_BIT;
         } else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
                    newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            srcStage = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
+            srcAccess = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+            dstStage = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+            dstAccess = VK_ACCESS_2_SHADER_READ_BIT;
         } else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL &&
                    newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            dstStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+            srcStage = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
+            srcAccess = VK_ACCESS_2_TRANSFER_READ_BIT;
+            dstStage = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+            dstAccess = VK_ACCESS_2_SHADER_READ_BIT;
         } else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
                    newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL) {
-            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-            srcStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            srcStage = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
+            srcAccess = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+            dstStage = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
+            dstAccess = VK_ACCESS_2_TRANSFER_READ_BIT;
         } else {
             DD_ERR("VulkanTexture: unsupported layout transition!");
             return;
         }
 
-        vkCmdPipelineBarrier(cmd, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+        barrier.srcStageMask = srcStage;
+        barrier.srcAccessMask = srcAccess;
+        barrier.dstStageMask = dstStage;
+        barrier.dstAccessMask = dstAccess;
+        VkDependencyInfo depInfo{};
+        depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+        depInfo.imageMemoryBarrierCount = 1;
+        depInfo.pImageMemoryBarriers = &barrier;
+        vkCmdPipelineBarrier2(cmd, &depInfo);
     }
 
     void VulkanTexture::CopyBufferToImage(VkCommandBuffer cmd, VkBuffer buffer)

@@ -82,6 +82,9 @@ namespace Dodo::Platform {
             for (auto& [fb, entry] : m_ImGuiFrameBufferEntries)
                 ImGui_ImplVulkan_RemoveTexture(entry.set);
             m_ImGuiFrameBufferEntries.clear();
+            for (auto& [tex, set] : m_ImGuiTextureEntries)
+                ImGui_ImplVulkan_RemoveTexture(set);
+            m_ImGuiTextureEntries.clear();
             ImGui_ImplVulkan_Shutdown();
             vkDestroyDescriptorPool(m_Device, m_ImGuiDescriptorPool, nullptr);
         }
@@ -160,9 +163,9 @@ namespace Dodo::Platform {
 
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
         appInfo.pEngineName = "Dodo Engine";
-        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.engineVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
         appInfo.apiVersion = DODO_VULKAN_VERSION;
 
         VkInstanceCreateInfo createInfo{};
@@ -256,18 +259,20 @@ namespace Dodo::Platform {
         bestDeviceInfo.device = VK_NULL_HANDLE;
         for (const auto& device : devices) {
             PhyisicalDeviceInfo deviceInfo;
-            VkPhysicalDeviceProperties deviceProperties;
-            VkPhysicalDeviceFeatures deviceFeatures;
-            vkGetPhysicalDeviceProperties(device, &deviceProperties);
-            vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+            VkPhysicalDeviceProperties2 deviceProperties2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+            VkPhysicalDeviceFeatures2 deviceFeatures2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+            vkGetPhysicalDeviceProperties2(device, &deviceProperties2);
+            vkGetPhysicalDeviceFeatures2(device, &deviceFeatures2);
 
             deviceInfo.device = device;
-            deviceInfo.properties = deviceProperties;
-            deviceInfo.features = deviceFeatures;
-            vkGetPhysicalDeviceMemoryProperties(device, &deviceInfo.memoryProperties);
+            deviceInfo.properties = deviceProperties2.properties;
+            deviceInfo.features = deviceFeatures2.features;
+            VkPhysicalDeviceMemoryProperties2 memProps2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2};
+            vkGetPhysicalDeviceMemoryProperties2(device, &memProps2);
+            deviceInfo.memoryProperties = memProps2.memoryProperties;
             deviceInfo.indices = FindQueueFamilies(device);
             if (!IsDeviceSuitable(deviceInfo)) {
-                DD_INFO("Device {} is not suitable", deviceProperties.deviceName);
+                DD_INFO("Device {} is not suitable", deviceInfo.properties.deviceName);
                 continue;
             }
             if (IsDeviceBetter(bestDeviceInfo, deviceInfo)) {
@@ -316,6 +321,7 @@ namespace Dodo::Platform {
         VkPhysicalDeviceVulkan13Features vulkan13Features{};
         vulkan13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
         vulkan13Features.dynamicRendering = VK_TRUE;
+        vulkan13Features.synchronization2 = VK_TRUE;
         vulkan13Features.shaderDemoteToHelperInvocation = VK_TRUE;
 
         VkPhysicalDeviceVulkan12Features vulkan12Features{};
@@ -569,9 +575,9 @@ namespace Dodo::Platform {
     RenderInitError VulkanRenderAPI::InitDescriptors()
     {
         // Compute slot size for the dynamic ModelData UBO (must be aligned to device limit)
-        VkPhysicalDeviceProperties devProps{};
-        vkGetPhysicalDeviceProperties(m_PhysicalDevice, &devProps);
-        uint32_t alignment = (uint32_t)devProps.limits.minUniformBufferOffsetAlignment;
+        VkPhysicalDeviceProperties2 devProps2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+        vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &devProps2);
+        uint32_t alignment = (uint32_t)devProps2.properties.limits.minUniformBufferOffsetAlignment;
         uint32_t rawSize = (uint32_t)sizeof(GPUModelData);
         m_ModelUBOSlotSize = (rawSize + alignment - 1) & ~(alignment - 1);
 
@@ -684,8 +690,9 @@ namespace Dodo::Platform {
         }
         // Sampler 5: ANISO16_REPEAT (falls back to LINEAR_REPEAT if anisotropy not supported)
         {
-            VkPhysicalDeviceFeatures features{};
-            vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &features);
+            VkPhysicalDeviceFeatures2 features2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+            vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &features2);
+            const VkPhysicalDeviceFeatures& features = features2.features;
             VkSamplerCreateInfo s{};
             s.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
             s.magFilter = VK_FILTER_LINEAR;
@@ -846,18 +853,23 @@ namespace Dodo::Platform {
             cbBegin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
             cbBegin.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
             vkBeginCommandBuffer(cb, &cbBegin);
-            VkImageMemoryBarrier barrier{};
-            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            VkImageMemoryBarrier2 barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
             barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barrier.image = m_DummyImage;
             barrier.subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+            barrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE;
             barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0,
-                                 nullptr, 0, nullptr, 1, &barrier);
+            barrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+            barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+            VkDependencyInfo depInfo{};
+            depInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+            depInfo.imageMemoryBarrierCount = 1;
+            depInfo.pImageMemoryBarriers = &barrier;
+            vkCmdPipelineBarrier2(cb, &depInfo);
             vkEndCommandBuffer(cb);
             VkSubmitInfo submitInfo{};
             submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1020,15 +1032,15 @@ namespace Dodo::Platform {
 
     RenderInitError VulkanRenderAPI::InitTimestampPools()
     {
-        VkPhysicalDeviceProperties props{};
-        vkGetPhysicalDeviceProperties(m_PhysicalDevice, &props);
+        VkPhysicalDeviceProperties2 props2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+        vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &props2);
 
-        if (!props.limits.timestampComputeAndGraphics) {
+        if (!props2.properties.limits.timestampComputeAndGraphics) {
             DD_INFO("GPU does not support timestamp queries; GPU timings will be unavailable.");
             return RenderInitError(RenderInitStatus::Success);
         }
 
-        m_TimestampPeriodNs = props.limits.timestampPeriod;
+        m_TimestampPeriodNs = props2.properties.limits.timestampPeriod;
 
         VkQueryPoolCreateInfo ci{};
         ci.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
@@ -1070,15 +1082,15 @@ namespace Dodo::Platform {
     void VulkanRenderAPI::BeginTimestamp(Dodo::GpuTimestampSlot slot)
     {
         if (!m_TimestampsSupported) return;
-        vkCmdWriteTimestamp(m_Frames[m_CurrentFrame].commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                            m_TimestampPools[m_CurrentFrame], static_cast<uint32_t>(slot) * 2);
+        vkCmdWriteTimestamp2(m_Frames[m_CurrentFrame].commandBuffer, VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT,
+                             m_TimestampPools[m_CurrentFrame], static_cast<uint32_t>(slot) * 2);
     }
 
     void VulkanRenderAPI::EndTimestamp(Dodo::GpuTimestampSlot slot)
     {
         if (!m_TimestampsSupported) return;
-        vkCmdWriteTimestamp(m_Frames[m_CurrentFrame].commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                            m_TimestampPools[m_CurrentFrame], static_cast<uint32_t>(slot) * 2 + 1);
+        vkCmdWriteTimestamp2(m_Frames[m_CurrentFrame].commandBuffer, VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
+                             m_TimestampPools[m_CurrentFrame], static_cast<uint32_t>(slot) * 2 + 1);
     }
 
     void VulkanRenderAPI::Begin()
@@ -1144,8 +1156,8 @@ namespace Dodo::Platform {
 
         // TODO: Deprecated stuff, use VkImageMemoryBarrier2KHR instead
         // Transition swapchain image back to present layout
-        VkImageMemoryBarrier presentBarrier = {};
-        presentBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        VkImageMemoryBarrier2 presentBarrier{};
+        presentBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
         presentBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         presentBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         presentBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -1156,11 +1168,15 @@ namespace Dodo::Platform {
         presentBarrier.subresourceRange.levelCount = 1;
         presentBarrier.subresourceRange.baseArrayLayer = 0;
         presentBarrier.subresourceRange.layerCount = 1;
-        presentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        presentBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        presentBarrier.srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+        presentBarrier.dstStageMask = VK_PIPELINE_STAGE_2_NONE;
         presentBarrier.dstAccessMask = 0;
-
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                             0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
+        VkDependencyInfo presentDepInfo{};
+        presentDepInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+        presentDepInfo.imageMemoryBarrierCount = 1;
+        presentDepInfo.pImageMemoryBarriers = &presentBarrier;
+        vkCmdPipelineBarrier2(cmd, &presentDepInfo);
 
         vkEndCommandBuffer(cmd);
 
@@ -1372,8 +1388,8 @@ namespace Dodo::Platform {
         }
 
         // Transition swapchain image to color attachment layout before rendering to it
-        VkImageMemoryBarrier barrier{};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        VkImageMemoryBarrier2 barrier{};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
         barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -1384,10 +1400,15 @@ namespace Dodo::Platform {
         barrier.subresourceRange.levelCount = 1;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
+        barrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE;
         barrier.srcAccessMask = 0;
-        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0,
-                             0, nullptr, 0, nullptr, 1, &barrier);
+        barrier.dstStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        barrier.dstAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+        VkDependencyInfo swapDepInfo{};
+        swapDepInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+        swapDepInfo.imageMemoryBarrierCount = 1;
+        swapDepInfo.pImageMemoryBarriers = &barrier;
+        vkCmdPipelineBarrier2(cmd, &swapDepInfo);
 
         VkRenderingAttachmentInfo colorAttachment{};
         colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -1856,6 +1877,18 @@ namespace Dodo::Platform {
         return (void*)set;
     }
 
+    void* VulkanRenderAPI::GetTextureImGuiID(Ref<Texture> texture)
+    {
+        auto* tex = static_cast<VulkanTexture*>(texture.get());
+        auto it = m_ImGuiTextureEntries.find(tex);
+        if (it != m_ImGuiTextureEntries.end())
+            return (void*)it->second;
+        VkDescriptorSet set = ImGui_ImplVulkan_AddTexture(
+            m_DummySampler, tex->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        m_ImGuiTextureEntries[tex] = set;
+        return (void*)set;
+    }
+
     void VulkanRenderAPI::ImGuiNewFrame() const
     {
         ImGui_ImplVulkan_NewFrame();
@@ -1929,13 +1962,14 @@ namespace Dodo::Platform {
         QueueFamilyIndices indices;
 
         uint32_t queueFamilyCount = 0;
-        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
-        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+        vkGetPhysicalDeviceQueueFamilyProperties2(device, &queueFamilyCount, nullptr);
+        std::vector<VkQueueFamilyProperties2> queueFamilies(queueFamilyCount,
+                                                            {VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2});
+        vkGetPhysicalDeviceQueueFamilyProperties2(device, &queueFamilyCount, queueFamilies.data());
 
         uint32_t i = 0;
         for (const auto& queueFamily : queueFamilies) {
-            bool graphics = queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT;
+            bool graphics = queueFamily.queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT;
             VkBool32 present = false;
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &present);
             if (graphics && present) {
@@ -2017,10 +2051,10 @@ namespace Dodo::Platform {
     {
         std::vector<const char*> extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-        VkPhysicalDeviceProperties props;
-        vkGetPhysicalDeviceProperties(physicalDevice, &props);
+        VkPhysicalDeviceProperties2 props2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+        vkGetPhysicalDeviceProperties2(physicalDevice, &props2);
 
-        if (VK_API_VERSION_MINOR(props.apiVersion) < 3) {
+        if (VK_API_VERSION_MINOR(props2.properties.apiVersion) < 3) {
             // Dynamic rendering is built in core in 1.3+, otherwise we need the extension
             extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
         }
@@ -2125,10 +2159,10 @@ namespace Dodo::Platform {
      */
     VkPresentModeKHR VulkanRenderAPI::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
     {
-        VkPhysicalDeviceProperties props{};
-        vkGetPhysicalDeviceProperties(m_PhysicalDevice, &props);
+        VkPhysicalDeviceProperties2 props2{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+        vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &props2);
 
-        if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+        if (props2.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
             for (const auto& mode : availablePresentModes) {
                 if (mode == VK_PRESENT_MODE_MAILBOX_KHR) return mode;
             }

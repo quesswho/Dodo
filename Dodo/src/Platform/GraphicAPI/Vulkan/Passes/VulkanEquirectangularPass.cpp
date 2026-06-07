@@ -175,8 +175,8 @@ namespace Dodo::Platform {
 
         // Transition cube mip 0 (all 6 layers): UNDEFINED -> COLOR_ATTACHMENT_OPTIMAL
         {
-            VkImageMemoryBarrier b{};
-            b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            VkImageMemoryBarrier2 b{};
+            b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
             b.oldLayout                       = VK_IMAGE_LAYOUT_UNDEFINED;
             b.newLayout                       = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             b.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
@@ -187,17 +187,20 @@ namespace Dodo::Platform {
             b.subresourceRange.levelCount     = 1;
             b.subresourceRange.baseArrayLayer = 0;
             b.subresourceRange.layerCount     = 6;
+            b.srcStageMask                    = VK_PIPELINE_STAGE_2_NONE;
             b.srcAccessMask                   = 0;
-            b.dstAccessMask                   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                                 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                                 0, 0, nullptr, 0, nullptr, 1, &b);
+            b.dstStageMask                    = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+            b.dstAccessMask                   = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+            VkDependencyInfo dep{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+            dep.imageMemoryBarrierCount = 1;
+            dep.pImageMemoryBarriers    = &b;
+            vkCmdPipelineBarrier2(cmd, &dep);
         }
 
         // Pre-transition remaining mip levels to TRANSFER_DST_OPTIMAL ready for blit.
         if (m_MipLevels > 1) {
-            VkImageMemoryBarrier b{};
-            b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            VkImageMemoryBarrier2 b{};
+            b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
             b.oldLayout                       = VK_IMAGE_LAYOUT_UNDEFINED;
             b.newLayout                       = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
             b.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
@@ -208,17 +211,20 @@ namespace Dodo::Platform {
             b.subresourceRange.levelCount     = m_MipLevels - 1;
             b.subresourceRange.baseArrayLayer = 0;
             b.subresourceRange.layerCount     = 6;
+            b.srcStageMask                    = VK_PIPELINE_STAGE_2_NONE;
             b.srcAccessMask                   = 0;
-            b.dstAccessMask                   = VK_ACCESS_TRANSFER_WRITE_BIT;
-            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                                 VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                 0, 0, nullptr, 0, nullptr, 1, &b);
+            b.dstStageMask                    = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
+            b.dstAccessMask                   = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+            VkDependencyInfo dep{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+            dep.imageMemoryBarrierCount = 1;
+            dep.pImageMemoryBarriers    = &b;
+            vkCmdPipelineBarrier2(cmd, &dep);
         }
 
         // Transition depth image: UNDEFINED -> DEPTH_STENCIL_ATTACHMENT_OPTIMAL
         {
-            VkImageMemoryBarrier b{};
-            b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            VkImageMemoryBarrier2 b{};
+            b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
             b.oldLayout                       = VK_IMAGE_LAYOUT_UNDEFINED;
             b.newLayout                       = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
             b.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
@@ -229,12 +235,15 @@ namespace Dodo::Platform {
             b.subresourceRange.levelCount     = 1;
             b.subresourceRange.baseArrayLayer = 0;
             b.subresourceRange.layerCount     = 1;
+            b.srcStageMask                    = VK_PIPELINE_STAGE_2_NONE;
             b.srcAccessMask                   = 0;
-            b.dstAccessMask                   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-                                                VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                                 VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-                                 0, 0, nullptr, 0, nullptr, 1, &b);
+            b.dstStageMask                    = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT;
+            b.dstAccessMask                   = VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+                                                VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            VkDependencyInfo dep{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+            dep.imageMemoryBarrierCount = 1;
+            dep.pImageMemoryBarriers    = &b;
+            vkCmdPipelineBarrier2(cmd, &dep);
         }
 
         // Bind state that is constant across all 6 face draws.
@@ -314,8 +323,8 @@ namespace Dodo::Platform {
 
         // Generate mipmaps via a blit chain (all 6 layers blitted together per level).
         if (m_MipLevels == 1) {
-            VkImageMemoryBarrier b{};
-            b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            VkImageMemoryBarrier2 b{};
+            b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
             b.oldLayout                       = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             b.newLayout                       = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             b.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
@@ -326,16 +335,19 @@ namespace Dodo::Platform {
             b.subresourceRange.levelCount     = 1;
             b.subresourceRange.baseArrayLayer = 0;
             b.subresourceRange.layerCount     = 6;
-            b.srcAccessMask                   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            b.dstAccessMask                   = VK_ACCESS_SHADER_READ_BIT;
-            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                                 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                                 0, 0, nullptr, 0, nullptr, 1, &b);
+            b.srcStageMask                    = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+            b.srcAccessMask                   = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+            b.dstStageMask                    = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+            b.dstAccessMask                   = VK_ACCESS_2_SHADER_READ_BIT;
+            VkDependencyInfo dep{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+            dep.imageMemoryBarrierCount = 1;
+            dep.pImageMemoryBarriers    = &b;
+            vkCmdPipelineBarrier2(cmd, &dep);
         } else {
             // Transition mip 0 (all 6 layers): COLOR_ATTACHMENT -> TRANSFER_SRC for blitting.
             {
-                VkImageMemoryBarrier b{};
-                b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                VkImageMemoryBarrier2 b{};
+                b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
                 b.oldLayout                       = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                 b.newLayout                       = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
                 b.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
@@ -346,11 +358,14 @@ namespace Dodo::Platform {
                 b.subresourceRange.levelCount     = 1;
                 b.subresourceRange.baseArrayLayer = 0;
                 b.subresourceRange.layerCount     = 6;
-                b.srcAccessMask                   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-                b.dstAccessMask                   = VK_ACCESS_TRANSFER_READ_BIT;
-                vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                                     VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                     0, 0, nullptr, 0, nullptr, 1, &b);
+                b.srcStageMask                    = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+                b.srcAccessMask                   = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+                b.dstStageMask                    = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
+                b.dstAccessMask                   = VK_ACCESS_2_TRANSFER_READ_BIT;
+                VkDependencyInfo dep{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+                dep.imageMemoryBarrierCount = 1;
+                dep.pImageMemoryBarriers    = &b;
+                vkCmdPipelineBarrier2(cmd, &dep);
             }
 
             for (uint32_t mip = 1; mip < m_MipLevels; mip++) {
@@ -375,8 +390,8 @@ namespace Dodo::Platform {
 
                 // Previous mip is now fully read; transition it to shader-readable.
                 {
-                    VkImageMemoryBarrier b{};
-                    b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                    VkImageMemoryBarrier2 b{};
+                    b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
                     b.oldLayout                       = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
                     b.newLayout                       = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     b.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
@@ -387,17 +402,20 @@ namespace Dodo::Platform {
                     b.subresourceRange.levelCount     = 1;
                     b.subresourceRange.baseArrayLayer = 0;
                     b.subresourceRange.layerCount     = 6;
-                    b.srcAccessMask                   = VK_ACCESS_TRANSFER_READ_BIT;
-                    b.dstAccessMask                   = VK_ACCESS_SHADER_READ_BIT;
-                    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                         VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                                         0, 0, nullptr, 0, nullptr, 1, &b);
+                    b.srcStageMask                    = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
+                    b.srcAccessMask                   = VK_ACCESS_2_TRANSFER_READ_BIT;
+                    b.dstStageMask                    = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+                    b.dstAccessMask                   = VK_ACCESS_2_SHADER_READ_BIT;
+                    VkDependencyInfo dep{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+                    dep.imageMemoryBarrierCount = 1;
+                    dep.pImageMemoryBarriers    = &b;
+                    vkCmdPipelineBarrier2(cmd, &dep);
                 }
 
                 // Promote current mip to TRANSFER_SRC for the next iteration.
                 if (mip < m_MipLevels - 1) {
-                    VkImageMemoryBarrier b{};
-                    b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                    VkImageMemoryBarrier2 b{};
+                    b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
                     b.oldLayout                       = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
                     b.newLayout                       = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
                     b.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
@@ -408,18 +426,21 @@ namespace Dodo::Platform {
                     b.subresourceRange.levelCount     = 1;
                     b.subresourceRange.baseArrayLayer = 0;
                     b.subresourceRange.layerCount     = 6;
-                    b.srcAccessMask                   = VK_ACCESS_TRANSFER_WRITE_BIT;
-                    b.dstAccessMask                   = VK_ACCESS_TRANSFER_READ_BIT;
-                    vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                         VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                         0, 0, nullptr, 0, nullptr, 1, &b);
+                    b.srcStageMask                    = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
+                    b.srcAccessMask                   = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+                    b.dstStageMask                    = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
+                    b.dstAccessMask                   = VK_ACCESS_2_TRANSFER_READ_BIT;
+                    VkDependencyInfo dep{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+                    dep.imageMemoryBarrierCount = 1;
+                    dep.pImageMemoryBarriers    = &b;
+                    vkCmdPipelineBarrier2(cmd, &dep);
                 }
             }
 
             // The last mip was the blit destination and remains in TRANSFER_DST; finalize it.
             {
-                VkImageMemoryBarrier b{};
-                b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                VkImageMemoryBarrier2 b{};
+                b.sType                           = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
                 b.oldLayout                       = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
                 b.newLayout                       = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 b.srcQueueFamilyIndex             = VK_QUEUE_FAMILY_IGNORED;
@@ -430,11 +451,14 @@ namespace Dodo::Platform {
                 b.subresourceRange.levelCount     = 1;
                 b.subresourceRange.baseArrayLayer = 0;
                 b.subresourceRange.layerCount     = 6;
-                b.srcAccessMask                   = VK_ACCESS_TRANSFER_WRITE_BIT;
-                b.dstAccessMask                   = VK_ACCESS_SHADER_READ_BIT;
-                vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT,
-                                     VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                                     0, 0, nullptr, 0, nullptr, 1, &b);
+                b.srcStageMask                    = VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
+                b.srcAccessMask                   = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+                b.dstStageMask                    = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+                b.dstAccessMask                   = VK_ACCESS_2_SHADER_READ_BIT;
+                VkDependencyInfo dep{VK_STRUCTURE_TYPE_DEPENDENCY_INFO};
+                dep.imageMemoryBarrierCount = 1;
+                dep.pImageMemoryBarriers    = &b;
+                vkCmdPipelineBarrier2(cmd, &dep);
             }
         }
     }

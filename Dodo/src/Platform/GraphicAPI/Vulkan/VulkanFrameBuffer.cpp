@@ -181,8 +181,8 @@ namespace Dodo::Platform {
     void VulkanFrameBuffer::TransitionToRenderTarget(VkCommandBuffer cmd)
     {
         if (HasColor()) {
-            VkImageMemoryBarrier colorBarrier{};
-            colorBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            VkImageMemoryBarrier2 colorBarrier{};
+            colorBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
             colorBarrier.oldLayout = m_ColorCurrentLayout;
             colorBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             colorBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -193,17 +193,21 @@ namespace Dodo::Platform {
             colorBarrier.subresourceRange.levelCount = 1;
             colorBarrier.subresourceRange.baseArrayLayer = 0;
             colorBarrier.subresourceRange.layerCount = 1;
+            colorBarrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE;
             colorBarrier.srcAccessMask = 0;
-            colorBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                                 0, 0, nullptr, 0, nullptr, 1, &colorBarrier);
+            colorBarrier.dstStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+            colorBarrier.dstAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+            VkDependencyInfo colorDep{};
+            colorDep.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+            colorDep.imageMemoryBarrierCount = 1;
+            colorDep.pImageMemoryBarriers = &colorBarrier;
+            vkCmdPipelineBarrier2(cmd, &colorDep);
             m_ColorCurrentLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         }
 
         {
-            VkImageMemoryBarrier depthBarrier{};
-            depthBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            VkImageMemoryBarrier2 depthBarrier{};
+            depthBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
             depthBarrier.oldLayout = m_DepthCurrentLayout;
             depthBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
             depthBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -214,12 +218,16 @@ namespace Dodo::Platform {
             depthBarrier.subresourceRange.levelCount = 1;
             depthBarrier.subresourceRange.baseArrayLayer = 0;
             depthBarrier.subresourceRange.layerCount = GetLayerCount();
+            depthBarrier.srcStageMask = VK_PIPELINE_STAGE_2_NONE;
             depthBarrier.srcAccessMask = 0;
+            depthBarrier.dstStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT;
             depthBarrier.dstAccessMask =
-                VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0,
-                                 0, nullptr, 0, nullptr, 1, &depthBarrier);
+                VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            VkDependencyInfo depthDep{};
+            depthDep.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+            depthDep.imageMemoryBarrierCount = 1;
+            depthDep.pImageMemoryBarriers = &depthBarrier;
+            vkCmdPipelineBarrier2(cmd, &depthDep);
             m_DepthCurrentLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         }
     }
@@ -227,8 +235,8 @@ namespace Dodo::Platform {
     void VulkanFrameBuffer::TransitionToReadable(VkCommandBuffer cmd)
     {
         if (HasColor()) {
-            VkImageMemoryBarrier colorBarrier{};
-            colorBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            VkImageMemoryBarrier2 colorBarrier{};
+            colorBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
             colorBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             colorBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             colorBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -239,17 +247,21 @@ namespace Dodo::Platform {
             colorBarrier.subresourceRange.levelCount = 1;
             colorBarrier.subresourceRange.baseArrayLayer = 0;
             colorBarrier.subresourceRange.layerCount = 1;
-            colorBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-            colorBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                                 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &colorBarrier);
+            colorBarrier.srcStageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+            colorBarrier.srcAccessMask = VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+            colorBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+            colorBarrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+            VkDependencyInfo colorDep{};
+            colorDep.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+            colorDep.imageMemoryBarrierCount = 1;
+            colorDep.pImageMemoryBarriers = &colorBarrier;
+            vkCmdPipelineBarrier2(cmd, &colorDep);
             m_ColorCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         }
 
         {
-            VkImageMemoryBarrier depthBarrier{};
-            depthBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            VkImageMemoryBarrier2 depthBarrier{};
+            depthBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
             depthBarrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
             depthBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
             depthBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -260,12 +272,16 @@ namespace Dodo::Platform {
             depthBarrier.subresourceRange.levelCount = 1;
             depthBarrier.subresourceRange.baseArrayLayer = 0;
             depthBarrier.subresourceRange.layerCount = GetLayerCount();
+            depthBarrier.srcStageMask = VK_PIPELINE_STAGE_2_EARLY_FRAGMENT_TESTS_BIT;
             depthBarrier.srcAccessMask =
-                VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-            depthBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                                 0, 0, nullptr, 0, nullptr, 1, &depthBarrier);
+                VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            depthBarrier.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
+            depthBarrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT;
+            VkDependencyInfo depthDep{};
+            depthDep.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+            depthDep.imageMemoryBarrierCount = 1;
+            depthDep.pImageMemoryBarriers = &depthBarrier;
+            vkCmdPipelineBarrier2(cmd, &depthDep);
             m_DepthCurrentLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
         }
     }

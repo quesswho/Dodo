@@ -87,6 +87,7 @@ namespace Dodo::Platform {
         void BindFrameBufferTexture(uint slot, Ref<FrameBuffer> framebuffer);
         uint32_t RegisterSampler(VkSampler sampler);
         void* GetFrameBufferImGuiTextureID(Ref<FrameBuffer> framebuffer);
+        void* GetTextureImGuiID(Ref<Texture> texture);
         void BindVertexBuffer(const Ref<VertexBuffer>& vb);
         void BindIndexBuffer(const Ref<IndexBuffer>& ib);
         void BindPipeline(Ref<Pipeline> pipeline);
@@ -217,6 +218,7 @@ namespace Dodo::Platform {
             VkExtent2D extent;
         };
         std::unordered_map<VulkanFrameBuffer*, ImGuiFrameBufferEntry> m_ImGuiFrameBufferEntries;
+        std::unordered_map<VulkanTexture*, VkDescriptorSet> m_ImGuiTextureEntries;
 
         // Per-draw pending texture handles: filled by BindTexture/BindTextureSampler, consumed by SetDrawData.
         // Indexed by TextureSlot: [0]=albedo, [1]=roughness, [2]=normal, [3]=metallic, [4]=ao, [5]=spec

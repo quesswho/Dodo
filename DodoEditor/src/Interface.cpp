@@ -83,6 +83,7 @@ void Interface::InitInterface()
     m_AssetBrowserState.visible = true;
 
     m_Icons.Load(*Application::s_Application->m_RenderAPI);
+    m_AssetBrowserState.icons = &m_Icons.Get();
 }
 
 bool Interface::BeginDraw()

@@ -17,8 +17,10 @@ namespace Dodo {
 
         ShaderAsset CompileFile(const std::string& path);
         ShaderAsset CompileFromString(const std::string& source, const std::string& name);
+        ShaderAsset ReloadFile(const std::string& path);
 
       private:
+        void RecreateSession();
         ShaderAsset CompileModule(slang::IModule* module, const std::string& path);
         ShaderStageBinary CompileEntryPoint(slang::IModule* module, slang::IEntryPoint* entryPoint);
         static ShaderStage GetShaderStage(SlangStage stage);

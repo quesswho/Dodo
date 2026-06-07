@@ -62,7 +62,7 @@ namespace Dodo {
         }
         ShaderID shaderID = pathIt->second;
 
-        ShaderAsset newAsset = m_SlangCompiler.CompileFile(path);
+        ShaderAsset newAsset = m_SlangCompiler.ReloadFile(path);
         if (newAsset.stages.empty()) {
             DD_ERR("ReloadShader: compilation failed, keeping old shader: {}", path);
             return;

@@ -40,7 +40,11 @@ namespace Dodo {
     {
         SlangGlobalSessionDesc globalDesc = {};
         slang::createGlobalSession(&globalDesc, m_GlobalSession.writeRef());
+        RecreateSession();
+    }
 
+    void SlangCompiler::RecreateSession()
+    {
         slang::TargetDesc targetDesc = {};
         targetDesc.format = SLANG_SPIRV;
         targetDesc.profile = m_GlobalSession->findProfile("spirv_1_6");
@@ -61,6 +65,12 @@ namespace Dodo {
     {
         m_Session.setNull();
         m_GlobalSession.setNull();
+    }
+
+    ShaderAsset SlangCompiler::ReloadFile(const std::string& path)
+    {
+        RecreateSession();
+        return CompileFile(path);
     }
 
     ShaderAsset SlangCompiler::CompileFile(const std::string& path)

@@ -141,7 +141,7 @@ float shadowCalculationCSMPCSS(
 
     // Stage 1: Blocker search: find average depth of occluding samples
     const int blockerSamples = 16;
-    float searchRadiusUV = lightSize * texelSize.x;
+    float2 searchRadiusUV = lightSize * texelSize;
     float avgBlockerDepth = 0.0f;
     int blockerCount = 0;
     for (int i = 0; i < blockerSamples; i++)
@@ -164,7 +164,16 @@ float shadowCalculationCSMPCSS(
 
     // Stage 2: Penumbra estimation - receiver further from blocker = wider penumbra
     float penumbraWidth = (currentDepth - avgBlockerDepth) / avgBlockerDepth * lightSize;
-    float filterRadiusUV = penumbraWidth * texelSize.x;
+    float2 filterRadiusUV = penumbraWidth * texelSize;
+
+    // Scale filter radius based on screen-space partial derivatives to reduce aliasing
+    /*float2 dUVdx = ddx(projCoords.xy);
+    float2 dUVdy = ddy(projCoords.xy);
+    float screenDelta = max(length(dUVdx), length(dUVdy));              // UV change per screen pixel
+    float texelFootprint = length(texelSize);                           // size of one shadow texel in UV
+    float pixelation = clamp(texelFootprint / screenDelta, 1.0f, 16.0f); // screen pixels per texel
+    filterRadiusUV *= pixelation;
+    */
 
     // Stage 3: Variable-radius PCF using the estimated penumbra width
     const int pcfSamples = 64;

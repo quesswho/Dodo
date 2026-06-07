@@ -74,7 +74,7 @@ namespace Dodo {
         Slang::ComPtr<slang::IBlob> diagnostics;
 
         slang::IModule* module = m_Session->loadModule(path.c_str(), diagnostics.writeRef());
-
+        
         if (diagnostics) {
             DD_WARN("Slang: {}", static_cast<const char*>(diagnostics->getBufferPointer()));
         }

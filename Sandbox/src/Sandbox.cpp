@@ -144,6 +144,18 @@ void GameLayer::OnEvent(const Event& event)
             Application::s_Application->m_Window->FullScreen();
         }
 
+        if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_F5) {
+            Application::s_Application->m_AssetManager->ReloadShader(
+                "res/shader/builtin/Passes/ForwardLit.slang",
+                *Application::s_Application->m_RenderAPI);
+            Application::s_Application->m_AssetManager->ReloadShader(
+                "res/shader/builtin/Passes/ForwardLitBlend.slang",
+                *Application::s_Application->m_RenderAPI);
+            Application::s_Application->m_AssetManager->ReloadShader(
+                "res/shader/builtin/Passes/ForwardLitSpecGloss.slang",
+                *Application::s_Application->m_RenderAPI);
+        }
+
         if (static_cast<const KeyPressEvent&>(event).m_Key == DODO_KEY_ESCAPE) {
             Application::s_Application->Shutdown();
         }

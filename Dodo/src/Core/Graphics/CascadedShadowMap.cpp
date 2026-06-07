@@ -117,7 +117,7 @@ namespace Dodo {
             maxY = minY + std::ceil((maxY - minY) / texelSizeY) * texelSizeY;
 
             // Pull the near plane back to capture shadow casters behind the frustum
-            constexpr float zMult = 3.0f;
+            constexpr float zMult = 4.0f;
             if (minZ < 0.0f)
                 minZ *= zMult;
             else

@@ -53,6 +53,45 @@ namespace Dodo {
         return id;
     }
 
+    void AssetManager::ReloadShader(const std::string& path, RenderAPI& renderAPI)
+    {
+        auto pathIt = m_ShaderPathLookup.find(path);
+        if (pathIt == m_ShaderPathLookup.end()) {
+            DD_WARN("ReloadShader: shader not currently loaded: {}", path);
+            return;
+        }
+        ShaderID shaderID = pathIt->second;
+
+        ShaderAsset newAsset = m_SlangCompiler.CompileFile(path);
+        if (newAsset.stages.empty()) {
+            DD_ERR("ReloadShader: compilation failed, keeping old shader: {}", path);
+            return;
+        }
+
+        renderAPI.WaitIdle();
+        m_Shaders[shaderID] = std::move(newAsset);
+
+        std::unordered_map<Pipeline*, Ref<Pipeline>> replacements;
+        for (auto& [pipelineID, pipelineRef] : m_Pipelines) {
+            if (pipelineRef && pipelineRef->GetDesc().shaderID == shaderID) {
+                Ref<Pipeline> fresh = renderAPI.CreatePipeline(pipelineRef->GetDesc(), *this);
+                replacements[pipelineRef.get()] = fresh;
+                pipelineRef = fresh;
+            }
+        }
+
+        if (replacements.empty()) return;
+
+        for (auto& [matID, mat] : m_Materials) {
+            if (!mat) continue;
+            auto it = replacements.find(mat->GetShader().get());
+            if (it != replacements.end())
+                mat->SetShader(it->second);
+        }
+
+        DD_INFO("ReloadShader: reloaded '{}'", path);
+    }
+
     ShaderAsset& AssetManager::GetShaderAsset(ShaderID id)
     {
         auto it = m_Shaders.find(id);
@@ -393,6 +432,7 @@ namespace Dodo {
             size_t texIdx = 0;
             size_t matIdx = 0;
             for (const auto& matEntry : modelData.materials) {
+                MaterialID matID = m_NextMaterialID++;
                 Ref<Material> material = std::make_shared<Material>();
                 BlendMode blendMode = matEntry.blendMode;
                 for (const auto& texEntry : matEntry.textures) {
@@ -444,7 +484,9 @@ namespace Dodo {
                     DD_WARN("ModelLoader: Material {} (model ID {}) has no textures or color, using fallback pipeline",
                             matIdx, it->id);
                 }
-                materials.push_back(std::move(material));
+                m_Materials.emplace(matID, material);
+                m_MaterialStates.emplace(matID, AssetState::Loaded);
+                materials.push_back(material);
                 matIdx++;
             }
 

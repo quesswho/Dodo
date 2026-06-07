@@ -36,10 +36,7 @@ namespace Dodo::Platform {
         glfwSetErrorCallback(ErrorCallback);
         ConfigureMonitor();
 
-// Tell GLFW not to create an OpenGL context if we are using Vulkan
-#ifdef DD_API_VULKAN
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-#endif
 
         m_Handle = glfwCreateWindow(m_WindowProperties.m_Width, m_WindowProperties.m_Height, m_WindowProperties.m_Title,
                                     NULL, NULL);

@@ -35,7 +35,7 @@ namespace Dodo {
         ShaderID LoadShaderFromPath(const std::string& path);
         ShaderID LoadShader(SlangSource source);
         void ReloadShader(const std::string& path, RenderAPI& renderAPI);
-        ShaderAsset& GetShaderAsset(ShaderID id); // This function is used when by the OpenGL backend to cache glsl code
+        ShaderAsset& GetShaderAsset(ShaderID id);
         const ShaderAsset& GetShaderAsset(ShaderID id) const;
 
         PipelineID CreatePipeline(const PipelineDesc& desc, RenderAPI& renderAPI);

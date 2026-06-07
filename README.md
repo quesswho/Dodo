@@ -2,7 +2,7 @@
 [![CMake on multiple platforms](https://github.com/quesswho/Dodo/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/quesswho/Dodo/actions/workflows/cmake-multi-platform.yml)
 
 **Dodo** is a multi-platform game engine written in **C++**, built from scratch.
-It features a graphics API abstraction layer for **Vulkan** and **OpenGL**.
+It features a graphics API abstraction layer, but currently only supports **Vulkan**
 
 The engine features an Entity Component System (ECS), model loading, PBR materials, shadow maps and a level editor.
 
@@ -34,8 +34,6 @@ The engine features an Entity Component System (ECS), model loading, PBR materia
 - **Slang** - Intermediate shading language compiler
 - **Volk** - Vulkan loader (only Vulkan)
 - **VMA** - Vulkan Memory Allocator (only Vulkan)
-- **GLAD** - OpenGL function loader (only OpenGL)
-- **SPIRV-Cross** - Converts SPIR-V to GLSL (only OpenGL)
 - **ImGui** - GUI for the level editor
 - **spdlog** - High-performance logging
 - **stb_image** - Texture loading
@@ -50,7 +48,6 @@ The engine features an Entity Component System (ECS), model loading, PBR materia
 - Ninja
 - A C++20-compatible compiler
 - Vulkan 1.3-capable GPU (for Vulkan backend)
-- OpenGL 4.6-capable GPU (for OpenGL backend)
 
 ### Cloning
 
@@ -79,17 +76,11 @@ make run
 | Option | Default | Description |
 |--------|---------|-------------|
 | `DD_API_VULKAN` | `ON` | Enable Vulkan backend |
-| `DD_API_OPENGL` | `OFF` | Enable OpenGL backend |
 | `DD_API_WIN32` | `OFF` | Enable Win32 window backend |
 | `DD_API_GLFW` | `ON` | Enable GLFW window backend |
 | `COMPILE_EDITOR` | `ON` | Compile the level editor |
-| `COMPILE_SANDBOX` | `OFF` | Compile the sandbox project |
-| `COMPILE_GAME` | `OFF` | Compile the voxel game |
-
-Example: build with Vulkan instead of OpenGL:
-```
-cmake --preset default -DDD_API_OPENGL=OFF -DDD_API_VULKAN=ON
-```
+| `COMPILE_SANDBOX` | `ON` | Compile the sandbox project |
+| `COMPILE_GAME` | `ON` | Compile the voxel game |
 
 
 ### Graphics

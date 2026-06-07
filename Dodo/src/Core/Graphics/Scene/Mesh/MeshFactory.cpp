@@ -29,47 +29,6 @@ namespace Dodo {
 
         // We need to duplicate vertices for each face because of different UVs.
         // Format per vertex: pos(3) uv(2) normal(3) tangent(4)
-#ifdef DD_API_OPENGL
-        // OpenGL: V=0 at bottom of texture image
-        float vertices[] = {
-            // Front face (normal: 0,0,-1  tangent: 1,0,0,1)
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, //  0
-            0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, //  1
-            1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, //  2
-            1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, //  3
-
-            // Back face (normal: 0,0,1  tangent: -1,0,0,1)
-            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, //  4
-            0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, //  5
-            1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, //  6
-            1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, //  7
-
-            // Left face (normal: -1,0,0  tangent: 0,0,-1,1)
-            0.0f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, //  8
-            0.0f, 1.0f, 1.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, //  9
-            0.0f, 0.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, // 10
-            0.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, // 11
-
-            // Right face (normal: 1,0,0  tangent: 0,0,1,1)
-            1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // 12
-            1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // 13
-            1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // 14
-            1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // 15
-
-            // Top face (normal: 0,1,0  tangent: 1,0,0,1)
-            0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // 16
-            0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // 17
-            1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // 18
-            1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // 19
-
-            // Bottom face (normal: 0,-1,0  tangent: 1,0,0,1)
-            0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // 20
-            0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // 21
-            1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // 22
-            1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f  // 23
-        };
-#else
-        // Vulkan: V=0 at top of texture image, so V is flipped relative to OpenGL
         float vertices[] = {
             // Front face (normal: 0,0,-1  tangent: 1,0,0,1)
             0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f, //  0
@@ -107,7 +66,6 @@ namespace Dodo {
             1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // 22
             1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f  // 23
         };
-#endif
 
         uint indices[] = {// Front
                           0, 1, 2, 2, 1, 3,
@@ -234,15 +192,8 @@ namespace Dodo {
     {
         if (m_ScreenQuadBuffer) return m_ScreenQuadBuffer;
 
-#ifdef DD_API_OPENGL
-        // OpenGL framebuffer textures have V=0 at the bottom, so flip V to display correctly
-        float vertices[] = {-1.0f, 1.0f, 0.0f, 1.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f,
-                            -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,  1.0f, 1.0f};
-#else
-        // Canonical convention (Vulkan): V=0 at the top
         float vertices[] = {-1.0f, 1.0f, 0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 1.0f, 1.0f,
                             -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,  -1.0f, 1.0f, 1.0f, 1.0f, 1.0f,  1.0f, 0.0f};
-#endif
         m_ScreenQuadBuffer = renderAPI.CreateVertexBuffer(vertices, sizeof(vertices),
                                                           BufferProperties({{"POSITION", 2}, {"TEXCOORD", 2}}));
         return m_ScreenQuadBuffer;

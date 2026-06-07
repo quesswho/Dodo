@@ -9,20 +9,10 @@ target_sources(imgui PRIVATE
     imgui/misc/cpp/imgui_stdlib.cpp
 )
 
-# We use glad for imgui opengl/vulkan implementations
 target_include_directories(imgui
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/imgui
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/../glad/include
 )
-
-if(DD_API_OPENGL)
-    target_sources(imgui PRIVATE
-        imgui/backends/imgui_impl_opengl3.cpp
-    )
-    target_link_libraries(imgui PRIVATE glad)
-endif()
 
 if(DD_API_VULKAN)
     target_sources(imgui PRIVATE

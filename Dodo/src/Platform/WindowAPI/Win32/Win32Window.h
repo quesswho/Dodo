@@ -58,7 +58,6 @@ namespace Dodo::Platform {
       private:
         void Init();
         void RegisterRawMouse() const;
-        PIXELFORMATDESCRIPTOR GetPixelFormat() const;
     };
     static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
     static Win32Window* s_WindowClass;

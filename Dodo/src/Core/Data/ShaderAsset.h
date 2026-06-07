@@ -14,23 +14,10 @@ namespace Dodo {
         Compute
     };
 
-    /**
-     * Every different shader backend supported
-     */
-    enum class ShaderBackendTarget {
-        VulkanSPIRV,
-        OpenGLGLSL,
-        // MetalMSL,
-    };
-
-    /**
-     * Binary data for either SPIR-V or GLSL (not actually binary but it is the closest we can get to compiled code)
-     */
     struct ShaderStageBinary {
         ShaderStage stage;
         std::string entryPoint;
         std::vector<uint32_t> spirv;
-        std::string glsl; // (OpenGL)
     };
 
     enum class DescriptorType {

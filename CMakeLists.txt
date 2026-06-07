@@ -12,8 +12,6 @@ if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
     set(CMAKE_DEFAULT_BUILD_TYPE Debug)
 endif()
 
-# Load Opengl or Vulkan
-option(DD_API_OPENGL "Enable OpenGL loader" OFF)
 option(DD_API_VULKAN "Enable Vulkan loader" ON)
 
 option(DD_API_WIN32 "Enable Win32" OFF)
@@ -28,7 +26,6 @@ message(STATUS "CMake version: ${CMAKE_VERSION}")
 message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS "C Compiler: ${CMAKE_C_COMPILER}")
 
-message(STATUS "DD_API_OPENGL=${DD_API_OPENGL}")
 message(STATUS "DD_API_VULKAN=${DD_API_VULKAN}")
 message(STATUS "DD_API_WIN32=${DD_API_WIN32}")
 message(STATUS "DD_API_GLFW=${DD_API_GLFW}")
@@ -40,12 +37,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 include(cmake/Slang.cmake)
 
 # Dependencies
-if (DD_API_OPENGL)
-    message(STATUS "=== Configuring GLAD ===")
-    add_subdirectory(Dodo/lib/glad)
-    add_subdirectory(Dodo/lib/SPIRV-Cross)
-endif()
-
 if (DD_API_VULKAN)
     message(STATUS "=== Configuring Volk ===")
     add_subdirectory(Dodo/lib/volk)

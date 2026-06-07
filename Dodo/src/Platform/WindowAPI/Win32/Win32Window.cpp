@@ -7,7 +7,6 @@
 
 #include <cpuid.h>
 #include <filesystem>
-#include <glad/wgl.h>
 
 namespace Dodo::Platform {
 
@@ -156,7 +155,6 @@ namespace Dodo::Platform {
             TranslateMessage(&message);
             DispatchMessage(&message);
         }
-        SwapBuffers(m_Hdc);
     }
 
     void Win32Window::RegisterRawMouse() const
@@ -167,21 +165,6 @@ namespace Dodo::Platform {
         rid[0].dwFlags = RIDEV_INPUTSINK;
         rid[0].hwndTarget = m_Hwnd;
         RegisterRawInputDevices(rid, 1, sizeof(rid[0]));
-    }
-
-    PIXELFORMATDESCRIPTOR Win32Window::GetPixelFormat() const
-    {
-        PIXELFORMATDESCRIPTOR result = {};
-        result.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-        result.nVersion = 1;
-        result.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-        result.iPixelType = PFD_TYPE_RGBA;
-        result.cColorBits = 32;
-        result.cDepthBits = 24;
-        result.cStencilBits = 8;
-        result.cAuxBuffers = 0;
-        result.iLayerType = PFD_MAIN_PLANE;
-        return result;
     }
 
     NativeWindowHandle Win32Window::GetHandle() const

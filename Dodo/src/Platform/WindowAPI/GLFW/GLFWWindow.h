@@ -10,11 +10,7 @@
 #include <Platform/WindowAPI/NativeWindowHandle.h>
 
 // TODO: This needs to be here because of weird header includes that needs to be addressed in GLFWWindow.cpp
-#ifdef DD_API_VULKAN
 #include <volk.h>
-#elif defined(DD_API_OPENGL)
-#include <glad/gl.h>
-#endif
 #include <GLFW/glfw3.h>
 
 #include <string>

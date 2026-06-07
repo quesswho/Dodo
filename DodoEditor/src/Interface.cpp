@@ -5,6 +5,7 @@
 
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <tinyfiledialogs.h>
 
 using namespace Dodo;
 using namespace Math;
@@ -13,6 +14,13 @@ Interface::Interface(EditorScene* scene)
 {
     m_EditorState.scene = scene;
     InitInterface();
+}
+
+void Interface::SetActiveProject(std::unique_ptr<Dodo::Project> project)
+{
+    m_Project = std::move(project);
+    m_AssetBrowserState.projectRoot = m_Project->GetAssetsDir();
+    m_AssetBrowserState.currentDir = m_Project->GetAssetsDir();
 }
 
 void Interface::ChangeScene(EditorScene* scene)
@@ -112,6 +120,17 @@ bool Interface::BeginDraw()
         ImGui::PushStyleColor(ImGuiCol_Button, ImGuiCol_MenuBarBg);
         if (ImGui::BeginMenu("File")) {
             if (ImGui::BeginMenu("New")) {
+                if (ImGui::MenuItem("Project")) {
+                    std::filesystem::path parentDir = FileDialog::SelectDirectory("Select Project Location");
+                    if (!parentDir.empty()) {
+                        const char* input = tinyfd_inputBox("New Project", "Project name:", "MyGame");
+                        if (input && input[0] != '\0') {
+                            auto project = Dodo::Project::New(parentDir, input);
+                            if (project)
+                                SetActiveProject(std::move(project));
+                        }
+                    }
+                }
                 if (ImGui::MenuItem("Scene")) {
                     EditorScene* scene = new EditorScene();
 
@@ -125,6 +144,15 @@ bool Interface::BeginDraw()
             }
 
             if (ImGui::BeginMenu("Open")) {
+                if (ImGui::MenuItem("Project")) {
+                    std::filesystem::path path =
+                        FileDialog::OpenFile("Open Project", "Dodo Project File\0*.dproject\0");
+                    if (!path.empty()) {
+                        auto project = Dodo::Project::Open(path);
+                        if (project)
+                            SetActiveProject(std::move(project));
+                    }
+                }
                 if (ImGui::MenuItem("Scene")) {
                     std::filesystem::path path = FileDialog::OpenFile("Open Scene", "Dodo Ascii Scene File\0*.das\0");
                     if (!path.empty()) {

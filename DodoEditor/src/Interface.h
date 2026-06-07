@@ -8,6 +8,7 @@
 #include "Panels/AssetBrowserPanel.h"
 #include "Panels/HierarchyPanel.h"
 #include "Panels/InspectorPanel.h"
+#include "Project/Project.h"
 #include "Scene/EditorScene.h"
 
 struct EditorProperties {
@@ -42,10 +43,11 @@ class Interface {
 
   private:
     void InitInterface();
-
     void ResetDockspace(uint dockspace_id);
+    void SetActiveProject(std::unique_ptr<Dodo::Project> project);
 
     bool m_ChangeScene;
 
+    std::unique_ptr<Dodo::Project> m_Project;
     EditorSceneFile fileReader;
 };

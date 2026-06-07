@@ -22,3 +22,12 @@ std::filesystem::path FileDialog::SaveFile(const char* title, const char* filter
     s_LastSavedDirectory = result.parent_path().string() + "/";
     return result;
 }
+
+std::filesystem::path FileDialog::SelectDirectory(const char* title)
+{
+    const char* path = tinyfd_selectFolderDialog(title, s_LastOpenDirectory.c_str());
+    if (!path) return std::filesystem::path();
+    std::filesystem::path result(path);
+    s_LastOpenDirectory = result.string() + "/";
+    return result;
+}

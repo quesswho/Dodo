@@ -51,7 +51,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 
     float viewDepth = abs(mul(u_CameraView, float4(input.positionWS, 1.0f)).z);
     float shadow    = shadowCalculationCSMPCSS(input.positionWS, N, L, g_ShadowMap,
-                                               g_Samplers[SAMPLER_SHADOW], viewDepth, 5.0f);
+                                               g_Samplers[SAMPLER_SHADOW], viewDepth, 10.0f);
     float3 Lo      = evaluateBRDFDirect(radiance, albedoSample.rgb, N, V, L, roughness, metallic, shadow);
 
     float3 F0         = lerp(float3(0.01f, 0.01f, 0.01f), albedoSample.rgb, metallic);

@@ -81,7 +81,7 @@ float shadowCalculationCSM(
 
     float2 texelSize = 1.0f / float2(w, h);
 
-    float phi = frac(sin(dot(projCoords.xy, float2(127.1f, 311.7f))) * 43758.5453f) * 6.28318f;
+    float phi = frac(sin(dot(projCoords.xy, float2(1.0f, 1.0f))) * 1.2443f) * 6.28318f;
     const int pcfSamples = 25;
     float shadow = 0.0f;
     for (int i = 0; i < pcfSamples; i++)
@@ -137,7 +137,9 @@ float shadowCalculationCSMPCSS(
     float2 texelSize = 1.0f / float2(w, h);
 
     // Per-fragment rotation angle to decorrelate the Vogel disk pattern across pixels
-    float phi = frac(sin(dot(projCoords.xy, float2(127.1f, 311.7f))) * 43758.5453f) * 6.28318f;
+    const float phi = frac(sin(dot(projCoords.xy, float2(342.21f, 176.f))) * 12000.2443f) * 6.28318f;
+
+    //const float phi = fract(52.9829189f * fract(0.06711056f * float(projCoords.x) + 0.00583715f * float(projCoords.y)));
 
     // Stage 1: Blocker search: find average depth of occluding samples
     const int blockerSamples = 16;
@@ -161,19 +163,10 @@ float shadowCalculationCSMPCSS(
         return 0.0f;
 
     avgBlockerDepth /= float(blockerCount);
-
+    
     // Stage 2: Penumbra estimation - receiver further from blocker = wider penumbra
     float penumbraWidth = (currentDepth - avgBlockerDepth) / avgBlockerDepth * lightSize;
-    float2 filterRadiusUV = penumbraWidth * texelSize;
-
-    // Scale filter radius based on screen-space partial derivatives to reduce aliasing
-    /*float2 dUVdx = ddx(projCoords.xy);
-    float2 dUVdy = ddy(projCoords.xy);
-    float screenDelta = max(length(dUVdx), length(dUVdy));              // UV change per screen pixel
-    float texelFootprint = length(texelSize);                           // size of one shadow texel in UV
-    float pixelation = clamp(texelFootprint / screenDelta, 1.0f, 16.0f); // screen pixels per texel
-    filterRadiusUV *= pixelation;
-    */
+    float2 filterRadiusUV = max(penumbraWidth, 2.0f) * texelSize;
 
     // Stage 3: Variable-radius PCF using the estimated penumbra width
     const int pcfSamples = 64;
@@ -187,5 +180,5 @@ float shadowCalculationCSMPCSS(
         shadow += (currentDepth - bias > occluderDepth) ? 1.0f : 0.0f;
     }
 
-    return shadow / float(pcfSamples);
+    return shadow / (pcfSamples);
 }

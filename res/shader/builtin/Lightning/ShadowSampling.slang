@@ -137,9 +137,7 @@ float shadowCalculationCSMPCSS(
     float2 texelSize = 1.0f / float2(w, h);
 
     // Per-fragment rotation angle to decorrelate the Vogel disk pattern across pixels
-    const float phi = frac(sin(dot(projCoords.xy, float2(342.21f, 176.f))) * 12000.2443f) * 6.28318f;
-
-    //const float phi = fract(52.9829189f * fract(0.06711056f * float(projCoords.x) + 0.00583715f * float(projCoords.y)));
+    const float phi = frac(sin(dot(projCoords.xy, float2(143.2f, 364.7f))) * 60158.2443f) * 6.28318f;
 
     // Stage 1: Blocker search: find average depth of occluding samples
     const int blockerSamples = 16;

@@ -70,9 +70,9 @@ float shadowCalculationCSM(
 
     float currentDepth = projCoords.z;
 
-    // Slope-scaled bias (scale down for far cascades where the texel footprint is large)
-    float bias = max(0.005f * (1.0f - dot(normal, lightDirection)), 0.001f);
-    bias /= (u_CascadeSplitDepths[cascadeIndex] * 0.5f + 0.5f);
+    // Slope-scaled constant bias in shadow-map depth space. Orthographic depth is linear and each
+    // cascade's matrix already maps its range to [0,1], so one small constant works for all cascades.
+    float bias = max(0.0015f * (1.0f - dot(normal, lightDirection)), 0.0005f);
 
     uint w, h, layers;
     shadowMap.GetDimensions(w, h, layers);
@@ -117,17 +117,17 @@ float shadowCalculationCSMPCSS(
             break;
         }
     }
-
     float4 lightFragPos = mul(u_LightSpaceMatrices[cascadeIndex], float4(positionWS, 1.0f));
     float3 projCoords = lightFragPos.xyz / lightFragPos.w;
-    
+
     float currentDepth = projCoords.z;
     if (projCoords.z > 1.0f)
         return 0.0f;
-    
+
     projCoords = projCoords * 0.5f + 0.5f;
-    float bias = max(0.005f * (1.0f - dot(normal, lightDirection)), 0.001f);
-    bias /= (u_CascadeSplitDepths[cascadeIndex] * 0.5f + 0.5f);
+    // Slope-scaled constant bias in shadow-map depth space. Orthographic depth is linear and each
+    // cascade's matrix already maps its range to [0,1], so one small constant works for all cascades.
+    float bias = max(0.0015f * (1.0f - dot(normal, lightDirection)), 0.0005f);
 
     uint w, h, layers;
     shadowMap.GetDimensions(w, h, layers);
@@ -140,7 +140,7 @@ float shadowCalculationCSMPCSS(
     const float phi = frac(sin(dot(projCoords.xy, float2(143.2f, 364.7f))) * 60158.2443f) * 6.28318f;
 
     // Stage 1: Blocker search: find average depth of occluding samples
-    const int blockerSamples = 16;
+    const int blockerSamples = 32;
     float2 searchRadiusUV = lightSize * texelSize;
     float avgBlockerDepth = 0.0f;
     int blockerCount = 0;
@@ -167,7 +167,7 @@ float shadowCalculationCSMPCSS(
     float2 filterRadiusUV = max(penumbraWidth, 2.0f) * texelSize;
 
     // Stage 3: Variable-radius PCF using the estimated penumbra width
-    const int pcfSamples = 64;
+    const int pcfSamples = 104;
     float shadow = 0.0f;
     for (int i = 0; i < pcfSamples; i++)
     {

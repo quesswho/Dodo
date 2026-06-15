@@ -51,7 +51,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 
     float viewDepth = abs(mul(u_CameraView, float4(input.positionWS, 1.0f)).z);
     float shadow    = shadowCalculationCSMPCSS(input.positionWS, N, L, g_ShadowMap,
-                                               g_Samplers[SAMPLER_SHADOW], viewDepth, 5.0f);
+                                               g_Samplers[SAMPLER_SHADOW], viewDepth, 10.0f);
     float3 Lo       = evaluateBRDFSpecGloss(radiance, diffuseSample.rgb, N, V, L, roughness, F0, shadow);
 
     float  NdotV      = max(dot(N, V), 0.001f);

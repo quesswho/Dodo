@@ -23,8 +23,8 @@
             }
         },
         {
-            "name": "vs2022",
-            "generator": "Visual Studio 17 2022",
+            "name": "msvc",
+            "description": "Visual Studio generator.",
             "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_COLOR_DIAGNOSTICS": "ON"
@@ -50,6 +50,16 @@
         {
             "name": "release-mingw",
             "configurePreset": "mingw",
+            "configuration": "Release"
+        },
+        {
+            "name": "debug-msvc",
+            "configurePreset": "msvc",
+            "configuration": "Debug"
+        },
+        {
+            "name": "release-msvc",
+            "configurePreset": "msvc",
             "configuration": "Release"
         }
     ]

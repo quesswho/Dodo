@@ -42,14 +42,11 @@ jobs:
         vulkan-components: Vulkan-Headers, Vulkan-Loader
         vulkan-use-cache: true
 
-    - name: Install Ninja
-      run: choco install ninja
-
     - name: Configure
-      run: cmake --preset vs2022
+      run: cmake --preset msvc
 
     - name: Build
-      run: cmake --build --preset release
+      run: cmake --build --preset release-msvc
 
   build-windows-mingw:
     runs-on: windows-latest

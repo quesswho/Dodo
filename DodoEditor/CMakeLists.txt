@@ -47,6 +47,7 @@ target_sources(DodoEditor
         ${DODOEDITOR_CPP_SOURCES}
         ${DODOEDITOR_H_SOURCES}
         lib/tinyfiledialogs/tinyfiledialogs.cpp
+        lib/ImGuizmo/src/ImGuizmo.cpp
 )
 
 add_subdirectory(lib/nanosvg)
@@ -57,6 +58,7 @@ target_include_directories(DodoEditor
     PRIVATE
         src
         lib/tinyfiledialogs
+        lib/ImGuizmo/src
         lib/nanosvg/src
 )
 

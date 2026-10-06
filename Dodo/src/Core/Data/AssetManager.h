@@ -56,6 +56,10 @@ namespace Dodo {
         Ref<Material> GetMaterial(MaterialID id);
         AssetState GetMaterialState(MaterialID id) const;
 
+        /**
+         * Loads a model from a file, or returns the builtin model when the path is a builtin name
+         * such as "builtin:cube".
+         */
         ModelID LoadModel(const std::string& path);
         ModelID GetBuiltinModel(BuiltinModel type);
         Ref<Model> GetModel(ModelID id);
@@ -70,11 +74,29 @@ namespace Dodo {
         // Called at the start of FlushStagingQueue; also safe to call at other frame boundaries.
         void FinalizeReadyUploads(RenderAPI& renderAPI);
 
+        /**
+         * Returns the string that loads the model again through LoadModel: the file path, or the builtin
+         * name for builtin models.
+         */
         std::string GetModelPath(ModelID id);
+
+        /**
+         * @return True if the model was loaded from a file, false for builtin models.
+         */
         bool HasPath(ModelID id) const { return m_ModelPath.find(id) != m_ModelPath.end(); }
 
       private:
         ShaderAsset SlangSourceToAsset(const SlangSource& source);
+
+        // Names builtin models are referred to by wherever a model path is stored, such as scene files
+        struct BuiltinModelName {
+            BuiltinModel type;
+            const char* name;
+        };
+        static constexpr BuiltinModelName s_BuiltinModelNames[] = {
+            {BuiltinModel::Cube, "builtin:cube"},
+            {BuiltinModel::Terrain, "builtin:terrain"},
+        };
 
         RenderAPI& m_RenderAPI;
         ThreadManager& m_ThreadManager;

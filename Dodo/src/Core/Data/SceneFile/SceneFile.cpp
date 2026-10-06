@@ -5,6 +5,8 @@
 #include "Core/Data/AssetTypes.h"
 #include "Core/System/FileUtils.h"
 
+#include <charconv>
+#include <cstring>
 #include <filesystem>
 
 namespace Dodo {
@@ -81,7 +83,7 @@ namespace Dodo {
 
         Scene* result = new Scene();
 
-        EntityID currentEntityId = -1;
+        std::optional<EntityID> currentEntityId;
 
         while (m_File.HasMore()) {
             // Skip blank lines
@@ -92,17 +94,20 @@ namespace Dodo {
 
             std::string section = m_File.ReadSection();
 
-            // Entity header: Entity:0
+            // Entity header: Entity:1
             if (section.find("Entity:") == 0) {
-                // Currently unused
-                World& world = result->GetWorld();
-                currentEntityId = world.CreateEntity();
+                // Keep the id from the file, other sections (such as the editor names) refer to entities by it
+                currentEntityId = ParseEntityID(section);
+                if (!currentEntityId || !result->GetWorld().CreateEntityWithID(*currentEntityId)) {
+                    SetError(SceneFileError::ParseError, m_File.GetCurrentOffset());
+                    return result;
+                }
                 continue;
             }
 
             // Component sections
             else if (section == "ModelComponent") {
-                if (currentEntityId < 0) {
+                if (!currentEntityId) {
                     SetError(SceneFileError::ParseError, m_File.GetCurrentOffset());
                     return result;
                 }
@@ -115,7 +120,7 @@ namespace Dodo {
                 // This is temporary until we can retrieve ids without loading
                 ModelID id = Application::s_Application->m_AssetManager->LoadModel(modelPath);
 
-                result->GetWorld().AddComponent<ModelComponent>(currentEntityId, ModelComponent(id, transform));
+                result->GetWorld().AddComponent<ModelComponent>(*currentEntityId, ModelComponent(id, transform));
                 continue;
             } else {
                 // Skip unknown sections (e.g. [Editor] tail)
@@ -133,6 +138,17 @@ namespace Dodo {
         Scene* result = ReadEntities(path);
         m_File.EndRead();
         return result;
+    }
+
+    std::optional<EntityID> SceneFile::ParseEntityID(const std::string& section)
+    {
+        const char* begin = section.data() + std::strlen("Entity:");
+        const char* end = section.data() + section.size();
+
+        EntityID id = 0;
+        const auto [parsed, error] = std::from_chars(begin, end, id);
+        if (error != std::errc() || parsed != end) return std::nullopt;
+        return id;
     }
 
     void SceneFile::SetError(SceneFileError error, size_t line)

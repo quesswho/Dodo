@@ -91,7 +91,12 @@ EditorScene* EditorSceneFile::Read(const std::string& path)
         if (section == "NameComponent") {
             EntityID id = (EntityID)file.ReadInt();
             std::string name = file.ReadString();
-            world.AddComponent<NameComponent>(id, NameComponent{name});
+            // A name without an entity would never be shown or cleaned up
+            if (world.GetAliveEntities().count(id)) {
+                world.AddComponent<NameComponent>(id, NameComponent{name});
+            } else {
+                DD_WARN("Scene file '{}' names entity {} which does not exist, ignoring.", path, id);
+            }
             continue;
         }
 

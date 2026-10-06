@@ -27,7 +27,7 @@ GameLayer::GameLayer(Application& app)
     m_FrameBuffer = renderAPI.CreateFrameBuffer(frameprop);
 
     m_Renderer = new EditorRenderer(renderAPI, assets);
-    m_Scene = new EditorScene();
+    m_Scene = LoadStartupScene();
 
     std::vector<std::string> skyboxPath = {
         "res/texture/skybox/right.jpg",  "res/texture/skybox/left.jpg",  "res/texture/skybox/top.jpg",
@@ -37,6 +37,21 @@ GameLayer::GameLayer(Application& app)
     m_Scene->m_SkyBox = new Skybox(skyboxPath, assets, renderAPI);
 
     m_Interface = new Interface(m_Scene);
+}
+
+EditorScene* GameLayer::LoadStartupScene()
+{
+    const char* path = "res/scenes/editor_test.das";
+    if (FileUtils::FileExists(path)) {
+        if (EditorScene* scene = EditorSceneFile().Read(path)) {
+            // Temporary because light direction is not stored in scene file
+            scene->m_LightSystem.m_Directional.m_Direction = Vec3(0.4f, -1.0f, 0.4f).Normalize();
+            return scene;
+        }
+    }
+
+    DD_WARN("Could not load startup scene: {}, starting with an empty scene.", path);
+    return new EditorScene();
 }
 
 void GameLayer::SetScene(EditorScene* scene)
@@ -69,7 +84,7 @@ void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
         m_FrameBuffer->Resize(m_Interface->m_ViewportState.width, m_Interface->m_ViewportState.height);
     }
     DrawScene(renderAPI, assets);
-    m_Interface->EndViewport(renderAPI, m_FrameBuffer);
+    m_Interface->EndViewport(renderAPI, m_FrameBuffer, m_Camera->GetCamera());
     m_Interface->EndDraw();
 }
 

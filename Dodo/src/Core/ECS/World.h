@@ -4,6 +4,7 @@
 #include <Core/ECS/Entity.h>
 #include <Core/ECS/RuntimeComponentList.h>
 
+#include <algorithm>
 #include <tuple>
 #include <unordered_set>
 
@@ -16,6 +17,19 @@ namespace Dodo {
             EntityID id = m_NextEntity++;
             m_AliveEntities.insert(id);
             return id;
+        }
+
+        /**
+         * Creates an entity with a given id, for restoring entities whose ids are stored elsewhere,
+         * such as in a scene file. Ids generated afterwards never collide with it.
+         *
+         * @return False if the id is 0 (reserved as invalid) or already alive.
+         */
+        bool CreateEntityWithID(EntityID id)
+        {
+            if (id == 0 || !m_AliveEntities.insert(id).second) return false;
+            m_NextEntity = std::max(m_NextEntity, id + 1);
+            return true;
         }
 
         void DeleteEntity(EntityID entity)

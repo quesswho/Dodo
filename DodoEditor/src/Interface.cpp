@@ -91,6 +91,7 @@ void Interface::InitInterface()
 bool Interface::BeginDraw()
 {
     Application::s_Application->ImGuiNewFrame();
+    m_TransformGizmo.BeginFrame();
 
     static bool s_ResetDockspace = false;
 
@@ -403,23 +404,38 @@ bool Interface::ViewportResize()
 bool Interface::BeginViewport()
 {
     if (m_ViewportState.visible) {
-        ImGui::Begin(m_ViewportState.name.c_str(), nullptr,
-                     ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar);
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
+        // Dragging a gizmo handle must not drag a floating viewport window along with it.
+        if (m_TransformGizmo.IsActive()) flags |= ImGuiWindowFlags_NoMove;
+        ImGui::Begin(m_ViewportState.name.c_str(), nullptr, flags);
 
+        m_EditorProperties.m_ViewportHover = ImGui::IsWindowHovered();
+        if (m_EditorProperties.m_ViewportHover && !m_EditorProperties.m_ViewportInput)
+            m_TransformGizmo.HandleShortcuts();
+
+        m_TransformGizmo.DrawToolbar();
+        ImGui::SameLine(0.0f, 20.0f);
         ImGui::Text("%d fps, %gms", Application::s_Application->m_FramesPerSecond,
                     Application::s_Application->m_FrameTimeMs);
-        m_EditorProperties.m_ViewportHover = ImGui::IsWindowHovered();
 
         return true;
     }
     return false;
 }
 
-void Interface::EndViewport(RenderAPI& renderAPI, Ref<FrameBuffer> framebuffer)
+void Interface::EndViewport(RenderAPI& renderAPI, Ref<FrameBuffer> framebuffer, const FreeCamera& camera)
 {
     if (m_ViewportState.visible) {
         void* texID = renderAPI.GetFrameBufferImGuiTextureID(framebuffer);
         ImGui::Image(texID, ImVec2((float)m_ViewportState.width, (float)m_ViewportState.height));
+
+        const ImVec2 imagePos = ImGui::GetItemRectMin();
+        const ImVec2 imageSize = ImGui::GetItemRectSize();
+        // The gizmo stays visible while flying the camera, but the hidden cursor must not grab it.
+        if (m_TransformGizmo.Manipulate(m_EditorState, camera, Vec2(imagePos.x, imagePos.y),
+                                        Vec2(imageSize.x, imageSize.y), !m_EditorProperties.m_ViewportInput)) {
+            m_InspectorState.dirty = true; // Refresh the inspector fields from the new transformation
+        }
         ImGui::End();
     }
 }

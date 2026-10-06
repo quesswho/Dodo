@@ -22,3 +22,6 @@
 [submodule "DodoEditor/lib/nanosvg"]
 	path = DodoEditor/lib/nanosvg
 	url = https://github.com/memononen/nanosvg
+[submodule "DodoEditor/lib/ImGuizmo"]
+	path = DodoEditor/lib/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo

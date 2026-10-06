@@ -4,6 +4,7 @@
 
 #include "Data/EditorSceneFile.h"
 #include "EditorIcons.h"
+#include "Gizmo/TransformGizmo.h"
 #include "PanelStates/EditorState.h"
 #include "PanelStates/HierarchyState.h"
 #include "Panels/AssetBrowserPanel.h"
@@ -36,13 +37,15 @@ class Interface {
     HierarchyPanel m_HierarchyPanel;
     AssetBrowserPanel m_AssetBrowserPanel;
 
+    TransformGizmo m_TransformGizmo;
+
   public:
     Interface(EditorScene* scene);
 
     bool BeginDraw();
     bool BeginViewport();
     bool ViewportResize();
-    void EndViewport(RenderAPI& renderAPI, Ref<FrameBuffer> framebuffer);
+    void EndViewport(RenderAPI& renderAPI, Ref<FrameBuffer> framebuffer, const Math::FreeCamera& camera);
     void EndDraw();
 
     void ChangeScene(EditorScene* scene);

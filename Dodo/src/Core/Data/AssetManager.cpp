@@ -298,6 +298,10 @@ namespace Dodo {
 
     ModelID AssetManager::LoadModel(const std::string& path)
     {
+        for (const BuiltinModelName& builtin : s_BuiltinModelNames) {
+            if (path == builtin.name) return GetBuiltinModel(builtin.type);
+        }
+
         auto it = m_ModelID.find(path);
         if (it != m_ModelID.end()) {
             DD_WARN("Trying to create model that already exists! {0} ID: {1}", path, it->second);
@@ -555,6 +559,11 @@ namespace Dodo {
 
     std::string AssetManager::GetModelPath(ModelID id)
     {
+        for (const BuiltinModelName& builtin : s_BuiltinModelNames) {
+            auto builtinIt = builtinIDs.find(builtin.type);
+            if (builtinIt != builtinIDs.end() && builtinIt->second == id) return builtin.name;
+        }
+
         auto it = m_ModelPath.find(id);
         if (it == m_ModelPath.end()) {
             DD_ERR("Trying to get path of model that doesn't exist! ID: {0}", id);

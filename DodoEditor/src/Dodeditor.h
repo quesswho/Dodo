@@ -19,6 +19,11 @@ class GameLayer : public Layer {
     void SetScene(EditorScene* scene);
 
   private:
+    /**
+     * Loads the test scene the editor opens with, or an empty scene if it is missing.
+     */
+    EditorScene* LoadStartupScene();
+
     Ref<FrameBuffer> m_FrameBuffer;
 
     FreeCameraController* m_Camera;

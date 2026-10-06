@@ -3,6 +3,7 @@
 #include "Core/Graphics/Scene/Scene.h"
 #include "Core/System/DataFile/AsciiDataFile.h"
 
+#include <optional>
 #include <string>
 
 namespace Dodo {
@@ -46,6 +47,13 @@ namespace Dodo {
 
       private:
         void SetError(SceneFileError error, size_t line = 0);
+
+        /**
+         * Parses the id out of an "Entity:<id>" section name.
+         *
+         * @return The id, or nothing if it is not a valid unsigned number.
+         */
+        static std::optional<EntityID> ParseEntityID(const std::string& section);
 
         std::string m_Path;
         SceneFileError m_LastError = SceneFileError::None;

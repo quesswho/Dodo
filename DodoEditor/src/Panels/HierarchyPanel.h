@@ -7,8 +7,24 @@
 class HierarchyPanel {
   public:
     void Draw(EditorState& editorState, InspectorState& inspectorState, HierarchyState& state,
-              const EditorIconSet& icons);
+              const EditorIcons& icons);
 
   private:
-    void DrawIcon(void* texID, float sz);
+    /**
+     * Draws the selectable row of one entity: icon, name and its context menu.
+     *
+     * @return True when deleting the selection was requested from the context menu.
+     */
+    bool DrawEntityRow(EditorState& editorState, InspectorState& inspectorState, EntityID entityId,
+                       const std::string& name, const EditorIcons& icons);
+
+    /**
+     * Draws the text field that replaces the row of the entity being renamed.
+     */
+    void DrawRenameRow(EditorState& editorState, EntityID entityId);
+
+    void CreateEntity(EditorState& editorState);
+    void DeleteSelection(EditorState& editorState, InspectorState& inspectorState);
+
+    static std::string GetEntityName(EditorWorld& world, EntityID entityId);
 };

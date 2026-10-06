@@ -14,6 +14,7 @@
 #include "Scene/EditorScene.h"
 
 #include <filesystem>
+#include <imgui.h>
 #include <string>
 
 struct EditorProperties {
@@ -56,7 +57,21 @@ class Interface {
     void SetActiveProject(std::unique_ptr<Dodo::Project> project);
     void DrawNewProjectModal();
 
+    /**
+     * Draws the strip along the bottom of the window with the project, the scene size and a camera hint.
+     */
+    void DrawStatusBar();
+
+    /**
+     * Draws the floating gizmo toolbar and the frame statistics on top of the scene image.
+     *
+     * @param imagePos Top left corner of the scene image, in screen coordinates.
+     * @param imageSize Size of the scene image, in pixels.
+     */
+    void DrawViewportOverlay(const ImVec2& imagePos, const ImVec2& imageSize);
+
     bool m_ChangeScene = false;
+    bool m_ViewportToolbarHovered = false; // From the previous frame, the gizmo is handled before the toolbar
 
     std::unique_ptr<Dodo::Project> m_Project;
     EditorSceneFile fileReader;

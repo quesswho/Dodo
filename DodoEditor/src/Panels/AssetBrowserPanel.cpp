@@ -1,36 +1,51 @@
 #include "AssetBrowserPanel.h"
 
-#include "EditorIcons.h"
+#include "EditorTheme.h"
+#include "EditorWidgets.h"
 
+#include <algorithm>
+#include <cmath>
 #include <filesystem>
 #include <imgui.h>
-#include <algorithm>
 #include <string>
 #include <vector>
 
 namespace fs = std::filesystem;
 
-static void* GetAssetIcon(const EditorIconSet& icons, const fs::path& path, bool isDir)
+EditorIcon AssetBrowserPanel::GetAssetIcon(const fs::path& path, bool isDir, ImVec4& tint)
 {
-    if (isDir)
-        return icons.folder;
+    if (isDir) {
+        tint = ImVec4(0.878f, 0.706f, 0.345f, 1.0f);
+        return EditorIcon::Folder;
+    }
+
     std::string ext = path.extension().string();
-    for (auto& c : ext) c = (char)tolower((unsigned char)c);
-    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".tga" || ext == ".hdr" || ext == ".dds")
-        return icons.texture;
-    if (ext == ".obj" || ext == ".gltf" || ext == ".glb" || ext == ".fbx")
-        return icons.model;
-    if (ext == ".slang" || ext == ".glsl" || ext == ".hlsl")
-        return icons.shader;
-    if (ext == ".das")
-        return icons.scene;
-    return icons.file;
+    for (auto& c : ext)
+        c = (char)tolower((unsigned char)c);
+
+    if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".tga" || ext == ".hdr" || ext == ".dds") {
+        tint = ImVec4(0.722f, 0.537f, 0.902f, 1.0f);
+        return EditorIcon::Texture;
+    }
+    if (ext == ".obj" || ext == ".gltf" || ext == ".glb" || ext == ".fbx") {
+        tint = ImVec4(0.325f, 0.769f, 0.741f, 1.0f);
+        return EditorIcon::Model;
+    }
+    if (ext == ".slang" || ext == ".glsl" || ext == ".hlsl") {
+        tint = ImVec4(0.561f, 0.800f, 0.380f, 1.0f);
+        return EditorIcon::Shader;
+    }
+    if (ext == ".das") {
+        tint = EditorTheme::AccentHover;
+        return EditorIcon::Scene;
+    }
+    tint = EditorTheme::TextDim;
+    return EditorIcon::File;
 }
 
-void AssetBrowserPanel::Draw(AssetBrowserState& state)
+void AssetBrowserPanel::Draw(AssetBrowserState& state, const EditorIcons& icons)
 {
-    if (!state.visible)
-        return;
+    if (!state.visible) return;
 
     if (!ImGui::Begin(state.name.c_str(), &state.visible)) {
         ImGui::End();
@@ -38,59 +53,93 @@ void AssetBrowserPanel::Draw(AssetBrowserState& state)
     }
 
     if (state.projectRoot.empty()) {
-        ImGui::TextDisabled("No project open. Use File > Open > Project.");
+        EditorWidgets::EmptyState("No project open. Use File > Open > Project.");
         ImGui::End();
         return;
     }
 
-    DrawBreadcrumb(state);
-    ImGui::Separator();
-    DrawGrid(state);
+    DrawToolbar(state, icons);
+    ImGui::Dummy(ImVec2(0.0f, 2.0f));
+    DrawGrid(state, icons);
 
     ImGui::End();
 }
 
-void AssetBrowserPanel::DrawBreadcrumb(AssetBrowserState& state)
+void AssetBrowserPanel::DrawToolbar(AssetBrowserState& state, const EditorIcons& icons)
 {
     std::vector<fs::path> segments;
     fs::path dir = state.currentDir;
     while (true) {
         segments.push_back(dir);
-        if (dir == state.projectRoot)
-            break;
+        if (dir == state.projectRoot) break;
         fs::path parent = dir.parent_path();
-        if (parent == dir)
-            break;
+        if (parent == dir) break;
         dir = parent;
     }
     std::reverse(segments.begin(), segments.end());
 
+    const ImGuiStyle& style = ImGui::GetStyle();
+    const float startX = ImGui::GetCursorPosX();
+    const float fullWidth = ImGui::GetContentRegionAvail().x;
+
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, style.FramePadding.y));
     for (size_t i = 0; i < segments.size(); i++) {
+        const bool last = i + 1 == segments.size();
         std::string label = segments[i].filename().string();
-        if (ImGui::SmallButton(label.c_str()))
-            state.currentDir = segments[i];
-        if (i + 1 < segments.size()) {
+
+        ImGui::PushID((int)i);
+        ImGui::PushStyleColor(ImGuiCol_Text, last ? EditorTheme::Text : EditorTheme::TextDim);
+        if (ImGui::Button(label.c_str())) state.currentDir = segments[i];
+        ImGui::PopStyleColor();
+        ImGui::PopID();
+
+        if (!last) {
             ImGui::SameLine(0.0f, 2.0f);
+            ImGui::AlignTextToFramePadding();
             ImGui::TextDisabled("/");
             ImGui::SameLine(0.0f, 2.0f);
         }
     }
+    ImGui::PopStyleVar();
+    ImGui::PopStyleColor();
+
+    // Search and tile size are right aligned, and dropped when the panel is too narrow to fit them.
+    const float sliderWidth = 90.0f;
+    const float searchWidth = 180.0f;
+    const float rightWidth = searchWidth + sliderWidth + style.ItemSpacing.x;
+    ImGui::SameLine();
+    if (startX + fullWidth - rightWidth > ImGui::GetCursorPosX()) {
+        ImGui::SetCursorPosX(startX + fullWidth - rightWidth);
+        EditorWidgets::SearchField("##filter", state.filter, icons.Get(EditorIcon::Search), searchWidth);
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(sliderWidth);
+        ImGui::SliderFloat("##tileSize", &state.tileSize, 40.0f, 128.0f, "");
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) ImGui::SetTooltip("Tile size");
+    } else {
+        ImGui::NewLine();
+    }
 }
 
-void AssetBrowserPanel::DrawGrid(AssetBrowserState& state)
+void AssetBrowserPanel::DrawGrid(AssetBrowserState& state, const EditorIcons& icons)
 {
     constexpr float tilePad = 8.0f;
     const float tileW = state.tileSize + tilePad * 2.0f;
     const float tileH = state.tileSize + ImGui::GetTextLineHeight() + tilePad * 3.0f;
-
-    const float availW  = ImGui::GetContentRegionAvail().x;
-    const int   maxCols = std::max(1, (int)(availW / tileW));
+    const float spacing = 4.0f;
 
     ImGui::BeginChild("##AssetGrid", ImVec2(0.0f, 0.0f), false);
 
+    const float availW = ImGui::GetContentRegionAvail().x;
+    const int maxCols = std::max(1, (int)((availW + spacing) / (tileW + spacing)));
+
     std::error_code ec;
     std::vector<fs::directory_entry> dirs, files;
+    bool empty = true;
     for (const auto& entry : fs::directory_iterator(state.currentDir, ec)) {
+        empty = false;
+        if (!EditorWidgets::MatchesFilter(entry.path().filename().string(), state.filter)) continue;
+
         if (entry.is_directory(ec))
             dirs.push_back(entry);
         else
@@ -103,72 +152,75 @@ void AssetBrowserPanel::DrawGrid(AssetBrowserState& state)
     std::sort(dirs.begin(), dirs.end(), byName);
     std::sort(files.begin(), files.end(), byName);
 
+    if (dirs.empty() && files.empty()) {
+        EditorWidgets::EmptyState(empty ? "This folder is empty." : "No asset matches the search.");
+        ImGui::EndChild();
+        return;
+    }
+
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(spacing, spacing));
     int col = 0;
     auto drawEntry = [&](const fs::directory_entry& entry) {
-        if (col > 0)
-            ImGui::SameLine();
-        DrawTile(entry, tileW, tileH, state);
+        if (col > 0) ImGui::SameLine();
+        DrawTile(entry, tileW, tileH, state, icons);
         col = (col + 1) % maxCols;
     };
 
-    for (const auto& d : dirs)  drawEntry(d);
-    for (const auto& f : files) drawEntry(f);
+    for (const auto& d : dirs)
+        drawEntry(d);
+    for (const auto& f : files)
+        drawEntry(f);
+    ImGui::PopStyleVar();
 
     ImGui::EndChild();
 }
 
-void AssetBrowserPanel::DrawTile(const fs::directory_entry& entry, float tileW, float tileH,
-                                  AssetBrowserState& state)
+void AssetBrowserPanel::DrawTile(const fs::directory_entry& entry, float tileW, float tileH, AssetBrowserState& state,
+                                 const EditorIcons& icons)
 {
     constexpr float tilePad = 8.0f;
     std::error_code ec;
-    const fs::path& path  = entry.path();
-    const bool      isDir = entry.is_directory(ec);
+    const fs::path& path = entry.path();
+    const bool isDir = entry.is_directory(ec);
     const std::string name = path.filename().string();
-    const bool isSelected  = state.selectedPath == path;
+    const bool isSelected = state.selectedPath == path;
 
     ImGui::PushID(path.generic_string().c_str());
 
     const ImVec2 tileMin = ImGui::GetCursorScreenPos();
-    const ImVec2 tileMax = { tileMin.x + tileW, tileMin.y + tileH };
+    const ImVec2 tileMax = {tileMin.x + tileW, tileMin.y + tileH};
 
     ImGui::InvisibleButton("##tile", ImVec2(tileW, tileH));
     const bool hovered = ImGui::IsItemHovered();
 
-    if (ImGui::IsItemClicked())
-        state.selectedPath = path;
-    if (hovered && ImGui::IsMouseDoubleClicked(0) && isDir)
+    if (ImGui::IsItemClicked()) state.selectedPath = path;
+    if (hovered && ImGui::IsMouseDoubleClicked(0) && isDir) {
         state.currentDir = path;
+        state.filter.clear();
+    }
+    if (hovered && ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip)) ImGui::SetTooltip("%s", name.c_str());
 
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
-    if (isSelected)
-        dl->AddRectFilled(tileMin, tileMax, IM_COL32(0, 120, 215, 100), 4.0f);
-    else if (hovered)
-        dl->AddRectFilled(tileMin, tileMax, IM_COL32(255, 255, 255, 18), 4.0f);
+    if (isSelected) {
+        dl->AddRectFilled(tileMin, tileMax, ImGui::GetColorU32(EditorTheme::Selection), 6.0f);
+        dl->AddRect(tileMin, tileMax, ImGui::GetColorU32(EditorTheme::Accent), 6.0f);
+    } else if (hovered) {
+        dl->AddRectFilled(tileMin, tileMax, ImGui::GetColorU32(EditorTheme::Hover), 6.0f);
+    }
 
-    const float iconX = tileMin.x + (tileW - state.tileSize) * 0.5f;
+    const float iconX = std::floor(tileMin.x + (tileW - state.tileSize) * 0.5f);
     const float iconY = tileMin.y + tilePad;
 
-    if (state.icons && state.icons->ready) {
-        void* texID = GetAssetIcon(*state.icons, path, isDir);
-        if (texID) {
-            dl->AddImage(texID,
-                         ImVec2(iconX, iconY),
-                         ImVec2(iconX + state.tileSize, iconY + state.tileSize));
-        }
+    ImVec4 tint;
+    if (void* texID = icons.Get(GetAssetIcon(path, isDir, tint))) {
+        dl->AddImage(texID, ImVec2(iconX, iconY), ImVec2(iconX + state.tileSize, iconY + state.tileSize),
+                     ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), ImGui::GetColorU32(tint));
     }
 
     const float labelY = iconY + state.tileSize + tilePad;
-    const ImVec2 labelSize = ImGui::CalcTextSize(name.c_str());
-    const float maxLabelW  = tileW - tilePad * 2.0f;
-    const float labelX     = tileMin.x + (tileW - std::min(labelSize.x, maxLabelW)) * 0.5f;
-
-    dl->PushClipRect(
-        ImVec2(tileMin.x + tilePad, tileMin.y),
-        ImVec2(tileMax.x - tilePad, tileMax.y), true);
-    dl->AddText(ImVec2(labelX, labelY), IM_COL32(210, 210, 210, 255), name.c_str());
-    dl->PopClipRect();
+    EditorWidgets::TextEllipsis(dl, ImVec2(tileMin.x + tilePad, labelY), tileW - tilePad * 2.0f,
+                                ImGui::GetColorU32(EditorTheme::Text), name);
 
     ImGui::PopID();
 }

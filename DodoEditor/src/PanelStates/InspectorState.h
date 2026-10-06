@@ -17,4 +17,10 @@ struct InspectorState {
     bool dirty = false;
 
     TransformEditState transformState;
+
+    // Name field of the inspected entity. The edit is applied to nameEntity, the selection may already have
+    // moved on by the time the field loses focus.
+    std::string nameBuffer;
+    EntityID nameEntity = 0;
+    bool nameActive = false;
 };

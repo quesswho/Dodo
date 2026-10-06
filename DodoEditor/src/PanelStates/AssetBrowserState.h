@@ -2,8 +2,6 @@
 #include <filesystem>
 #include <string>
 
-struct EditorIconSet;
-
 struct AssetBrowserState {
     std::string name = "Asset Browser";
     bool visible = false;
@@ -12,6 +10,6 @@ struct AssetBrowserState {
     std::filesystem::path currentDir;
     std::filesystem::path selectedPath;
 
+    std::string filter;
     float tileSize = 64.0f;
-    const EditorIconSet* icons = nullptr;
 };

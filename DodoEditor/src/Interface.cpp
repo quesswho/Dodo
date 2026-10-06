@@ -1,6 +1,8 @@
 #include "Interface.h"
 
 #include "Data/EditorSceneFile.h"
+#include "EditorTheme.h"
+#include "EditorWidgets.h"
 #include "FileDialog.h"
 
 #include <algorithm>
@@ -37,32 +39,7 @@ void Interface::ChangeScene(EditorScene* scene)
 
 void Interface::InitInterface()
 {
-    ImGuiStyle& style = ImGui::GetStyle();
-    style.Colors[ImGuiCol_WindowBg] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
-    style.Colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
-    style.Colors[ImGuiCol_Border] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-    style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
-    style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
-    style.Colors[ImGuiCol_Tab] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
-    style.Colors[ImGuiCol_TabUnfocused] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
-    style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
-    style.Colors[ImGuiCol_TitleBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.00f);
-    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
-    style.Colors[ImGuiCol_ChildBg] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
-    style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.25f, 0.25f, 0.25f, 1.00f);
-    style.Colors[ImGuiCol_Button] = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
-    style.Colors[ImGuiCol_TabActive] = ImVec4(0.0f, 0.5f, 0.85f, 1.00f);
-    style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.0f, 0.5f, 0.85f, 1.00f);
-
-    style.WindowRounding = 0.0f;
-    style.TabRounding = 0.0f;
-
-    ImGuiIO& io = ImGui::GetIO();
-    if (FileUtils::FileExists("res/font/opensans/opensans.ttf")) {
-        io.Fonts->AddFontFromFileTTF("res/font/opensans/opensans.ttf", 16);
-    } else {
-        DD_WARN("Could not find: res/font/opensans/opensans.ttf, using default font.");
-    }
+    EditorTheme::Apply();
 
     // Viewport
     m_EditorProperties.m_ViewportHover = false;
@@ -77,7 +54,7 @@ void Interface::InitInterface()
 
     // Inspector
     m_InspectorState.name = "Inspector";
-    m_InspectorState.visible = false;
+    m_InspectorState.visible = true;
     m_InspectorState.dirty = false;
 
     // Asset Browser
@@ -85,7 +62,6 @@ void Interface::InitInterface()
     m_AssetBrowserState.visible = true;
 
     m_Icons.Load(*Application::s_Application->m_RenderAPI);
-    m_AssetBrowserState.icons = &m_Icons.Get();
 }
 
 bool Interface::BeginDraw()
@@ -95,22 +71,27 @@ bool Interface::BeginDraw()
 
     static bool s_ResetDockspace = false;
 
+    // The status bar takes its strip from the work area, so it has to come before the dockspace window.
+    DrawStatusBar();
+
     ImGuiWindowFlags dockWindow_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     dockWindow_flags |=
         ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
     dockWindow_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
     ImGuiIO& io = ImGui::GetIO();
 
-    ImGui::Begin("DockSpace", nullptr, dockWindow_flags);
+    // No padding: the panels reach the window edges and are only separated by the docking splitters.
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-    ImGui::PopStyleVar();
-    ImGui::PopStyleVar(2);
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, EditorTheme::Background);
+    ImGui::Begin("DockSpace", nullptr, dockWindow_flags);
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar(3);
 
     if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
         ImGuiID dockspace_id = ImGui::GetID("DockSpace");
@@ -118,11 +99,11 @@ bool Interface::BeginDraw()
             ResetDockspace(dockspace_id);
             s_ResetDockspace = false;
         }
-        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), 0);
+        // Panels are closed from their tab, a second close button per dock node is only clutter.
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_NoCloseButton);
     }
 
     if (ImGui::BeginMenuBar()) {
-        ImGui::PushStyleColor(ImGuiCol_Button, ImGuiCol_MenuBarBg);
         if (ImGui::BeginMenu("File")) {
             if (ImGui::BeginMenu("New")) {
                 if (ImGui::MenuItem("Project")) {
@@ -196,12 +177,11 @@ bool Interface::BeginDraw()
             ImGui::MenuItem(m_InspectorState.name.c_str(), "", &m_InspectorState.visible);
             ImGui::MenuItem(m_AssetBrowserState.name.c_str(), "", &m_AssetBrowserState.visible);
             ImGui::Separator();
-            if (ImGui::Button("Reset DockSpace")) {
+            if (ImGui::MenuItem("Reset Layout")) {
                 s_ResetDockspace = true;
             }
             ImGui::EndMenu();
         }
-        ImGui::PopStyleColor();
         ImGui::EndMenuBar();
     }
 
@@ -209,9 +189,9 @@ bool Interface::BeginDraw()
 
     ImGui::End();
 
-    m_HierarchyPanel.Draw(m_EditorState, m_InspectorState, m_HierarchyState, m_Icons.Get());
-    m_InspectorPanel.Draw(m_EditorState, m_InspectorState);
-    m_AssetBrowserPanel.Draw(m_AssetBrowserState);
+    m_HierarchyPanel.Draw(m_EditorState, m_InspectorState, m_HierarchyState, m_Icons);
+    m_InspectorPanel.Draw(m_EditorState, m_InspectorState, m_Icons);
+    m_AssetBrowserPanel.Draw(m_AssetBrowserState, m_Icons);
 
     return m_ChangeScene;
 }
@@ -231,20 +211,50 @@ void Interface::ResetDockspace(uint dockspace_id)
 
     ImGuiID dock_main_id = dockspace_id;
 
-    ImGuiID dock_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, nullptr, &dock_main_id);
-    ImGuiID dock_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.20f, nullptr, &dock_main_id);
-
-    ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
-
-    ImGuiID dock_left_bottom;
-    ImGuiID dock_left_top = ImGui::DockBuilderSplitNode(dock_left, ImGuiDir_Up, 0.50f, nullptr, &dock_left_bottom);
+    ImGuiID dock_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.17f, nullptr, &dock_main_id);
+    ImGuiID dock_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, nullptr, &dock_main_id);
+    ImGuiID dock_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.28f, nullptr, &dock_main_id);
 
     ImGui::DockBuilderDockWindow(m_ViewportState.name.c_str(), dock_main_id);
-    ImGui::DockBuilderDockWindow(m_HierarchyState.name.c_str(), dock_left_top);
+    ImGui::DockBuilderDockWindow(m_HierarchyState.name.c_str(), dock_left);
     ImGui::DockBuilderDockWindow(m_InspectorState.name.c_str(), dock_right);
     ImGui::DockBuilderDockWindow(m_AssetBrowserState.name.c_str(), dock_bottom);
 
     ImGui::DockBuilderFinish(dockspace_id);
+}
+
+void Interface::DrawStatusBar()
+{
+    const ImGuiWindowFlags flags =
+        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar;
+    if (ImGui::BeginViewportSideBar("##StatusBar", ImGui::GetMainViewport(), ImGuiDir_Down, ImGui::GetFrameHeight(),
+                                    flags)) {
+        if (ImGui::BeginMenuBar()) {
+            ImGui::PushFont(nullptr, EditorTheme::FontSizeSmall);
+            ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::TextDim);
+
+            if (m_Project)
+                ImGui::Text("Project: %s", m_Project->m_Name.c_str());
+            else
+                ImGui::TextUnformatted("No project open");
+
+            const size_t entities = m_EditorState.scene->GetWorld().GetAliveEntities().size();
+            ImGui::SameLine(0.0f, 20.0f);
+            ImGui::Text("%zu %s", entities, entities == 1 ? "entity" : "entities");
+
+            const char* hint = m_EditorProperties.m_ViewportInput ? "Flying the camera, press Z to release the cursor"
+                                                                  : "Hover the viewport and press Z to fly the camera";
+            const float hintWidth = ImGui::CalcTextSize(hint).x + ImGui::GetStyle().WindowPadding.x;
+            ImGui::SameLine(0.0f, 20.0f);
+            ImGui::SetCursorPosX(std::max(ImGui::GetWindowWidth() - hintWidth, ImGui::GetCursorPosX()));
+            ImGui::TextUnformatted(hint);
+
+            ImGui::PopStyleColor();
+            ImGui::PopFont();
+            ImGui::EndMenuBar();
+        }
+    }
+    ImGui::End();
 }
 
 //////////////////////
@@ -266,13 +276,15 @@ void Interface::DrawNewProjectModal()
     if (!opened)
         return;
 
-    // Blue accent header band
-    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.0f, 0.45f, 0.78f, 1.0f));
+    // Accent header band
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, EditorTheme::Accent);
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.0f);
     if (ImGui::BeginChild("##NPHdr", ImVec2(0.0f, 52.0f), false, ImGuiWindowFlags_NoScrollbar)) {
         ImGui::SetCursorPos(ImVec2(18.0f, 16.0f));
         ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 1.0f), "Create New Project");
     }
     ImGui::EndChild();
+    ImGui::PopStyleVar();
     ImGui::PopStyleColor();
 
     const float pad = 18.0f;
@@ -296,10 +308,8 @@ void Interface::DrawNewProjectModal()
     char locBuf[1024] = {};
     snprintf(locBuf, sizeof(locBuf), "%s",
              m_NewProjectDir.empty() ? "(not set)" : m_NewProjectDir.generic_string().c_str());
-    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.13f, 0.13f, 0.13f, 1.0f));
     ImGui::SetNextItemWidth(contentW - browseW - sty.ItemSpacing.x);
     ImGui::InputText("##NPLoc", locBuf, sizeof(locBuf), ImGuiInputTextFlags_ReadOnly);
-    ImGui::PopStyleColor();
     ImGui::SameLine();
     if (ImGui::Button("Browse", ImVec2(browseW, 0.0f))) {
         std::filesystem::path chosen = FileDialog::SelectDirectory("Select Project Location");
@@ -311,7 +321,7 @@ void Interface::DrawNewProjectModal()
     if (!m_NewProjectDir.empty() && m_NewProjectNameBuf[0] != '\0') {
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 4.0f);
         ImGui::SetCursorPosX(pad);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.50f, 0.50f, 0.50f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::TextDim);
         auto preview = m_NewProjectDir / m_NewProjectNameBuf;
         ImGui::TextWrapped("Will be created at: %s", preview.generic_string().c_str());
         ImGui::PopStyleColor();
@@ -321,7 +331,7 @@ void Interface::DrawNewProjectModal()
     if (!m_NewProjectError.empty()) {
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6.0f);
         ImGui::SetCursorPosX(pad);
-        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.30f, 0.30f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Text, EditorTheme::TextError);
         ImGui::TextWrapped("%s", m_NewProjectError.c_str());
         ImGui::PopStyleColor();
     }
@@ -333,7 +343,7 @@ void Interface::DrawNewProjectModal()
     ImGui::Dummy(ImVec2(contentW, 1.0f));
     ImGui::GetWindowDrawList()->AddLine(
         ImGui::GetItemRectMin(), ImGui::GetItemRectMax(),
-        IM_COL32(60, 60, 60, 255));
+        ImGui::GetColorU32(EditorTheme::Border));
     ImGui::PopStyleVar();
 
     // Buttons (right-aligned)
@@ -346,9 +356,9 @@ void Interface::DrawNewProjectModal()
         ImGui::CloseCurrentPopup();
     }
     ImGui::SameLine();
-    ImGui::PushStyleColor(ImGuiCol_Button,        ImVec4(0.0f, 0.45f, 0.78f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.1f, 0.55f, 0.88f, 1.0f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  ImVec4(0.0f, 0.35f, 0.68f, 1.0f));
+    ImGui::PushStyleColor(ImGuiCol_Button,        EditorTheme::Accent);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, EditorTheme::AccentHover);
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive,  EditorTheme::AccentActive);
     if (ImGui::Button("Create", ImVec2(btnW, 0.0f))) {
         if (m_NewProjectNameBuf[0] == '\0') {
             m_NewProjectError = "Project name cannot be empty.";
@@ -407,16 +417,15 @@ bool Interface::BeginViewport()
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
         // Dragging a gizmo handle must not drag a floating viewport window along with it.
         if (m_TransformGizmo.IsActive()) flags |= ImGuiWindowFlags_NoMove;
+
+        // The scene image fills the whole panel, the toolbar floats on top of it.
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
         ImGui::Begin(m_ViewportState.name.c_str(), nullptr, flags);
+        ImGui::PopStyleVar();
 
         m_EditorProperties.m_ViewportHover = ImGui::IsWindowHovered();
         if (m_EditorProperties.m_ViewportHover && !m_EditorProperties.m_ViewportInput)
             m_TransformGizmo.HandleShortcuts();
-
-        m_TransformGizmo.DrawToolbar();
-        ImGui::SameLine(0.0f, 20.0f);
-        ImGui::Text("%d fps, %gms", Application::s_Application->m_FramesPerSecond,
-                    Application::s_Application->m_FrameTimeMs);
 
         return true;
     }
@@ -432,10 +441,62 @@ void Interface::EndViewport(RenderAPI& renderAPI, Ref<FrameBuffer> framebuffer, 
         const ImVec2 imagePos = ImGui::GetItemRectMin();
         const ImVec2 imageSize = ImGui::GetItemRectSize();
         // The gizmo stays visible while flying the camera, but the hidden cursor must not grab it.
+        // A click on the toolbar must not reach a gizmo handle behind it either.
+        const bool interactive = !m_EditorProperties.m_ViewportInput && !m_ViewportToolbarHovered;
         if (m_TransformGizmo.Manipulate(m_EditorState, camera, Vec2(imagePos.x, imagePos.y),
-                                        Vec2(imageSize.x, imageSize.y), !m_EditorProperties.m_ViewportInput)) {
+                                        Vec2(imageSize.x, imageSize.y), interactive)) {
             m_InspectorState.dirty = true; // Refresh the inspector fields from the new transformation
         }
+
+        DrawViewportOverlay(imagePos, imageSize);
         ImGui::End();
     }
+}
+
+void Interface::DrawViewportOverlay(const ImVec2& imagePos, const ImVec2& imageSize)
+{
+    const float margin = 10.0f;
+    const float padding = 4.0f;
+    const float rounding = 6.0f;
+    const ImU32 background =
+        ImGui::GetColorU32(ImVec4(EditorTheme::Panel.x, EditorTheme::Panel.y, EditorTheme::Panel.z, 0.90f));
+    const ImU32 border = ImGui::GetColorU32(EditorTheme::Border);
+
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+    // The size of the toolbar is only known once its buttons are laid out, but its background has to be drawn
+    // below them. Splitting the draw list lets the background be added afterwards.
+    drawList->ChannelsSplit(2);
+    drawList->ChannelsSetCurrent(1);
+    ImGui::SetCursorScreenPos(ImVec2(imagePos.x + margin + padding, imagePos.y + margin + padding));
+    ImGui::BeginGroup();
+    m_TransformGizmo.DrawToolbar(m_Icons);
+    ImGui::EndGroup();
+
+    const ImVec2 toolbarMin = ImVec2(ImGui::GetItemRectMin().x - padding, ImGui::GetItemRectMin().y - padding);
+    const ImVec2 toolbarMax = ImVec2(ImGui::GetItemRectMax().x + padding, ImGui::GetItemRectMax().y + padding);
+    drawList->ChannelsSetCurrent(0);
+    drawList->AddRectFilled(toolbarMin, toolbarMax, background, rounding);
+    drawList->AddRect(toolbarMin, toolbarMax, border, rounding);
+    drawList->ChannelsMerge();
+
+    m_ViewportToolbarHovered = ImGui::IsWindowHovered() && ImGui::IsMouseHoveringRect(toolbarMin, toolbarMax);
+
+    // Frame statistics in the opposite corner, left out when they would run into the toolbar.
+    char stats[64];
+    snprintf(stats, sizeof(stats), "%u fps   %.1f ms", Application::s_Application->m_FramesPerSecond,
+             Application::s_Application->m_FrameTimeMs);
+
+    ImGui::PushFont(nullptr, EditorTheme::FontSizeSmall);
+    const ImVec2 textSize = ImGui::CalcTextSize(stats);
+    const ImVec2 statsMax =
+        ImVec2(imagePos.x + imageSize.x - margin, imagePos.y + margin + textSize.y + padding * 2.0f);
+    const ImVec2 statsMin = ImVec2(statsMax.x - textSize.x - padding * 4.0f, imagePos.y + margin);
+    if (statsMin.x > toolbarMax.x + margin) {
+        drawList->AddRectFilled(statsMin, statsMax, background, rounding);
+        drawList->AddRect(statsMin, statsMax, border, rounding);
+        drawList->AddText(ImVec2(statsMin.x + padding * 2.0f, statsMin.y + padding),
+                          ImGui::GetColorU32(EditorTheme::TextDim), stats);
+    }
+    ImGui::PopFont();
 }

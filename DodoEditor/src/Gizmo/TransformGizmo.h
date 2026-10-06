@@ -1,12 +1,20 @@
 #pragma once
 
+#include "EditorIcons.h"
 #include "PanelStates/EditorState.h"
 
 #include <Dodo.h>
 
-enum class GizmoOperation { Translate, Rotate, Scale };
+enum class GizmoOperation {
+    Translate,
+    Rotate,
+    Scale
+};
 
-enum class GizmoSpace { Local, World };
+enum class GizmoSpace {
+    Local,
+    World
+};
 
 /**
  * Translate, rotate and scale gizmo drawn on top of the scene viewport.
@@ -22,9 +30,9 @@ class TransformGizmo {
     void BeginFrame();
 
     /**
-     * Draws the operation and space selectors inline in the current window.
+     * Draws the operation and space selectors as a row of icon buttons at the cursor of the current window.
      */
-    void DrawToolbar();
+    void DrawToolbar(const EditorIcons& icons);
 
     /**
      * Switches operation from the keyboard: W translates, E rotates and R scales.

@@ -8,6 +8,9 @@ using namespace Dodo;
 struct RenameState {
     EntityID entityId = -1;
     std::string nameBuffer = "";
+    // Frames left during which the name field still asks for keyboard focus. A single request is not enough,
+    // a context menu that closes right after starting the rename takes the focus back.
+    int focusFrames = 0;
 
     bool isActive() const { return entityId != -1; }
 
@@ -19,6 +22,7 @@ struct RenameState {
         }
 
         nameBuffer = world.GetComponent<NameComponent>(id).name;
+        focusFrames = 3;
     }
 
     void Update(EditorWorld& world)
@@ -44,5 +48,6 @@ struct RenameState {
     {
         entityId = -1;
         nameBuffer.clear();
+        focusFrames = 0;
     }
 };

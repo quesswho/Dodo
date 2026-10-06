@@ -1,37 +1,50 @@
 #pragma once
 
 #include <Dodo.h>
+
+#include <array>
 #include <vector>
 
-struct EditorIconSet {
-    void* entity     = nullptr;
-    void* entitySel  = nullptr;
-    void* entityRoot = nullptr;
-    void* folder     = nullptr;
-    void* texture    = nullptr;
-    void* model      = nullptr;
-    void* shader     = nullptr;
-    void* scene      = nullptr;
-    void* file       = nullptr;
-    bool  ready      = false;
+enum class EditorIcon {
+    // Interface icons, drawn at text size
+    Entity,
+    Move,
+    Rotate,
+    Scale,
+    Local,
+    World,
+    Search,
+    Add,
+    // Asset icons, drawn at tile size
+    Folder,
+    Texture,
+    Model,
+    Shader,
+    Scene,
+    File,
+    Count
 };
 
+/**
+ * Icon set of the editor, rasterized from the SVG files in res/editor/icons.
+ *
+ * Every icon is stored as a white alpha mask, so the color is chosen at draw time through the ImGui tint.
+ */
 class EditorIcons {
   public:
     void Load(Dodo::RenderAPI& api);
-    const EditorIconSet& Get() const { return m_Icons; }
+
+    /**
+     * @return ImGui texture of the icon, or null if its file is missing. Callers are expected to fall back to text.
+     */
+    void* Get(EditorIcon icon) const { return m_ImGuiIDs[(size_t)icon]; }
 
   private:
+    /**
+     * @return Tightly packed RGBA pixels of size * size, or an empty vector if the file could not be parsed.
+     */
     static std::vector<unsigned char> RasterizeSVG(const char* path, int size);
 
-    Ref<Dodo::Texture> m_EntityTex;
-    Ref<Dodo::Texture> m_EntitySelTex;
-    Ref<Dodo::Texture> m_EntityRootTex;
-    Ref<Dodo::Texture> m_FolderTex;
-    Ref<Dodo::Texture> m_TextureTex;
-    Ref<Dodo::Texture> m_ModelTex;
-    Ref<Dodo::Texture> m_ShaderTex;
-    Ref<Dodo::Texture> m_SceneTex;
-    Ref<Dodo::Texture> m_FileTex;
-    EditorIconSet m_Icons;
+    std::array<Ref<Dodo::Texture>, (size_t)EditorIcon::Count> m_Textures;
+    std::array<void*, (size_t)EditorIcon::Count> m_ImGuiIDs = {};
 };

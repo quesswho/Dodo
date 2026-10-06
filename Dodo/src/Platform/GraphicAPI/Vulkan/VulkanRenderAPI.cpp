@@ -77,6 +77,7 @@ namespace Dodo::Platform {
         m_LayoutCache.reset();
         m_DescriptorAllocator.reset();
         if (m_DummySampler) vkDestroySampler(m_Device, m_DummySampler, nullptr);
+        if (m_ImGuiSampler) vkDestroySampler(m_Device, m_ImGuiSampler, nullptr);
         if (m_DummyImageView) vkDestroyImageView(m_Device, m_DummyImageView, nullptr);
         if (m_DummyImage) vmaDestroyImage(m_VmaAllocator, m_DummyImage, m_DummyAllocation);
 
@@ -905,6 +906,13 @@ namespace Dodo::Platform {
             samplerCI.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             samplerCI.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
             vkCreateSampler(m_Device, &samplerCI, nullptr, &m_DummySampler);
+
+            // Interface textures are drawn at arbitrary sizes, so they need filtering in both directions
+            samplerCI.magFilter = VK_FILTER_LINEAR;
+            samplerCI.minFilter = VK_FILTER_LINEAR;
+            samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+            samplerCI.maxLod = VK_LOD_CLAMP_NONE;
+            vkCreateSampler(m_Device, &samplerCI, nullptr, &m_ImGuiSampler);
         }
 
         // --- Create global pipeline layout covering all 3 sets (used by Begin to bind Set 0 and Set 1) ---
@@ -1955,7 +1963,7 @@ namespace Dodo::Platform {
         if (it != m_ImGuiTextureEntries.end())
             return (void*)it->second;
         VkDescriptorSet set = ImGui_ImplVulkan_AddTexture(
-            m_DummySampler, tex->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+            m_ImGuiSampler, tex->GetImageView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
         m_ImGuiTextureEntries[tex] = set;
         return (void*)set;
     }

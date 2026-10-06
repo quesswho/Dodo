@@ -244,6 +244,7 @@ namespace Dodo::Platform {
         VmaAllocation m_DummyAllocation = nullptr;
         VkImageView m_DummyImageView = VK_NULL_HANDLE;
         VkSampler m_DummySampler = VK_NULL_HANDLE;
+        VkSampler m_ImGuiSampler = VK_NULL_HANDLE; // Trilinear, used by GetTextureImGuiID
 
         // Descriptor infrastructure shared across all pipelines
         static constexpr int maxFramesInFlight = 2;

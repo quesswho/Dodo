@@ -1,5 +1,7 @@
 #include "TransformGizmo.h"
 
+#include "EditorWidgets.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -16,23 +18,36 @@ void TransformGizmo::BeginFrame()
     m_Active = false;
 }
 
-void TransformGizmo::DrawToolbar()
+void TransformGizmo::DrawToolbar(const EditorIcons& icons)
 {
-    if (ImGui::RadioButton("Move (W)", m_Operation == GizmoOperation::Translate))
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, 0.0f));
+
+    if (EditorWidgets::ToolButton("Move", icons.Get(EditorIcon::Move), "Move (W)",
+                                  m_Operation == GizmoOperation::Translate))
         m_Operation = GizmoOperation::Translate;
     ImGui::SameLine();
-    if (ImGui::RadioButton("Rotate (E)", m_Operation == GizmoOperation::Rotate)) m_Operation = GizmoOperation::Rotate;
+    if (EditorWidgets::ToolButton("Rotate", icons.Get(EditorIcon::Rotate), "Rotate (E)",
+                                  m_Operation == GizmoOperation::Rotate))
+        m_Operation = GizmoOperation::Rotate;
     ImGui::SameLine();
-    if (ImGui::RadioButton("Scale (R)", m_Operation == GizmoOperation::Scale)) m_Operation = GizmoOperation::Scale;
+    if (EditorWidgets::ToolButton("Scale", icons.Get(EditorIcon::Scale), "Scale (R)",
+                                  m_Operation == GizmoOperation::Scale))
+        m_Operation = GizmoOperation::Scale;
 
-    ImGui::SameLine(0.0f, 20.0f);
+    ImGui::SameLine();
+    EditorWidgets::ToolSeparator();
+    ImGui::SameLine();
 
     // Scaling always happens along the local axes, so the space only matters for moving and rotating.
     ImGui::BeginDisabled(m_Operation == GizmoOperation::Scale);
-    if (ImGui::RadioButton("Local", m_Space == GizmoSpace::Local)) m_Space = GizmoSpace::Local;
+    if (EditorWidgets::ToolButton("Local", icons.Get(EditorIcon::Local), "Local space", m_Space == GizmoSpace::Local))
+        m_Space = GizmoSpace::Local;
     ImGui::SameLine();
-    if (ImGui::RadioButton("World", m_Space == GizmoSpace::World)) m_Space = GizmoSpace::World;
+    if (EditorWidgets::ToolButton("World", icons.Get(EditorIcon::World), "World space", m_Space == GizmoSpace::World))
+        m_Space = GizmoSpace::World;
     ImGui::EndDisabled();
+
+    ImGui::PopStyleVar();
 }
 
 void TransformGizmo::HandleShortcuts()
@@ -87,7 +102,8 @@ bool TransformGizmo::Manipulate(EditorState& editorState, const FreeCamera& came
     const Mat4 projection = camera.GetProjectionMatrix();
     Mat4 model = transformation.m_Model;
 
-    const bool changed = ImGuizmo::Manipulate(view.m_Elements, projection.m_Elements, operation, mode, model.m_Elements);
+    const bool changed =
+        ImGuizmo::Manipulate(view.m_Elements, projection.m_Elements, operation, mode, model.m_Elements);
     m_Active = ImGuizmo::IsOver() || ImGuizmo::IsUsing();
 
     if (changed) Apply(model, transformation);

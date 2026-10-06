@@ -36,8 +36,7 @@ namespace Dodo {
         float elapsed = 0.0f;
         uint frames = 0;
 
-        m_ThreadManager->WaitMain();
-        m_AssetManager->FlushStagingQueue(*m_RenderAPI); // Upload assets loaded during Init()
+        m_AssetManager->FlushStagingQueue(*m_RenderAPI);
         m_RenderAPI->PollGpuPasses();                    // Finalize GPU passes submitted during Init()
         m_Initializing = false;
         while (!m_Closed) {

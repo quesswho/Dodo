@@ -5,6 +5,7 @@ Usage:
     python scripts/download_assets.py           # download all
     python scripts/download_assets.py sponza    # download sponza only
     python scripts/download_assets.py san_miguel
+    python scripts/download_assets.py emerald_square
 """
 
 import argparse
@@ -21,6 +22,11 @@ ASSETS = {
         "url": "https://cdrdv2.intel.com/v1/dl/getContent/830833",
         "dest": os.path.join(REPO_ROOT, "res", "sponza"),
         "description": "Intel Sponza Scene (glTF)",
+    },
+    "emerald_square": {
+        "url": "https://developer.nvidia.com/emerald-square",
+        "dest": os.path.join(REPO_ROOT, "res", "emerald_square"),
+        "description": "NVIDIA ORCA Emerald Square City Scene (FBX)",
     },
     "san_miguel": {
         "url": "https://casual-effects.com/g3d/data10/research/model/San_Miguel/San_Miguel.zip",

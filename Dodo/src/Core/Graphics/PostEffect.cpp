@@ -3,15 +3,19 @@
 
 namespace Dodo {
     PostEffect::PostEffect(const FrameBufferProperties& framebufferprop, const char* path, RenderAPI& renderAPI,
-                           AssetManager& assets)
-        : m_Framebuffer(renderAPI.CreateFrameBuffer(framebufferprop))
+                           AssetManager& assets, Ref<FrameBuffer> output)
+        : m_Framebuffer(renderAPI.CreateFrameBuffer(framebufferprop)), m_Output(output)
     {
         ShaderID id = assets.LoadShaderFromPath(path);
         PipelineDesc pipelineDesc;
         pipelineDesc.shaderID = id;
         pipelineDesc.depthMode = DepthMode::None;
         pipelineDesc.culling = CullMode::None;
-        pipelineDesc.renderToSwapchain = true;
+        if (m_Output) {
+            pipelineDesc.colorFormat = m_Output->GetProperties().m_ColorFormat;
+        } else {
+            pipelineDesc.renderToSwapchain = true;
+        }
         PipelineID pipelineID = assets.CreatePipeline(pipelineDesc, renderAPI);
         m_Shader = assets.GetPipeline(pipelineID);
 
@@ -23,7 +27,11 @@ namespace Dodo {
 
     void PostEffect::Draw(RenderAPI& renderAPI) const
     {
-        renderAPI.DefaultFrameBuffer();
+        if (m_Output) {
+            renderAPI.BindFrameBuffer(m_Output);
+        } else {
+            renderAPI.DefaultFrameBuffer();
+        }
         renderAPI.BindPipeline(m_Shader);
         renderAPI.PushConstants(m_PushConstantData.data(), m_PushConstantData.size());
         renderAPI.BindVertexBuffer(m_Vertexbuffer);

@@ -49,6 +49,13 @@ namespace Dodo {
 
         CubeMapID LoadCubeMap(const std::vector<std::string>& paths);
         CubeMapID CreateCubeMapFromEquirectangular(const std::string& hdrPath, uint faceSize);
+
+        /**
+         * Creates the diffuse irradiance map of an environment cubemap. If the environment map is still
+         * loading, the irradiance map is created once it is ready and GetCubeMap returns nullptr until then.
+         *
+         * @return The id of the irradiance map, or 0 if the environment map does not exist or failed to load.
+         */
         CubeMapID CreateIrradianceMap(CubeMapID envMapID, uint faceSize);
         Ref<CubeMap> GetCubeMap(CubeMapID id); // Returns nullptr if still loading
 
@@ -87,6 +94,11 @@ namespace Dodo {
 
       private:
         ShaderAsset SlangSourceToAsset(const SlangSource& source);
+
+        /**
+         * Creates the irradiance maps that were waiting for their environment map to load.
+         */
+        void CreatePendingIrradianceMaps();
 
         /**
          * Returns the material builtin models are drawn with: lit, with a plain light grey albedo.
@@ -158,6 +170,14 @@ namespace Dodo {
         };
         std::vector<PendingGPUTexture> m_PendingGPUTextures;
         std::vector<PendingGPUCubeMap> m_PendingGPUCubeMaps;
+
+        // Irradiance maps requested while their environment map was still loading
+        struct PendingIrradianceMap {
+            CubeMapID id;
+            CubeMapID envMapID;
+            uint faceSize;
+        };
+        std::vector<PendingIrradianceMap> m_PendingIrradianceMaps;
 
         // Staging queues written by worker threads, drained by main thread in FlushStagingQueue
         struct PendingTextureUpload {

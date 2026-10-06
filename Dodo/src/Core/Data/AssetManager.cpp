@@ -226,14 +226,40 @@ namespace Dodo {
     {
         auto it = m_CubeMaps.find(envMapID);
         if (it == m_CubeMaps.end()) {
-            DD_ERR("AssetManager: invalid envMapID {} for irradiance map creation", envMapID);
-            return 0;
+            auto stateIt = m_CubeMapStates.find(envMapID);
+            if (stateIt == m_CubeMapStates.end() || stateIt->second == AssetState::Failed) {
+                DD_ERR("AssetManager: invalid envMapID {} for irradiance map creation", envMapID);
+                return 0;
+            }
+
+            CubeMapID id = m_NextCubeMapID++;
+            m_CubeMapStates.emplace(id, AssetState::Loading);
+            m_PendingIrradianceMaps.push_back({id, envMapID, faceSize});
+            return id;
         }
         Ref<CubeMap> irradianceMap = m_RenderAPI.CreateIrradianceMap(it->second, faceSize, *this);
         CubeMapID id = m_NextCubeMapID++;
         m_CubeMaps.emplace(id, std::move(irradianceMap));
         m_CubeMapStates.emplace(id, AssetState::Loaded);
         return id;
+    }
+
+    void AssetManager::CreatePendingIrradianceMaps()
+    {
+        auto it = m_PendingIrradianceMaps.begin();
+        while (it != m_PendingIrradianceMaps.end()) {
+            auto envIt = m_CubeMaps.find(it->envMapID);
+            if (envIt != m_CubeMaps.end()) {
+                m_CubeMaps.emplace(it->id, m_RenderAPI.CreateIrradianceMap(envIt->second, it->faceSize, *this));
+                m_CubeMapStates[it->id] = AssetState::Loaded;
+            } else if (m_CubeMapStates.at(it->envMapID) == AssetState::Failed) {
+                m_CubeMapStates[it->id] = AssetState::Failed;
+            } else {
+                ++it;
+                continue;
+            }
+            it = m_PendingIrradianceMaps.erase(it);
+        }
     }
 
     Ref<CubeMap> AssetManager::GetCubeMap(CubeMapID id)
@@ -334,7 +360,8 @@ namespace Dodo {
 
     void AssetManager::FinalizeReadyUploads(RenderAPI& renderAPI)
     {
-        if (m_PendingGPUTextures.empty() && m_PendingGPUCubeMaps.empty()) return;
+        // Always poll, even with nothing pending here: textures created directly through the RenderAPI
+        // (such as solid color textures) are part of the batch too and are only usable once it is finalized.
         if (!renderAPI.PollTextureBatch()) return;
 
         for (auto& pending : m_PendingGPUTextures) {
@@ -384,6 +411,8 @@ namespace Dodo {
             DD_ERR("Async cubemap load failed, ID: {}", id);
             m_CubeMapStates[id] = AssetState::Failed;
         }
+
+        CreatePendingIrradianceMaps();
 
         for (auto& pending : cubeMaps) {
             Ref<CubeMap> cubeMap = renderAPI.CreateCubeMap(pending.data);

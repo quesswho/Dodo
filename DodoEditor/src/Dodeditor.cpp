@@ -26,7 +26,7 @@ GameLayer::GameLayer(Application& app)
 
     m_FrameBuffer = renderAPI.CreateFrameBuffer(frameprop);
 
-    m_Renderer = new EditorRenderer(renderAPI, assets);
+    m_Renderer = new EditorRenderer(renderAPI, assets, m_FrameBuffer);
     m_Scene = LoadStartupScene();
 
     std::vector<std::string> skyboxPath = {
@@ -34,7 +34,13 @@ GameLayer::GameLayer(Application& app)
         "res/texture/skybox/bottom.jpg", "res/texture/skybox/front.jpg", "res/texture/skybox/back.jpg",
     };
 
-    m_Scene->m_SkyBox = new Skybox(skyboxPath, assets, renderAPI);
+    // The HDR environment is one of the downloaded assets, fall back to the bundled skybox without it
+    const char* hdrSkyboxPath = "res/sponza/textures/kloppenheim_05_4k.hdr";
+    if (FileUtils::FileExists(hdrSkyboxPath)) {
+        m_Scene->m_SkyBox = new Skybox(hdrSkyboxPath, 1024, assets, renderAPI);
+    } else {
+        m_Scene->m_SkyBox = new Skybox(skyboxPath, assets, renderAPI);
+    }
 
     m_Interface = new Interface(m_Scene);
 }
@@ -82,6 +88,7 @@ void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
     if (m_Interface->ViewportResize()) {
         m_Camera->Resize(m_Interface->m_ViewportState.width, m_Interface->m_ViewportState.height);
         m_FrameBuffer->Resize(m_Interface->m_ViewportState.width, m_Interface->m_ViewportState.height);
+        m_Renderer->Resize(m_Interface->m_ViewportState.width, m_Interface->m_ViewportState.height);
     }
     DrawScene(renderAPI, assets);
     m_Interface->EndViewport(renderAPI, m_FrameBuffer, m_Camera->GetCamera());
@@ -90,8 +97,6 @@ void GameLayer::Render(RenderAPI& renderAPI, AssetManager& assets)
 
 void GameLayer::DrawScene(RenderAPI& renderAPI, AssetManager& assets)
 {
-    renderAPI.BindFrameBuffer(m_FrameBuffer);
-
     m_Renderer->DrawScene(m_Scene, m_Camera->GetCamera(), renderAPI, assets);
 
     renderAPI.DefaultFrameBuffer();

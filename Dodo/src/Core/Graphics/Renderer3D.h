@@ -11,6 +11,14 @@
 #include <Core/Math/Camera/FreeCamera.h>
 
 namespace Dodo {
+    /**
+     * Parameters of the builtin Gamma.slang post effect.
+     */
+    struct GammaEffectData {
+        float gamma = 1.0f;
+        float exposure = 1.0f;
+    };
+
     // Make this a deferred renderer
     class Renderer3D {
         PostEffect* m_PostEffect;
@@ -20,7 +28,10 @@ namespace Dodo {
         Ref<Material> m_ShadowAlphaTestMaterial;
 
       public:
-        Renderer3D(RenderAPI& renderAPI, AssetManager& assets);
+        /**
+         * @param output Framebuffer the finished image is drawn into, or nullptr for the swapchain.
+         */
+        Renderer3D(RenderAPI& renderAPI, AssetManager& assets, Ref<FrameBuffer> output = nullptr);
 
         ~Renderer3D() {}
 
@@ -33,6 +44,16 @@ namespace Dodo {
         void RenderGeometry(World& world, RenderAPI& renderApi, AssetManager& assets);
 
         void SetPostEffect(PostEffect* fx) { m_PostEffect = fx; }
+
+        /**
+         * Sets the tonemapping parameters of the post effect.
+         */
+        void SetEffectData(const GammaEffectData& data) { m_PostEffect->SetEffectData(data); }
+
+        /**
+         * Resizes the framebuffer the scene is rendered into. Call when the size of the output changes.
+         */
+        void Resize(uint width, uint height) { m_PostEffect->Resize(width, height); }
 
       private:
         static DrawData MakeDrawData(const Math::Mat4& model);

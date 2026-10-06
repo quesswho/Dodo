@@ -29,6 +29,7 @@ namespace Dodo::Platform {
             return layer < m_DepthLayerViews.size() ? m_DepthLayerViews[layer] : VK_NULL_HANDLE;
         }
         VkSampler GetSampler() const { return m_Sampler; }
+        const FrameBufferProperties& GetProperties() const { return m_Properties; }
         VkExtent2D GetExtent() const { return {m_Properties.m_Width, m_Properties.m_Height}; }
         VkFormat GetColorFormat() const { return m_ResolvedColorFormat; }
         bool HasColor() const

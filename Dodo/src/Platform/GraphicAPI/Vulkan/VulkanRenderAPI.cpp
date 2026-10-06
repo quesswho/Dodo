@@ -1129,6 +1129,7 @@ namespace Dodo::Platform {
         // Reset per-frame state now that the GPU has finished with this frame slot
         m_BoundPipeline = VK_NULL_HANDLE;
         m_BoundPipelinePtr = nullptr;
+        m_BoundSampleCount = VK_SAMPLE_COUNT_1_BIT;
         m_ModelUBOCursor = 0;
         m_LastModelOffset = 0;
         m_IsRendering = false;
@@ -1295,9 +1296,11 @@ namespace Dodo::Platform {
         memset(m_PendingTextureHandles, 0, sizeof(m_PendingTextureHandles));
         m_PendingSamplerHandle = 0;
         VkCommandBuffer cmd = m_Frames[m_CurrentFrame].commandBuffer;
-        if (pipeline->m_Pipeline != m_BoundPipeline) {
-            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->m_Pipeline);
-            m_BoundPipeline = pipeline->m_Pipeline;
+        // A pipeline has to match the sample count of the target it draws into
+        VkPipeline vkPipeline = pipeline->GetPipeline(m_BoundSampleCount);
+        if (vkPipeline != m_BoundPipeline) {
+            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipeline);
+            m_BoundPipeline = vkPipeline;
             m_BoundPipelineLayout = pipeline->m_Layout;
             m_BoundPipelinePtr = pipeline.get();
         }
@@ -1437,6 +1440,7 @@ namespace Dodo::Platform {
 
         vkCmdBeginRendering(cmd, &renderingInfo);
         m_IsRendering = true;
+        m_BoundSampleCount = VK_SAMPLE_COUNT_1_BIT;
 
         // Negative height flips the viewport so clip space +Y points up on screen, while image row 0 stays
         // the top row. Projection matrices can then stay Y-up and front faces stay counter-clockwise.
@@ -1484,6 +1488,14 @@ namespace Dodo::Platform {
             colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             colorAttachment.clearValue.color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            if (vkFB->IsMultisampled()) {
+                // Render into the multisampled image and resolve into the sampled one when the pass ends
+                colorAttachment.imageView = vkFB->GetMsaaColorImageView();
+                colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+                colorAttachment.resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
+                colorAttachment.resolveImageView = vkFB->GetColorImageView();
+                colorAttachment.resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            }
             renderingInfo.colorAttachmentCount = 1;
             renderingInfo.pColorAttachments = &colorAttachment;
         }
@@ -1492,12 +1504,15 @@ namespace Dodo::Platform {
         depthAttachment.imageView = vkFB->GetDepthImageView();
         depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        // Multisampled depth can not be sampled, so there is nothing to keep once the pass is over
+        depthAttachment.storeOp =
+            vkFB->IsMultisampled() ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
         depthAttachment.clearValue.depthStencil = {1.0f, 0};
         renderingInfo.pDepthAttachment = &depthAttachment;
 
         vkCmdBeginRendering(cmd, &renderingInfo);
         m_IsRendering = true;
+        m_BoundSampleCount = vkFB->GetSampleCount();
 
         // Negative height flips the viewport so clip space +Y points up in the image, while image row 0 stays
         // the top row. Projection matrices can then stay Y-up and front faces stay counter-clockwise.
@@ -1895,7 +1910,25 @@ namespace Dodo::Platform {
 
     Ref<FrameBuffer> VulkanRenderAPI::CreateFrameBuffer(const FrameBufferProperties& props)
     {
-        return std::make_shared<VulkanFrameBuffer>(props, m_Device, m_VmaAllocator);
+        FrameBufferProperties supported = props;
+        supported.m_Samples = ClampSampleCount(props.m_Samples);
+        return std::make_shared<VulkanFrameBuffer>(supported, m_Device, m_VmaAllocator);
+    }
+
+    uint32_t VulkanRenderAPI::ClampSampleCount(uint32_t samples) const
+    {
+        VkPhysicalDeviceProperties properties;
+        vkGetPhysicalDeviceProperties(m_PhysicalDevice, &properties);
+        const VkSampleCountFlags supported =
+            properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
+
+        // Largest supported power of two that does not exceed the request
+        uint32_t result = 1;
+        for (uint32_t count = 2; count <= samples && count <= VK_SAMPLE_COUNT_64_BIT; count <<= 1)
+            if (supported & count) result = count;
+
+        if (result != samples) DD_WARN("MSAA: {}x is not supported, using {}x instead", samples, result);
+        return result;
     }
 
     void* VulkanRenderAPI::GetFrameBufferImGuiTextureID(Ref<FrameBuffer> framebuffer)

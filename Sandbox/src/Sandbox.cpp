@@ -25,6 +25,7 @@ GameLayer::GameLayer(Application& app)
     frameprop.m_Width = Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferWidth;
     frameprop.m_Height = Application::s_Application->m_Window->GetWindowProperties().m_FrameBufferHeight;
     frameprop.m_FrameBufferType = FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL;
+    frameprop.m_Samples = 4;
 
     m_PostEffect = new PostEffect(frameprop, "res/shader/builtin/Passes/Gamma.slang", renderAPI, assets);
     m_PostEffectData.gamma = 1.0f;

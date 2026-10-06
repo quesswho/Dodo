@@ -29,9 +29,11 @@ namespace Dodo {
 
       public:
         /**
-         * @param output Framebuffer the finished image is drawn into, or nullptr for the swapchain.
+         * @param output      Framebuffer the finished image is drawn into, or nullptr for the swapchain.
+         * @param msaaSamples MSAA sample count of the scene pass, 1 disables antialiasing.
          */
-        Renderer3D(RenderAPI& renderAPI, AssetManager& assets, Ref<FrameBuffer> output = nullptr);
+        Renderer3D(RenderAPI& renderAPI, AssetManager& assets, Ref<FrameBuffer> output = nullptr,
+                   uint32_t msaaSamples = 4);
 
         ~Renderer3D() {}
 

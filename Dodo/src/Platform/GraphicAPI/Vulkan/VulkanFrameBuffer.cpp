@@ -86,6 +86,16 @@ namespace Dodo::Platform {
             vkCreateImageView(m_Device, &colorViewCI, nullptr, &m_ColorImageView);
 
             m_ColorCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+            // With MSAA the scene is rendered into a multisampled image and resolved into the image above
+            if (IsMultisampled()) {
+                colorCI.samples = GetSampleCount();
+                colorCI.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+                vmaCreateImage(m_Allocator, &colorCI, &allocCI, &m_MsaaColorImage, &m_MsaaColorAllocation, nullptr);
+
+                colorViewCI.image = m_MsaaColorImage;
+                vkCreateImageView(m_Device, &colorViewCI, nullptr, &m_MsaaColorImageView);
+            }
         }
 
         // Depth attachment (always present); depth-only and depth-array are sampled directly
@@ -99,7 +109,7 @@ namespace Dodo::Platform {
         depthCI.extent = {width, height, 1};
         depthCI.mipLevels = 1;
         depthCI.arrayLayers = layers;
-        depthCI.samples = VK_SAMPLE_COUNT_1_BIT;
+        depthCI.samples = GetSampleCount();
         depthCI.tiling = VK_IMAGE_TILING_OPTIMAL;
         depthCI.usage = depthUsage;
         depthCI.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -165,6 +175,14 @@ namespace Dodo::Platform {
         m_DepthImage = VK_NULL_HANDLE;
         m_DepthAllocation = nullptr;
 
+        if (m_MsaaColorImage != VK_NULL_HANDLE) {
+            vkDestroyImageView(m_Device, m_MsaaColorImageView, nullptr);
+            m_MsaaColorImageView = VK_NULL_HANDLE;
+            vmaDestroyImage(m_Allocator, m_MsaaColorImage, m_MsaaColorAllocation);
+            m_MsaaColorImage = VK_NULL_HANDLE;
+            m_MsaaColorAllocation = nullptr;
+        }
+
         if (m_ColorImage != VK_NULL_HANDLE) {
             if (m_BindlessOwner) m_BindlessOwner->UnregisterImageView(m_ColorImageView);
             vkDestroyImageView(m_Device, m_ColorImageView, nullptr);
@@ -205,6 +223,14 @@ namespace Dodo::Platform {
             colorDep.pImageMemoryBarriers = &colorBarrier;
             vkCmdPipelineBarrier2(cmd, &colorDep);
             m_ColorCurrentLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+            // The multisampled image is cleared on load and never read after the resolve, so its previous
+            // contents and layout do not matter.
+            if (IsMultisampled()) {
+                colorBarrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+                colorBarrier.image = m_MsaaColorImage;
+                vkCmdPipelineBarrier2(cmd, &colorDep);
+            }
         }
 
         {

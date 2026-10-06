@@ -2,6 +2,7 @@
 
 #include "Core/Utilities/Logger.h"
 
+#include <bit>
 #include <map>
 
 namespace Dodo::Platform {
@@ -68,7 +69,8 @@ namespace Dodo::Platform {
                                    VkDescriptorSetLayout globalSet0Layout, VkDescriptorSetLayout globalSet1Layout,
                                    VkDescriptorSetLayout globalSet2Layout, VulkanDescriptorLayoutCache& layoutCache,
                                    VulkanDescriptorAllocator& allocator)
-        : m_Device(device), m_Desc(desc), m_LayoutCache(&layoutCache), m_Allocator(&allocator)
+        : m_Device(device), m_Desc(desc), m_ColorFormat(colorFormat), m_DepthFormat(depthFormat),
+          m_LayoutCache(&layoutCache), m_Allocator(&allocator)
     {
         // Determine which sets the shader declares via reflection (set 0 and set 2 are global)
         std::map<uint32_t, std::vector<VkDescriptorSetLayoutBinding>> setBindings;
@@ -137,8 +139,6 @@ namespace Dodo::Platform {
         vkCreatePipelineLayout(m_Device, &layoutInfo, nullptr, &m_Layout);
 
         // Create Shader modules from SPIR-V binaries
-        std::vector<VkShaderModule> modules;
-        std::vector<VkPipelineShaderStageCreateInfo> stages;
 
         for (const auto& stageBinary : shader.stages) {
             if (stageBinary.spirv.empty()) continue;
@@ -153,7 +153,7 @@ namespace Dodo::Platform {
                 DD_ERR("VulkanPipeline: failed to create shader module for stage {}", (int)stageBinary.stage);
                 continue;
             }
-            modules.push_back(mod);
+            m_ShaderModules.push_back(mod);
 
             VkPipelineShaderStageCreateInfo stageInfo{};
             stageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -161,7 +161,7 @@ namespace Dodo::Platform {
             stageInfo.module = mod;
             stageInfo.pName = "main"; // TODO: Slang compiles to SPIR-V with "main" as the entry point for some reason
             // stageInfo.pName = stageBinary.entryPoint.c_str();
-            stages.push_back(stageInfo);
+            m_Stages.push_back(stageInfo);
         }
 
         // Build vertex input descriptions from shader reflection, sorted by location so offsets
@@ -174,41 +174,50 @@ namespace Dodo::Platform {
             VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32A32_SFLOAT,
         };
 
-        std::vector<VkVertexInputAttributeDescription> attribDescs;
-        uint32_t bindingStride = 0;
-
         if (desc.vertexLayout.m_Stride > 0) {
-            bindingStride = (uint32_t)desc.vertexLayout.m_Stride * (uint32_t)sizeof(float);
+            m_BindingStride = (uint32_t)desc.vertexLayout.m_Stride * (uint32_t)sizeof(float);
             for (const auto& vi : inputs) {
                 uint32_t c = vi.componentCount;
                 VkFormat fmt = (c >= 1 && c <= 4) ? kFloatFormats[c] : VK_FORMAT_UNDEFINED;
                 uint32_t attrOffset = 0;
                 if (vi.location < (uint32_t)desc.vertexLayout.m_Elements.size())
                     attrOffset = (uint32_t)desc.vertexLayout.m_Elements[vi.location].m_Offset * (uint32_t)sizeof(float);
-                attribDescs.push_back({vi.location, 0, fmt, attrOffset});
+                m_AttribDescs.push_back({vi.location, 0, fmt, attrOffset});
             }
         } else {
             uint32_t offset = 0;
             for (const auto& vi : inputs) {
                 uint32_t c = vi.componentCount;
                 VkFormat fmt = (c >= 1 && c <= 4) ? kFloatFormats[c] : VK_FORMAT_UNDEFINED;
-                attribDescs.push_back({vi.location, 0, fmt, offset});
+                m_AttribDescs.push_back({vi.location, 0, fmt, offset});
                 offset += c * (uint32_t)sizeof(float);
             }
-            bindingStride = offset;
+            m_BindingStride = offset;
         }
+    }
+
+    VkPipeline VulkanPipeline::GetPipeline(VkSampleCountFlagBits samples)
+    {
+        VkPipeline& variant = m_Variants[std::countr_zero(static_cast<uint32_t>(samples))];
+        if (variant == VK_NULL_HANDLE) variant = CreateVariant(samples);
+        return variant;
+    }
+
+    VkPipeline VulkanPipeline::CreateVariant(VkSampleCountFlagBits samples) const
+    {
+        const PipelineDesc& desc = m_Desc;
 
         VkVertexInputBindingDescription bindingDesc{};
         bindingDesc.binding = 0;
-        bindingDesc.stride = bindingStride;
+        bindingDesc.stride = m_BindingStride;
         bindingDesc.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
         VkPipelineVertexInputStateCreateInfo vertexInput{};
         vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInput.vertexBindingDescriptionCount = 1;
         vertexInput.pVertexBindingDescriptions = &bindingDesc;
-        vertexInput.vertexAttributeDescriptionCount = (uint32_t)attribDescs.size();
-        vertexInput.pVertexAttributeDescriptions = attribDescs.data();
+        vertexInput.vertexAttributeDescriptionCount = (uint32_t)m_AttribDescs.size();
+        vertexInput.pVertexAttributeDescriptions = m_AttribDescs.data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -242,11 +251,15 @@ namespace Dodo::Platform {
             break;
         }
 
-        // Multisampling (disabled)
+        // Multisampling: the sample count has to match the attachments of the pass the pipeline is used in
         VkPipelineMultisampleStateCreateInfo multisampling{};
         multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         multisampling.sampleShadingEnable = VK_FALSE;
-        multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+        multisampling.rasterizationSamples = samples;
+        // Discard only gives cutout geometry a hard, aliased edge. Alpha to coverage turns the alpha written
+        // by the fragment shader into a sample mask so that MSAA smooths those edges too.
+        multisampling.alphaToCoverageEnable =
+            (desc.blendMode == BlendMode::AlphaCutout && samples != VK_SAMPLE_COUNT_1_BIT) ? VK_TRUE : VK_FALSE;
 
         // Depth/stencil
         VkPipelineDepthStencilStateCreateInfo depthStencil{};
@@ -302,14 +315,14 @@ namespace Dodo::Platform {
         VkPipelineRenderingCreateInfo renderingInfo{};
         renderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
         renderingInfo.colorAttachmentCount = desc.depthOnly ? 0 : 1;
-        renderingInfo.pColorAttachmentFormats = desc.depthOnly ? nullptr : &colorFormat;
-        renderingInfo.depthAttachmentFormat = depthFormat;
+        renderingInfo.pColorAttachmentFormats = desc.depthOnly ? nullptr : &m_ColorFormat;
+        renderingInfo.depthAttachmentFormat = m_DepthFormat;
 
         VkGraphicsPipelineCreateInfo pipelineInfo{};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipelineInfo.pNext = &renderingInfo;
-        pipelineInfo.stageCount = (uint32_t)stages.size();
-        pipelineInfo.pStages = stages.data();
+        pipelineInfo.stageCount = (uint32_t)m_Stages.size();
+        pipelineInfo.pStages = m_Stages.data();
         pipelineInfo.pVertexInputState = &vertexInput;
         pipelineInfo.pInputAssemblyState = &inputAssembly;
         pipelineInfo.pViewportState = &viewportState;
@@ -321,16 +334,18 @@ namespace Dodo::Platform {
         pipelineInfo.layout = m_Layout;
         pipelineInfo.renderPass = VK_NULL_HANDLE; // dynamic rendering needs no render pass
 
-        if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_Pipeline) != VK_SUCCESS)
+        VkPipeline pipeline = VK_NULL_HANDLE;
+        if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS)
             DD_ERR("VulkanPipeline: failed to create graphics pipeline!");
-
-        for (VkShaderModule mod : modules)
-            vkDestroyShaderModule(m_Device, mod, nullptr);
+        return pipeline;
     }
 
     VulkanPipeline::~VulkanPipeline()
     {
-        vkDestroyPipeline(m_Device, m_Pipeline, nullptr);
+        for (VkPipeline variant : m_Variants)
+            vkDestroyPipeline(m_Device, variant, nullptr);
+        for (VkShaderModule mod : m_ShaderModules)
+            vkDestroyShaderModule(m_Device, mod, nullptr);
         vkDestroyPipelineLayout(m_Device, m_Layout, nullptr);
         // Descriptor set layouts are owned by VulkanDescriptorLayoutCache.
         // Descriptor set allocations are owned by VulkanDescriptorAllocator.

@@ -1,6 +1,7 @@
 // ForwardLitSpecGloss.slang
 #include "../Common/Uniforms.slang"
 #include "../Common/BindlessUniforms.slang"
+#include "../Common/Material.slang"
 #include "../Common/VertexInterface.slang"
 #include "../Common/TangentSpace.slang"
 #include "../Lightning/ShadowSampling.slang"
@@ -26,7 +27,8 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 
     float4 diffuseSample = g_Textures[NonUniformResourceIndex(u_AlbedoIdx)].Sample(samp, input.texCoord);
 
-    if (diffuseSample.a < 0.5f) discard;
+    float coverage = cutoutCoverage(diffuseSample.a, 0.5f);
+    if (coverage <= 0.0f) discard;
 
     float3x3 TBN = buildTBN(input.normalWS, input.tangentWS);
     float3 normalTS = decodeNormalTS(g_Textures[NonUniformResourceIndex(u_NormalIdx)].Sample(samp, input.texCoord).rgb);
@@ -57,5 +59,5 @@ float4 fragmentMain(VertexOutput input) : SV_Target
     float  NdotV      = max(dot(N, V), 0.001f);
     float3 irradiance = g_IrradianceMap.SampleLevel(g_Samplers[SAMPLER_LINEAR_CLAMP], N, 0).rgb;
     float3 ambient    = evaluateAmbientSpecGloss(diffuseSample.rgb, ao, roughness, NdotV, F0, irradiance);
-    return float4(Lo + ambient * 0.1f, diffuseSample.a);
+    return float4(Lo + ambient * 0.1f, coverage);
 }

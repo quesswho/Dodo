@@ -157,6 +157,12 @@ namespace Dodo::Platform {
         Dodo::GpuTimings m_GpuTimings;
 
       private:
+        /**
+         * Returns the largest MSAA sample count the device supports for color and depth attachments that does
+         * not exceed the requested one.
+         */
+        uint32_t ClampSampleCount(uint32_t samples) const;
+
         RenderInitError InitInstance();
         RenderInitError SetupDebug();
         RenderInitError PickPhysicalDevice();
@@ -288,6 +294,7 @@ namespace Dodo::Platform {
         // Current pipeline reference
         class VulkanPipeline* m_BoundPipelinePtr = nullptr;
         class VulkanFrameBuffer* m_BoundFrameBuffer = nullptr;
+        VkSampleCountFlagBits m_BoundSampleCount = VK_SAMPLE_COUNT_1_BIT; // sample count of the bound target
         bool m_IsRendering = false;
 
         void RegisterTexture(class VulkanTexture& texture);

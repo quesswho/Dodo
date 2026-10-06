@@ -35,5 +35,12 @@ namespace Dodo {
         uint32_t m_Layers;
         SamplerProperties m_SamplerProperties;
         FrameBufferColorFormat m_ColorFormat = FrameBufferColorFormat::RGBA16F;
+
+        /**
+         * MSAA sample count of a color framebuffer, a power of two. Values above 1 render into multisampled
+         * attachments that are resolved into the sampled color image at the end of the pass. Clamped to what
+         * the device supports. Depth-only framebuffers are always single sampled.
+         */
+        uint32_t m_Samples = 1;
     };
 } // namespace Dodo

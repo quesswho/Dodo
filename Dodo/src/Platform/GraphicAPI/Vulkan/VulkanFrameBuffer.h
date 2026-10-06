@@ -23,6 +23,8 @@ namespace Dodo::Platform {
         void TransitionToReadable(VkCommandBuffer cmd);
 
         VkImageView GetColorImageView() const { return m_ColorImageView; }
+        // Multisampled attachment that is rendered into and resolved to the color image. Null without MSAA.
+        VkImageView GetMsaaColorImageView() const { return m_MsaaColorImageView; }
         VkImageView GetDepthImageView() const { return m_DepthImageView; }
         VkImageView GetDepthLayerView(uint32_t layer) const
         {
@@ -38,6 +40,11 @@ namespace Dodo::Platform {
         }
         bool IsDepthArray() const { return m_Properties.m_FrameBufferType == FrameBufferType::FRAMEBUFFER_DEPTH_ARRAY; }
         uint32_t GetLayerCount() const { return IsDepthArray() ? m_Properties.m_Layers : 1; }
+        VkSampleCountFlagBits GetSampleCount() const
+        {
+            return HasColor() ? static_cast<VkSampleCountFlagBits>(m_Properties.m_Samples) : VK_SAMPLE_COUNT_1_BIT;
+        }
+        bool IsMultisampled() const { return GetSampleCount() != VK_SAMPLE_COUNT_1_BIT; }
 
         inline void Bind() const {}
         void Resize(uint width, uint height);
@@ -57,6 +64,11 @@ namespace Dodo::Platform {
         VmaAllocation m_ColorAllocation = nullptr;
         VkImageView m_ColorImageView = VK_NULL_HANDLE;
         VkImageLayout m_ColorCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+        // Multisampled color attachment, only present with MSAA. m_ColorImage is then its resolve target.
+        VkImage m_MsaaColorImage = VK_NULL_HANDLE;
+        VmaAllocation m_MsaaColorAllocation = nullptr;
+        VkImageView m_MsaaColorImageView = VK_NULL_HANDLE;
 
         VkImage m_DepthImage = VK_NULL_HANDLE;
         VmaAllocation m_DepthAllocation = nullptr;

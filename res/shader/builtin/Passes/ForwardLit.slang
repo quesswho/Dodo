@@ -27,7 +27,8 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 
     float4 albedoSample = g_Textures[NonUniformResourceIndex(u_AlbedoIdx)].Sample(samp, input.texCoord);
 
-    if (albedoSample.a < 0.5f) discard;
+    float coverage = cutoutCoverage(albedoSample.a, 0.5f);
+    if (coverage <= 0.0f) discard;
 
     // Reconstruct world-space TBN for normal mapping
     float3x3 TBN = buildTBN(input.normalWS, input.tangentWS);
@@ -60,5 +61,5 @@ float4 fragmentMain(VertexOutput input) : SV_Target
 
     float3 ambient = evaluateAmbient(albedoSample.rgb, ao, metallic, roughness, NdotV, F0, irradiance);
 
-    return float4(Lo + ambient * 0.1, albedoSample.a);
+    return float4(Lo + ambient * 0.1, coverage);
 }

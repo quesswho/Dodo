@@ -24,7 +24,11 @@ namespace Dodo::Platform {
                        VulkanDescriptorLayoutCache& layoutCache, VulkanDescriptorAllocator& allocator);
         ~VulkanPipeline();
 
-        VkPipeline GetPipeline() const { return m_Pipeline; }
+        /**
+         * Returns the pipeline variant for a render target with the given sample count. Variants are built on
+         * first use, so a pipeline never has to know up front which targets it will draw into.
+         */
+        VkPipeline GetPipeline(VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT);
         VkPipelineLayout GetLayout() const { return m_Layout; }
         const PipelineDesc& GetDesc() const { return m_Desc; }
 
@@ -33,9 +37,22 @@ namespace Dodo::Platform {
         // No-op if the shader does not declare set-2 bindings.
         void BindObjectSet(VkCommandBuffer cmd, const VulkanDescriptorSet& globalSet2, uint32_t modelDynamicOffset);
 
+        VkPipeline CreateVariant(VkSampleCountFlagBits samples) const;
+
         VkDevice m_Device;
         PipelineDesc m_Desc;
-        VkPipeline m_Pipeline = VK_NULL_HANDLE;
+        VkFormat m_ColorFormat;
+        VkFormat m_DepthFormat;
+
+        // One pipeline per sample count (1x to 64x), indexed by log2 of the count
+        std::array<VkPipeline, 7> m_Variants{};
+
+        // Kept alive so that variants can be built after construction
+        std::vector<VkShaderModule> m_ShaderModules;
+        std::vector<VkPipelineShaderStageCreateInfo> m_Stages;
+        std::vector<VkVertexInputAttributeDescription> m_AttribDescs;
+        uint32_t m_BindingStride = 0;
+
         VkPipelineLayout m_Layout = VK_NULL_HANDLE;
         std::vector<VkDescriptorSetLayout> m_SetLayouts;
         std::vector<DescriptorBindingReflection> m_ShaderBindings;

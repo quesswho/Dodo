@@ -5,7 +5,8 @@
 
 namespace Dodo {
 
-    Renderer3D::Renderer3D(RenderAPI& renderAPI, AssetManager& assets, Ref<FrameBuffer> output)
+    Renderer3D::Renderer3D(RenderAPI& renderAPI, AssetManager& assets, Ref<FrameBuffer> output,
+                           uint32_t msaaSamples)
         : m_CascadedShadowMap(new CascadedShadowMap(renderAPI, 4, 4096))
     {
         ShaderID id = assets.LoadShaderFromPath("res/shader/builtin/Passes/Shadow.slang");
@@ -34,6 +35,7 @@ namespace Dodo {
         frameprop.m_Width = renderAPI.m_ViewportWidth;
         frameprop.m_Height = renderAPI.m_ViewportHeight;
         frameprop.m_FrameBufferType = FrameBufferType::FRAMEBUFFER_COLOR_DEPTH_STENCIL;
+        frameprop.m_Samples = msaaSamples;
         m_PostEffect = new PostEffect(frameprop, "res/shader/builtin/Passes/Gamma.slang", renderAPI, assets, output);
         m_PostEffect->SetEffectData(GammaEffectData());
     }

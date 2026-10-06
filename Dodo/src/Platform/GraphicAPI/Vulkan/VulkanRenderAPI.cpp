@@ -158,8 +158,12 @@ namespace Dodo::Platform {
      */
     RenderInitError VulkanRenderAPI::InitInstance()
     {
-        if (m_EnableValidationLayers && !CheckValidationLayerSupport())
-            return RenderInitError(RenderInitStatus::Failed, "validation layers requested, but not available!");
+        // Validation layers are a debugging aid and are not installed on every machine, so run without them.
+        if (m_EnableValidationLayers && !CheckValidationLayerSupport()) {
+            DD_WARN("Validation layers requested, but not available. Continuing without them.");
+            m_EnableValidationLayers = false;
+            m_ValidationLayers.clear();
+        }
 
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -2032,9 +2036,9 @@ namespace Dodo::Platform {
 
         // If there are any missing extensions, log all of them and return false
         if (!missingLayers.empty()) {
-            DD_ERR("Missing required layers:");
+            DD_WARN("Missing validation layers:");
             for (const char* required : missingLayers) {
-                DD_ERR("{}", required);
+                DD_WARN("{}", required);
             }
             return false;
         }

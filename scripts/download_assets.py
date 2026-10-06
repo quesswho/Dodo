@@ -23,7 +23,7 @@ ASSETS = {
         "description": "Intel Sponza Scene (glTF)",
     },
     "san_miguel": {
-        "url": None,  # TODO: add URL
+        "url": "https://casual-effects.com/g3d/data10/research/model/San_Miguel/San_Miguel.zip",
         "dest": os.path.join(REPO_ROOT, "res", "san_miguel"),
         "description": "San Miguel Scene",
     },
@@ -91,6 +91,11 @@ def download(name):
 
 
 def main():
+    # Some hosts reject the default Python-urllib user agent, so identify as this script instead.
+    opener = urllib.request.build_opener()
+    opener.addheaders = [("User-Agent", "DodoAssetDownloader/1.0")]
+    urllib.request.install_opener(opener)
+
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("assets", nargs="*", choices=list(ASSETS.keys()) + [[]], help="Assets to download (default: all)")
     args = parser.parse_args()

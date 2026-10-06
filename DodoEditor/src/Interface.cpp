@@ -3,6 +3,8 @@
 #include "Data/EditorSceneFile.h"
 #include "FileDialog.h"
 
+#include <algorithm>
+
 #include <imgui.h>
 #include <imgui_internal.h>
 
@@ -374,12 +376,23 @@ void Interface::DrawNewProjectModal()
 
 bool Interface::ViewportResize()
 {
-    if (m_ViewportState.width != ImGui::GetWindowWidth() || m_ViewportState.height != ImGui::GetWindowHeight() ||
-        m_ViewportState.x != ImGui::GetWindowPos().x || m_ViewportState.y != ImGui::GetWindowPos().y) {
-        m_ViewportState.width = (uint)ImGui::GetWindowWidth();
-        m_ViewportState.height = (uint)ImGui::GetWindowHeight();
-        m_ViewportState.x = (uint)ImGui::GetWindowPos().x;
-        m_ViewportState.y = (uint)ImGui::GetWindowPos().y;
+    if (!m_ViewportState.visible) return false;
+    
+    const ImVec2 pos = ImGui::GetCursorScreenPos();
+    const ImVec2 size = ImGui::GetContentRegionAvail();
+
+    // A collapsed or very small window leaves no room, keep the framebuffer at a valid size.
+    const uint width = (uint)std::max(size.x, 1.0f);
+    const uint height = (uint)std::max(size.y, 1.0f);
+    const uint x = (uint)std::max(pos.x, 0.0f);
+    const uint y = (uint)std::max(pos.y, 0.0f);
+
+    if (m_ViewportState.width != width || m_ViewportState.height != height || m_ViewportState.x != x ||
+        m_ViewportState.y != y) {
+        m_ViewportState.width = width;
+        m_ViewportState.height = height;
+        m_ViewportState.x = x;
+        m_ViewportState.y = y;
 
         Application::s_Application->m_RenderAPI->SetViewport(m_ViewportState.width, m_ViewportState.height,
                                                              m_ViewportState.x, m_ViewportState.y);

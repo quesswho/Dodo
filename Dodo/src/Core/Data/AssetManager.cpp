@@ -449,17 +449,7 @@ namespace Dodo {
                 bool hasTextures = !matEntry.textures.empty();
                 bool hasColorFallback = !hasTextures && matEntry.albedoColor.has_value();
 
-                if (hasColorFallback) {
-                    const Math::Vec4& c = *matEntry.albedoColor;
-                    uchar pixels[4] = {
-                        static_cast<uchar>(std::clamp(c.x, 0.0f, 1.0f) * 255.0f),
-                        static_cast<uchar>(std::clamp(c.y, 0.0f, 1.0f) * 255.0f),
-                        static_cast<uchar>(std::clamp(c.z, 0.0f, 1.0f) * 255.0f),
-                        static_cast<uchar>(std::clamp(c.w, 0.0f, 1.0f) * 255.0f),
-                    };
-                    material->AddTexture(
-                        0, renderAPI.CreateTexture(pixels, TextureProperties(1, 1, TextureFormat::FORMAT_RGBA)));
-                }
+                if (hasColorFallback) material->AddTexture(0, CreateSolidColorTexture(*matEntry.albedoColor));
 
                 if (hasTextures || hasColorFallback) {
                     bool hasSpecMap = HasFeature(matEntry.features, MaterialFeatures::SpecularMap)
@@ -515,6 +505,35 @@ namespace Dodo {
         renderAPI.SubmitTextureBatch();
     }
 
+    Ref<Texture> AssetManager::CreateSolidColorTexture(const Math::Vec4& color)
+    {
+        uchar pixels[4] = {
+            static_cast<uchar>(std::clamp(color.x, 0.0f, 1.0f) * 255.0f),
+            static_cast<uchar>(std::clamp(color.y, 0.0f, 1.0f) * 255.0f),
+            static_cast<uchar>(std::clamp(color.z, 0.0f, 1.0f) * 255.0f),
+            static_cast<uchar>(std::clamp(color.w, 0.0f, 1.0f) * 255.0f),
+        };
+        return m_RenderAPI.CreateTexture(pixels, TextureProperties(1, 1, TextureFormat::FORMAT_RGBA));
+    }
+
+    Ref<Material> AssetManager::GetDefaultMaterial()
+    {
+        if (m_DefaultMaterial) return m_DefaultMaterial;
+
+        PipelineDesc desc;
+        desc.shaderID = LoadShaderFromPath("res/shader/builtin/Passes/ForwardLit.slang");
+
+        m_DefaultMaterial = std::make_shared<Material>(GetPipeline(CreatePipeline(desc, m_RenderAPI)));
+        m_DefaultMaterial->AddTexture(0, CreateSolidColorTexture(Math::Vec4(0.8f, 0.8f, 0.8f, 1.0f)));
+        m_DefaultMaterial->SetSampler(m_RenderAPI.CreateSampler(SamplerProperties()));
+
+        // Registered like any other material so shader reloads reach it
+        MaterialID id = m_NextMaterialID++;
+        m_Materials.emplace(id, m_DefaultMaterial);
+        m_MaterialStates.emplace(id, AssetState::Loaded);
+        return m_DefaultMaterial;
+    }
+
     ModelID AssetManager::GetBuiltinModel(BuiltinModel type)
     {
         auto it = builtinIDs.find(type);
@@ -525,14 +544,13 @@ namespace Dodo {
         switch (type) {
         case BuiltinModel::Cube: {
             std::vector<Ref<Mesh>> meshes;
-            meshes.push_back(m_MeshFactory.CreateCube(std::make_shared<Material>(Material()), m_RenderAPI));
+            meshes.push_back(m_MeshFactory.CreateCube(GetDefaultMaterial(), m_RenderAPI));
             model = std::make_shared<Model>(meshes);
             break;
         }
         case BuiltinModel::Terrain: {
             std::vector<Ref<Mesh>> terrainMeshes;
-            terrainMeshes.push_back(
-                m_MeshFactory.CreateTerrain(TerrainConfig(), std::make_shared<Material>(Material()), m_RenderAPI));
+            terrainMeshes.push_back(m_MeshFactory.CreateTerrain(TerrainConfig(), GetDefaultMaterial(), m_RenderAPI));
             model = std::make_shared<Model>(terrainMeshes);
             break;
         }

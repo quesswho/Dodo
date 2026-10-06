@@ -88,6 +88,19 @@ namespace Dodo {
       private:
         ShaderAsset SlangSourceToAsset(const SlangSource& source);
 
+        /**
+         * Returns the material builtin models are drawn with: lit, with a plain light grey albedo.
+         * Created on first use and shared between all builtin models.
+         */
+        Ref<Material> GetDefaultMaterial();
+
+        /**
+         * Creates a 1x1 texture of the given color, for materials that have a color instead of a texture.
+         *
+         * @param color RGBA in the 0 to 1 range, clamped.
+         */
+        Ref<Texture> CreateSolidColorTexture(const Math::Vec4& color);
+
         // Names builtin models are referred to by wherever a model path is stored, such as scene files
         struct BuiltinModelName {
             BuiltinModel type;
@@ -125,6 +138,7 @@ namespace Dodo {
         std::unordered_map<MaterialID, Ref<Material>> m_Materials;
         std::unordered_map<std::string, MaterialID> m_MaterialID;
         std::unordered_map<MaterialID, AssetState> m_MaterialStates;
+        Ref<Material> m_DefaultMaterial;
 
         std::unordered_map<ModelID, Ref<Model>> m_Models;     // Stores id as key and model pointer as value
         std::unordered_map<std::string, ModelID> m_ModelID;   // Stores path as key and id as value

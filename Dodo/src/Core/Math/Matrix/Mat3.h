@@ -243,8 +243,8 @@ namespace Dodo::Math {
             }
 
             const T invDet = T(1) / determinant;
-            return Mat3x3(c00 * invDet, c10 * invDet, c20 * invDet, c01 * invDet, c11 * invDet, c21 * invDet,
-                          c02 * invDet, c12 * invDet, c22 * invDet);
+            return Mat3x3(c00 * invDet, c01 * invDet, c02 * invDet, c10 * invDet, c11 * invDet, c12 * invDet,
+                          c20 * invDet, c21 * invDet, c22 * invDet);
         }
 
         static const Mat3x3 Translate(const Math::TVec2<T>& translation)

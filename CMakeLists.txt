@@ -35,6 +35,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 include(cmake/Slang.cmake)
+include(cmake/LinkResources.cmake)
 
 # Dependencies
 if (DD_API_VULKAN)

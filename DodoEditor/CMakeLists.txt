@@ -4,28 +4,15 @@ set_target_properties(DodoEditor PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:DodoEditor>"
 )
 
+add_dependencies(DodoEditor DodoResources)
+
 if(WIN32)
-    add_custom_command(TARGET DodoEditor POST_BUILD
-        COMMAND ${CMAKE_COMMAND}
-            "-DLINK_DIR=$<TARGET_FILE_DIR:DodoEditor>/res"
-            "-DTARGET_DIR=${CMAKE_SOURCE_DIR}/res"
-            -P "${CMAKE_SOURCE_DIR}/cmake/CreateJunction.cmake"
-        COMMENT "Linking res/ into output directory"
-    )
     add_custom_command(TARGET DodoEditor POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             $<TARGET_RUNTIME_DLLS:DodoEditor>
             $<TARGET_FILE_DIR:DodoEditor>
         COMMAND_EXPAND_LISTS
         COMMENT "Copying runtime DLLs"
-    )
-else()
-    add_custom_command(TARGET DodoEditor POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E rm -rf "$<TARGET_FILE_DIR:DodoEditor>/res"
-        COMMAND ${CMAKE_COMMAND} -E create_symlink
-            "${CMAKE_SOURCE_DIR}/res"
-            "$<TARGET_FILE_DIR:DodoEditor>/res"
-        COMMENT "Linking res/ into output directory"
     )
 endif()
 

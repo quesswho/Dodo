@@ -33,26 +33,8 @@ namespace Dodo {
 
     CascadedShadowMap::~CascadedShadowMap() {}
 
-    std::vector<Math::Vec4> CascadedShadowMap::GetFrustumCornersWorldSpace(const Math::Mat4& proj,
-                                                                           const Math::Mat4& view)
-    {
-        const Math::Mat4 inv = Math::Mat4::Inverse(proj * view);
-
-        std::vector<Math::Vec4> frustumCorners;
-        frustumCorners.reserve(8);
-        for (uint32_t x = 0; x < 2; x++) {
-            for (uint32_t y = 0; y < 2; y++) {
-                for (uint32_t z = 0; z < 2; z++) {
-                    const Math::Vec4 pt = inv * Math::Vec4(x * 2.0f - 1.0f, y * 2.0f - 1.0f, z * 2.0f - 1.0f, 1.0f);
-                    frustumCorners.push_back(pt / pt.w);
-                }
-            }
-        }
-        return frustumCorners;
-    }
-
-    void CascadedShadowMap::UpdateCamera(const Math::Mat4& proj, const Math::Mat4& view, const Math::Vec3& lightDir,
-                                         float nearPlane, float farPlane, float fov, float aspectRatio)
+    void CascadedShadowMap::UpdateCamera(const Math::Mat4& view, const Math::Vec3& lightDir, float nearPlane,
+                                         float farPlane, float fov, float aspectRatio)
     {
         constexpr float lambda = 0.75f; // blend between log and uniform split distributions
 
@@ -70,64 +52,52 @@ namespace Dodo {
         const Math::Vec3 up =
             (std::abs(lightDirNorm.y) > 0.99f) ? Math::Vec3(0.0f, 0.0f, 1.0f) : Math::Vec3(0.0f, 1.0f, 0.0f);
 
+        // The light view only rotates, it is anchored at the world origin so that it does not depend on the camera.
+        // Each cascade is then a fixed-size box that slides over a world-fixed texel grid, which keeps the shadow
+        // edges stable when the camera moves or rotates.
+        const Math::Mat4 lightView = Math::Mat4::LookAt(Math::Vec3(0.0f, 0.0f, 0.0f) - lightDirNorm,
+                                                        Math::Vec3(0.0f, 0.0f, 0.0f), up);
+        const Math::Mat4 invView = Math::Mat4::Inverse(view);
+
+        // Distance from the view axis to a frustum corner, per unit of view depth
+        const float tanHalfFov = std::tan(Math::ToRadians(fov) / 2.0f);
+        const float cornerSlopeSq = tanHalfFov * tanHalfFov * (1.0f + aspectRatio * aspectRatio);
+
         float prevSplit = nearPlane;
         for (uint32_t i = 0; i < m_Levels; i++) {
-            float splitFar = m_CsmData.cascadeSplitDepths[i];
-
-            // Build a perspective matrix for just this sub-frustum
-            Math::Mat4 subProj = Math::Mat4::Perspective(fov, aspectRatio, prevSplit, splitFar);
+            const float splitNear = prevSplit;
+            const float splitFar = m_CsmData.cascadeSplitDepths[i];
             prevSplit = splitFar;
 
-            // Get the 8 world-space corners of this sub-frustum
-            std::vector<Math::Vec4> corners = GetFrustumCornersWorldSpace(subProj, view);
-
-            // TODO: We can potentially improve aliasing quality by using a bounding sphere: https://stackoverflow.com/a/33747446
-            // Centroid of the 8 corners is the anchor for the light view matrix
-            Math::Vec3 centroid(0.0f, 0.0f, 0.0f);
-            for (const auto& c : corners)
-                centroid = centroid + Math::Vec3(c.x, c.y, c.z);
-            centroid /= (int)corners.size();
-
-            Math::Mat4 lightView = Math::Mat4::LookAt(centroid - lightDirNorm, centroid, up);
-
-            // Find a tight AABB of all corners in light space
-            float minX = std::numeric_limits<float>::max();
-            float maxX = std::numeric_limits<float>::lowest();
-            float minY = std::numeric_limits<float>::max();
-            float maxY = std::numeric_limits<float>::lowest();
-            float minZ = std::numeric_limits<float>::max();
-            float maxZ = std::numeric_limits<float>::lowest();
-
-            for (const auto& c : corners) {
-                Math::Vec4 inLight = lightView * c;
-                minX = std::min(minX, inLight.x);
-                maxX = std::max(maxX, inLight.x);
-                minY = std::min(minY, inLight.y);
-                maxY = std::max(maxY, inLight.y);
-                minZ = std::min(minZ, inLight.z);
-                maxZ = std::max(maxZ, inLight.z);
+            // Minimal bounding sphere of the sub-frustum. Its center lies on the view axis, and its radius depends
+            // only on the camera parameters, so the cascade keeps its size no matter where the camera looks.
+            float centerDepth;
+            float radius;
+            if (cornerSlopeSq >= (splitFar - splitNear) / (splitFar + splitNear)) {
+                centerDepth = splitFar;
+                radius = splitFar * std::sqrt(cornerSlopeSq);
+            } else {
+                centerDepth = 0.5f * (splitFar + splitNear) * (1.0f + cornerSlopeSq);
+                const float farToCenter = splitFar - centerDepth;
+                radius = std::sqrt(farToCenter * farToCenter + splitFar * splitFar * cornerSlopeSq);
             }
 
-            // Snap the projection to texel boundaries to eliminate sub-texel shadow crawl.
-            float texelSizeX = (maxX - minX) / (float)m_ShadowMapResolution;
-            float texelSizeY = (maxY - minY) / (float)m_ShadowMapResolution;
-            minX = std::floor(minX / texelSizeX) * texelSizeX;
-            maxX = minX + std::ceil((maxX - minX) / texelSizeX) * texelSizeX;
-            minY = std::floor(minY / texelSizeY) * texelSizeY;
-            maxY = minY + std::ceil((maxY - minY) / texelSizeY) * texelSizeY;
+            const Math::Vec4 centerWS = invView * Math::Vec4(0.0f, 0.0f, -centerDepth, 1.0f);
+            const Math::Vec4 centerLS = lightView * centerWS;
 
-            // Pull the near plane back to capture shadow casters behind the frustum
-            constexpr float zMult = 4.0f;
-            if (minZ < 0.0f)
-                minZ *= zMult;
-            else
-                minZ /= zMult;
-            if (maxZ < 0.0f)
-                maxZ /= zMult;
-            else
-                maxZ *= zMult;
+            // Snap the center to whole shadow map texels to eliminate sub-texel shadow crawl
+            const float texelSize = 2.0f * radius / (float)m_ShadowMapResolution;
+            const float centerX = std::floor(centerLS.x / texelSize) * texelSize;
+            const float centerY = std::floor(centerLS.y / texelSize) * texelSize;
 
-            Math::Mat4 lightProj = Math::Mat4::Orthographic(minX, maxX, minY, maxY, minZ, maxZ);
+            // The light looks down its negative Z axis, so shadow casters between the light and the sphere have a
+            // larger Z. Pull the near plane back to capture them, anything even closer is depth clamped.
+            constexpr float casterRangeScale = 6.0f;
+            const float zNear = -(centerLS.z + radius + casterRangeScale * radius);
+            const float zFar = -(centerLS.z - radius);
+
+            Math::Mat4 lightProj = Math::Mat4::Orthographic(centerX - radius, centerX + radius, centerY - radius,
+                                                            centerY + radius, zNear, zFar);
             m_CsmData.lightSpaceMatrices[i] = lightProj * lightView;
         }
         m_CsmData.numCascades = (int)m_Levels;

@@ -2,12 +2,14 @@
 // Cook-Torrance BRDF for direct lighting (GGX NDF, Smith geometry, Schlick Fresnel)
 
 static const float PI = 3.14159265359f;
+static const float MIN_ROUGHNESS = 0.045f;
 
 // Trowbridge-Reitz GGX normal distribution function
 // Models the distribution of microfacet orientations on the surface.
 float DistributionGGX(float3 N, float3 H, float roughness)
 {
-    float a  = roughness * roughness;
+    float a  = max(roughness, MIN_ROUGHNESS);
+    a *= a;
     float a2 = a * a;
     float NdotH  = max(dot(N, H), 0.0f);
     float NdotH2 = NdotH * NdotH;

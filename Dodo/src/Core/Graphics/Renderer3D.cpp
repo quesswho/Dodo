@@ -102,9 +102,9 @@ namespace Dodo {
 
         // Shadow pass: each mesh is drawn with instanceCount = numCascades so the VS
         // fans the geometry across all cascade layers via SV_InstanceID / SV_RenderTargetArrayIndex.
-        m_CascadedShadowMap->UpdateCamera(camera.GetProjectionMatrix(), camera.GetViewMatrix(),
-                                          scene->m_LightSystem.m_Directional.m_Direction, camera.GetNearPlane(),
-                                          camera.GetFarPlane(), camera.GetFov(), camera.GetAspectRatio());
+        m_CascadedShadowMap->UpdateCamera(camera.GetViewMatrix(), scene->m_LightSystem.m_Directional.m_Direction,
+                                          camera.GetNearPlane(), camera.GetFarPlane(), camera.GetFov(),
+                                          camera.GetAspectRatio());
 
         renderAPI.BeginTimestamp(GpuTimestampSlot::Shadow);
 

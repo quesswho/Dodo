@@ -48,6 +48,33 @@ The engine features an Entity Component System (ECS), model loading, PBR materia
 - Ninja
 - A C++20-compatible compiler
 - Vulkan 1.3-capable GPU (for Vulkan backend)
+- Vulkan headers and loader
+- X11 and Wayland development headers (Linux only, needed by GLFW)
+
+The Slang SDK is downloaded automatically at configure time, and all other libraries are git submodules.
+
+### Installing dependencies
+
+**Ubuntu / Debian**
+
+```bash
+sudo apt-get update
+sudo apt-get install -y build-essential cmake ninja-build libvulkan-dev \
+    libgl1-mesa-dev xorg-dev libwayland-dev libxkbcommon-dev
+```
+
+**Fedora**
+
+```bash
+sudo dnf install gcc-c++ cmake ninja-build vulkan-headers vulkan-loader-devel \
+    mesa-libGL-devel libX11-devel libXrandr-devel libXinerama-devel libXcursor-devel libXi-devel \
+    wayland-devel libxkbcommon-devel
+```
+
+**Windows**
+
+- Install the [Vulkan SDK](https://vulkan.lunarg.com/sdk/home).
+- Install CMake and either Visual Studio with the C++ workload or MSYS2 with `mingw-w64-x86_64-gcc` and `mingw-w64-x86_64-ninja` (use the `mingw` presets).
 
 ### Cloning
 

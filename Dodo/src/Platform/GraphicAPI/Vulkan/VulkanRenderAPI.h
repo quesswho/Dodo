@@ -121,6 +121,14 @@ namespace Dodo::Platform {
         void SubmitTextureBatch();
         bool PollTextureBatch();
 
+        /**
+         * Releases the bindless slot held by an image view that is about to be destroyed.
+         * The slot is pointed back at the fallback image and becomes reusable. Without this, a new view
+         * that is handed the same handle value would inherit a descriptor to the destroyed image.
+         * Does nothing if the view was never registered.
+         */
+        void UnregisterImageView(VkImageView view);
+
         // One-shot GPU computation passes. SubmitGpuPass records and queues a pass asynchronously.
         // PollGpuPasses checks completion each frame and calls Finalize() on finished passes.
         // WaitGpuPasses blocks until all pending passes are finalized (use for chained passes).

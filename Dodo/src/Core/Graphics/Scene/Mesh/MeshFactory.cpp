@@ -11,9 +11,9 @@ namespace Dodo {
 
         // XY plane facing -Z. Format per vertex: pos(3) uv(2) normal(3) tangent(4)
         float vertices[] = {
-            0.0f, 0.0f, 0.0f, 0.0f,  0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,  0.0f, 1.0f, 0.0f, 0.0f,
-            1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  0.0f, 0.0f, 0.0f, -1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,  0.0f, 1.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f, -1.0f,
+            1.0f, 0.0f, 0.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
         };
         uint indices[] = {0, 1, 2, 3, 2, 1};
         m_RectangleMesh = std::make_shared<Mesh>(

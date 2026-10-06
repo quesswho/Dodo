@@ -65,8 +65,8 @@ float shadowCalculationCSM(
     if (projCoords.z > 1.0f)
         return 0.0f;
 
-    // Transform to [0,1] UV range
-    projCoords.xy = projCoords.xy * 0.5f + 0.5f;
+    // Transform to [0,1] UV range (V points down, clip-space Y points up)
+    projCoords.xy = projCoords.xy * float2(0.5f, -0.5f) + 0.5f;
 
     float currentDepth = projCoords.z;
 
@@ -124,7 +124,8 @@ float shadowCalculationCSMPCSS(
     if (projCoords.z > 1.0f)
         return 0.0f;
 
-    projCoords = projCoords * 0.5f + 0.5f;
+    // Transform to [0,1] UV range (V points down, clip-space Y points up)
+    projCoords.xy = projCoords.xy * float2(0.5f, -0.5f) + 0.5f;
     // Slope-scaled constant bias in shadow-map depth space. Orthographic depth is linear and each
     // cascade's matrix already maps its range to [0,1], so one small constant works for all cascades.
     float bias = max(0.0015f * (1.0f - dot(normal, lightDirection)), 0.0005f);

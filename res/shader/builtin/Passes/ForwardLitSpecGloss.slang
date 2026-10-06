@@ -29,7 +29,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target
     if (diffuseSample.a < 0.5f) discard;
 
     float3x3 TBN = buildTBN(input.normalWS, input.tangentWS);
-    float3 normalTS = g_Textures[NonUniformResourceIndex(u_NormalIdx)].Sample(samp, input.texCoord).rgb * 2.0f - 1.0f;
+    float3 normalTS = decodeNormalTS(g_Textures[NonUniformResourceIndex(u_NormalIdx)].Sample(samp, input.texCoord).rgb);
     float3 N = normalize(mul(normalTS, TBN));
 
     // u_SpecIdx carries the spec-gloss map (RGB=F0, A=glossiness)

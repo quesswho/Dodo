@@ -1,5 +1,6 @@
 #include "VulkanFrameBuffer.h"
 
+#include "VulkanRenderAPI.h"
 #include <vk_mem_alloc.h>
 
 namespace Dodo::Platform {
@@ -165,6 +166,7 @@ namespace Dodo::Platform {
         m_DepthAllocation = nullptr;
 
         if (m_ColorImage != VK_NULL_HANDLE) {
+            if (m_BindlessOwner) m_BindlessOwner->UnregisterImageView(m_ColorImageView);
             vkDestroyImageView(m_Device, m_ColorImageView, nullptr);
             m_ColorImageView = VK_NULL_HANDLE;
             vmaDestroyImage(m_Allocator, m_ColorImage, m_ColorAllocation);

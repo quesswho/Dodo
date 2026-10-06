@@ -1,5 +1,6 @@
 #include "VulkanTexture.h"
 
+#include "VulkanRenderAPI.h"
 #include "Core/Math/MathFunc.h"
 #include "Core/Utilities/Logger.h"
 
@@ -335,6 +336,7 @@ namespace Dodo::Platform {
     VulkanTexture::~VulkanTexture()
     {
         FinalizeUpload(); // no-op if already finalized; safety net for early destruction
+        if (m_BindlessOwner) m_BindlessOwner->UnregisterImageView(m_ImageView);
         vkDestroyImageView(m_Device, m_ImageView, nullptr);
         vmaDestroyImage(m_Allocator, m_Image, m_Allocation);
     }

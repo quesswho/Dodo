@@ -39,6 +39,7 @@ namespace Dodo::Platform {
         VkImageView m_ImageView = VK_NULL_HANDLE;
         uint32_t m_MipLevels = 1;
         uint32_t m_BindlessHandle = 0;
+        class VulkanRenderAPI* m_BindlessOwner = nullptr; // Set once registered, used to release the slot
         VkBuffer m_StagingBuffer = VK_NULL_HANDLE;
         VmaAllocation m_StagingAlloc = nullptr;
     };

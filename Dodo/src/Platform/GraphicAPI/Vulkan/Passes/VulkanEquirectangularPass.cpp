@@ -256,6 +256,8 @@ namespace Dodo::Platform {
         VkDeviceSize vbOffset = 0;
         vkCmdBindVertexBuffers(cmd, 0, 1, &vbHandle, &vbOffset);
 
+        // Cube faces are captured with an unflipped viewport on purpose: the capture views use the
+        // standard cubemap face orientations, where each face image is stored with -Y clip space first.
         VkViewport vp{};
         vp.width    = static_cast<float>(m_FaceSize);
         vp.height   = static_cast<float>(m_FaceSize);

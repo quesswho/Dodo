@@ -32,7 +32,7 @@ float4 fragmentMain(VertexOutput input) : SV_Target
     // Reconstruct world-space TBN for normal mapping
     float3x3 TBN = buildTBN(input.normalWS, input.tangentWS);
 
-    float3 normalTS = g_Textures[NonUniformResourceIndex(u_NormalIdx)].Sample(samp, input.texCoord).rgb * 2.0f - 1.0f;
+    float3 normalTS = decodeNormalTS(g_Textures[NonUniformResourceIndex(u_NormalIdx)].Sample(samp, input.texCoord).rgb);
     float3 N = normalize(mul(normalTS, TBN));
 
     float roughness = g_Textures[NonUniformResourceIndex(u_RoughIdx)].Sample(samp, input.texCoord).g;

@@ -20,7 +20,8 @@ struct VertexOutput
 static const float2 invAtan = float2(0.1591, 0.3183);
 float2 SampleSphericalMap(float3 v)
 {
-    float2 uv = float2(atan2(v.z, v.x), asin(v.y));
+    // V points down in the image, so up (+Y) maps to the first row
+    float2 uv = float2(atan2(v.z, v.x), -asin(v.y));
     uv *= invAtan;
     uv += 0.5;
     return uv;

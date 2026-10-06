@@ -1,7 +1,3 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Build Commands
 
 ```bash
@@ -49,23 +45,13 @@ All shaders are written in **Slang** (`.slang`), located in `res/shader/builtin/
 
 Shader modules are composed via Slang `#include`. Key shared modules live in `res/shader/builtin/Common/` (uniforms, vertex I/O structs, material helpers, lighting).
 
-## Backend Differences
-
-| | OpenGL | Vulkan |
-|---|---|---|
-| Push constants | UBO emulation | Native `vk::push_constant` / Slang args |
-| Descriptors | Texture units + UBOs | Descriptor sets from reflection |
-| Memory | Driver-managed | VMA |
-| Sampler binding | Per-slot | Combined in descriptor set |
-
-The Vulkan backend is under active development on `feature/vulkan`. OpenGL is the stable baseline.
-
 ## Key Patterns
 - **Comments**: NEVER EVER use em dashes (the `—` character, U+2014) anywhere: not in comments, not in documentation, not in commit messages, not in this file. Use commas, colons, or parentheses instead. For documentation, use the /** pattern with aligned * and place it in the header.
 - **Namespaces**: All engine related code lives in Dodo:: namespace. Prefer putting helper function as private member functions rather than in anonymous namespaces.
 - **Factory via RenderAPI**: All GPU resources (buffers, textures, samplers, pipelines, framebuffers) are created through `RenderAPI` factory methods, never constructed directly.
 - **Material = Pipeline + Textures + Sampler**: A `Material` binds a compiled `Pipeline` to texture slots; `TextureSampler` is separate to match Vulkan's descriptor model.
 - **Async asset loading**: `AssetManager` uses a thread pool; loading Sponza-scale scenes is expected to be async. Don't assume assets are ready synchronously.
+- **Image and clip-space conventions**: Vulkan-native images, Y-up clip space. UV origin is the top-left (V points down); textures are loaded unflipped and model UVs are converted on import. Scene viewports use a negative height, so projection matrices stay Y-up and front faces are counter-clockwise. When sampling a rendered target from clip coordinates use `uv = ndc.xy * float2(0.5, -0.5) + 0.5`. The cubemap capture passes are the one exception and keep an unflipped viewport.
 - **Math conventions**: Column-major layout (`DD_MATH_COLUMN_MAJOR`), right-handed coordinate system (`DD_COORDINATE_RIGHT_HANDED`), set at compile time.
 - **Precompiled header**: `src/pch.h` is included project-wide; add heavy or frequently used headers there.
 - **ImGui**: Frame setup/teardown is managed by `RenderAPI`, not the application layer.

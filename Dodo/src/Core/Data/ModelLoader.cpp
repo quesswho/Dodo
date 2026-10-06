@@ -18,8 +18,7 @@ namespace Dodo {
         DD_INFO("ModelLoader: loading '{}'", path);
         ModelData result;
         Assimp::Importer imp;
-        const aiScene* scene =
-            imp.ReadFile(path, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_PreTransformVertices);
+        const aiScene* scene = imp.ReadFile(path, aiProcess_Triangulate | aiProcess_PreTransformVertices);
 
         if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
             DD_ERR("ModelLoader: unable to load '{}'", path);
@@ -27,11 +26,22 @@ namespace Dodo {
             return result;
         }
 
+        // Tangents are generated in a second step so we know which meshes came with their own tangent frame.
+        // Assimp's generated bitangent points along decreasing V, while a bitangent supplied by the file points
+        // along increasing V (image up), so the two need opposite handedness signs.
+        std::vector<bool> hasAuthoredTangents(scene->mNumMeshes);
+        for (uint i = 0; i < scene->mNumMeshes; i++)
+            hasAuthoredTangents[i] = scene->mMeshes[i]->HasTangentsAndBitangents();
+
+        scene = imp.ApplyPostProcessing(aiProcess_CalcTangentSpace);
+        if (!scene) {
+            DD_ERR("ModelLoader: unable to generate tangents for '{}'", path);
+            result.failed = true;
+            return result;
+        }
+
         std::filesystem::path fsPath(path);
         std::filesystem::path modelDir = fsPath.parent_path();
-        std::string ext = fsPath.extension().string();
-        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-        const bool isFbx = (ext == ".fbx");
 
         // Collect material texture paths. Texture loading is done async in AssetManager
         for (uint i = 0; i < scene->mNumMaterials; i++) {
@@ -159,16 +169,27 @@ namespace Dodo {
             for (uint j = 0; j < aiM->mNumVertices; j++) {
                 Vertex v;
                 v.m_Position = {aiM->mVertices[j].x, aiM->mVertices[j].y, aiM->mVertices[j].z};
-                v.m_Texcoord = {aiM->mTextureCoords[0][j].x, aiM->mTextureCoords[0][j].y};
-                float nFlip = isFbx ? -1.0f : 1.0f;
-                v.m_Normal = {nFlip * aiM->mNormals[j].x, nFlip * aiM->mNormals[j].y, nFlip * aiM->mNormals[j].z};
-                // Compute bitangent sign and store in tangent.w since we don't have a separate bitangent attribute.
-                // Assimp guarantees tangents and bitangents are orthogonal to normals, so we can use the cross product
-                // to determine handedness.
-                aiVector3D crossNT = aiM->mTangents[j] ^ aiM->mNormals[j];
-                float bitangentSign = (crossNT * aiM->mBitangents[j] < 0.0f) ? -1.0f : 1.0f;
-                // FBX (UE Z-up): negate tangent.xyz along with normal to keep TBN frame right-handed.
-                v.m_Tangent = {nFlip * aiM->mTangents[j].x, nFlip * aiM->mTangents[j].y, nFlip * aiM->mTangents[j].z, bitangentSign};
+                // Assimp UVs have their origin at the bottom-left, the engine uses top-left, so V is flipped.
+                // Meshes without UVs have no texture coordinates and no tangent frame, fall back to defaults.
+                if (aiM->HasTextureCoords(0))
+                    v.m_Texcoord = {aiM->mTextureCoords[0][j].x, 1.0f - aiM->mTextureCoords[0][j].y};
+                else
+                    v.m_Texcoord = {0.0f, 0.0f};
+                if (aiM->HasNormals())
+                    v.m_Normal = {aiM->mNormals[j].x, aiM->mNormals[j].y, aiM->mNormals[j].z};
+                else
+                    v.m_Normal = {0.0f, 1.0f, 0.0f};
+                if (aiM->HasTangentsAndBitangents()) {
+                    // Store the bitangent handedness in tangent.w since we don't have a separate bitangent
+                    // attribute. The shader rebuilds the bitangent as cross(N, T) * w, which must point image up
+                    // (the direction of the normal map's green channel).
+                    const aiVector3D imageUp = hasAuthoredTangents[i] ? aiM->mBitangents[j] : -aiM->mBitangents[j];
+                    const aiVector3D crossNT = aiM->mNormals[j] ^ aiM->mTangents[j];
+                    float bitangentSign = (crossNT * imageUp < 0.0f) ? -1.0f : 1.0f;
+                    v.m_Tangent = {aiM->mTangents[j].x, aiM->mTangents[j].y, aiM->mTangents[j].z, bitangentSign};
+                } else {
+                    v.m_Tangent = {1.0f, 0.0f, 0.0f, 1.0f};
+                }
 
                 meshEntry.vertices.push_back(v);
             }

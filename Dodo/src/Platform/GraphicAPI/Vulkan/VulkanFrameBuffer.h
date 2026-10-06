@@ -11,6 +11,8 @@ typedef struct VmaAllocation_T* VmaAllocation;
 
 namespace Dodo::Platform {
     class VulkanFrameBuffer {
+        friend class VulkanRenderAPI;
+
       public:
         VulkanFrameBuffer(const FrameBufferProperties& props, VkDevice device, VmaAllocator allocator);
         ~VulkanFrameBuffer();
@@ -62,5 +64,7 @@ namespace Dodo::Platform {
         VkImageLayout m_DepthCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
         VkSampler m_Sampler = VK_NULL_HANDLE;
+
+        class VulkanRenderAPI* m_BindlessOwner = nullptr; // Set once the color view is registered
     };
 } // namespace Dodo::Platform

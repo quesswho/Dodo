@@ -40,6 +40,10 @@ namespace Dodo::Platform {
         // Finish all pending GPU passes before destroying the command pool they use.
         m_GpuPassQueue.reset();
 
+        // Release textures still held by an unfinished upload batch while the device is alive.
+        m_UploadBatchTextures.clear();
+        m_UploadBatchCubeMaps.clear();
+
         for (const auto& semaphore : m_RenderFinishedSemaphores) {
             vkDestroySemaphore(m_Device, semaphore, nullptr);
         }
@@ -69,6 +73,7 @@ namespace Dodo::Platform {
         for (auto s : m_RegisteredSamplers)
             if (s) vkDestroySampler(m_Device, s, nullptr);
         m_BindlessAllocator.reset();
+        m_BindlessSet = VK_NULL_HANDLE;
         m_LayoutCache.reset();
         m_DescriptorAllocator.reset();
         if (m_DummySampler) vkDestroySampler(m_Device, m_DummySampler, nullptr);
@@ -1280,6 +1285,7 @@ namespace Dodo::Platform {
             // Color framebuffer: register in bindless heap and store handle at the given slot.
             if (slot >= 8) return;
             uint32_t handle = RegisterImageView(vkFB->GetColorImageView());
+            vkFB->m_BindlessOwner = this;
             m_PendingTextureHandles[slot] = handle;
         }
     }
@@ -1432,11 +1438,13 @@ namespace Dodo::Platform {
         vkCmdBeginRendering(cmd, &renderingInfo);
         m_IsRendering = true;
 
+        // Negative height flips the viewport so clip space +Y points up on screen, while image row 0 stays
+        // the top row. Projection matrices can then stay Y-up and front faces stay counter-clockwise.
         VkViewport viewport{};
         viewport.x = 0.0f;
-        viewport.y = 0.0f;
+        viewport.y = static_cast<float>(m_SwapChainExtent.height);
         viewport.width = static_cast<float>(m_SwapChainExtent.width);
-        viewport.height = static_cast<float>(m_SwapChainExtent.height);
+        viewport.height = -static_cast<float>(m_SwapChainExtent.height);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
         vkCmdSetViewport(cmd, 0, 1, &viewport);
@@ -1491,11 +1499,13 @@ namespace Dodo::Platform {
         vkCmdBeginRendering(cmd, &renderingInfo);
         m_IsRendering = true;
 
+        // Negative height flips the viewport so clip space +Y points up in the image, while image row 0 stays
+        // the top row. Projection matrices can then stay Y-up and front faces stay counter-clockwise.
         VkViewport viewport{};
         viewport.x = 0.0f;
-        viewport.y = 0.0f;
+        viewport.y = static_cast<float>(extent.height);
         viewport.width = static_cast<float>(extent.width);
-        viewport.height = static_cast<float>(extent.height);
+        viewport.height = -static_cast<float>(extent.height);
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
         vkCmdSetViewport(cmd, 0, 1, &viewport);
@@ -1602,10 +1612,34 @@ namespace Dodo::Platform {
         return slot;
     }
 
+    void VulkanRenderAPI::UnregisterImageView(VkImageView view)
+    {
+        auto it = m_BindlessHandleMap.find(view);
+        if (it == m_BindlessHandleMap.end()) return;
+        const uint32_t slot = it->second;
+        m_BindlessHandleMap.erase(it);
+
+        if (m_BindlessSet == VK_NULL_HANDLE) return; // Descriptor infrastructure is already torn down
+
+        VkDescriptorImageInfo info{VK_NULL_HANDLE, m_DummyImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+        VkWriteDescriptorSet w{};
+        w.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        w.dstSet = m_BindlessSet;
+        w.dstBinding = 0;
+        w.dstArrayElement = slot;
+        w.descriptorCount = 1;
+        w.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+        w.pImageInfo = &info;
+        vkUpdateDescriptorSets(m_Device, 1, &w, 0, nullptr);
+
+        m_BindlessFreeList.push_back(slot);
+    }
+
     void VulkanRenderAPI::RegisterTexture(VulkanTexture& texture)
     {
         if (texture.m_BindlessHandle != 0) return;
         texture.m_BindlessHandle = RegisterImageView(texture.GetImageView());
+        texture.m_BindlessOwner = this;
     }
 
     void VulkanRenderAPI::RegisterCubeMap(VulkanCubeMap& cubeMap)

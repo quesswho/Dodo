@@ -13,7 +13,7 @@ The engine features an Entity Component System (ECS), model loading, PBR materia
 ![Sponza Scene](https://i.imgur.com/feKrrhv.png)
 
 ### Editor
-![Level editor](https://imgur.com/a/MLkalym)
+![Level editor](https://i.imgur.com/GFJPUUs.png)
 
 ### Voxel Game
 ![Voxel Game](https://i.imgur.com/VqE9Zm5.png)

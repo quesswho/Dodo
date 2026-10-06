@@ -2,6 +2,7 @@
 res/sponza/*
 res/san_miguel/*
 res/emerald_square/*
+res/showcase/*
 
 # Render doc
 *.rdc

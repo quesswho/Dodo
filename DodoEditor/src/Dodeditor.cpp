@@ -14,7 +14,7 @@ GameLayer::GameLayer(Application& app)
 
     BufferProperties bufferprop = {{"POSITION", 3}, {"TEXCOORD", 2}, {"NORMAL", 3}, {"TANGENT", 3}};
 
-    m_Camera = new FreeCameraController(Vec3(0.0f, 0.0f, 20.0f), -90.0f, 0.0f,
+    m_Camera = new FreeCameraController(Vec3(0.0f, 1.6f, 4.5f), -90.0f, -12.0f,
                                         (float)app.m_Window->GetWindowProperties().m_Width /
                                             (float)app.m_Window->GetWindowProperties().m_Height,
                                         0.04f, 10.0f);
@@ -47,8 +47,15 @@ GameLayer::GameLayer(Application& app)
 
 EditorScene* GameLayer::LoadStartupScene()
 {
-    const char* path = "res/scenes/editor_test.das";
-    if (FileUtils::FileExists(path)) {
+    // The showcase is built from downloaded assets (scripts/download_assets.py showcase), the plain test scene
+    // only needs the built-in models and is always available.
+    const char* candidates[] = {"res/scenes/pbr_showcase.das", "res/scenes/editor_test.das"};
+    const bool hasShowcaseAssets = FileUtils::FileExists("res/showcase/LICENSE.txt");
+
+    for (const char* path : candidates) {
+        if (path == candidates[0] && !hasShowcaseAssets) continue;
+        if (!FileUtils::FileExists(path)) continue;
+
         if (EditorScene* scene = EditorSceneFile().Read(path)) {
             // Temporary because light direction is not stored in scene file
             scene->m_LightSystem.m_Directional.m_Direction = Vec3(0.4f, -1.0f, 0.4f).Normalize();
@@ -56,7 +63,7 @@ EditorScene* GameLayer::LoadStartupScene()
         }
     }
 
-    DD_WARN("Could not load startup scene: {}, starting with an empty scene.", path);
+    DD_WARN("Could not load a startup scene, starting with an empty scene.");
     return new EditorScene();
 }
 
